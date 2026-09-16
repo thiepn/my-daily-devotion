@@ -1,4 +1,4 @@
-name: Visual System CI
+name: Scripture Platform CI
 
 on:
   push:
@@ -24,5 +24,5 @@ jobs:
       - name: Install
         run: npm install --ignore-scripts
 
-      - name: Verify Phase 2
-        run: npm run verify:phase2
+      - name: Verify Phase 3
+        run: npm run verify:phase3

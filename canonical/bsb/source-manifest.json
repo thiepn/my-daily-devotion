@@ -15,7 +15,15 @@
     "preferredFormat": "USJ",
     "preferredDownload": "https://bereanbible.com/bsb_usj.zip",
     "fallbackFormat": "USFM",
-    "fallbackDownload": "https://bereanbible.com/bsb_usfm.zip"
+    "fallbackDownload": "https://bereanbible.com/bsb_usfm.zip",
+    "deterministicMirror": {
+      "provider": "BSB-publishing/bsb2usfm",
+      "release": "v5.9",
+      "publishedAt": "2026-08-13",
+      "asset": "BSB_usj.zip",
+      "download": "https://github.com/BSB-publishing/bsb2usfm/releases/download/v5.9/BSB_usj.zip",
+      "sha256": "686d68bd3a42dde8682123dc4e66a495e7ae96d5d4fbe4bcf37e5e3df0abcc0c"
+    }
   },
   "ingestionContract": {
     "preserve": [

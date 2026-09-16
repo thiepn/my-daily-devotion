@@ -8,13 +8,14 @@ MDD is intentionally not a social network, content feed, habit game, or general-
 
 ## Current status
 
-**Phase 2 — Dedicated Visual Design**
+**Phase 3 — Scripture Platform**
 
-The project now has a canonical visual system: quiet editorial reading-journal direction, authored light/dark themes, desktop rail + mobile bottom navigation, Scripture-reader typography, prayer/history visual motifs, reusable CSS design tokens, and a restrained brand mark. Phase 2 changes presentation only; Phase 1 local data behavior remains intact.
+MDD now contains a real Berean Standard Bible platform: reproducible USJ ingestion, all 66 normalized books in production builds, semantic Scripture rendering, book/chapter navigation, reader-position restoration, verse-range selection, persistent highlights and bookmarks, and copy actions. Phase 1 local-data invariants and the Phase 2 visual system remain intact.
 
 - Phase 0 contract: [`docs/PHASE_0_IMPLEMENTATION_CONTRACT.md`](docs/PHASE_0_IMPLEMENTATION_CONTRACT.md)
 - Phase 1 foundation: [`docs/PHASE_1_LOCAL_FOUNDATION.md`](docs/PHASE_1_LOCAL_FOUNDATION.md)
 - Phase 2 visual design: [`docs/PHASE_2_VISUAL_DESIGN.md`](docs/PHASE_2_VISUAL_DESIGN.md)
+- Phase 3 Scripture platform: [`docs/PHASE_3_SCRIPTURE_PLATFORM.md`](docs/PHASE_3_SCRIPTURE_PLATFORM.md)
 
 ## Local development
 
@@ -23,10 +24,12 @@ npm install
 npm run dev
 ```
 
+The first development/build run generates pinned BSB assets under `public/bible/`; later runs reuse them while the source digest matches.
+
 ## Verification
 
 ```bash
-npm run verify:phase2
+npm run verify:phase3
 ```
 
-The Phase 2 gate re-runs all Phase 0 and Phase 1 checks, then validates the visual-system contract and design guardrails.
+The Phase 3 gate re-runs every earlier contract, persistence, test, build, and visual-system check, then validates the complete normalized BSB asset set and Scripture-platform wiring.
