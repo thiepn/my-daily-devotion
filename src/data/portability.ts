@@ -93,8 +93,8 @@ function validateArchiveManifest(value: unknown): asserts value is BackupArchive
   if (!record(value)) throw new Error("Backup manifest is missing.");
   if (value.format !== FORMAT || value.formatVersion !== FORMAT_VERSION) throw new Error("Unsupported MDD backup format.");
   if (typeof value.appVersion !== "string" || !value.appVersion.trim()) throw new Error("Backup manifest has an invalid app version.");
-  if (!Number.isInteger(value.schemaVersion) || (value.schemaVersion as number) < 1) throw new Error("Backup manifest has an invalid database schema version.");
-  if ((value.schemaVersion as number) > DATABASE_SCHEMA_VERSION) throw new Error("Backup uses a newer database schema.");
+  if (typeof value.schemaVersion !== "number" || !Number.isInteger(value.schemaVersion) || value.schemaVersion < 1) throw new Error("Backup manifest has an invalid database schema version.");
+  if (value.schemaVersion > DATABASE_SCHEMA_VERSION) throw new Error("Backup uses a newer database schema.");
   if (typeof value.exportedAt !== "string" || !Number.isFinite(Date.parse(value.exportedAt))) throw new Error("Backup manifest has an invalid export timestamp.");
   if (!Array.isArray(value.files) || value.files.length === 0) throw new Error("Backup manifest does not describe payload files.");
 
@@ -106,7 +106,7 @@ function validateArchiveManifest(value: unknown): asserts value is BackupArchive
     if (paths.has(path)) throw new Error(`Backup manifest contains a duplicate file entry: ${path}`);
     paths.add(path);
     if (typeof rawEntry.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(rawEntry.sha256)) throw new Error(`Backup manifest has an invalid checksum for ${path}.`);
-    if (!Number.isInteger(rawEntry.bytes) || (rawEntry.bytes as number) < 0) throw new Error(`Backup manifest has an invalid byte count for ${path}.`);
+    if (typeof rawEntry.bytes !== "number" || !Number.isInteger(rawEntry.bytes) || rawEntry.bytes < 0) throw new Error(`Backup manifest has an invalid byte count for ${path}.`);
   }
   if (!paths.has("data.json")) throw new Error("Backup manifest does not describe data.json.");
 
@@ -115,7 +115,7 @@ function validateArchiveManifest(value: unknown): asserts value is BackupArchive
     if (!record(encryption) || encryption.cipher !== "AES-GCM" || encryption.kdf !== "PBKDF2-SHA-256") throw new Error("Backup uses unsupported encryption metadata.");
     if (typeof encryption.salt !== "string" || typeof encryption.iv !== "string" || !record(encryption.kdfParameters)) throw new Error("Backup encryption metadata is incomplete.");
     const iterations = encryption.kdfParameters.iterations;
-    if (!Number.isInteger(iterations) || (iterations as number) < MIN_PBKDF2_ITERATIONS || (iterations as number) > MAX_PBKDF2_ITERATIONS) throw new Error("Backup uses unsupported PBKDF2 parameters.");
+    if (typeof iterations !== "number" || !Number.isInteger(iterations) || iterations < MIN_PBKDF2_ITERATIONS || iterations > MAX_PBKDF2_ITERATIONS) throw new Error("Backup uses unsupported PBKDF2 parameters.");
     let salt: Uint8Array; let iv: Uint8Array;
     try { salt = fromBase64(encryption.salt); iv = fromBase64(encryption.iv); } catch { throw new Error("Backup encryption metadata is invalid."); }
     if (salt.byteLength < 16 || salt.byteLength > 64 || iv.byteLength !== 12) throw new Error("Backup encryption metadata is invalid.");
