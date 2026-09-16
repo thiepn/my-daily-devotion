@@ -192,8 +192,8 @@ export function ReflectionScreen() {
           <section className="reflection-prayer-handoff">
             <p className="section-kicker">Prayer</p>
             <h2>Carry the response forward.</h2>
-            <p className="muted-copy">Phase 6 will turn this into a prayer while preserving the reflection date and linked Scripture.</p>
-            {reflection ? <Link className="future-text-link" to={buildPrayerHandoffUrl(reflection)}>Continue toward prayer →</Link> : <span className="disabled-handoff">Save the reflection first.</span>}
+            <p className="muted-copy">Create a prayer while preserving this reflection date and linked Scripture.</p>
+            {reflection ? <Link className="future-text-link" to={buildPrayerHandoffUrl(reflection)}>Create prayer →</Link> : <span className="disabled-handoff">Save the reflection first.</span>}
           </section>
         </aside>
       </div>
