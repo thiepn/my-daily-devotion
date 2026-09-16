@@ -1,4 +1,4 @@
-name: Prayer Scheduling & Sessions CI
+name: History, Search & Data Portability CI
 
 on:
   push:
@@ -20,5 +20,5 @@ jobs:
           node-version: "24"
       - name: Install
         run: npm install --ignore-scripts
-      - name: Verify Phase 7
-        run: npm run verify:phase7
+      - name: Verify Phase 8
+        run: npm run verify:phase8
