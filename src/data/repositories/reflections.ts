@@ -75,6 +75,15 @@ export class ReflectionRepository {
     );
   }
 
+  /** Phase 1 compatibility: callers that already ensured the day keep the old API. */
+  async upsertDaily(localDate: LocalDate, devotionDayId: UUID, bodyMd: string): Promise<Reflection> {
+    const result = await this.saveDaily(localDate, bodyMd);
+    if (result.reflection.devotionDayId !== devotionDayId) {
+      throw new Error("Reflection DevotionDay does not match the supplied devotional date.");
+    }
+    return result.reflection;
+  }
+
   async listScriptureLinks(reflectionId: UUID): Promise<ScriptureLink[]> {
     return this.database.scriptureLinks
       .where("[ownerType+ownerId]")
