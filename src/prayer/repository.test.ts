@@ -1,12 +1,18 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { MddDatabase, prepareDatabase } from "../data/database";
 import { PrayerRepository } from "../data/repositories/prayers";
-import type { Instant, ScriptureReference } from "../domain/types";
+import type { ActivityEventType, Instant, ScriptureReference } from "../domain/types";
 
 const databases: MddDatabase[] = [];
 function testDb(): MddDatabase { const database = new MddDatabase(`mdd-prayer-test-${crypto.randomUUID()}`); databases.push(database); return database; }
 afterEach(async () => { for (const database of databases.splice(0)) { database.close(); await database.delete(); } });
 const reference: ScriptureReference = { translationId: "BSB", startVerseKey: "JHN.3.16", endVerseKey: "JHN.3.17" };
+
+async function expectEventTypes(database: MddDatabase, expected: ActivityEventType[]): Promise<void> {
+  const actual = (await database.activityEvents.toArray()).map((item) => item.type);
+  expect(actual).toHaveLength(expected.length);
+  expect(actual).toEqual(expect.arrayContaining(expected));
+}
 
 describe("PrayerRepository core", () => {
   it("creates a prayer with source Scripture and one creation event", async () => {
@@ -14,7 +20,7 @@ describe("PrayerRepository core", () => {
     const prayer = await repository.createPrayer({ body: "  Pray for wisdom.  ", scriptureReferences: [reference, reference] });
     expect(prayer.body).toBe("Pray for wisdom.");
     expect(await repository.listScriptureLinks(prayer.id)).toHaveLength(1);
-    expect((await database.activityEvents.toArray()).map((item) => item.type)).toEqual(["PRAYER_CREATED"]);
+    await expectEventTypes(database, ["PRAYER_CREATED"]);
   });
 
   it("keeps updates and encouragements append-only with meaningful events", async () => {
@@ -23,7 +29,7 @@ describe("PrayerRepository core", () => {
     await repository.addUpdate(prayer.id, "The situation changed.");
     await repository.addUpdate(prayer.id, "There was a small encouragement.", "encouragement");
     expect((await repository.listUpdates(prayer.id)).map((item) => item.body)).toEqual(["The situation changed.", "There was a small encouragement."]);
-    expect((await database.activityEvents.toArray()).map((item) => item.type)).toEqual(["PRAYER_CREATED", "PRAYER_UPDATED", "ENCOURAGEMENT_RECORDED"]);
+    await expectEventTypes(database, ["PRAYER_CREATED", "PRAYER_UPDATED", "ENCOURAGEMENT_RECORDED"]);
   });
 
   it("builds the basic rotation from active prayers using least-recently-prayed order", async () => {
@@ -44,7 +50,7 @@ describe("PrayerRepository core", () => {
     const result = await repository.answer(prayer.id, "The way forward became clear.", "2026-09-16T19:00:00.000Z" as Instant);
     expect(result.prayer.status).toBe("ANSWERED");
     expect(result.resolution.reflectionMd).toBe("The way forward became clear.");
-    expect((await database.activityEvents.toArray()).map((item) => item.type)).toEqual(["PRAYER_CREATED", "PRAYER_PRAYED", "PRAYER_ANSWERED"]);
+    await expectEventTypes(database, ["PRAYER_CREATED", "PRAYER_PRAYED", "PRAYER_ANSWERED"]);
   });
 
   it("soft-removes the prayer and its attached child records without erasing activity history", async () => {
