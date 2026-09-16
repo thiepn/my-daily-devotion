@@ -1,9 +1,21 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import type { Bookmark, Highlight, ScriptureReference, VerseKey } from "../domain/types";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import type { Bookmark, Highlight, PlanEnrollment, ScriptureReference, VerseKey } from "../domain/types";
 import { Icon } from "../app/visual/Icon";
+import {
+  appendPlanQuery,
+  buildPlanReadingUrl,
+  chapterWithinReference,
+  parsePlanReadingLocator,
+  resolveReading,
+  type PlanReadingLocator,
+} from "../mcheyne/context";
+import { loadMcheynePlan } from "../mcheyne/loader";
+import { McheyneRepository } from "../mcheyne/repository";
+import type { McheyneReading } from "../mcheyne/types";
 import { loadBibleBook, loadBibleChapter, loadBibleManifest } from "./loader";
 import {
+  parseVerseKey,
   rangeContainsVerse,
   scriptureRange,
   ScriptureRepository,
@@ -15,7 +27,15 @@ interface VerseSelection {
   end: number;
 }
 
+interface ActivePlanContext {
+  locator: PlanReadingLocator;
+  enrollment: PlanEnrollment;
+  reading: McheyneReading;
+  completed: boolean;
+}
+
 const repository = new ScriptureRepository();
+const mcheyneRepository = new McheyneRepository();
 
 function referenceLabel(book: BibleManifestBook, chapter: number, selection: VerseSelection): string {
   const start = Math.min(selection.start, selection.end);
@@ -42,6 +62,8 @@ function joinSelectedText(chapter: BibleChapterAsset, selection: VerseSelection)
 export function BibleScreen() {
   const navigate = useNavigate();
   const params = useParams();
+  const [searchParams] = useSearchParams();
+  const searchKey = searchParams.toString();
   const [manifest, setManifest] = useState<BibleManifest | null>(null);
   const [chapterData, setChapterData] = useState<BibleChapterAsset | null>(null);
   const [highlights, setHighlights] = useState<Highlight[]>([]);
@@ -50,6 +72,7 @@ export function BibleScreen() {
   const [status, setStatus] = useState("");
   const [moreOpen, setMoreOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [planContext, setPlanContext] = useState<ActivePlanContext | null>(null);
   const positionTimer = useRef<number | null>(null);
   const restoredLocation = useRef<string | null>(null);
 
@@ -68,6 +91,30 @@ export function BibleScreen() {
       .catch((reason: unknown) => { if (!cancelled) setError(reason instanceof Error ? reason.message : "Could not load the Bible manifest."); });
     return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    const locator = parsePlanReadingLocator(new URLSearchParams(searchKey));
+    if (!locator) {
+      setPlanContext(null);
+      return () => { cancelled = true; };
+    }
+    Promise.all([loadMcheynePlan(), mcheyneRepository.getEnrollment(locator.enrollmentId)])
+      .then(async ([plan, enrollment]) => {
+        if (!enrollment) throw new Error("This M’Cheyne enrollment is no longer available.");
+        const reading = resolveReading(plan, locator);
+        if (!reading || !reading.references[locator.segmentIndex]) throw new Error("This M’Cheyne reading could not be resolved.");
+        const progress = await mcheyneRepository.getReadingProgress(locator.enrollmentId, locator.sequence, locator.readingIndex);
+        if (!cancelled) setPlanContext({ locator, enrollment, reading, completed: Boolean(progress?.completedAt) });
+      })
+      .catch((reason: unknown) => {
+        if (!cancelled) {
+          setPlanContext(null);
+          setStatus(reason instanceof Error ? reason.message : "Plan context unavailable.");
+        }
+      });
+    return () => { cancelled = true; };
+  }, [searchKey]);
 
   useEffect(() => {
     if (!manifest) return;
@@ -110,16 +157,29 @@ export function BibleScreen() {
 
   useEffect(() => {
     if (!chapterData || !activeBook) return;
-    const key = `${activeBook.id}.${routeChapter}`;
+    const key = `${activeBook.id}.${routeChapter}?${searchKey}`;
     if (restoredLocation.current === key) return;
     restoredLocation.current = key;
+
+    if (planContext) {
+      const segment = planContext.reading.references[planContext.locator.segmentIndex];
+      if (!segment) return;
+      const start = parseVerseKey(segment.startVerseKey);
+      if (start.bookId === activeBook.id && start.chapter === routeChapter) {
+        requestAnimationFrame(() => {
+          document.querySelector<HTMLElement>(`[data-verse-key="${segment.startVerseKey}"]`)?.scrollIntoView({ block: "center" });
+        });
+      }
+      return;
+    }
+
     void repository.getReaderPosition(activeBook.id, routeChapter).then((position) => {
       if (!position?.verseKey) return;
       requestAnimationFrame(() => {
         document.querySelector<HTMLElement>(`[data-verse-key="${position.verseKey}"]`)?.scrollIntoView({ block: "center" });
       });
     });
-  }, [activeBook, chapterData, routeChapter]);
+  }, [activeBook, chapterData, planContext, routeChapter, searchKey]);
 
   useEffect(() => {
     if (!chapterData || !activeBook || !("IntersectionObserver" in window)) return;
@@ -168,19 +228,26 @@ export function BibleScreen() {
   const exactBookmark = selectedReference ? bookmarks.some((item) => rangeEquals(item, selectedReference)) : false;
   const currentIndex = manifest.books.findIndex((book) => book.id === activeBook.id);
 
+  const navigateToChapter = (bookId: string, chapter: number) => {
+    const path = `/bible/${bookId}/${chapter}`;
+    if (planContext && chapterWithinReference(bookId, chapter, planContext.reading, planContext.locator.segmentIndex)) {
+      navigate(appendPlanQuery(path, planContext.locator));
+    } else navigate(path);
+  };
+
   const navigateAdjacent = (direction: -1 | 1) => {
     if (direction < 0) {
-      if (routeChapter > 1) navigate(`/bible/${activeBook.id}/${routeChapter - 1}`);
+      if (routeChapter > 1) navigateToChapter(activeBook.id, routeChapter - 1);
       else if (currentIndex > 0) {
         const previous = manifest.books[currentIndex - 1];
-        if (previous) navigate(`/bible/${previous.id}/${previous.chapterCount}`);
+        if (previous) navigateToChapter(previous.id, previous.chapterCount);
       }
       return;
     }
-    if (routeChapter < activeBook.chapterCount) navigate(`/bible/${activeBook.id}/${routeChapter + 1}`);
+    if (routeChapter < activeBook.chapterCount) navigateToChapter(activeBook.id, routeChapter + 1);
     else {
       const next = manifest.books[currentIndex + 1];
-      if (next) navigate(`/bible/${next.id}/1`);
+      if (next) navigateToChapter(next.id, 1);
     }
   };
 
@@ -208,6 +275,18 @@ export function BibleScreen() {
     setStatus(exactBookmark ? "Bookmark removed." : "Bookmarked locally.");
   };
 
+  const togglePlanCompletion = async () => {
+    if (!planContext) return;
+    await mcheyneRepository.setReadingCompleted(
+      planContext.enrollment.id,
+      planContext.locator.sequence,
+      planContext.locator.readingIndex,
+      !planContext.completed,
+    );
+    setPlanContext({ ...planContext, completed: !planContext.completed });
+    setStatus(planContext.completed ? "Reading marked unread." : "Reading marked complete.");
+  };
+
   const copySelection = async () => {
     if (!selection) return;
     const text = joinSelectedText(chapterData, selection);
@@ -224,11 +303,13 @@ export function BibleScreen() {
       const selected = verse !== null && selection !== null && verse >= Math.min(selection.start, selection.end) && verse <= Math.max(selection.start, selection.end);
       const highlighted = verse !== null && highlights.some((item) => rangeContainsVerse(item, activeBook.id, routeChapter, verse));
       const bookmarked = verse !== null && bookmarks.some((item) => rangeContainsVerse(item, activeBook.id, routeChapter, verse));
+      const planReading = verse !== null && planContext !== null && rangeContainsVerse(planContext.reading.references[planContext.locator.segmentIndex]!, activeBook.id, routeChapter, verse);
       const classes = [
         "scripture-run",
         segment.redLetter ? "is-red-letter" : "",
         highlighted ? "is-highlighted" : "",
         selected ? "is-selected" : "",
+        planReading ? "is-plan-reading" : "",
         segment.emphasis ? `emphasis-${segment.emphasis}` : "",
       ].filter(Boolean).join(" ");
       return (
@@ -256,6 +337,9 @@ export function BibleScreen() {
 
   const firstChapter = currentIndex === 0 && routeChapter === 1;
   const lastBook = currentIndex === manifest.books.length - 1 && routeChapter === activeBook.chapterCount;
+  const currentSegment = planContext?.reading.references[planContext.locator.segmentIndex] ?? null;
+  const segmentCount = planContext?.reading.references.length ?? 0;
+  const backTarget = planContext?.locator.origin === "plan" ? "/today/plan" : "/today";
 
   return (
     <main className="visual-screen bible-screen">
@@ -264,6 +348,22 @@ export function BibleScreen() {
         <h1>Bible</h1>
         <p className="screen-intro">Read the complete Berean Standard Bible in a quiet, semantic reader. Verse actions stay local to this device.</p>
       </header>
+
+      {planContext && currentSegment ? (
+        <section className="plan-reading-context" aria-label="M’Cheyne reading context">
+          <div className="plan-context-copy">
+            <p className="section-kicker">M’Cheyne · {planContext.reading.group === "family" ? "Family" : "Private"}</p>
+            <strong>{planContext.reading.displayReference}</strong>
+            <span>Day {planContext.locator.sequence}{segmentCount > 1 ? ` · Part ${planContext.locator.segmentIndex + 1} of ${segmentCount}` : ""}</span>
+          </div>
+          <div className="plan-context-actions">
+            <Link to={backTarget}>Back to {planContext.locator.origin === "plan" ? "plan" : "Today"}</Link>
+            {planContext.locator.segmentIndex > 0 ? <Link to={buildPlanReadingUrl(planContext.reading, planContext.enrollment.id, planContext.locator.sequence, planContext.locator.readingIndex, planContext.locator.origin, planContext.locator.segmentIndex - 1)}>Previous passage</Link> : null}
+            {planContext.locator.segmentIndex + 1 < segmentCount ? <Link to={buildPlanReadingUrl(planContext.reading, planContext.enrollment.id, planContext.locator.sequence, planContext.locator.readingIndex, planContext.locator.origin, planContext.locator.segmentIndex + 1)}>Next passage</Link> : null}
+            <button type="button" className={planContext.completed ? "is-complete" : ""} onClick={() => void togglePlanCompletion()}>{planContext.completed ? "Mark unread" : "Mark reading complete"}</button>
+          </div>
+        </section>
+      ) : null}
 
       <div className="bible-toolbar" aria-label="Bible navigation">
         <label className="bible-select-label">
@@ -274,7 +374,7 @@ export function BibleScreen() {
         </label>
         <label className="bible-select-label chapter-select">
           <span>Chapter</span>
-          <select value={routeChapter} onChange={(event) => navigate(`/bible/${activeBook.id}/${event.target.value}`)}>
+          <select value={routeChapter} onChange={(event) => navigateToChapter(activeBook.id, Number(event.target.value))}>
             {Array.from({ length: activeBook.chapterCount }, (_, index) => index + 1).map((chapter) => <option key={chapter} value={chapter}>{chapter}</option>)}
           </select>
         </label>
