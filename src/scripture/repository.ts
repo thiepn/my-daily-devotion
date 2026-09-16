@@ -63,9 +63,7 @@ export class ScriptureRepository {
 
   private async findReaderPosition(bookId: string, chapter: number): Promise<ReaderPosition | undefined> {
     return this.database.readerPositions
-      .where("translationId")
-      .equals(BSB_TRANSLATION_ID)
-      .filter((item) => item.deletedAt === null && item.bookId === bookId && item.chapter === chapter)
+      .filter((item) => item.deletedAt === null && item.translationId === BSB_TRANSLATION_ID && item.bookId === bookId && item.chapter === chapter)
       .first();
   }
 
@@ -101,9 +99,7 @@ export class ScriptureRepository {
 
   async getResumePosition(): Promise<ReaderPosition | undefined> {
     const positions = await this.database.readerPositions
-      .where("translationId")
-      .equals(BSB_TRANSLATION_ID)
-      .filter((item) => item.deletedAt === null)
+      .filter((item) => item.deletedAt === null && item.translationId === BSB_TRANSLATION_ID)
       .toArray();
     return positions.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
   }
