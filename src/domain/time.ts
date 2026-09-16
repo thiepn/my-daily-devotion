@@ -25,6 +25,19 @@ export function localDateFromParts(year: number, month: number, day: number): Lo
   return value;
 }
 
+export function localDateInTimeZone(now: Date | Instant, timeZone: TimeZoneId): LocalDate {
+  const date = now instanceof Date ? now : new Date(now);
+  if (Number.isNaN(date.getTime())) throw new Error("Invalid instant for local date conversion.");
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+  const value = Object.fromEntries(parts.filter((part) => part.type !== "literal").map((part) => [part.type, part.value]));
+  return localDateFromParts(Number(value.year), Number(value.month), Number(value.day));
+}
+
 export function todayLocalDate(now: Date = new Date()): LocalDate {
   return localDateFromParts(now.getFullYear(), now.getMonth() + 1, now.getDate());
 }

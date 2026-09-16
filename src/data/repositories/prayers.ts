@@ -1,11 +1,13 @@
 import { ActivityLog } from "../activity";
 import { newMutableFields, nextMutableFields, nowInstant } from "../../domain/identity";
+import { assertLocalDate } from "../../domain/time";
 import { assertPrayerTransition } from "../../domain/prayer";
 import type {
   Instant,
   LocalDate,
   Prayer,
   PrayerResolution,
+  PrayerSchedule,
   PrayerStatus,
   PrayerUpdate,
   PrayerUpdateType,
@@ -13,6 +15,7 @@ import type {
   ScriptureReference,
   UUID,
 } from "../../domain/types";
+import { normalizePrayerScheduleDraft, type PrayerScheduleDraft } from "../../prayer/scheduling";
 import type { MddDatabase } from "../database";
 import { MutableRepository } from "./mutable-repository";
 
@@ -21,6 +24,7 @@ export interface NewPrayerInput {
   personId?: UUID | null;
   categoryId?: UUID | null;
   scheduleId?: UUID | null;
+  schedule?: PrayerScheduleDraft | null;
   eventDate?: LocalDate | null;
   focusUntil?: LocalDate | null;
   sourceReflectionId?: UUID | null;
@@ -28,8 +32,22 @@ export interface NewPrayerInput {
   scriptureReferences?: ScriptureReference[];
 }
 
+export interface PrayerAdministrationInput {
+  personId: UUID | null;
+  categoryId: UUID | null;
+  eventDate: LocalDate | null;
+  focusUntil: LocalDate | null;
+  schedule: PrayerScheduleDraft | null;
+}
+
 function sameReference(a: ScriptureReference, b: ScriptureReference): boolean {
   return a.translationId === b.translationId && a.startVerseKey === b.startVerseKey && a.endVerseKey === b.endVerseKey;
+}
+
+function buildSchedule(draft: PrayerScheduleDraft, at: Instant, existing?: PrayerSchedule): PrayerSchedule {
+  const fields = normalizePrayerScheduleDraft(draft);
+  if (existing) return { ...existing, ...fields, deletedAt: null, ...nextMutableFields(existing, at) };
+  return { ...newMutableFields(at), ...fields };
 }
 
 export class PrayerRepository extends MutableRepository<Prayer> {
@@ -43,41 +61,116 @@ export class PrayerRepository extends MutableRepository<Prayer> {
   async createPrayer(input: NewPrayerInput): Promise<Prayer> {
     const body = input.body.trim();
     if (!body) throw new Error("Prayer body is required.");
+    if (input.eventDate) assertLocalDate(input.eventDate);
+    if (input.focusUntil) assertLocalDate(input.focusUntil);
     const references = input.scriptureReferences ?? [];
+    const at = nowInstant();
 
-    return this.database.transaction("rw", this.database.prayers, this.database.scriptureLinks, this.database.activityEvents, async () => {
-      const prayer = await this.create({
-        body,
-        status: "ACTIVE",
-        personId: input.personId ?? null,
-        categoryId: input.categoryId ?? null,
-        scheduleId: input.scheduleId ?? null,
-        eventDate: input.eventDate ?? null,
-        focusUntil: input.focusUntil ?? null,
-        sourceReflectionId: input.sourceReflectionId ?? null,
-        sourceDevotionDate: input.sourceDevotionDate ?? null,
-        lastPrayedAt: null,
-        archivedAt: null,
-      });
-      for (const reference of references) await this.attachScripture(prayer.id, reference);
-      await this.activity.record({
-        type: "PRAYER_CREATED",
-        subjectType: "prayer",
-        subjectId: prayer.id,
-        metadata: {
-          sourceReflectionId: prayer.sourceReflectionId,
-          sourceDevotionDate: prayer.sourceDevotionDate,
-          scriptureLinkCount: references.length,
-        },
-      });
-      return prayer;
-    });
+    return this.database.transaction(
+      "rw",
+      this.database.prayers,
+      this.database.scriptureLinks,
+      this.database.activityEvents,
+      this.database.prayerSchedules,
+      this.database.people,
+      this.database.categories,
+      async () => {
+        await this.validateMetadata(input.personId ?? null, input.categoryId ?? null);
+        let scheduleId = input.scheduleId ?? null;
+        if (input.schedule !== undefined) {
+          if (!input.schedule || input.schedule.mode === "ROTATION") scheduleId = null;
+          else {
+            const schedule = buildSchedule(input.schedule, at);
+            await this.database.prayerSchedules.add(schedule);
+            scheduleId = schedule.id;
+          }
+        } else if (scheduleId) {
+          const existing = await this.database.prayerSchedules.get(scheduleId);
+          if (!existing || existing.deletedAt) throw new Error("Prayer schedule not found.");
+        }
+
+        const prayer = await this.create({
+          body,
+          status: "ACTIVE",
+          personId: input.personId ?? null,
+          categoryId: input.categoryId ?? null,
+          scheduleId,
+          eventDate: input.eventDate ?? null,
+          focusUntil: input.focusUntil ?? null,
+          sourceReflectionId: input.sourceReflectionId ?? null,
+          sourceDevotionDate: input.sourceDevotionDate ?? null,
+          lastPrayedAt: null,
+          archivedAt: null,
+        });
+        for (const reference of references) await this.attachScripture(prayer.id, reference);
+        await this.activity.record({
+          type: "PRAYER_CREATED",
+          subjectType: "prayer",
+          subjectId: prayer.id,
+          metadata: {
+            sourceReflectionId: prayer.sourceReflectionId,
+            sourceDevotionDate: prayer.sourceDevotionDate,
+            scriptureLinkCount: references.length,
+          },
+        });
+        return prayer;
+      },
+    );
   }
 
   async updateBody(id: UUID, body: string): Promise<Prayer> {
     const normalized = body.trim();
     if (!normalized) throw new Error("Prayer body is required.");
     return this.patch(id, { body: normalized });
+  }
+
+  async updateAdministration(id: UUID, input: PrayerAdministrationInput): Promise<Prayer> {
+    if (input.eventDate) assertLocalDate(input.eventDate);
+    if (input.focusUntil) assertLocalDate(input.focusUntil);
+    return this.database.transaction("rw", this.database.prayers, this.database.prayerSchedules, this.database.people, this.database.categories, async () => {
+      const prayer = await this.require(id);
+      await this.validateMetadata(input.personId, input.categoryId);
+      const existingSchedule = prayer.scheduleId ? await this.database.prayerSchedules.get(prayer.scheduleId) : undefined;
+      let scheduleId: UUID | null = null;
+      if (input.schedule && input.schedule.mode !== "ROTATION") {
+        const at = nowInstant();
+        const schedule = buildSchedule(input.schedule, at, existingSchedule && !existingSchedule.deletedAt ? existingSchedule : undefined);
+        await this.database.prayerSchedules.put(schedule);
+        scheduleId = schedule.id;
+      } else if (existingSchedule && !existingSchedule.deletedAt) {
+        const at = nowInstant();
+        await this.database.prayerSchedules.put({ ...existingSchedule, deletedAt: at, updatedAt: at, revision: existingSchedule.revision + 1 });
+      }
+      const next: Prayer = {
+        ...prayer,
+        personId: input.personId,
+        categoryId: input.categoryId,
+        eventDate: input.eventDate,
+        focusUntil: input.focusUntil,
+        scheduleId,
+        ...nextMutableFields(prayer),
+      };
+      await this.database.prayers.put(next);
+      return next;
+    });
+  }
+
+  async getScheduleForPrayer(id: UUID): Promise<PrayerSchedule | null> {
+    const prayer = await this.get(id);
+    if (!prayer?.scheduleId) return null;
+    const schedule = await this.database.prayerSchedules.get(prayer.scheduleId);
+    return schedule && !schedule.deletedAt ? schedule : null;
+  }
+
+  private async validateMetadata(personId: UUID | null, categoryId: UUID | null): Promise<void> {
+    if (personId) {
+      const person = await this.database.people.get(personId);
+      if (!person || person.deletedAt) throw new Error("Selected person is no longer available.");
+    }
+    if (categoryId) {
+      const category = await this.database.categories.get(categoryId);
+      if (!category || category.deletedAt) throw new Error("Selected category is no longer available.");
+    }
   }
 
   async listByStatus(status: PrayerStatus): Promise<Prayer[]> {
@@ -196,7 +289,7 @@ export class PrayerRepository extends MutableRepository<Prayer> {
   }
 
   async removePrayer(id: UUID): Promise<void> {
-    await this.database.transaction("rw", this.database.prayers, this.database.prayerUpdates, this.database.prayerResolutions, this.database.scriptureLinks, async () => {
+    await this.database.transaction("rw", this.database.prayers, this.database.prayerUpdates, this.database.prayerResolutions, this.database.scriptureLinks, this.database.prayerSchedules, async () => {
       const prayer = await this.require(id);
       const at = nowInstant();
       await this.database.prayers.put({ ...prayer, deletedAt: at, updatedAt: at, revision: prayer.revision + 1 });
@@ -206,6 +299,10 @@ export class PrayerRepository extends MutableRepository<Prayer> {
       if (resolution && resolution.deletedAt === null) await this.database.prayerResolutions.put({ ...resolution, deletedAt: at, updatedAt: at, revision: resolution.revision + 1 });
       const links = await this.listScriptureLinks(id);
       for (const link of links) await this.database.scriptureLinks.put({ ...link, deletedAt: at, updatedAt: at, revision: link.revision + 1 });
+      if (prayer.scheduleId) {
+        const schedule = await this.database.prayerSchedules.get(prayer.scheduleId);
+        if (schedule && !schedule.deletedAt) await this.database.prayerSchedules.put({ ...schedule, deletedAt: at, updatedAt: at, revision: schedule.revision + 1 });
+      }
     });
   }
 }
