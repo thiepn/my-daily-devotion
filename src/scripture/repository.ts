@@ -61,12 +61,16 @@ export class ScriptureRepository {
     this.activity = new ActivityLog(database);
   }
 
-  async saveReaderPosition(bookId: string, chapter: number, verseKey: VerseKey | null, offset = 0): Promise<ReaderPosition> {
-    const current = await this.database.readerPositions
-      .where("[translationId+bookId+chapter]")
-      .equals([BSB_TRANSLATION_ID, bookId, chapter])
-      .filter((item) => item.deletedAt === null)
+  private async findReaderPosition(bookId: string, chapter: number): Promise<ReaderPosition | undefined> {
+    return this.database.readerPositions
+      .where("translationId")
+      .equals(BSB_TRANSLATION_ID)
+      .filter((item) => item.deletedAt === null && item.bookId === bookId && item.chapter === chapter)
       .first();
+  }
+
+  async saveReaderPosition(bookId: string, chapter: number, verseKey: VerseKey | null, offset = 0): Promise<ReaderPosition> {
+    const current = await this.findReaderPosition(bookId, chapter);
 
     if (!current) {
       const created: ReaderPosition = {
@@ -92,11 +96,7 @@ export class ScriptureRepository {
   }
 
   async getReaderPosition(bookId: string, chapter: number): Promise<ReaderPosition | undefined> {
-    return this.database.readerPositions
-      .where("[translationId+bookId+chapter]")
-      .equals([BSB_TRANSLATION_ID, bookId, chapter])
-      .filter((item) => item.deletedAt === null)
-      .first();
+    return this.findReaderPosition(bookId, chapter);
   }
 
   async getResumePosition(): Promise<ReaderPosition | undefined> {
