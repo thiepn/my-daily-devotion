@@ -1,0 +1,86 @@
+.prayer-main-heading { margin-bottom: 44px; }
+.prayer-primary-actions { display: flex; align-items: center; gap: 18px; margin-top: 28px; }
+.prayer-primary-actions .primary-editorial-action { text-decoration: none; }
+.prayer-now-link { color: var(--color-accent-strong); font-size: .82rem; font-weight: 600; }
+.prayer-session-choices { margin-bottom: 46px; padding: 18px 0 20px; border-top: 1px solid var(--color-line-strong); border-bottom: 1px solid var(--color-line); }
+.prayer-session-choices > div { display: grid; grid-template-columns: repeat(3, 1fr); margin-top: 14px; }
+.prayer-session-choices a { display: grid; gap: 4px; padding: 10px 18px; border-left: 1px solid var(--color-line); text-decoration: none; }
+.prayer-session-choices a:first-child { border-left: 0; padding-left: 0; }
+.prayer-session-choices strong { font-family: var(--font-editorial); font-size: 1.08rem; font-weight: 600; }
+.prayer-session-choices span { color: var(--color-ink-faint); font-size: .7rem; }
+.prayer-status-tabs { display: flex; gap: 22px; overflow-x: auto; border-bottom: 1px solid var(--color-line-strong); }
+.prayer-status-tabs a { display: flex; align-items: baseline; gap: 7px; padding: 0 0 12px; color: var(--color-ink-soft); text-decoration: none; font-size: .78rem; white-space: nowrap; }
+.prayer-status-tabs a.is-active { color: var(--color-ink); border-bottom: 2px solid var(--color-accent); }
+.prayer-status-tabs small { color: var(--color-ink-faint); }
+.prayer-live-list { min-height: 200px; }
+.prayer-live-row { min-height: 104px; display: grid; grid-template-columns: 1fr 20px; align-items: center; gap: 20px; border-bottom: 1px solid var(--color-line); text-decoration: none; }
+.prayer-live-row p { max-width: 58ch; margin: 6px 0; font-family: var(--font-editorial); font-size: 1.12rem; line-height: 1.5; }
+.prayer-live-row small { color: var(--color-ink-faint); font-size: .7rem; }
+.prayer-live-row > .icon { color: var(--color-ink-faint); }
+.prayer-status-word { color: var(--color-ink-faint); font-size: .66rem; letter-spacing: .07em; text-transform: uppercase; }
+.prayer-status-word.status-answered { color: var(--color-answer); }
+.prayer-empty { padding: 48px 0; border-bottom: 1px solid var(--color-line); }
+.prayer-empty h2 { margin-bottom: 8px; font-family: var(--font-editorial); font-size: 1.7rem; font-weight: 500; }
+.prayer-empty p { color: var(--color-ink-soft); }
+.prayer-empty a { color: var(--color-accent-strong); font-size: .8rem; }
+.prayer-capture-layout, .prayer-detail-layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); gap: clamp(44px, 7vw, 88px); }
+.prayer-capture-editor, .prayer-detail-main, .prayer-source-context, .prayer-detail-context > section { border-top: 1px solid var(--color-line-strong); padding-top: 20px; }
+.prayer-capture-editor > label { display: block; margin-bottom: 18px; font-family: var(--font-editorial); font-size: clamp(1.5rem, 3vw, 2.25rem); }
+.prayer-capture-editor textarea { width: 100%; min-height: 220px; resize: vertical; padding: 24px; border: 1px solid var(--color-line-strong); border-radius: var(--radius-small); color: var(--color-ink); background: var(--color-surface); font-family: var(--font-editorial); font-size: 1.15rem; line-height: 1.65; }
+.prayer-capture-actions { display: flex; align-items: center; gap: 16px; margin-top: 14px; }
+.prayer-capture-actions a { color: var(--color-ink-soft); font-size: .78rem; }
+.prayer-form-status { min-height: 1.4em; margin-top: 14px; color: var(--color-ink-soft); font-size: .76rem; }
+.prayer-source-context h2 { margin: 7px 0 20px; font-family: var(--font-editorial); font-size: 1.7rem; font-weight: 500; }
+.prayer-source-context blockquote { max-height: 210px; overflow: auto; margin: 0 0 22px; padding-left: 16px; border-left: 2px solid var(--color-accent); color: var(--color-ink-soft); font-family: var(--font-editorial); line-height: 1.65; white-space: pre-wrap; }
+.prayer-source-links, .prayer-scripture-list { display: grid; gap: 8px; }
+.prayer-source-links span, .prayer-scripture-list a { width: fit-content; padding-bottom: 4px; border-bottom: 1px solid var(--color-line); font-family: var(--font-editorial); text-decoration: none; }
+.prayer-detail-heading { margin-bottom: 38px; }
+.prayer-detail-body { width: 100%; min-height: 150px; resize: vertical; margin: 12px 0 8px; padding: 0; border: 0; border-bottom: 1px solid var(--color-line); color: var(--color-ink); background: transparent; font-family: var(--font-editorial); font-size: clamp(1.45rem, 3vw, 2.15rem); line-height: 1.45; }
+.prayer-detail-body:disabled { opacity: 1; }
+.prayer-lifecycle-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 34px; }
+.prayer-lifecycle-actions button, .prayer-answer-form button, .prayer-update-form button, .focused-prayer-secondary button, .focused-answer-form button { min-height: 36px; padding: 0 11px; border: 1px solid var(--color-line); border-radius: var(--radius-small); background: transparent; color: var(--color-ink-soft); cursor: pointer; font-size: .72rem; }
+.prayer-answer-form, .focused-answer-form { margin: 0 0 34px; padding: 18px; border-left: 2px solid var(--color-answer); background: var(--color-answer-soft); }
+.prayer-answer-form label, .focused-answer-form label { display: block; margin-bottom: 8px; font-size: .76rem; font-weight: 600; }
+.prayer-answer-form label span, .focused-answer-form label span { color: var(--color-ink-faint); font-weight: 400; }
+.prayer-answer-form textarea, .focused-answer-form textarea, .prayer-update-form textarea { width: 100%; min-height: 90px; resize: vertical; padding: 10px 12px; border: 1px solid var(--color-line); border-radius: var(--radius-small); color: var(--color-ink); background: var(--color-surface); font-family: var(--font-editorial); }
+.prayer-answer-form button { margin-top: 8px; }
+.answered-prayer-note { margin: 34px 0 54px; padding: 20px 0; border-top: 1px solid var(--color-answer); border-bottom: 1px solid var(--color-line); }
+.answered-prayer-note h2 { margin: 7px 0 18px; color: var(--color-answer); font-family: var(--font-editorial); font-size: 1.5rem; font-weight: 500; }
+.answered-prayer-note p { font-family: var(--font-editorial); line-height: 1.65; white-space: pre-wrap; }
+.prayer-timeline-section { margin-top: 52px; }
+.prayer-update-list { border-top: 1px solid var(--color-line); }
+.prayer-update-list article { padding: 18px 0; border-bottom: 1px solid var(--color-line); }
+.prayer-update-list article.is-encouragement { border-left: 2px solid var(--color-answer); padding-left: 14px; }
+.prayer-update-list span { color: var(--color-ink-faint); font-size: .67rem; text-transform: uppercase; letter-spacing: .05em; }
+.prayer-update-list p { margin: 8px 0 0; font-family: var(--font-editorial); line-height: 1.6; white-space: pre-wrap; }
+.prayer-update-form { margin-top: 24px; }
+.update-type-toggle { display: flex; gap: 6px; margin-bottom: 8px; }
+.update-type-toggle button.is-active { color: var(--color-accent-strong); border-color: var(--color-accent); background: var(--color-accent-soft); }
+.prayer-update-form > button { margin-top: 8px; }
+.prayer-update-form > button:disabled { opacity: .45; cursor: default; }
+.prayer-detail-context { display: grid; align-content: start; gap: 42px; }
+.prayer-detail-context section > a { color: var(--color-accent-strong); font-size: .8rem; }
+.prayer-admin-section p { color: var(--color-ink-soft); font-size: .78rem; }
+.prayer-admin-section .danger-quiet { min-height: 34px; border: 0; background: transparent; color: var(--color-ink-faint); cursor: pointer; font-size: .72rem; padding: 0; }
+.focused-prayer-screen { width: min(calc(100% - clamp(40px, 8vw, 112px)), 820px); }
+.focused-prayer-header { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; padding-bottom: 16px; border-bottom: 1px solid var(--color-line); color: var(--color-ink-faint); font-size: .7rem; text-transform: capitalize; }
+.focused-prayer-header a { text-decoration: none; }
+.focused-prayer-header span:last-child { justify-self: end; }
+.focused-prayer-card { padding: clamp(40px, 7vw, 76px) 0 0; }
+.focused-prayer-card > h1 { max-width: 21ch; margin: 14px 0 42px; font-family: var(--font-editorial); font-size: clamp(2.3rem, 5.8vw, 4.8rem); font-weight: 500; line-height: 1.05; letter-spacing: -.04em; }
+.focused-latest { max-width: 590px; margin-bottom: 26px; padding-left: 16px; border-left: 1px solid var(--color-line-strong); }
+.focused-latest.is-encouragement { border-left-color: var(--color-answer); }
+.focused-latest span { color: var(--color-ink-faint); font-size: .68rem; text-transform: uppercase; }
+.focused-latest p { margin: 7px 0 0; font-family: var(--font-editorial); line-height: 1.6; }
+.focused-scripture { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0; }
+.focused-scripture a { color: var(--color-accent-strong); font-family: var(--font-editorial); text-decoration: none; }
+.focused-answer-form { max-width: 600px; margin-top: 30px; }
+.focused-answer-form div { display: flex; gap: 8px; margin-top: 8px; }
+.focused-prayer-secondary { display: flex; flex-wrap: wrap; gap: 16px; align-items: center; margin-top: 48px; color: var(--color-ink-faint); font-size: .72rem; }
+.focused-prayer-secondary a { color: inherit; }
+.focused-prayer-secondary button { min-height: auto; padding: 0; border: 0; }
+.focused-next-button { margin-top: 24px; min-width: 150px; min-height: 48px; display: inline-flex; align-items: center; justify-content: space-between; gap: 34px; padding: 0 14px 0 18px; border: 1px solid var(--color-ink); border-radius: var(--radius-small); color: var(--color-surface); background: var(--color-ink); cursor: pointer; }
+.today-prayer-actions { display: flex; align-items: baseline; gap: 18px; }
+.today-prayer-actions > a:last-child { color: var(--color-ink-faint); font-size: .72rem; }
+@media (max-width: 860px) { .prayer-capture-layout, .prayer-detail-layout { grid-template-columns: 1fr; } .prayer-detail-context { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 620px) { .prayer-session-choices > div { grid-template-columns: 1fr; } .prayer-session-choices a { padding: 12px 0; border-left: 0; border-top: 1px solid var(--color-line); } .prayer-session-choices a:first-child { border-top: 0; } .prayer-capture-editor textarea { min-height: 190px; } .prayer-detail-context { grid-template-columns: 1fr; } .focused-prayer-screen { width: calc(100% - 36px); } .focused-prayer-card > h1 { font-size: clamp(2.35rem, 14vw, 3.7rem); } }

@@ -1,4 +1,4 @@
-name: Reflection & Scripture Capture CI
+name: Prayer Core CI
 
 on:
   push:
@@ -20,5 +20,5 @@ jobs:
           node-version: "24"
       - name: Install
         run: npm install --ignore-scripts
-      - name: Verify Phase 5
-        run: npm run verify:phase5
+      - name: Verify Phase 6
+        run: npm run verify:phase6

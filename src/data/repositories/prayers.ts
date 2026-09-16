@@ -1,6 +1,18 @@
+import { ActivityLog } from "../activity";
 import { newMutableFields, nextMutableFields, nowInstant } from "../../domain/identity";
 import { assertPrayerTransition } from "../../domain/prayer";
-import type { Instant, LocalDate, Prayer, PrayerResolution, PrayerStatus, UUID } from "../../domain/types";
+import type {
+  Instant,
+  LocalDate,
+  Prayer,
+  PrayerResolution,
+  PrayerStatus,
+  PrayerUpdate,
+  PrayerUpdateType,
+  ScriptureLink,
+  ScriptureReference,
+  UUID,
+} from "../../domain/types";
 import type { MddDatabase } from "../database";
 import { MutableRepository } from "./mutable-repository";
 
@@ -13,39 +25,82 @@ export interface NewPrayerInput {
   focusUntil?: LocalDate | null;
   sourceReflectionId?: UUID | null;
   sourceDevotionDate?: LocalDate | null;
+  scriptureReferences?: ScriptureReference[];
+}
+
+function sameReference(a: ScriptureReference, b: ScriptureReference): boolean {
+  return a.translationId === b.translationId && a.startVerseKey === b.startVerseKey && a.endVerseKey === b.endVerseKey;
 }
 
 export class PrayerRepository extends MutableRepository<Prayer> {
+  private readonly activity: ActivityLog;
+
   constructor(private readonly database: MddDatabase) {
     super(database.prayers);
+    this.activity = new ActivityLog(database);
   }
 
   async createPrayer(input: NewPrayerInput): Promise<Prayer> {
     const body = input.body.trim();
     if (!body) throw new Error("Prayer body is required.");
+    const references = input.scriptureReferences ?? [];
 
-    return this.create({
-      body,
-      status: "ACTIVE",
-      personId: input.personId ?? null,
-      categoryId: input.categoryId ?? null,
-      scheduleId: input.scheduleId ?? null,
-      eventDate: input.eventDate ?? null,
-      focusUntil: input.focusUntil ?? null,
-      sourceReflectionId: input.sourceReflectionId ?? null,
-      sourceDevotionDate: input.sourceDevotionDate ?? null,
-      lastPrayedAt: null,
-      archivedAt: null,
+    return this.database.transaction("rw", this.database.prayers, this.database.scriptureLinks, this.database.activityEvents, async () => {
+      const prayer = await this.create({
+        body,
+        status: "ACTIVE",
+        personId: input.personId ?? null,
+        categoryId: input.categoryId ?? null,
+        scheduleId: input.scheduleId ?? null,
+        eventDate: input.eventDate ?? null,
+        focusUntil: input.focusUntil ?? null,
+        sourceReflectionId: input.sourceReflectionId ?? null,
+        sourceDevotionDate: input.sourceDevotionDate ?? null,
+        lastPrayedAt: null,
+        archivedAt: null,
+      });
+      for (const reference of references) await this.attachScripture(prayer.id, reference);
+      await this.activity.record({
+        type: "PRAYER_CREATED",
+        subjectType: "prayer",
+        subjectId: prayer.id,
+        metadata: {
+          sourceReflectionId: prayer.sourceReflectionId,
+          sourceDevotionDate: prayer.sourceDevotionDate,
+          scriptureLinkCount: references.length,
+        },
+      });
+      return prayer;
     });
+  }
+
+  async updateBody(id: UUID, body: string): Promise<Prayer> {
+    const normalized = body.trim();
+    if (!normalized) throw new Error("Prayer body is required.");
+    return this.patch(id, { body: normalized });
+  }
+
+  async listByStatus(status: PrayerStatus): Promise<Prayer[]> {
+    const items = await this.database.prayers.where("status").equals(status).filter((item) => item.deletedAt === null).toArray();
+    return items.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
+  }
+
+  async rotationQueue(limit = Number.POSITIVE_INFINITY): Promise<Prayer[]> {
+    const items = await this.database.prayers.where("status").equals("ACTIVE").filter((item) => item.deletedAt === null).toArray();
+    items.sort((a, b) => {
+      if (a.lastPrayedAt === null && b.lastPrayedAt !== null) return -1;
+      if (a.lastPrayedAt !== null && b.lastPrayedAt === null) return 1;
+      if (a.lastPrayedAt !== b.lastPrayedAt) return (a.lastPrayedAt ?? "").localeCompare(b.lastPrayedAt ?? "");
+      if (a.createdAt !== b.createdAt) return a.createdAt.localeCompare(b.createdAt);
+      return a.id.localeCompare(b.id);
+    });
+    return items.slice(0, Number.isFinite(limit) ? Math.max(0, limit) : items.length);
   }
 
   async transition(id: UUID, status: PrayerStatus): Promise<Prayer> {
     const prayer = await this.require(id);
     assertPrayerTransition(prayer.status, status);
-    if (status === "ANSWERED") {
-      throw new Error("Use answer() so an answered prayer always has a resolution record.");
-    }
-
+    if (status === "ANSWERED") throw new Error("Use answer() so an answered prayer always has a resolution record.");
     const at = nowInstant();
     const next: Prayer = {
       ...prayer,
@@ -59,40 +114,98 @@ export class PrayerRepository extends MutableRepository<Prayer> {
   }
 
   async markPrayed(id: UUID, at: Instant = nowInstant()): Promise<Prayer> {
-    const prayer = await this.require(id);
-    const next: Prayer = { ...prayer, lastPrayedAt: at, ...nextMutableFields(prayer, at) };
-    await this.database.prayers.put(next);
-    return next;
+    return this.database.transaction("rw", this.database.prayers, this.database.activityEvents, async () => {
+      const prayer = await this.require(id);
+      if (prayer.status !== "ACTIVE") throw new Error("Only active prayers can be surfaced in focused prayer.");
+      const next: Prayer = { ...prayer, lastPrayedAt: at, ...nextMutableFields(prayer, at) };
+      await this.database.prayers.put(next);
+      await this.activity.record({ type: "PRAYER_PRAYED", subjectType: "prayer", subjectId: id, metadata: {} });
+      return next;
+    });
+  }
+
+  async addUpdate(id: UUID, body: string, type: PrayerUpdateType = "update", at: Instant = nowInstant()): Promise<PrayerUpdate> {
+    const normalized = body.trim();
+    if (!normalized) throw new Error("Prayer update text is required.");
+    return this.database.transaction("rw", this.database.prayers, this.database.prayerUpdates, this.database.activityEvents, async () => {
+      const prayer = await this.require(id);
+      if (prayer.status !== "ACTIVE" && prayer.status !== "WAITING") throw new Error("Answered or archived prayers cannot receive new updates.");
+      const update: PrayerUpdate = { ...newMutableFields(at), prayerId: id, type, body: normalized, occurredAt: at };
+      await this.database.prayerUpdates.add(update);
+      await this.database.prayers.put({ ...prayer, ...nextMutableFields(prayer, at) });
+      await this.activity.record({
+        type: type === "encouragement" ? "ENCOURAGEMENT_RECORDED" : "PRAYER_UPDATED",
+        subjectType: "prayerUpdate",
+        subjectId: update.id,
+        metadata: { prayerId: id },
+      });
+      return update;
+    });
+  }
+
+  async listUpdates(id: UUID): Promise<PrayerUpdate[]> {
+    const items = await this.database.prayerUpdates.where("prayerId").equals(id).filter((item) => item.deletedAt === null).toArray();
+    return items.sort((a, b) => a.occurredAt.localeCompare(b.occurredAt));
+  }
+
+  async getResolution(id: UUID): Promise<PrayerResolution | undefined> {
+    const item = await this.database.prayerResolutions.where("prayerId").equals(id).first();
+    return item && item.deletedAt === null ? item : undefined;
   }
 
   async answer(id: UUID, reflectionMd: string | null = null, at: Instant = nowInstant()): Promise<{ prayer: Prayer; resolution: PrayerResolution }> {
-    return this.database.transaction("rw", this.database.prayers, this.database.prayerResolutions, async () => {
+    return this.database.transaction("rw", this.database.prayers, this.database.prayerResolutions, this.database.activityEvents, async () => {
       const prayer = await this.require(id);
       assertPrayerTransition(prayer.status, "ANSWERED");
-
       const existingResolution = await this.database.prayerResolutions.where("prayerId").equals(id).first();
       if (existingResolution && !existingResolution.deletedAt) throw new Error(`Prayer already has a resolution: ${id}`);
-
-      const nextPrayer: Prayer = {
-        ...prayer,
-        status: "ANSWERED",
-        updatedAt: at,
-        revision: prayer.revision + 1,
-      };
-      const resolution: PrayerResolution = {
+      const nextPrayer: Prayer = { ...prayer, status: "ANSWERED", updatedAt: at, revision: prayer.revision + 1 };
+      const baseResolution: PrayerResolution = {
         ...newMutableFields(at),
         prayerId: id,
         answeredAt: at,
-        reflectionMd,
+        reflectionMd: reflectionMd?.trim() ? reflectionMd.trim() : null,
       };
-
+      const resolution = existingResolution
+        ? { ...baseResolution, id: existingResolution.id, createdAt: existingResolution.createdAt, revision: existingResolution.revision + 1 }
+        : baseResolution;
       await this.database.prayers.put(nextPrayer);
-      if (existingResolution) {
-        await this.database.prayerResolutions.put({ ...resolution, id: existingResolution.id, createdAt: existingResolution.createdAt, revision: existingResolution.revision + 1 });
-      } else {
-        await this.database.prayerResolutions.add(resolution);
-      }
-      return { prayer: nextPrayer, resolution: existingResolution ? { ...resolution, id: existingResolution.id, createdAt: existingResolution.createdAt, revision: existingResolution.revision + 1 } : resolution };
+      await this.database.prayerResolutions.put(resolution);
+      await this.activity.record({ type: "PRAYER_ANSWERED", subjectType: "prayer", subjectId: id, metadata: { resolutionId: resolution.id } });
+      return { prayer: nextPrayer, resolution };
+    });
+  }
+
+  async listScriptureLinks(id: UUID): Promise<ScriptureLink[]> {
+    return this.database.scriptureLinks.where("[ownerType+ownerId]").equals(["prayer", id]).filter((item) => item.deletedAt === null).sortBy("createdAt");
+  }
+
+  async attachScripture(id: UUID, reference: ScriptureReference): Promise<ScriptureLink> {
+    await this.require(id);
+    const items = await this.database.scriptureLinks.where("[ownerType+ownerId]").equals(["prayer", id]).toArray();
+    const existing = items.find((item) => sameReference(item, reference));
+    if (existing) {
+      if (existing.deletedAt === null) return existing;
+      const restored: ScriptureLink = { ...existing, ...nextMutableFields(existing), deletedAt: null };
+      await this.database.scriptureLinks.put(restored);
+      return restored;
+    }
+    const link: ScriptureLink = { ...newMutableFields(), ownerType: "prayer", ownerId: id, ...reference };
+    await this.database.scriptureLinks.add(link);
+    return link;
+  }
+
+  async removePrayer(id: UUID): Promise<void> {
+    await this.database.transaction("rw", this.database.prayers, this.database.prayerUpdates, this.database.prayerResolutions, this.database.scriptureLinks, async () => {
+      const prayer = await this.require(id);
+      const at = nowInstant();
+      await this.database.prayers.put({ ...prayer, deletedAt: at, updatedAt: at, revision: prayer.revision + 1 });
+      const updates = await this.database.prayerUpdates.where("prayerId").equals(id).filter((item) => item.deletedAt === null).toArray();
+      for (const update of updates) await this.database.prayerUpdates.put({ ...update, deletedAt: at, updatedAt: at, revision: update.revision + 1 });
+      const resolution = await this.database.prayerResolutions.where("prayerId").equals(id).first();
+      if (resolution && resolution.deletedAt === null) await this.database.prayerResolutions.put({ ...resolution, deletedAt: at, updatedAt: at, revision: resolution.revision + 1 });
+      const links = await this.listScriptureLinks(id);
+      for (const link of links) await this.database.scriptureLinks.put({ ...link, deletedAt: at, updatedAt: at, revision: link.revision + 1 });
     });
   }
 }
