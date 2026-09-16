@@ -1,49 +1,69 @@
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
+import { Icon, type IconName } from "./visual/Icon";
+import { BrandMark } from "./visual/BrandMark";
+import { ThemeSwitcher } from "./visual/ThemeSwitcher";
+import { BibleVisual, HistoryVisual, PrayerVisual, TodayVisual } from "./visual/VisualScreens";
 
-const sections = [
-  ["Today", "/today"],
-  ["Bible", "/bible"],
-  ["Prayer", "/prayer"],
-  ["History", "/history"],
-] as const;
+const sections: Array<{ label: string; to: string; icon: IconName }> = [
+  { label: "Today", to: "/today", icon: "today" },
+  { label: "Bible", to: "/bible", icon: "bible" },
+  { label: "Prayer", to: "/prayer", icon: "prayer" },
+  { label: "History", to: "/history", icon: "history" },
+];
 
-function FoundationScreen({ title }: { title: string }) {
+function PrimaryNavigation({ mobile = false }: { mobile?: boolean }) {
   return (
-    <main className="foundation-screen">
-      <p className="eyebrow">Phase 1 foundation</p>
-      <h1>{title}</h1>
-      <p>
-        The local-first data layer is active. Product UI is intentionally deferred
-        to the dedicated design and feature phases.
-      </p>
-    </main>
+    <nav className={mobile ? "mobile-nav" : "side-nav"} aria-label="Primary">
+      {sections.map(({ label, to, icon }) => (
+        <NavLink key={to} to={to} className="nav-link">
+          <Icon name={icon} aria-hidden="true" />
+          <span>{label}</span>
+        </NavLink>
+      ))}
+    </nav>
   );
 }
 
 export function App() {
   return (
     <div className="app-shell">
-      <header className="foundation-header">
-        <strong>My Daily Devotion</strong>
-        <span>Local-first foundation</span>
-      </header>
+      <aside className="side-rail">
+        <NavLink className="brand" to="/today" aria-label="My Daily Devotion home">
+          <BrandMark className="brand-mark" />
+          <span className="brand-copy">
+            <strong>My Daily Devotion</strong>
+            <small>Scripture · Prayer · Memory</small>
+          </span>
+        </NavLink>
 
-      <nav className="foundation-nav" aria-label="Primary">
-        {sections.map(([label, to]) => (
-          <NavLink key={to} to={to}>
-            {label}
-          </NavLink>
-        ))}
-      </nav>
+        <PrimaryNavigation />
 
-      <Routes>
-        <Route path="/" element={<Navigate to="/today" replace />} />
-        <Route path="/today" element={<FoundationScreen title="Today" />} />
-        <Route path="/bible" element={<FoundationScreen title="Bible" />} />
-        <Route path="/prayer" element={<FoundationScreen title="Prayer" />} />
-        <Route path="/history" element={<FoundationScreen title="History" />} />
-        <Route path="*" element={<Navigate to="/today" replace />} />
-      </Routes>
+        <div className="rail-note">
+          <span className="rail-rule" aria-hidden="true" />
+          <p>Read Scripture. Respond where it matters. Pray intentionally.</p>
+        </div>
+      </aside>
+
+      <div className="workspace">
+        <header className="utility-bar">
+          <div>
+            <span className="phase-label">Visual system</span>
+            <span className="phase-value">Phase 2</span>
+          </div>
+          <ThemeSwitcher />
+        </header>
+
+        <Routes>
+          <Route path="/" element={<Navigate to="/today" replace />} />
+          <Route path="/today" element={<TodayVisual />} />
+          <Route path="/bible" element={<BibleVisual />} />
+          <Route path="/prayer" element={<PrayerVisual />} />
+          <Route path="/history" element={<HistoryVisual />} />
+          <Route path="*" element={<Navigate to="/today" replace />} />
+        </Routes>
+      </div>
+
+      <PrimaryNavigation mobile />
     </div>
   );
 }

@@ -8,12 +8,13 @@ MDD is intentionally not a social network, content feed, habit game, or general-
 
 ## Current status
 
-**Phase 1 — Local Foundation & Data Integrity**
+**Phase 2 — Dedicated Visual Design**
 
-The executable local-first foundation is now in place: React/TypeScript/Vite, Dexie/IndexedDB schema v1, typed domain records, migrations, UUID/revision/tombstone semantics, repositories, meaningful activity history, integrity auditing, checksum-verified backup/restore primitives, routing, automated tests, and CI.
+The project now has a canonical visual system: quiet editorial reading-journal direction, authored light/dark themes, desktop rail + mobile bottom navigation, Scripture-reader typography, prayer/history visual motifs, reusable CSS design tokens, and a restrained brand mark. Phase 2 changes presentation only; Phase 1 local data behavior remains intact.
 
 - Phase 0 contract: [`docs/PHASE_0_IMPLEMENTATION_CONTRACT.md`](docs/PHASE_0_IMPLEMENTATION_CONTRACT.md)
 - Phase 1 foundation: [`docs/PHASE_1_LOCAL_FOUNDATION.md`](docs/PHASE_1_LOCAL_FOUNDATION.md)
+- Phase 2 visual design: [`docs/PHASE_2_VISUAL_DESIGN.md`](docs/PHASE_2_VISUAL_DESIGN.md)
 
 ## Local development
 
@@ -25,7 +26,7 @@ npm run dev
 ## Verification
 
 ```bash
-npm run verify:phase1
+npm run verify:phase2
 ```
 
-The Phase 1 gate re-runs the frozen Phase 0 contract verifier, TypeScript checks, persistence tests, and the production build.
+The Phase 2 gate re-runs all Phase 0 and Phase 1 checks, then validates the visual-system contract and design guardrails.

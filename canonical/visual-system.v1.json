@@ -1,0 +1,70 @@
+{
+  "version": 1,
+  "name": "MDD Quiet Editorial",
+  "character": "quiet-editorial-reading-journal",
+  "principles": [
+    "typography-before-decoration",
+    "page-like-not-dashboard-like",
+    "whitespace-as-structure",
+    "cards-only-for-true-card-objects",
+    "no-gamification-visual-language",
+    "restrained-Christian-identity",
+    "reader-first-hierarchy",
+    "dark-mode-is-equally-authored"
+  ],
+  "typography": {
+    "uiStrategy": "local-system-stack",
+    "editorialStrategy": "local-serif-stack",
+    "remoteFontDependency": false,
+    "uiStack": "Segoe UI Variable, Aptos, Segoe UI, system-ui",
+    "editorialStack": "Palatino Linotype, Book Antiqua, Palatino, Georgia, ui-serif"
+  },
+  "palette": {
+    "light": {
+      "canvas": "#f4f0e6",
+      "surface": "#f9f6ef",
+      "ink": "#23241f",
+      "muted": "#66685f",
+      "line": "#d5cec0",
+      "accent": "#3e6657",
+      "accentStrong": "#284b3f",
+      "answer": "#8c6841"
+    },
+    "dark": {
+      "canvas": "#181a17",
+      "surface": "#1f211d",
+      "ink": "#f0ede4",
+      "muted": "#b3b3a8",
+      "line": "#373a33",
+      "accent": "#8fb6a4",
+      "accentStrong": "#bad2c7",
+      "answer": "#d1ad80"
+    }
+  },
+  "shape": {
+    "radii": "small-and-deliberate",
+    "shadowDefault": "none",
+    "primarySeparation": "rules-whitespace-typography"
+  },
+  "navigation": {
+    "desktop": "left-rail",
+    "mobile": "fixed-bottom-navigation",
+    "primaryItems": ["Today", "Bible", "Prayer", "History"]
+  },
+  "motion": {
+    "functionalOnly": true,
+    "durationRangeMs": [140, 220],
+    "reducedMotionRequired": true
+  },
+  "forbiddenPatterns": [
+    "decorative-gradients",
+    "glow-effects",
+    "card-grid-dashboard",
+    "card-within-card",
+    "floating-glass-panels",
+    "oversized-pill-controls-everywhere",
+    "purple-saas-accent",
+    "stock-Christian-backgrounds",
+    "streak-or-achievement-visuals"
+  ]
+}

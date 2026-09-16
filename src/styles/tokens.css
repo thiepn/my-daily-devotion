@@ -1,0 +1,85 @@
+:root {
+  color-scheme: light;
+  --font-ui: "Segoe UI Variable", "Aptos", "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-editorial: "Palatino Linotype", "Book Antiqua", Palatino, Georgia, ui-serif, serif;
+
+  --color-canvas: #f4f0e6;
+  --color-surface: #f9f6ef;
+  --color-surface-subtle: #eee8dc;
+  --color-ink: #23241f;
+  --color-ink-soft: #66685f;
+  --color-ink-faint: #8a897f;
+  --color-line: #d5cec0;
+  --color-line-strong: #bbb3a4;
+  --color-accent: #3e6657;
+  --color-accent-strong: #284b3f;
+  --color-accent-soft: #dfe8e1;
+  --color-answer: #8c6841;
+  --color-answer-soft: #eee2d2;
+  --color-focus-ring: #2e6350;
+
+  --space-1: .25rem;
+  --space-2: .5rem;
+  --space-3: .75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-20: 5rem;
+
+  --radius-small: 6px;
+  --radius-medium: 12px;
+  --radius-large: 18px;
+
+  --rail-width: 236px;
+  --content-max: 1120px;
+  --reading-max: 690px;
+  --mobile-nav-height: 68px;
+  --transition-fast: 140ms ease;
+  --transition-medium: 220ms ease;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    color-scheme: dark;
+    --color-canvas: #181a17;
+    --color-surface: #1f211d;
+    --color-surface-subtle: #272923;
+    --color-ink: #f0ede4;
+    --color-ink-soft: #b3b3a8;
+    --color-ink-faint: #8d8e84;
+    --color-line: #373a33;
+    --color-line-strong: #4a4e45;
+    --color-accent: #8fb6a4;
+    --color-accent-strong: #bad2c7;
+    --color-accent-soft: #273a32;
+    --color-answer: #d1ad80;
+    --color-answer-soft: #3b3025;
+    --color-focus-ring: #9ac5b1;
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-canvas: #181a17;
+  --color-surface: #1f211d;
+  --color-surface-subtle: #272923;
+  --color-ink: #f0ede4;
+  --color-ink-soft: #b3b3a8;
+  --color-ink-faint: #8d8e84;
+  --color-line: #373a33;
+  --color-line-strong: #4a4e45;
+  --color-accent: #8fb6a4;
+  --color-accent-strong: #bad2c7;
+  --color-accent-soft: #273a32;
+  --color-answer: #d1ad80;
+  --color-answer-soft: #3b3025;
+  --color-focus-ring: #9ac5b1;
+}

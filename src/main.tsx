@@ -3,7 +3,10 @@ import { createRoot } from "react-dom/client";
 import { HashRouter } from "react-router-dom";
 import { App } from "./app/App";
 import { prepareDatabase } from "./data/database";
-import "./styles/foundation.css";
+import "./styles/tokens.css";
+import "./styles/base.css";
+import "./styles/shell.css";
+import "./styles/screens.css";
 
 const rootElement = document.getElementById("root");
 
@@ -27,6 +30,7 @@ async function start(): Promise<void> {
     const message = error instanceof Error ? error.message : "Unknown startup error";
     root.render(
       <main className="startup-error" role="alert">
+        <p className="eyebrow">Local data error</p>
         <h1>My Daily Devotion could not open its local data.</h1>
         <p>{message}</p>
         <p>Your existing browser data has not been intentionally cleared.</p>

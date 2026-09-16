@@ -1,0 +1,247 @@
+.app-shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: var(--rail-width) minmax(0, 1fr);
+}
+
+.side-rail {
+  position: sticky;
+  top: 0;
+  align-self: start;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 28px 22px 26px;
+  border-right: 1px solid var(--color-line);
+  background: color-mix(in srgb, var(--color-surface) 78%, var(--color-canvas));
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-ink);
+  text-decoration: none;
+}
+
+.brand-mark {
+  width: 35px;
+  height: 35px;
+  color: var(--color-ink);
+}
+
+.brand-copy {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+}
+
+.brand-copy strong {
+  font-family: var(--font-editorial);
+  font-size: .98rem;
+  font-weight: 700;
+  letter-spacing: -.015em;
+  white-space: nowrap;
+}
+
+.brand-copy small {
+  color: var(--color-ink-faint);
+  font-size: .63rem;
+  letter-spacing: .045em;
+  white-space: nowrap;
+}
+
+.side-nav {
+  display: grid;
+  gap: 4px;
+  margin-top: 48px;
+}
+
+.nav-link {
+  min-height: 46px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  padding: 0 11px;
+  border-left: 2px solid transparent;
+  color: var(--color-ink-soft);
+  text-decoration: none;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.nav-link .icon {
+  width: 19px;
+  height: 19px;
+}
+
+.nav-link:hover {
+  color: var(--color-ink);
+  background: color-mix(in srgb, var(--color-surface-subtle) 62%, transparent);
+}
+
+.nav-link.active {
+  color: var(--color-ink);
+  border-left-color: var(--color-accent);
+}
+
+.rail-note {
+  margin-top: auto;
+  color: var(--color-ink-faint);
+  font-family: var(--font-editorial);
+  font-size: .83rem;
+  line-height: 1.55;
+}
+
+.rail-note p {
+  margin-bottom: 0;
+}
+
+.rail-rule {
+  display: block;
+  width: 26px;
+  height: 1px;
+  margin-bottom: 14px;
+  background: var(--color-line-strong);
+}
+
+.workspace {
+  min-width: 0;
+}
+
+.utility-bar {
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px clamp(24px, 4vw, 56px);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.utility-bar > div:first-child {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.phase-value {
+  color: var(--color-ink-soft);
+  font-size: .78rem;
+}
+
+.theme-switcher {
+  display: flex;
+  padding: 3px;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface);
+}
+
+.theme-option {
+  min-width: 34px;
+  min-height: 32px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--color-ink-faint);
+  cursor: pointer;
+}
+
+.theme-option .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.theme-option span {
+  font-size: .72rem;
+}
+
+.theme-option[aria-pressed="true"] {
+  background: var(--color-surface-subtle);
+  color: var(--color-ink);
+}
+
+.mobile-nav {
+  display: none;
+}
+
+.startup-error {
+  width: min(100% - 40px, 720px);
+  margin: 0 auto;
+  padding: 96px 0;
+}
+
+.startup-error h1 {
+  font-family: var(--font-editorial);
+  font-size: clamp(2.2rem, 7vw, 4.5rem);
+  line-height: 1.02;
+  letter-spacing: -.035em;
+}
+
+.startup-error p {
+  max-width: 58ch;
+  color: var(--color-ink-soft);
+}
+
+@media (max-width: 860px) {
+  .app-shell {
+    display: block;
+    padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
+  }
+
+  .side-rail {
+    display: none;
+  }
+
+  .utility-bar {
+    min-height: 62px;
+    padding-inline: 20px;
+  }
+
+  .theme-option span {
+    display: none;
+  }
+
+  .theme-option {
+    min-width: 32px;
+    padding-inline: 8px;
+  }
+
+  .mobile-nav {
+    position: fixed;
+    z-index: 20;
+    inset: auto 0 0;
+    height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 6px 8px env(safe-area-inset-bottom);
+    border-top: 1px solid var(--color-line);
+    background: color-mix(in srgb, var(--color-surface) 95%, transparent);
+    backdrop-filter: blur(16px);
+  }
+
+  .mobile-nav .nav-link {
+    min-height: 54px;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    padding: 0;
+    border: 0;
+    font-size: .67rem;
+  }
+
+  .mobile-nav .nav-link.active {
+    color: var(--color-accent-strong);
+    background: transparent;
+  }
+
+  .mobile-nav .nav-link .icon {
+    width: 21px;
+    height: 21px;
+  }
+}
