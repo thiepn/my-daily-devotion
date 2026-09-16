@@ -8,6 +8,7 @@ import "./styles/base.css";
 import "./styles/shell.css";
 import "./styles/screens.css";
 import "./styles/scripture.css";
+import "./styles/phase4.css";
 
 const rootElement = document.getElementById("root");
 
