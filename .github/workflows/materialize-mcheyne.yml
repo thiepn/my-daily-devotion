@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - "scripts/generate-mcheyne.mjs"
+      - "scripts/build-bsb.mjs"
       - "canonical/mcheyne/source-manifest.json"
       - ".github/workflows/materialize-mcheyne.yml"
 
