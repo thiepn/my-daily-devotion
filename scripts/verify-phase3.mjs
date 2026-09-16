@@ -67,7 +67,7 @@ assert.equal(sample.chapterCount, 1);
 assert.equal(sample.chapters[0].blocks[0].kind, "superscription");
 assert.equal(sample.chapters[0].blocks[0].segments.at(-1).verseKey, "PSA.1.1");
 assert.equal(sample.chapters[0].blocks[1].segments[0].verseKey, "PSA.1.2");
-assert.equal(sample.chapters[0].blocks[1].segments[1].redLetter, true);
+assert.equal(sample.chapters[0].blocks[1].segments[0].redLetter, true);
 assert.equal(sample.chapters[0].verseCount, 2);
 
 console.log("✓ Phase 3 Scripture-platform verification passed");
