@@ -3,12 +3,14 @@ import { readFile } from "node:fs/promises";
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
-const [visualRaw, tokens, base, shell, screens, app, main] = await Promise.all([
+const [visualRaw, tokens, base, shell, screens, scripture, phase4, app, main] = await Promise.all([
   read("canonical/visual-system.v1.json"),
   read("src/styles/tokens.css"),
   read("src/styles/base.css"),
   read("src/styles/shell.css"),
   read("src/styles/screens.css"),
+  read("src/styles/scripture.css"),
+  read("src/styles/phase4.css"),
   read("src/app/App.tsx"),
   read("src/main.tsx"),
 ]);
@@ -20,7 +22,7 @@ assert.equal(visual.typography.remoteFontDependency, false);
 assert.deepEqual(visual.navigation.primaryItems, ["Today", "Bible", "Prayer", "History"]);
 assert.ok(visual.forbiddenPatterns.includes("decorative-gradients"));
 
-const css = [tokens, base, shell, screens].join("\n");
+const css = [tokens, base, shell, screens, scripture, phase4].join("\n");
 assert.match(tokens, /prefers-color-scheme:\s*dark/);
 assert.match(tokens, /data-theme="dark"/);
 assert.match(tokens, /data-theme="light"/);
@@ -35,7 +37,7 @@ for (const label of ["Today", "Bible", "Prayer", "History"]) {
   assert.match(app, new RegExp(`label: \\"${label}\\"`));
 }
 
-for (const importPath of ["tokens.css", "base.css", "shell.css", "screens.css"]) {
+for (const importPath of ["tokens.css", "base.css", "shell.css", "screens.css", "scripture.css", "phase4.css"]) {
   assert.ok(main.includes(importPath), `main.tsx must import ${importPath}`);
 }
 assert.ok(!main.includes("foundation.css"), "legacy foundation.css must not be imported");
