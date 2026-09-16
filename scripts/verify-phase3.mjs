@@ -24,9 +24,9 @@ assert.equal(source.source.deterministicMirror.asset, "BSB_usj.zip");
 assert.match(source.source.deterministicMirror.sha256, /^[a-f0-9]{64}$/);
 assert.equal(manifest.translationId, "BSB");
 assert.equal(manifest.books.length, 66);
-assert.ok(manifest.totalVerses >= 30000);
+assert.ok(manifest.totalVerses >= 31000);
 assert.equal(manifest.source.sha256, source.source.deterministicMirror.sha256);
-assert.equal(manifest.parserVersion, "mdd-usj-normalizer/1");
+assert.equal(manifest.parserVersion, "mdd-usj-normalizer/2");
 
 for (const book of manifest.books) {
   assert.ok(book.chapterCount > 0, `${book.id} must have chapters`);
@@ -49,29 +49,28 @@ const sample = normalizeUsjBook({
   type: "USJ",
   version: "3.1",
   content: [
-    { type: "book", marker: "id", code: "MRK", content: [] },
-    { type: "chapter", marker: "c", number: "1", sid: "MRK 1" },
-    { type: "para", marker: "s1", content: ["A heading"] },
-    { type: "para", marker: "p", content: [
-      { type: "verse", marker: "v", number: "1", sid: "MRK 1:1" },
-      "Beginning ",
-      { type: "char", marker: "wj", content: ["red words"] },
+    { type: "book", marker: "id", code: "PSA", content: [] },
+    { type: "chapter", marker: "c", number: "1", sid: "PSA 1" },
+    { type: "para", marker: "d", content: [
+      "A superscription ",
+      { type: "verse", marker: "v", number: "1", sid: "PSA 1:1" },
+      "Blessed text",
     ] },
     { type: "para", marker: "q1", content: [
-      { type: "verse", marker: "v", number: "2", sid: "MRK 1:2" },
-      "A poetic line",
+      { type: "verse", marker: "v", number: "2", sid: "PSA 1:2" },
+      { type: "char", marker: "wj", content: ["A poetic line"] },
     ] },
   ],
-}, { order: 41, id: "MRK", name: "Mark", testament: "NT" });
+}, { order: 19, id: "PSA", name: "Psalms", testament: "OT" });
 
 assert.equal(sample.chapterCount, 1);
-assert.equal(sample.chapters[0].blocks[0].kind, "heading");
-assert.equal(sample.chapters[0].blocks[1].segments[0].verseKey, "MRK.1.1");
+assert.equal(sample.chapters[0].blocks[0].kind, "superscription");
+assert.equal(sample.chapters[0].blocks[0].segments.at(-1).verseKey, "PSA.1.1");
+assert.equal(sample.chapters[0].blocks[1].segments[0].verseKey, "PSA.1.2");
 assert.equal(sample.chapters[0].blocks[1].segments[1].redLetter, true);
-assert.equal(sample.chapters[0].blocks[2].kind, "poetry");
 assert.equal(sample.chapters[0].verseCount, 2);
 
 console.log("✓ Phase 3 Scripture-platform verification passed");
 console.log(`  ${manifest.books.length} normalized BSB books · ${manifest.totalVerses} verse identities`);
-console.log("  semantic paragraphs, headings, poetry and red-letter spans preserved");
+console.log("  semantic paragraphs, headings, poetry, superscriptions and red-letter spans preserved");
 console.log("  reader position, highlight and bookmark persistence wired to Dexie");
