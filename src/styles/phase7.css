@@ -1,0 +1,42 @@
+.prayer-details-toggle { margin: 18px 0 4px; min-height: 36px; padding: 0; border: 0; background: transparent; color: var(--color-accent-strong); cursor: pointer; font-size: .78rem; font-weight: 600; }
+.prayer-administration-fields { display: grid; gap: 18px; margin: 20px 0 8px; padding: 22px 0; border-top: 1px solid var(--color-line); border-bottom: 1px solid var(--color-line); }
+.prayer-administration-fields label { display: grid; gap: 7px; color: var(--color-ink-soft); font-size: .74rem; }
+.prayer-administration-fields label > span { color: var(--color-ink); font-weight: 600; }
+.prayer-administration-fields label small, .field-help { color: var(--color-ink-faint); font-size: .68rem; font-weight: 400; }
+.prayer-administration-fields input, .prayer-administration-fields select { min-height: 42px; padding: 8px 10px; border: 1px solid var(--color-line); border-radius: var(--radius-small); color: var(--color-ink); background: var(--color-surface); }
+.prayer-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.weekday-picker { display: flex; flex-wrap: wrap; gap: 7px; }
+.weekday-picker label { display: block; }
+.weekday-picker input { position: absolute; opacity: 0; pointer-events: none; }
+.weekday-picker span { min-width: 46px; min-height: 38px; display: grid; place-items: center; border: 1px solid var(--color-line); border-radius: var(--radius-small); cursor: pointer; font-size: .7rem; }
+.weekday-picker input:checked + span { border-color: var(--color-accent); color: var(--color-accent-strong); background: var(--color-accent-soft); }
+.field-help { margin: -6px 0 0; line-height: 1.55; }
+.metadata-manage-links, .prayer-management-links { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; }
+.metadata-manage-links a, .prayer-management-links a { color: var(--color-ink-faint); font-size: .7rem; }
+.prayer-settings-panel { max-width: 720px; border-top: 1px solid var(--color-line-strong); padding-top: 8px; }
+.prayer-settings-actions { display: flex; align-items: center; gap: 16px; margin-top: 22px; }
+.prayer-settings-actions a { color: var(--color-ink-soft); font-size: .75rem; }
+.metadata-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, .6fr); gap: clamp(42px, 7vw, 84px); }
+.metadata-list, .metadata-editor { border-top: 1px solid var(--color-line-strong); padding-top: 20px; }
+.metadata-row { min-height: 70px; display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--color-line); }
+.metadata-row > div:first-child { display: grid; gap: 3px; }
+.metadata-row strong { font-family: var(--font-editorial); font-size: 1rem; }
+.metadata-row span { color: var(--color-ink-faint); font-size: .7rem; }
+.metadata-row > div:last-child { display: flex; gap: 10px; }
+.metadata-row button, .metadata-editor button { min-height: 34px; padding: 0 9px; border: 1px solid var(--color-line); border-radius: var(--radius-small); color: var(--color-ink-soft); background: transparent; cursor: pointer; font-size: .68rem; }
+.metadata-editor { display: grid; align-content: start; gap: 14px; }
+.metadata-editor label { display: grid; gap: 6px; font-size: .72rem; }
+.metadata-editor label span { font-weight: 600; }
+.metadata-editor input, .metadata-editor textarea { width: 100%; padding: 9px 10px; border: 1px solid var(--color-line); border-radius: var(--radius-small); color: var(--color-ink); background: var(--color-surface); }
+.metadata-editor textarea { min-height: 100px; resize: vertical; }
+.metadata-editor > div { display: flex; gap: 8px; }
+.session-resume-note, .session-depth-note { display: block; margin: 8px 0 0; color: var(--color-ink-faint); font-size: .7rem; line-height: 1.5; }
+.end-session-button { justify-self: end; padding: 0; border: 0; background: transparent; color: var(--color-ink-faint); cursor: pointer; font-size: .7rem; }
+.focused-person { margin: 0; color: var(--color-ink-faint); font-size: .72rem; letter-spacing: .04em; }
+.prayer-admin-section .section-heading-line { margin-bottom: 12px; }
+.prayer-admin-section .section-heading-line a { color: var(--color-accent-strong); font-size: .7rem; }
+.prayer-admin-list { margin: 0 0 22px; }
+.prayer-admin-list > div { display: grid; grid-template-columns: 88px 1fr; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--color-line); font-size: .72rem; }
+.prayer-admin-list dt { color: var(--color-ink-faint); }
+.prayer-admin-list dd { margin: 0; color: var(--color-ink-soft); overflow-wrap: anywhere; }
+@media (max-width: 760px) { .prayer-field-grid, .metadata-layout { grid-template-columns: 1fr; } .metadata-row { align-items: start; padding: 14px 0; } }

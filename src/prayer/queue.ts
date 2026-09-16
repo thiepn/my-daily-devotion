@@ -1,5 +1,6 @@
 import type { MddDatabase } from "../data/database";
-import type { LocalDate, Prayer, PrayerSchedule, UUID } from "../domain/types";
+import { currentTimeZone, localDateInTimeZone } from "../domain/time";
+import type { LocalDate, Prayer, PrayerSchedule, TimeZoneId, UUID } from "../domain/types";
 import { eventQueueReason, isFocusActive, isScheduleDue } from "./scheduling";
 
 export type PrayerQueueBand = "FOCUS_OR_EVENT" | "FIXED_DUE" | "NEVER_PRAYED" | "ROTATION";
@@ -29,10 +30,19 @@ function priorityReason(prayer: Prayer, localDate: LocalDate): string | null {
   return null;
 }
 
+function prayedOnDate(prayer: Prayer, localDate: LocalDate, timeZone: TimeZoneId): boolean {
+  return prayer.lastPrayedAt !== null && localDateInTimeZone(prayer.lastPrayedAt, timeZone) === localDate;
+}
+
 export class PrayerQueueService {
   constructor(private readonly database: MddDatabase) {}
 
-  async build(localDate: LocalDate, target: number, excludedPrayerIds: ReadonlySet<UUID> = new Set()): Promise<PrayerQueueEntry[]> {
+  async build(
+    localDate: LocalDate,
+    target: number,
+    excludedPrayerIds: ReadonlySet<UUID> = new Set(),
+    timeZone: TimeZoneId = currentTimeZone(),
+  ): Promise<PrayerQueueEntry[]> {
     const [prayers, schedules] = await Promise.all([
       this.database.prayers.where("status").equals("ACTIVE").filter((item) => item.deletedAt === null).toArray(),
       this.database.prayerSchedules.filter((item) => item.deletedAt === null).toArray(),
@@ -57,7 +67,7 @@ export class PrayerQueueService {
     automatic
       .filter((prayer) => {
         const schedule = scheduled(prayer);
-        return schedule !== null && schedule.mode !== "ROTATION" && isScheduleDue(schedule, localDate);
+        return schedule !== null && schedule.mode !== "ROTATION" && isScheduleDue(schedule, localDate) && !prayedOnDate(prayer, localDate, timeZone);
       })
       .sort(stablePrayerSort)
       .forEach((prayer) => push(prayer, "FIXED_DUE", `schedule:${scheduled(prayer)!.mode}`));

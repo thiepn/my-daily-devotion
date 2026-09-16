@@ -1,67 +1,29 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Icon } from "../app/visual/Icon";
 import { db } from "../data/database";
+import { PRAYER_DEPTH_TARGETS, PrayerSessionRepository, type PrayerDepth, type PrayerSessionState } from "../data/repositories/prayer-sessions";
 import { PrayerRepository } from "../data/repositories/prayers";
-import type { Prayer, PrayerUpdate, ScriptureLink } from "../domain/types";
+import { todayLocalDate } from "../domain/time";
+import type { Person, PrayerUpdate, ScriptureLink } from "../domain/types";
 import { loadBibleManifest } from "../scripture/loader";
 import type { BibleManifest } from "../scripture/types";
 import { prayerBibleHref, prayerReferenceLabel } from "./references";
 
-const repository = new PrayerRepository(db);
-const depthCounts = { quick: 4, regular: 10, extended: 20 } as const;
-type Depth = keyof typeof depthCounts;
-
+const sessions = new PrayerSessionRepository(db); const prayers = new PrayerRepository(db);
 export function PrayerSessionScreen() {
-  const [params] = useSearchParams();
-  const requested = params.get("depth") as Depth | null;
-  const depth: Depth = requested && requested in depthCounts ? requested : "quick";
-  const [queue, setQueue] = useState<Prayer[]>([]);
-  const [index, setIndex] = useState(0);
-  const [updates, setUpdates] = useState<PrayerUpdate[]>([]);
-  const [links, setLinks] = useState<ScriptureLink[]>([]);
-  const [manifest, setManifest] = useState<BibleManifest | null>(null);
-  const [answerOpen, setAnswerOpen] = useState(false);
-  const [answerBody, setAnswerBody] = useState("");
-  const [loading, setLoading] = useState(true);
-  const current = queue[index] ?? null;
-
-  useEffect(() => {
-    let cancelled = false;
-    Promise.all([repository.rotationQueue(depthCounts[depth]), loadBibleManifest()]).then(([nextQueue, nextManifest]) => {
-      if (!cancelled) { setQueue(nextQueue); setManifest(nextManifest); setIndex(0); setLoading(false); }
-    });
-    return () => { cancelled = true; };
-  }, [depth]);
-
-  useEffect(() => {
-    let cancelled = false;
-    if (!current) { setUpdates([]); setLinks([]); return () => { cancelled = true; }; }
-    Promise.all([repository.listUpdates(current.id), repository.listScriptureLinks(current.id)]).then(([nextUpdates, nextLinks]) => {
-      if (!cancelled) { setUpdates(nextUpdates); setLinks(nextLinks); setAnswerOpen(false); setAnswerBody(""); }
-    });
-    return () => { cancelled = true; };
-  }, [current]);
-
+  const navigate = useNavigate(); const [params] = useSearchParams(); const requested = params.get("depth") as PrayerDepth | null; const depth: PrayerDepth = requested && requested in PRAYER_DEPTH_TARGETS ? requested : "quick"; const [state, setState] = useState<PrayerSessionState | null>(null); const [updates, setUpdates] = useState<PrayerUpdate[]>([]); const [links, setLinks] = useState<ScriptureLink[]>([]); const [person, setPerson] = useState<Person | null>(null); const [manifest, setManifest] = useState<BibleManifest | null>(null); const [answerOpen, setAnswerOpen] = useState(false); const [answerBody, setAnswerBody] = useState(""); const [loading, setLoading] = useState(true); const [status, setStatus] = useState("");
+  const refresh = useCallback(async (sessionId: string) => setState(await sessions.loadState(sessionId)), []);
+  useEffect(() => { let cancelled = false; Promise.all([sessions.startOrResume(depth, todayLocalDate()), loadBibleManifest()]).then(([nextState, nextManifest]) => { if (!cancelled) { setState(nextState); setManifest(nextManifest); setLoading(false); } }).catch((reason: unknown) => { if (!cancelled) { setStatus(reason instanceof Error ? reason.message : "Could not start prayer session."); setLoading(false); } }); return () => { cancelled = true; }; }, [depth]);
+  const currentEntry = state?.entries.find((entry) => entry.item.outcome === null && entry.prayer?.status === "ACTIVE") ?? null; const current = currentEntry?.prayer ?? null; const actedCount = state?.entries.filter((entry) => entry.item.outcome !== null).length ?? 0;
+  useEffect(() => { let cancelled = false; if (!current) { setUpdates([]); setLinks([]); setPerson(null); return () => { cancelled = true; }; } Promise.all([prayers.listUpdates(current.id), prayers.listScriptureLinks(current.id), current.personId ? db.people.get(current.personId) : Promise.resolve(undefined)]).then(([nextUpdates, nextLinks, nextPerson]) => { if (!cancelled) { setUpdates(nextUpdates); setLinks(nextLinks); setPerson(nextPerson && !nextPerson.deletedAt ? nextPerson : null); setAnswerOpen(false); setAnswerBody(""); } }); return () => { cancelled = true; }; }, [current]);
   const latestUpdate = useMemo(() => updates.at(-1) ?? null, [updates]);
-  const advance = async (prayed: boolean) => { if (!current) return; if (prayed) await repository.markPrayed(current.id); setIndex((value) => value + 1); };
-  const answer = async () => { if (!current) return; await repository.answer(current.id, answerBody); setIndex((value) => value + 1); };
-
+  const act = async (action: "next" | "skip") => { if (!state || !currentEntry) return; try { if (action === "next") await sessions.next(state.session.id, currentEntry.item.id); else await sessions.skip(state.session.id, currentEntry.item.id); await refresh(state.session.id); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not update prayer session."); } };
+  const answer = async () => { if (!state || !currentEntry) return; try { await sessions.answer(state.session.id, currentEntry.item.id, answerBody); await refresh(state.session.id); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not mark prayer answered."); } };
+  const end = async () => { if (!state) return; await sessions.endSession(state.session.id); navigate("/prayer", { replace: true }); };
   if (loading) return <main className="visual-screen focused-prayer-screen"><p className="eyebrow">Focused prayer</p><p>Preparing a quiet session…</p></main>;
-  if (queue.length === 0) return <main className="visual-screen focused-prayer-screen"><p className="eyebrow">Focused prayer</p><h1>No active prayers</h1><p className="screen-intro">Add a request first. Waiting, answered and archived prayers are not surfaced here.</p><Link className="future-text-link" to="/prayer/new">Add prayer →</Link></main>;
-  if (!current) return <main className="visual-screen focused-prayer-screen"><p className="eyebrow">Focused prayer</p><h1>Session finished.</h1><p className="screen-intro">There is nothing to score or complete. Return whenever you want to pray again.</p><Link className="future-text-link" to="/prayer">Return to Prayer →</Link></main>;
-
-  return (
-    <main className="visual-screen focused-prayer-screen">
-      <header className="focused-prayer-header"><Link to="/prayer">Exit</Link><span>{index + 1} / {queue.length}</span><span>{depth}</span></header>
-      <article className="focused-prayer-card">
-        <p className="section-kicker">Prayer</p><h1>{current.body}</h1>
-        {latestUpdate ? <div className={latestUpdate.type === "encouragement" ? "focused-latest is-encouragement" : "focused-latest"}><span>Latest {latestUpdate.type}</span><p>{latestUpdate.body}</p></div> : null}
-        {links.length ? <div className="focused-scripture">{links.map((link) => <Link key={link.id} to={prayerBibleHref(link)}>{prayerReferenceLabel(link, manifest)}</Link>)}</div> : null}
-        {answerOpen ? <div className="focused-answer-form"><label htmlFor="focused-answer">What happened? <span>optional</span></label><textarea id="focused-answer" value={answerBody} onChange={(event) => setAnswerBody(event.target.value)} /><div><button type="button" onClick={() => void answer()}>Mark answered</button><button type="button" onClick={() => setAnswerOpen(false)}>Cancel</button></div></div> : null}
-        <div className="focused-prayer-secondary"><Link to={`/prayer/${current.id}`}>Update / details</Link><button type="button" onClick={() => setAnswerOpen(true)}>Answered</button><button type="button" onClick={() => void advance(false)}>Skip</button></div>
-        <button className="focused-next-button" type="button" onClick={() => void advance(true)}>Next <Icon name="arrow" /></button>
-      </article>
-    </main>
-  );
+  if (status && !state) return <main className="visual-screen focused-prayer-screen"><p className="eyebrow">Focused prayer</p><h1>Session unavailable</h1><p role="alert">{status}</p><Link to="/prayer">Return to Prayer</Link></main>;
+  if (!state) return <main className="visual-screen focused-prayer-screen"><p className="eyebrow">Focused prayer</p><h1>No prayers to surface</h1><p className="screen-intro">There are no active requests eligible for an automatic session today. Manual-only requests remain in your Prayer list.</p><Link className="future-text-link" to="/prayer">Return to Prayer →</Link></main>;
+  if (!current) return <main className="visual-screen focused-prayer-screen"><p className="eyebrow">Focused prayer</p><h1>Session finished.</h1><p className="screen-intro">The session is closed without a score, streak, or prayer-completion statistic.</p><Link className="future-text-link" to="/prayer">Return to Prayer →</Link></main>;
+  return <main className="visual-screen focused-prayer-screen"><header className="focused-prayer-header"><Link to="/prayer">Exit & resume later</Link><span>{actedCount + 1} / {state.entries.length}</span><button type="button" className="end-session-button" onClick={() => void end()}>End session</button></header><article className="focused-prayer-card">{person ? <p className="focused-person">{person.name}{person.relationship ? ` · ${person.relationship}` : ""}</p> : <p className="section-kicker">Prayer</p>}<h1>{current.body}</h1>{latestUpdate ? <div className={latestUpdate.type === "encouragement" ? "focused-latest is-encouragement" : "focused-latest"}><span>Latest {latestUpdate.type}</span><p>{latestUpdate.body}</p></div> : null}{links.length ? <div className="focused-scripture">{links.map((link) => <Link key={link.id} to={prayerBibleHref(link)}>{prayerReferenceLabel(link, manifest)}</Link>)}</div> : null}{answerOpen ? <div className="focused-answer-form"><label htmlFor="focused-answer">What happened? <span>optional</span></label><textarea id="focused-answer" value={answerBody} onChange={(event) => setAnswerBody(event.target.value)} /><div><button type="button" onClick={() => void answer()}>Mark answered</button><button type="button" onClick={() => setAnswerOpen(false)}>Cancel</button></div></div> : null}<div className="focused-prayer-secondary"><Link to={`/prayer/${current.id}`}>Update / details</Link><button type="button" onClick={() => setAnswerOpen(true)}>Answered</button><button type="button" onClick={() => void act("skip")}>Skip</button></div><button className="focused-next-button" type="button" onClick={() => void act("next")}>Next <Icon name="arrow" /></button><p className="reader-status" aria-live="polite">{status}</p></article></main>;
 }

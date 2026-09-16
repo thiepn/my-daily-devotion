@@ -2,84 +2,17 @@ import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { db } from "../data/database";
 import { PrayerRepository } from "../data/repositories/prayers";
-import type { Prayer, PrayerResolution, PrayerUpdate, PrayerUpdateType, ScriptureLink } from "../domain/types";
+import type { Category, Person, Prayer, PrayerResolution, PrayerSchedule, PrayerUpdate, PrayerUpdateType, ScriptureLink } from "../domain/types";
 import { loadBibleManifest } from "../scripture/loader";
 import type { BibleManifest } from "../scripture/types";
 import { prayerBibleHref, prayerReferenceLabel } from "./references";
+import { scheduleLabel } from "./scheduling";
 
 const repository = new PrayerRepository(db);
-
 export function PrayerDetailScreen() {
-  const { prayerId = "" } = useParams();
-  const navigate = useNavigate();
-  const [prayer, setPrayer] = useState<Prayer | null>(null);
-  const [updates, setUpdates] = useState<PrayerUpdate[]>([]);
-  const [links, setLinks] = useState<ScriptureLink[]>([]);
-  const [resolution, setResolution] = useState<PrayerResolution | null>(null);
-  const [manifest, setManifest] = useState<BibleManifest | null>(null);
-  const [body, setBody] = useState("");
-  const [updateBody, setUpdateBody] = useState("");
-  const [updateType, setUpdateType] = useState<PrayerUpdateType>("update");
-  const [answerBody, setAnswerBody] = useState("");
-  const [answerOpen, setAnswerOpen] = useState(false);
-  const [status, setStatus] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  const refresh = useCallback(async () => {
-    const item = await repository.get(prayerId);
-    if (!item) { setPrayer(null); setLoading(false); return; }
-    const [nextUpdates, nextLinks, nextResolution, nextManifest] = await Promise.all([
-      repository.listUpdates(item.id), repository.listScriptureLinks(item.id), repository.getResolution(item.id), loadBibleManifest(),
-    ]);
-    setPrayer(item); setBody(item.body); setUpdates(nextUpdates); setLinks(nextLinks); setResolution(nextResolution ?? null); setManifest(nextManifest); setLoading(false);
-  }, [prayerId]);
-  useEffect(() => { void refresh(); }, [refresh]);
-
-  if (loading) return <main className="visual-screen prayer-detail-screen"><p className="eyebrow">Prayer</p><p>Opening prayer…</p></main>;
-  if (!prayer) return <main className="visual-screen prayer-detail-screen"><p className="eyebrow">Prayer</p><h1>Prayer unavailable</h1><Link to="/prayer">Return to Prayer</Link></main>;
-
-  const saveBody = async () => { try { await repository.updateBody(prayer.id, body); setStatus("Prayer saved locally."); await refresh(); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not save prayer."); } };
-  const changeStatus = async (next: "ACTIVE" | "WAITING" | "ARCHIVED") => { await repository.transition(prayer.id, next); await refresh(); };
-  const addUpdate = async () => { try { await repository.addUpdate(prayer.id, updateBody, updateType); setUpdateBody(""); setStatus(updateType === "encouragement" ? "Encouragement recorded." : "Update recorded."); await refresh(); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not add update."); } };
-  const answer = async () => { try { await repository.answer(prayer.id, answerBody); setAnswerOpen(false); setAnswerBody(""); setStatus("Prayer marked answered."); await refresh(); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not mark prayer answered."); } };
-  const markPrayed = async () => { try { await repository.markPrayed(prayer.id); setStatus("Prayed now recorded."); await refresh(); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not record prayer."); } };
-  const remove = async () => { await repository.removePrayer(prayer.id); navigate("/prayer", { replace: true }); };
-  const editable = prayer.status === "ACTIVE" || prayer.status === "WAITING";
-
-  return (
-    <main className="visual-screen prayer-detail-screen">
-      <header className="screen-heading compact-heading prayer-detail-heading"><p className="eyebrow">Prayer · {prayer.status.toLowerCase()}</p><h1>Prayer</h1><Link className="quiet-back-link" to="/prayer">← Prayer list</Link></header>
-      <div className="prayer-detail-layout">
-        <section className="prayer-detail-main">
-          <label htmlFor="prayer-edit-body" className="section-kicker">Request</label>
-          <textarea id="prayer-edit-body" className="prayer-detail-body" value={body} disabled={!editable} onChange={(event) => setBody(event.target.value)} />
-          {editable && body.trim() !== prayer.body ? <button className="quiet-button" type="button" onClick={() => void saveBody()}>Save wording</button> : null}
-
-          <div className="prayer-lifecycle-actions">
-            {prayer.status === "ACTIVE" ? <><button type="button" onClick={() => void markPrayed()}>Prayed now</button><button type="button" onClick={() => void changeStatus("WAITING")}>Move to waiting</button></> : null}
-            {prayer.status === "WAITING" ? <button type="button" onClick={() => void changeStatus("ACTIVE")}>Return to active</button> : null}
-            {(prayer.status === "ACTIVE" || prayer.status === "WAITING") ? <button type="button" onClick={() => setAnswerOpen((value) => !value)}>Answered</button> : null}
-            {prayer.status !== "ARCHIVED" ? <button type="button" onClick={() => void changeStatus("ARCHIVED")}>Archive</button> : null}
-          </div>
-
-          {answerOpen ? <div className="prayer-answer-form"><label htmlFor="answer-reflection">What happened? <span>optional</span></label><textarea id="answer-reflection" value={answerBody} onChange={(event) => setAnswerBody(event.target.value)} placeholder="Record the answer or what you want to remember." /><button type="button" onClick={() => void answer()}>Mark answered</button></div> : null}
-
-          {resolution ? <section className="answered-prayer-note"><p className="section-kicker">Answered</p><h2>{new Intl.DateTimeFormat(undefined, { dateStyle: "long" }).format(new Date(resolution.answeredAt))}</h2>{resolution.reflectionMd ? <p>{resolution.reflectionMd}</p> : <p className="muted-copy">No answer reflection was added.</p>}</section> : null}
-
-          <section className="prayer-timeline-section">
-            <div className="section-heading-line compact"><div><p className="section-kicker">History</p><h2>Updates & encouragements</h2></div><span className="quiet-count">{updates.length}</span></div>
-            {updates.length ? <div className="prayer-update-list">{updates.map((item) => <article key={item.id} className={item.type === "encouragement" ? "is-encouragement" : ""}><span>{item.type === "encouragement" ? "Encouragement" : "Update"} · {new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(item.occurredAt))}</span><p>{item.body}</p></article>)}</div> : <p className="muted-copy">No updates yet. The original request stays unchanged as its story develops.</p>}
-            {editable ? <div className="prayer-update-form"><div className="update-type-toggle"><button type="button" className={updateType === "update" ? "is-active" : ""} onClick={() => setUpdateType("update")}>Update</button><button type="button" className={updateType === "encouragement" ? "is-active" : ""} onClick={() => setUpdateType("encouragement")}>Encouragement</button></div><textarea value={updateBody} onChange={(event) => setUpdateBody(event.target.value)} placeholder={updateType === "encouragement" ? "Record a sign of grace or progress without calling the prayer answered." : "What changed?"} /><button type="button" disabled={!updateBody.trim()} onClick={() => void addUpdate()}>Add {updateType}</button></div> : null}
-          </section>
-          <p className="prayer-form-status" aria-live="polite">{status}</p>
-        </section>
-
-        <aside className="prayer-detail-context">
-          <section><p className="section-kicker">Origin</p>{prayer.sourceReflectionId && prayer.sourceDevotionDate ? <Link to={`/today/reflection/${prayer.sourceDevotionDate}`}>Reflection · {prayer.sourceDevotionDate}</Link> : <p className="muted-copy">Captured directly.</p>}</section>
-          <section><p className="section-kicker">Scripture</p>{links.length ? <div className="prayer-scripture-list">{links.map((link) => <Link key={link.id} to={prayerBibleHref(link)}>{prayerReferenceLabel(link, manifest)}</Link>)}</div> : <p className="muted-copy">No Scripture is attached.</p>}</section>
-          <section className="prayer-admin-section"><p className="section-kicker">Administrative</p><p>{prayer.lastPrayedAt ? `Last prayed ${new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(prayer.lastPrayedAt))}` : "Not yet prayed in MDD"}</p><button className="danger-quiet" type="button" onClick={() => void remove()}>Remove prayer</button></section>
-        </aside>
-      </div>
-    </main>
-  );
+  const { prayerId = "" } = useParams(); const navigate = useNavigate(); const [prayer, setPrayer] = useState<Prayer | null>(null); const [updates, setUpdates] = useState<PrayerUpdate[]>([]); const [links, setLinks] = useState<ScriptureLink[]>([]); const [resolution, setResolution] = useState<PrayerResolution | null>(null); const [manifest, setManifest] = useState<BibleManifest | null>(null); const [person, setPerson] = useState<Person | null>(null); const [category, setCategory] = useState<Category | null>(null); const [schedule, setSchedule] = useState<PrayerSchedule | null>(null); const [body, setBody] = useState(""); const [updateBody, setUpdateBody] = useState(""); const [updateType, setUpdateType] = useState<PrayerUpdateType>("update"); const [answerBody, setAnswerBody] = useState(""); const [answerOpen, setAnswerOpen] = useState(false); const [status, setStatus] = useState(""); const [loading, setLoading] = useState(true);
+  const refresh = useCallback(async () => { const item = await repository.get(prayerId); if (!item) { setPrayer(null); setLoading(false); return; } const [nextUpdates, nextLinks, nextResolution, nextManifest, nextPerson, nextCategory, nextSchedule] = await Promise.all([repository.listUpdates(item.id), repository.listScriptureLinks(item.id), repository.getResolution(item.id), loadBibleManifest(), item.personId ? db.people.get(item.personId) : Promise.resolve(undefined), item.categoryId ? db.categories.get(item.categoryId) : Promise.resolve(undefined), repository.getScheduleForPrayer(item.id)]); setPrayer(item); setBody(item.body); setUpdates(nextUpdates); setLinks(nextLinks); setResolution(nextResolution ?? null); setManifest(nextManifest); setPerson(nextPerson && !nextPerson.deletedAt ? nextPerson : null); setCategory(nextCategory && !nextCategory.deletedAt ? nextCategory : null); setSchedule(nextSchedule); setLoading(false); }, [prayerId]); useEffect(() => { void refresh(); }, [refresh]);
+  if (loading) return <main className="visual-screen prayer-detail-screen"><p className="eyebrow">Prayer</p><p>Opening prayer…</p></main>; if (!prayer) return <main className="visual-screen prayer-detail-screen"><p className="eyebrow">Prayer</p><h1>Prayer unavailable</h1><Link to="/prayer">Return to Prayer</Link></main>;
+  const saveBody = async () => { try { await repository.updateBody(prayer.id, body); setStatus("Prayer saved locally."); await refresh(); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not save prayer."); } }; const changeStatus = async (next: "ACTIVE" | "WAITING" | "ARCHIVED") => { await repository.transition(prayer.id, next); await refresh(); }; const addUpdate = async () => { try { await repository.addUpdate(prayer.id, updateBody, updateType); setUpdateBody(""); setStatus(updateType === "encouragement" ? "Encouragement recorded." : "Update recorded."); await refresh(); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not add update."); } }; const answer = async () => { try { await repository.answer(prayer.id, answerBody); setAnswerOpen(false); setAnswerBody(""); setStatus("Prayer marked answered."); await refresh(); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not mark prayer answered."); } }; const markPrayed = async () => { try { await repository.markPrayed(prayer.id); setStatus("Prayed now recorded."); await refresh(); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not record prayer."); } }; const remove = async () => { await repository.removePrayer(prayer.id); navigate("/prayer", { replace: true }); }; const editable = prayer.status === "ACTIVE" || prayer.status === "WAITING";
+  return <main className="visual-screen prayer-detail-screen"><header className="screen-heading compact-heading prayer-detail-heading"><p className="eyebrow">Prayer · {prayer.status.toLowerCase()}</p><h1>Prayer</h1><Link className="quiet-back-link" to="/prayer">← Prayer list</Link></header><div className="prayer-detail-layout"><section className="prayer-detail-main"><label htmlFor="prayer-edit-body" className="section-kicker">Request</label><textarea id="prayer-edit-body" className="prayer-detail-body" value={body} disabled={!editable} onChange={(event) => setBody(event.target.value)} />{editable && body.trim() !== prayer.body ? <button className="quiet-button" type="button" onClick={() => void saveBody()}>Save wording</button> : null}<div className="prayer-lifecycle-actions">{prayer.status === "ACTIVE" ? <><button type="button" onClick={() => void markPrayed()}>Prayed now</button><button type="button" onClick={() => void changeStatus("WAITING")}>Move to waiting</button></> : null}{prayer.status === "WAITING" ? <button type="button" onClick={() => void changeStatus("ACTIVE")}>Return to active</button> : null}{(prayer.status === "ACTIVE" || prayer.status === "WAITING") ? <button type="button" onClick={() => setAnswerOpen((value) => !value)}>Answered</button> : null}{prayer.status !== "ARCHIVED" ? <button type="button" onClick={() => void changeStatus("ARCHIVED")}>Archive</button> : null}</div>{answerOpen ? <div className="prayer-answer-form"><label htmlFor="answer-reflection">What happened? <span>optional</span></label><textarea id="answer-reflection" value={answerBody} onChange={(event) => setAnswerBody(event.target.value)} placeholder="Record the answer or what you want to remember." /><button type="button" onClick={() => void answer()}>Mark answered</button></div> : null}{resolution ? <section className="answered-prayer-note"><p className="section-kicker">Answered</p><h2>{new Intl.DateTimeFormat(undefined, { dateStyle: "long" }).format(new Date(resolution.answeredAt))}</h2>{resolution.reflectionMd ? <p>{resolution.reflectionMd}</p> : <p className="muted-copy">No answer reflection was added.</p>}</section> : null}<section className="prayer-timeline-section"><div className="section-heading-line compact"><div><p className="section-kicker">History</p><h2>Updates & encouragements</h2></div><span className="quiet-count">{updates.length}</span></div>{updates.length ? <div className="prayer-update-list">{updates.map((item) => <article key={item.id} className={item.type === "encouragement" ? "is-encouragement" : ""}><span>{item.type === "encouragement" ? "Encouragement" : "Update"} · {new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(item.occurredAt))}</span><p>{item.body}</p></article>)}</div> : <p className="muted-copy">No updates yet. The original request stays unchanged as its story develops.</p>}{editable ? <div className="prayer-update-form"><div className="update-type-toggle"><button type="button" className={updateType === "update" ? "is-active" : ""} onClick={() => setUpdateType("update")}>Update</button><button type="button" className={updateType === "encouragement" ? "is-active" : ""} onClick={() => setUpdateType("encouragement")}>Encouragement</button></div><textarea value={updateBody} onChange={(event) => setUpdateBody(event.target.value)} placeholder={updateType === "encouragement" ? "Record a sign of grace or progress without calling the prayer answered." : "What changed?"} /><button type="button" disabled={!updateBody.trim()} onClick={() => void addUpdate()}>Add {updateType}</button></div> : null}</section><p className="prayer-form-status" aria-live="polite">{status}</p></section><aside className="prayer-detail-context"><section><p className="section-kicker">Origin</p>{prayer.sourceReflectionId && prayer.sourceDevotionDate ? <Link to={`/today/reflection/${prayer.sourceDevotionDate}`}>Reflection · {prayer.sourceDevotionDate}</Link> : <p className="muted-copy">Captured directly.</p>}</section><section><p className="section-kicker">Scripture</p>{links.length ? <div className="prayer-scripture-list">{links.map((link) => <Link key={link.id} to={prayerBibleHref(link)}>{prayerReferenceLabel(link, manifest)}</Link>)}</div> : <p className="muted-copy">No Scripture is attached.</p>}</section><section className="prayer-admin-section"><div className="section-heading-line compact"><p className="section-kicker">Prayer details</p>{editable ? <Link to={`/prayer/${prayer.id}/settings`}>Edit</Link> : null}</div><dl className="prayer-admin-list"><div><dt>Person</dt><dd>{person?.name ?? "—"}</dd></div><div><dt>Category</dt><dd>{category?.name ?? "—"}</dd></div><div><dt>Schedule</dt><dd>{scheduleLabel(schedule)}</dd></div><div><dt>Event</dt><dd>{prayer.eventDate ?? "—"}</dd></div><div><dt>Focus until</dt><dd>{prayer.focusUntil ?? "—"}</dd></div><div><dt>Last prayed</dt><dd>{prayer.lastPrayedAt ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(prayer.lastPrayedAt)) : "Not yet in MDD"}</dd></div></dl><button className="danger-quiet" type="button" onClick={() => void remove()}>Remove prayer</button></section></aside></div></main>;
 }

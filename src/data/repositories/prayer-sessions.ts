@@ -26,32 +26,28 @@ export class PrayerSessionRepository {
   }
 
   async startOrResume(depth: PrayerDepth, localDate: LocalDate = todayLocalDate(), at: Instant = nowInstant()): Promise<PrayerSessionState | null> {
-    const open = await this.getOpenSession();
-    if (open?.localDate === localDate) return this.loadState(open.id);
-    if (open) await this.endSession(open.id, at);
+    return this.database.transaction(
+      "rw",
+      [this.database.prayerSessions, this.database.prayerSessionItems, this.database.prayers, this.database.prayerSchedules],
+      async () => {
+        const open = await this.getOpenSession();
+        if (open?.localDate === localDate) return this.loadStateInternal(open.id, true);
+        if (open) await this.endSession(open.id, at);
 
-    const queue = await this.queue.build(localDate, PRAYER_DEPTH_TARGETS[depth]);
-    if (!queue.length) return null;
-    const session: PrayerSession = { ...newMutableFields(at), localDate, startedAt: at, endedAt: null, depth };
-    const items: PrayerSessionItem[] = queue.map((entry, position) => ({
-      ...newMutableFields(at),
-      sessionId: session.id,
-      prayerId: entry.prayer.id,
-      position,
-      surfacedAt: at,
-      outcome: null,
-      actedAt: null,
-    }));
-    await this.database.transaction("rw", this.database.prayerSessions, this.database.prayerSessionItems, async () => {
-      await this.database.prayerSessions.add(session);
-      await this.database.prayerSessionItems.bulkAdd(items);
-    });
-    return this.loadState(session.id);
+        const queue = await this.queue.build(localDate, PRAYER_DEPTH_TARGETS[depth]);
+        if (!queue.length) return null;
+        const session: PrayerSession = { ...newMutableFields(at), localDate, startedAt: at, endedAt: null, depth };
+        const items: PrayerSessionItem[] = queue.map((entry, position) => ({
+          ...newMutableFields(at), sessionId: session.id, prayerId: entry.prayer.id, position, surfacedAt: at, outcome: null, actedAt: null,
+        }));
+        await this.database.prayerSessions.add(session);
+        await this.database.prayerSessionItems.bulkAdd(items);
+        return this.loadStateInternal(session.id, false);
+      },
+    );
   }
 
-  async loadState(sessionId: UUID): Promise<PrayerSessionState> {
-    return this.loadStateInternal(sessionId, true);
-  }
+  async loadState(sessionId: UUID): Promise<PrayerSessionState> { return this.loadStateInternal(sessionId, true); }
 
   private async loadStateInternal(sessionId: UUID, reconcile: boolean): Promise<PrayerSessionState> {
     const session = await this.database.prayerSessions.get(sessionId);
@@ -69,13 +65,11 @@ export class PrayerSessionRepository {
     }
     if (reconcile && toReconcile.length) {
       const at = nowInstant();
-      await this.database.transaction("rw", this.database.prayerSessionItems, this.database.prayerSessions, async () => {
-        for (const change of toReconcile) await this.database.prayerSessionItems.put({ ...change.item, outcome: change.outcome, actedAt: at, updatedAt: at, revision: change.item.revision + 1 });
-        await this.finishIfDone(session, at);
-      });
+      for (const change of toReconcile) await this.database.prayerSessionItems.put({ ...change.item, outcome: change.outcome, actedAt: at, updatedAt: at, revision: change.item.revision + 1 });
+      await this.finishIfDone(session, at);
       return this.loadStateInternal(sessionId, false);
     }
-    return { session, entries };
+    return { session: (await this.database.prayerSessions.get(sessionId)) ?? session, entries };
   }
 
   async next(sessionId: UUID, itemId: UUID, at: Instant = nowInstant()): Promise<void> {
@@ -87,8 +81,7 @@ export class PrayerSessionRepository {
       await this.database.prayers.put({ ...prayer, lastPrayedAt: at, updatedAt: at, revision: prayer.revision + 1 });
       await this.database.prayerSessionItems.put({ ...item, outcome: "NEXT", actedAt: at, updatedAt: at, revision: item.revision + 1 });
       const event: ActivityEvent = {
-        id: createId(), type: "PRAYER_PRAYED", localDate: session.localDate, occurredAt: at, timeZone: currentTimeZone(),
-        subjectType: "prayer", subjectId: prayer.id, metadata: { sessionId },
+        id: createId(), type: "PRAYER_PRAYED", localDate: session.localDate, occurredAt: at, timeZone: currentTimeZone(), subjectType: "prayer", subjectId: prayer.id, metadata: { sessionId },
       };
       await this.database.activityEvents.add(event);
       await this.finishIfDone(session, at);

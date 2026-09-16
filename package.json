@@ -1,6 +1,6 @@
 {
   "name": "my-daily-devotion",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "type": "module",
   "description": "My Daily Devotion — private, local-first Scripture, reflection, prayer, and devotional history.",
@@ -18,23 +18,10 @@
     "verify:phase3": "npm run verify:phase2 && node scripts/verify-phase3.mjs",
     "verify:phase4": "npm run verify:phase3 && node scripts/verify-phase4.mjs",
     "verify:phase5": "npm run verify:phase4 && node scripts/verify-phase5.mjs",
-    "verify:phase6": "npm run verify:phase5 && node scripts/verify-phase6.mjs"
+    "verify:phase6": "npm run verify:phase5 && node scripts/verify-phase6.mjs",
+    "verify:phase7": "npm run verify:phase6 && node scripts/verify-phase7.mjs"
   },
-  "dependencies": {
-    "dexie": "4.4.6",
-    "react": "19.3.0",
-    "react-dom": "19.3.0",
-    "react-router-dom": "7.18.3"
-  },
-  "devDependencies": {
-    "@types/react": "19.3.0",
-    "@types/react-dom": "19.3.0",
-    "@vitejs/plugin-react": "6.1.1",
-    "fake-indexeddb": "6.2.5",
-    "fflate": "0.8.3",
-    "typescript": "7.0.2",
-    "vite": "8.3.0",
-    "vitest": "5.0.1"
-  },
+  "dependencies": { "dexie": "4.4.6", "react": "19.3.0", "react-dom": "19.3.0", "react-router-dom": "7.18.3" },
+  "devDependencies": { "@types/react": "19.3.0", "@types/react-dom": "19.3.0", "@vitejs/plugin-react": "6.1.1", "fake-indexeddb": "6.2.5", "fflate": "0.8.3", "typescript": "7.0.2", "vite": "8.3.0", "vitest": "5.0.1" },
   "engines": { "node": ">=22.12" }
 }

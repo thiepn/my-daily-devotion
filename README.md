@@ -8,9 +8,9 @@ MDD is intentionally not a social network, content feed, habit game, or general-
 
 ## Current status
 
-**Phase 6 — Prayer Core**
+**Phase 7 — Prayer Scheduling, Queue & Focused Session**
 
-MDD now has the complete offline BSB Scripture platform, canonical M’Cheyne Today workflow, optional dated reflection and Scripture capture, plus a real prayer core: Quick Add, lifecycle states, append-only updates/encouragements, answered-prayer resolution, Scripture/reflection provenance, and basic least-recently-prayed focused prayer. Scheduling, events, people/categories and the durable session engine remain Phase 7.
+MDD now includes the full offline BSB reader, canonical M’Cheyne Today workflow, optional dated reflections and Verse Notes, plus a durable prayer system with People/categories, recurrence, event dates, temporary Focus, deterministic four-band queueing, and resumable persisted prayer sessions. Missed prayer recurrence never creates overdue debt, and there are no streaks, priority scores, XP, or prayer-minute goals.
 
 - Phase 0 contract: [`docs/PHASE_0_IMPLEMENTATION_CONTRACT.md`](docs/PHASE_0_IMPLEMENTATION_CONTRACT.md)
 - Phase 1 foundation: [`docs/PHASE_1_LOCAL_FOUNDATION.md`](docs/PHASE_1_LOCAL_FOUNDATION.md)
@@ -19,6 +19,7 @@ MDD now has the complete offline BSB Scripture platform, canonical M’Cheyne To
 - Phase 4 M’Cheyne & Today: [`docs/PHASE_4_MCHEYNE_TODAY.md`](docs/PHASE_4_MCHEYNE_TODAY.md)
 - Phase 5 Reflection & Scripture Capture: [`docs/PHASE_5_REFLECTION_SCRIPTURE_CAPTURE.md`](docs/PHASE_5_REFLECTION_SCRIPTURE_CAPTURE.md)
 - Phase 6 Prayer Core: [`docs/PHASE_6_PRAYER_CORE.md`](docs/PHASE_6_PRAYER_CORE.md)
+- Phase 7 Prayer Scheduling, Queue & Focused Session: [`docs/PHASE_7_PRAYER_SCHEDULING_QUEUE_SESSION.md`](docs/PHASE_7_PRAYER_SCHEDULING_QUEUE_SESSION.md)
 
 ## Local development
 
@@ -27,12 +28,12 @@ npm install
 npm run dev
 ```
 
-The first run generates pinned BSB and M’Cheyne runtime assets; later runs reuse valid generated assets.
+The build generates pinned BSB and M’Cheyne runtime assets from their canonical sources.
 
 ## Verification
 
 ```bash
-npm run verify:phase6
+npm run verify:phase7
 ```
 
-The Phase 6 gate re-runs every earlier contract, persistence, build, visual-system, Scripture, M’Cheyne and reflection check, then certifies Prayer Core behavior.
+The Phase 7 gate re-runs every earlier contract, persistence, build, visual, Scripture, M’Cheyne, reflection and prayer-core check before certifying scheduling, deterministic queueing and durable session behavior.
