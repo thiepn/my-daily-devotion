@@ -33,8 +33,11 @@ export async function auditDatabase(database: MddDatabase): Promise<IntegrityRep
     if (prayer.personId) { const person = await database.people.get(prayer.personId); if (!person || person.deletedAt) issues.push({ code: "ORPHAN_PRAYER_PERSON", message: `Prayer ${prayer.id} points to a missing person.`, recordId: prayer.id }); }
     if (prayer.categoryId) { const category = await database.categories.get(prayer.categoryId); if (!category || category.deletedAt) issues.push({ code: "ORPHAN_PRAYER_CATEGORY", message: `Prayer ${prayer.id} points to a missing category.`, recordId: prayer.id }); }
     if (prayer.scheduleId) { const schedule = await database.prayerSchedules.get(prayer.scheduleId); if (!schedule || schedule.deletedAt) issues.push({ code: "ORPHAN_PRAYER_SCHEDULE", message: `Prayer ${prayer.id} points to a missing schedule.`, recordId: prayer.id }); }
-    if (prayer.sourceReflectionId) { const reflection = await database.reflections.get(prayer.sourceReflectionId); if (!reflection || reflection.deletedAt) issues.push({ code: "ORPHAN_PRAYER_SOURCE_REFLECTION", message: `Prayer ${prayer.id} points to a missing source reflection.`, recordId: prayer.id }); }
+    if (prayer.sourceReflectionId) { const reflection = await database.reflections.get(prayer.sourceReflectionId); if (!reflection) issues.push({ code: "MISSING_PRAYER_SOURCE_REFLECTION", message: `Prayer ${prayer.id} points to a missing source reflection.`, recordId: prayer.id }); }
   }
+
+  const updates = await database.prayerUpdates.filter((item) => item.deletedAt === null).toArray();
+  for (const update of updates) { const prayer = await database.prayers.get(update.prayerId); if (!prayer) issues.push({ code: "ORPHAN_PRAYER_UPDATE", message: `PrayerUpdate ${update.id} has no prayer record.`, recordId: update.id }); }
 
   const links = await database.scriptureLinks.filter((item) => item.deletedAt === null).toArray();
   for (const link of links) {
