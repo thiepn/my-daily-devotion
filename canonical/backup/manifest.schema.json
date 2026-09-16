@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mdd.local/schema/backup-manifest.v1.json",
+  "title": "MDD Backup Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["format", "formatVersion", "appVersion", "schemaVersion", "exportedAt", "files"],
+  "properties": {
+    "format": {"const": "mdd-backup"},
+    "formatVersion": {"const": 1},
+    "appVersion": {"type": "string", "minLength": 1},
+    "schemaVersion": {"type": "integer", "minimum": 1},
+    "exportedAt": {"type": "string", "format": "date-time"},
+    "files": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["path", "sha256", "bytes"],
+        "properties": {
+          "path": {"type": "string", "minLength": 1},
+          "sha256": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+          "bytes": {"type": "integer", "minimum": 0}
+        }
+      }
+    },
+    "encryption": {
+      "oneOf": [
+        {"type": "null"},
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["cipher", "kdf", "salt", "iv"],
+          "properties": {
+            "cipher": {"const": "AES-GCM"},
+            "kdf": {"type": "string", "minLength": 1},
+            "salt": {"type": "string", "minLength": 1},
+            "iv": {"type": "string", "minLength": 1},
+            "kdfParameters": {"type": "object"}
+          }
+        }
+      ]
+    }
+  }
+}
