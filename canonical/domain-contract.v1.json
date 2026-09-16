@@ -1,0 +1,112 @@
+{
+  "contractVersion": 1,
+  "databaseInitialSchemaVersion": 1,
+  "identity": {
+    "persistentId": "uuid",
+    "revision": "monotonic-positive-integer",
+    "deletion": "tombstone-where-future-sync-relevant"
+  },
+  "time": {
+    "localDate": "YYYY-MM-DD",
+    "instant": "UTC-ISO-8601-Z",
+    "timeZone": "IANA",
+    "devotionBoundary": "civil-midnight",
+    "historicalLocalDatesShiftWithTimezone": false,
+    "todayUsesCurrentDeviceLocalDate": true,
+    "recurrenceUsesCurrentLocalDate": true
+  },
+  "scripture": {
+    "verseKeyPattern": "^[1-3]?[A-Z]{2,3}\\.[1-9][0-9]*\\.[1-9][0-9]*$",
+    "referenceStorage": "structural",
+    "translationIndependentVerseIdentity": true,
+    "scriptureLinkOwnerTypes": ["reflection","prayer","prayerUpdate","verseNote"]
+  },
+  "devotionDay": {
+    "precreateEmptyDays": false,
+    "overallCompletionBoolean": false,
+    "spiritualScore": false,
+    "streak": false
+  },
+  "prayer": {
+    "statuses": ["ACTIVE","WAITING","ANSWERED","ARCHIVED"],
+    "allowedTransitions": [
+      ["ACTIVE","WAITING"],
+      ["WAITING","ACTIVE"],
+      ["ACTIVE","ANSWERED"],
+      ["WAITING","ANSWERED"],
+      ["ACTIVE","ARCHIVED"],
+      ["WAITING","ARCHIVED"],
+      ["ANSWERED","ARCHIVED"]
+    ],
+    "updateTypes": ["update","encouragement"],
+    "scheduleModes": ["ROTATION","DAILY","WEEKDAYS","INTERVAL_DAYS","MONTHLY","ON_DATE","MANUAL_ONLY"],
+    "nestedCategories": false,
+    "genericTagsV1": false,
+    "priorityField": false,
+    "focusIsTemporary": true,
+    "missedRecurrenceCreatesDebt": false,
+    "queue": {
+      "eligibleStatus": "ACTIVE",
+      "precedence": ["FOCUS_OR_EVENT","FIXED_DUE","NEVER_PRAYED","ROTATION"],
+      "rotationSort": ["lastPrayedAt:null-first","lastPrayedAt:asc","createdAt:asc","id:asc"],
+      "dedupeAfterEachBand": true,
+      "nextUpdatesLastPrayedAt": true,
+      "skipUpdatesLastPrayedAt": false,
+      "answeredRemovesFromEligibility": true,
+      "defaultDepthTargets": {"quick":4,"regular":10,"extended":20}
+    }
+  },
+  "activityEventTypes": [
+    "READING_COMPLETED",
+    "HIGHLIGHT_CREATED",
+    "REFLECTION_CREATED",
+    "PRAYER_CREATED",
+    "PRAYER_PRAYED",
+    "PRAYER_UPDATED",
+    "ENCOURAGEMENT_RECORDED",
+    "PRAYER_ANSWERED"
+  ],
+  "backup": {
+    "formatId": "mdd-backup",
+    "extension": ".mddbackup",
+    "formatVersion": 1,
+    "requiredEntries": ["manifest.json","data.json"],
+    "attachmentsDirectoryReserved": true,
+    "checksumsRequired": true,
+    "validateBeforeCommit": true,
+    "failedImportMustPreserveExistingDatabase": true,
+    "plainPortableExportRequired": true,
+    "encryptedBackupRequired": true,
+    "authenticatedEncryption": true
+  },
+  "sync": {
+    "v1": false,
+    "localWriteIsPrimary": true,
+    "appendOnlyRecordsUnionById": true,
+    "longFormReflectionConflict": "preserve-conflict-copy",
+    "silentDestructiveOverwrite": false
+  },
+  "explicitNonGoalsV1": [
+    "accounts",
+    "cloud-sync",
+    "push-backend",
+    "native-wrapper",
+    "widgets",
+    "biometric-keystore",
+    "bible-audio",
+    "multiple-translations",
+    "custom-plan-creator",
+    "generic-tags",
+    "ai-generated-prayers",
+    "ai-generated-devotionals",
+    "social-feed",
+    "group-prayer",
+    "streaks",
+    "xp",
+    "badges",
+    "leaderboards",
+    "spiritual-score",
+    "sermon-transcription",
+    "full-srs-memorization"
+  ]
+}
