@@ -38,10 +38,8 @@ function splitReference(input, aliases) {
   const normalized = normalizeAlias(input);
   for (const [alias, bookId] of aliases) {
     if (!normalized.startsWith(`${alias} `)) continue;
-    const originalBookLength = input.toLowerCase().indexOf(alias) === 0 ? alias.length : null;
-    const location = originalBookLength === null
-      ? input.split(/\s+/).slice(alias.split(" ").length).join(" ")
-      : input.slice(originalBookLength).trim();
+    const wordCount = alias.split(" ").length;
+    const location = input.split(/\s+/).slice(wordCount).join(" ").trim();
     return { bookId, location };
   }
   throw new Error(`Unknown M'Cheyne book name in reference: ${input}`);
@@ -73,6 +71,16 @@ function referenceLocation(location) {
   };
 }
 
+function splitLocations(location) {
+  if (!location.includes(",")) return [location];
+  const parts = location.split(",").map((value) => value.trim()).filter(Boolean);
+  if (parts.length < 2) throw new Error(`Invalid segmented M'Cheyne reference: ${location}`);
+  if (!parts.every((part) => /^\d+(?:-\d+)?$/.test(part))) {
+    throw new Error(`Unsupported segmented M'Cheyne reference shape: ${location}`);
+  }
+  return parts;
+}
+
 function chapterVerseNumbers(book, chapterNumber) {
   const chapter = book.chapters.find((item) => item.chapter === chapterNumber);
   if (!chapter) throw new Error(`${book.bookId} has no chapter ${chapterNumber}`);
@@ -94,26 +102,32 @@ async function loadBook(bookId, cache) {
   return book;
 }
 
-async function normalizeReference(input, aliases, canonById, bookCache) {
-  const { bookId, location } = splitReference(input.trim(), aliases);
+async function structuralRange(bookId, location, book) {
   const parsed = referenceLocation(location);
-  const book = await loadBook(bookId, bookCache);
   const startNumbers = chapterVerseNumbers(book, parsed.startChapter);
   const endNumbers = parsed.endChapter === parsed.startChapter ? startNumbers : chapterVerseNumbers(book, parsed.endChapter);
   const startVerse = parsed.startVerse ?? startNumbers[0];
   const endVerse = parsed.endVerse ?? endNumbers.at(-1);
-  if (!startNumbers.includes(startVerse)) throw new Error(`${input}: start verse ${startVerse} does not exist in BSB`);
-  if (!endNumbers.includes(endVerse)) throw new Error(`${input}: end verse ${endVerse} does not exist in BSB`);
+  if (!startNumbers.includes(startVerse)) throw new Error(`${bookId} ${location}: start verse ${startVerse} does not exist in BSB`);
+  if (!endNumbers.includes(endVerse)) throw new Error(`${bookId} ${location}: end verse ${endVerse} does not exist in BSB`);
+  return {
+    translationId: "BSB",
+    startVerseKey: `${bookId}.${parsed.startChapter}.${startVerse}`,
+    endVerseKey: `${bookId}.${parsed.endChapter}.${endVerse}`,
+  };
+}
+
+async function normalizeReference(input, aliases, canonById, bookCache) {
+  const { bookId, location } = splitReference(input.trim(), aliases);
+  const book = await loadBook(bookId, bookCache);
+  const references = [];
+  for (const part of splitLocations(location)) references.push(await structuralRange(bookId, part, book));
 
   const canonicalBook = canonById.get(bookId);
   const displayBook = bookId === "PSA" ? "Psalm" : bookId === "SNG" ? "Song of Songs" : canonicalBook.name;
   return {
     displayReference: `${displayBook} ${location}`,
-    reference: {
-      translationId: "BSB",
-      startVerseKey: `${bookId}.${parsed.startChapter}.${startVerse}`,
-      endVerseKey: `${bookId}.${parsed.endChapter}.${endVerse}`,
-    },
+    references,
   };
 }
 
@@ -177,7 +191,8 @@ export async function generateMcheynePlan() {
   verifyAnchors(plan, sourceManifest);
   await mkdir(join(ROOT, "canonical/mcheyne"), { recursive: true });
   await writeFile(OUTPUT_PATH, `${JSON.stringify(plan, null, 2)}\n`, "utf8");
-  console.log(`✓ Materialized M'Cheyne plan: ${assignments.length} assignments · ${assignments.length * 4} structural readings`);
+  const rangeCount = assignments.reduce((sum, assignment) => sum + assignment.readings.reduce((inner, reading) => inner + reading.references.length, 0), 0);
+  console.log(`✓ Materialized M'Cheyne plan: ${assignments.length} assignments · ${assignments.length * 4} readings · ${rangeCount} structural ranges`);
 }
 
 generateMcheynePlan().catch((error) => {
