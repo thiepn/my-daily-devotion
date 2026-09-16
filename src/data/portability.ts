@@ -1,5 +1,5 @@
 import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
-import { createBackupSnapshot, restoreBackupSnapshot, sha256Hex, type BackupSnapshot } from "./backup";
+import { createBackupSnapshot, restoreBackupSnapshot, sha256Hex, validateBackupSnapshot, type BackupSnapshot } from "./backup";
 import { MddDatabase, prepareDatabase } from "./database";
 import { auditDatabase } from "./integrity";
 import { DATABASE_SCHEMA_VERSION, DOMAIN_CONTRACT_VERSION } from "./schema";
@@ -7,6 +7,8 @@ import { DATABASE_SCHEMA_VERSION, DOMAIN_CONTRACT_VERSION } from "./schema";
 const FORMAT = "mdd-backup" as const;
 const FORMAT_VERSION = 1 as const;
 const PBKDF2_ITERATIONS = 310_000;
+const MIN_PBKDF2_ITERATIONS = 100_000;
+const MAX_PBKDF2_ITERATIONS = 2_000_000;
 
 export interface ArchiveFileEntry { path: string; sha256: string; bytes: number; }
 export interface ArchiveEncryption {
@@ -54,6 +56,7 @@ function toBase64(bytes: Uint8Array): string {
   return btoa(binary);
 }
 function fromBase64(value: string): Uint8Array { const binary = atob(value); const bytes = new Uint8Array(binary.length); for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i); return bytes; }
+function record(value: unknown): value is Record<string, unknown> { return typeof value === "object" && value !== null && !Array.isArray(value); }
 
 async function deriveKey(password: string, salt: Uint8Array, iterations: number): Promise<CryptoKey> {
   const material = await crypto.subtle.importKey("raw", ownedArrayBuffer(new TextEncoder().encode(password)), "PBKDF2", false, ["deriveKey"]);
@@ -69,14 +72,17 @@ async function encryptBytes(plain: Uint8Array, password: string): Promise<{ payl
 
 async function decryptBytes(payload: Uint8Array, password: string, encryption: ArchiveEncryption): Promise<Uint8Array> {
   if (!password) throw new Error("This backup is encrypted. Enter its password.");
-  const envelope = JSON.parse(strFromU8(payload)) as { ciphertext?: string };
-  if (!envelope.ciphertext) throw new Error("Encrypted backup payload is invalid.");
+  let envelope: { ciphertext?: string };
+  try { envelope = JSON.parse(strFromU8(payload)) as { ciphertext?: string }; } catch { throw new Error("Encrypted backup payload is invalid."); }
+  if (typeof envelope.ciphertext !== "string" || !envelope.ciphertext) throw new Error("Encrypted backup payload is invalid.");
+  let cipher: Uint8Array;
+  try { cipher = fromBase64(envelope.ciphertext); } catch { throw new Error("Encrypted backup payload is invalid."); }
   const key = await deriveKey(password, fromBase64(encryption.salt), encryption.kdfParameters.iterations);
   try {
     return new Uint8Array(await crypto.subtle.decrypt(
       { name: "AES-GCM", iv: ownedArrayBuffer(fromBase64(encryption.iv)) },
       key,
-      ownedArrayBuffer(fromBase64(envelope.ciphertext)),
+      ownedArrayBuffer(cipher),
     ));
   } catch {
     throw new Error("Backup password is incorrect or the encrypted data is damaged.");
@@ -84,11 +90,49 @@ async function decryptBytes(payload: Uint8Array, password: string, encryption: A
 }
 
 function validateArchiveManifest(value: unknown): asserts value is BackupArchiveManifest {
-  if (!value || typeof value !== "object") throw new Error("Backup manifest is missing.");
-  const manifest = value as Partial<BackupArchiveManifest>;
-  if (manifest.format !== FORMAT || manifest.formatVersion !== FORMAT_VERSION) throw new Error("Unsupported MDD backup format.");
-  if (typeof manifest.schemaVersion !== "number" || manifest.schemaVersion > DATABASE_SCHEMA_VERSION) throw new Error("Backup uses a newer database schema.");
-  if (!Array.isArray(manifest.files) || !manifest.files.some((item) => item.path === "data.json")) throw new Error("Backup manifest does not describe data.json.");
+  if (!record(value)) throw new Error("Backup manifest is missing.");
+  if (value.format !== FORMAT || value.formatVersion !== FORMAT_VERSION) throw new Error("Unsupported MDD backup format.");
+  if (typeof value.appVersion !== "string" || !value.appVersion.trim()) throw new Error("Backup manifest has an invalid app version.");
+  if (!Number.isInteger(value.schemaVersion) || (value.schemaVersion as number) < 1) throw new Error("Backup manifest has an invalid database schema version.");
+  if ((value.schemaVersion as number) > DATABASE_SCHEMA_VERSION) throw new Error("Backup uses a newer database schema.");
+  if (typeof value.exportedAt !== "string" || !Number.isFinite(Date.parse(value.exportedAt))) throw new Error("Backup manifest has an invalid export timestamp.");
+  if (!Array.isArray(value.files) || value.files.length === 0) throw new Error("Backup manifest does not describe payload files.");
+
+  const paths = new Set<string>();
+  for (const rawEntry of value.files) {
+    if (!record(rawEntry)) throw new Error("Backup manifest contains an invalid file entry.");
+    const path = rawEntry.path;
+    if (typeof path !== "string" || !path || path.startsWith("/") || path.includes("\\") || path.split("/").some((part) => part === "" || part === "." || part === "..")) throw new Error("Backup manifest contains an invalid file path.");
+    if (paths.has(path)) throw new Error(`Backup manifest contains a duplicate file entry: ${path}`);
+    paths.add(path);
+    if (typeof rawEntry.sha256 !== "string" || !/^[a-f0-9]{64}$/.test(rawEntry.sha256)) throw new Error(`Backup manifest has an invalid checksum for ${path}.`);
+    if (!Number.isInteger(rawEntry.bytes) || (rawEntry.bytes as number) < 0) throw new Error(`Backup manifest has an invalid byte count for ${path}.`);
+  }
+  if (!paths.has("data.json")) throw new Error("Backup manifest does not describe data.json.");
+
+  const encryption = value.encryption;
+  if (encryption !== undefined && encryption !== null) {
+    if (!record(encryption) || encryption.cipher !== "AES-GCM" || encryption.kdf !== "PBKDF2-SHA-256") throw new Error("Backup uses unsupported encryption metadata.");
+    if (typeof encryption.salt !== "string" || typeof encryption.iv !== "string" || !record(encryption.kdfParameters)) throw new Error("Backup encryption metadata is incomplete.");
+    const iterations = encryption.kdfParameters.iterations;
+    if (!Number.isInteger(iterations) || (iterations as number) < MIN_PBKDF2_ITERATIONS || (iterations as number) > MAX_PBKDF2_ITERATIONS) throw new Error("Backup uses unsupported PBKDF2 parameters.");
+    let salt: Uint8Array; let iv: Uint8Array;
+    try { salt = fromBase64(encryption.salt); iv = fromBase64(encryption.iv); } catch { throw new Error("Backup encryption metadata is invalid."); }
+    if (salt.byteLength < 16 || salt.byteLength > 64 || iv.byteLength !== 12) throw new Error("Backup encryption metadata is invalid.");
+  }
+}
+
+async function verifyArchiveFiles(files: Record<string, Uint8Array>, manifest: BackupArchiveManifest): Promise<void> {
+  const declared = new Set(manifest.files.map((item) => item.path));
+  for (const entry of manifest.files) {
+    const payload = files[entry.path];
+    if (!payload) throw new Error(`Backup is missing declared payload file: ${entry.path}`);
+    if (entry.bytes !== payload.byteLength || entry.sha256 !== await sha256Bytes(payload)) throw new Error(`Backup archive checksum validation failed for ${entry.path}.`);
+  }
+  for (const path of Object.keys(files)) {
+    if (path === "manifest.json" || path.endsWith("/")) continue;
+    if (!declared.has(path)) throw new Error(`Backup contains an undeclared payload file: ${path}`);
+  }
 }
 
 export async function createMddBackup(database: MddDatabase, appVersion = "0.8.0", password?: string): Promise<Uint8Array> {
@@ -108,16 +152,18 @@ async function readArchive(bytes: Uint8Array, password: string, database: MddDat
   try { files = unzipSync(bytes); } catch { throw new Error("This file is not a valid .mddbackup archive."); }
   const manifestBytes = files["manifest.json"]; const dataBytes = files["data.json"];
   if (!manifestBytes || !dataBytes) throw new Error("Backup must contain manifest.json and data.json.");
-  const manifest = JSON.parse(strFromU8(manifestBytes)) as unknown; validateArchiveManifest(manifest);
-  const dataFile = manifest.files.find((item) => item.path === "data.json")!;
-  if (dataFile.bytes !== dataBytes.byteLength || dataFile.sha256 !== await sha256Bytes(dataBytes)) throw new Error("Backup archive checksum validation failed.");
+  let manifestValue: unknown;
+  try { manifestValue = JSON.parse(strFromU8(manifestBytes)) as unknown; } catch { throw new Error("Backup manifest.json is invalid."); }
+  validateArchiveManifest(manifestValue);
+  const manifest = manifestValue;
+  await verifyArchiveFiles(files, manifest);
   const plain = manifest.encryption ? await decryptBytes(dataBytes, password, manifest.encryption) : dataBytes;
   let data: Record<string, unknown[]>;
   try { data = JSON.parse(strFromU8(plain)) as Record<string, unknown[]>; } catch { throw new Error("Backup data.json is invalid."); }
   const snapshot: BackupSnapshot = {
     manifest: { formatId: FORMAT, formatVersion: FORMAT_VERSION, schemaVersion: manifest.schemaVersion, contractVersion: DOMAIN_CONTRACT_VERSION, appVersion: manifest.appVersion, exportedAt: manifest.exportedAt, checksums: { dataSha256: await sha256Hex(stableDataJson(data)) } }, data,
   };
-  await import("./backup").then(({ validateBackupSnapshot }) => validateBackupSnapshot(snapshot, database));
+  await validateBackupSnapshot(snapshot, database);
   return { manifest, snapshot };
 }
 
