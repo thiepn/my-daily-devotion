@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "translationId": "BSB",
+  "name": "Berean Standard Bible",
+  "publisher": "Berean Bible",
+  "verifiedOn": "2026-09-16",
+  "editionLabel": "Current, updated to 3rd Printing",
+  "license": {
+    "status": "public-domain",
+    "effectiveDate": "2023-04-30",
+    "sourceUrl": "https://berean.bible/licensing.htm"
+  },
+  "source": {
+    "downloadsPage": "https://berean.bible/downloads.htm",
+    "preferredFormat": "USJ",
+    "preferredDownload": "https://bereanbible.com/bsb_usj.zip",
+    "fallbackFormat": "USFM",
+    "fallbackDownload": "https://bereanbible.com/bsb_usfm.zip"
+  },
+  "ingestionContract": {
+    "preserve": [
+      "book-identity",
+      "chapter-identity",
+      "verse-identity",
+      "paragraphs",
+      "poetry",
+      "headings",
+      "superscriptions",
+      "reader-relevant-semantic-markup"
+    ],
+    "forbidVerseOnlyFlattening": true,
+    "requireSha256ForImportedSource": true,
+    "requireParserVersion": true,
+    "requireNormalizedDataVersion": true
+  }
+}
