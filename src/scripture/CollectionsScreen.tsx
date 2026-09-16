@@ -1,0 +1,25 @@
+import { FormEvent, useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
+import { db } from "../data/database";
+import { CollectionRepository } from "../data/repositories/collections";
+import type { Collection, CollectionItem, ScriptureReference } from "../domain/types";
+import { parsePendingScripture } from "../reflection/context";
+import { loadBibleManifest } from "./loader";
+import { parseVerseKey } from "./repository";
+import type { BibleManifest } from "./types";
+
+const repository=new CollectionRepository(db);
+function label(reference:ScriptureReference,manifest:BibleManifest|null){const start=parseVerseKey(reference.startVerseKey),end=parseVerseKey(reference.endVerseKey);const name=manifest?.books.find((b)=>b.id===start.bookId)?.name??start.bookId;return start.chapter===end.chapter?`${name} ${start.chapter}:${start.verse}${start.verse===end.verse?"":`–${end.verse}`}`:`${name} ${start.chapter}:${start.verse}–${end.chapter}:${end.verse}`;}
+function bibleHref(reference:ScriptureReference){const start=parseVerseKey(reference.startVerseKey);return `/bible/${start.bookId}/${start.chapter}`;}
+
+export function CollectionsScreen(){
+  const [params,setParams]=useSearchParams(); const pending=useMemo(()=>parsePendingScripture(params),[params]); const returnTo=params.get("return"); const selectedId=params.get("collection");
+  const [collections,setCollections]=useState<Collection[]>([]); const [items,setItems]=useState<CollectionItem[]>([]); const [manifest,setManifest]=useState<BibleManifest|null>(null); const [name,setName]=useState(""); const [status,setStatus]=useState("");
+  const refresh=async()=>{const next=await repository.list();setCollections(next);const selected=selectedId?next.find((item)=>item.id===selectedId):next[0];setItems(selected?await repository.listItems(selected.id):[]);};
+  useEffect(()=>{void Promise.all([refresh(),loadBibleManifest().then(setManifest)]);},[selectedId]);
+  const selected=collections.find((item)=>item.id===selectedId)??collections[0]??null;
+  const choose=(id:string)=>{const next=new URLSearchParams(params);next.set("collection",id);setParams(next);};
+  const create=async(event:FormEvent)=>{event.preventDefault();try{const created=await repository.create(name);setName("");const next=new URLSearchParams(params);next.set("collection",created.id);setParams(next);setStatus("Collection created.");}catch(reason){setStatus(reason instanceof Error?reason.message:"Could not create collection.");}};
+  const addPending=async(id:string)=>{if(!pending)return;await repository.addReference(id,pending);setStatus("Passage added to collection.");if(id===selected?.id)setItems(await repository.listItems(id));};
+  return <main className="visual-screen collections-screen"><header className="screen-heading compact-heading"><p className="eyebrow">Bible · Saved</p><h1>Collections</h1><p className="screen-intro">Small Scripture-centered collections for passages you want to keep together. They are not general-purpose databases.</p><div className="quiet-link-row"><Link to="/bible">← Bible</Link><Link to="/search">Search</Link>{returnTo?.startsWith("/")?<Link to={returnTo}>Back to passage</Link>:null}</div></header>{pending?<section className="collection-pending"><p className="section-kicker">Selected passage</p><strong>{label(pending,manifest)}</strong><span>Choose a collection below.</span></section>:null}<div className="collections-layout"><aside className="collection-sidebar"><form onSubmit={create}><label htmlFor="collection-name">New collection</label><div><input id="collection-name" value={name} onChange={(e)=>setName(e.target.value)} placeholder="Mission, Promises, Wisdom…"/><button type="submit" disabled={!name.trim()}>Add</button></div></form><nav>{collections.map((collection)=><button className={selected?.id===collection.id?"is-active":""} type="button" key={collection.id} onClick={()=>choose(collection.id)}><span>{collection.name}</span>{pending?<em onClick={(e)=>{e.stopPropagation();void addPending(collection.id);}}>Add here</em>:null}</button>)}</nav></aside><section className="collection-content">{selected?<><div className="section-heading-line"><div><p className="section-kicker">Collection</p><h2>{selected.name}</h2></div><span className="quiet-count">{items.length}</span></div>{items.length?<div className="collection-items">{items.map((item)=><article key={item.id}><Link to={bibleHref(item)}>{label(item,manifest)}</Link>{item.note?<p>{item.note}</p>:null}<button type="button" onClick={async()=>{await repository.removeItem(item.id);setItems(await repository.listItems(selected.id));}}>Remove</button></article>)}</div>:<p className="muted-copy">No passages saved here yet. Select Scripture in the reader and choose More → Add to collection.</p>}</>:<div className="prayer-empty"><h2>No collections yet.</h2><p>Create one when you have passages that belong together.</p></div>}</section></div><p className="prayer-form-status" aria-live="polite">{status}</p></main>;
+}
