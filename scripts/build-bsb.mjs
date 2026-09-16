@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { access, mkdir, readFile, rm, writeFile } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { strFromU8, unzipSync } from "fflate";
 
@@ -9,7 +9,7 @@ const CANON_PATH = join(ROOT, "canonical/scripture/canon.json");
 const SOURCE_PATH = join(ROOT, "canonical/bsb/source-manifest.json");
 const OUTPUT_DIR = join(ROOT, "public/bible");
 const BOOKS_DIR = join(OUTPUT_DIR, "books");
-const PARSER_VERSION = "mdd-usj-normalizer/1";
+const PARSER_VERSION = "mdd-usj-normalizer/2";
 const NORMALIZED_DATA_VERSION = 1;
 
 function textContent(content) {
@@ -92,28 +92,28 @@ export function normalizeUsjBook(usj, bookMeta) {
     nextIsVerseStart = false;
   };
 
-  const walkContent = (content, segments, notes, style = { redLetter: false, emphasis: null }, verseAware = true) => {
+  const walkContent = (content, segments, notes, style = { redLetter: false, emphasis: null }) => {
     if (!Array.isArray(content)) return;
     for (const item of content) {
       if (typeof item === "string") {
         const text = item.replace(/\s+/g, " ");
         if (!text) continue;
         appendSegment(segments, {
-          verseKey: verseAware ? currentVerseKey : null,
-          verse: verseAware ? verseFromKey(currentVerseKey) : null,
+          verseKey: currentVerseKey,
+          verse: verseFromKey(currentVerseKey),
           text,
-          isVerseStart: verseAware ? nextIsVerseStart : false,
+          isVerseStart: nextIsVerseStart,
           redLetter: style.redLetter,
           emphasis: style.emphasis,
         });
-        if (verseAware) nextIsVerseStart = false;
+        nextIsVerseStart = false;
         continue;
       }
 
       if (!item || typeof item !== "object") continue;
 
       if (item.type === "verse") {
-        if (verseAware && item.number && item.sid) {
+        if (item.number && item.sid) {
           currentVerseKey = sidToVerseKey(item.sid);
           nextIsVerseStart = currentVerseKey !== null;
         }
@@ -124,7 +124,7 @@ export function normalizeUsjBook(usj, bookMeta) {
         const noteText = textContent(item.content);
         if (noteText) {
           notes.push({
-            verseKey: verseAware ? currentVerseKey : null,
+            verseKey: currentVerseKey,
             marker: item.marker ?? "note",
             text: noteText,
           });
@@ -137,7 +137,7 @@ export function normalizeUsjBook(usj, bookMeta) {
         redLetter: style.redLetter || marker === "wj",
         emphasis: style.emphasis ?? (/^(?:bd|bdit|em|it|k|nd|sc|sup)$/.test(marker) ? marker : null),
       };
-      walkContent(item.content, segments, notes, nextStyle, verseAware);
+      walkContent(item.content, segments, notes, nextStyle);
     }
   };
 
@@ -153,8 +153,15 @@ export function normalizeUsjBook(usj, bookMeta) {
     const kind = blockKind(marker);
     const segments = [];
     const notes = [];
-    const verseAware = kind !== "heading" && kind !== "superscription";
-    walkContent(node.content, segments, notes, undefined, verseAware);
+
+    // Headings and superscriptions must not inherit the preceding verse, but
+    // USJ may legitimately place a verse milestone inside these containers.
+    // Reset inherited context, then always honor any verse milestone we meet.
+    if (kind === "heading" || kind === "superscription") {
+      currentVerseKey = null;
+      nextIsVerseStart = false;
+    }
+    walkContent(node.content, segments, notes);
 
     if (kind === "blank" || segments.some((segment) => segment.text.trim().length > 0)) {
       chapter.blocks.push({
@@ -198,7 +205,7 @@ async function sha256(bytes) {
 async function alreadyBuilt(expectedSha) {
   try {
     const manifest = JSON.parse(await readFile(join(OUTPUT_DIR, "manifest.json"), "utf8"));
-    if (manifest.source?.sha256 !== expectedSha || manifest.books?.length !== 66) return false;
+    if (manifest.source?.sha256 !== expectedSha || manifest.books?.length !== 66 || manifest.parserVersion !== PARSER_VERSION) return false;
     await Promise.all(manifest.books.map((book) => access(join(ROOT, "public", book.path.replace(/^\//, "")))));
     return true;
   } catch {
