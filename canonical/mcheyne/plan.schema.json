@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://mdd.local/schema/mcheyne-plan.v1.json",
+  "title": "MDD Canonical M'Cheyne Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["planId", "version", "assignments"],
+  "properties": {
+    "planId": {"const": "mcheyne-classic"},
+    "version": {"type": "integer", "minimum": 1},
+    "assignments": {
+      "type": "array",
+      "minItems": 365,
+      "maxItems": 365,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["sequence", "calendarKey", "readings"],
+        "properties": {
+          "sequence": {"type": "integer", "minimum": 1, "maximum": 365},
+          "calendarKey": {"type": "string", "pattern": "^(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"},
+          "readings": {
+            "type": "array",
+            "minItems": 4,
+            "maxItems": 4,
+            "prefixItems": [
+              {"$ref": "#/$defs/familyReading"},
+              {"$ref": "#/$defs/familyReading"},
+              {"$ref": "#/$defs/secretReading"},
+              {"$ref": "#/$defs/secretReading"}
+            ]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["translationId", "startVerseKey", "endVerseKey"],
+      "properties": {
+        "translationId": {"const": "BSB"},
+        "startVerseKey": {"type": "string"},
+        "endVerseKey": {"type": "string"}
+      }
+    },
+    "familyReading": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["group", "displayReference", "reference"],
+      "properties": {
+        "group": {"const": "family"},
+        "displayReference": {"type": "string", "minLength": 1},
+        "reference": {"$ref": "#/$defs/reference"}
+      }
+    },
+    "secretReading": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["group", "displayReference", "reference"],
+      "properties": {
+        "group": {"const": "secret"},
+        "displayReference": {"type": "string", "minLength": 1},
+        "reference": {"$ref": "#/$defs/reference"}
+      }
+    }
+  }
+}
