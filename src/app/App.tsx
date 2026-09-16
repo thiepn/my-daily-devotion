@@ -1,6 +1,8 @@
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
 import { PlanScreen } from "../mcheyne/PlanScreen";
 import { TodayScreen } from "../mcheyne/TodayScreen";
+import { PrayerHandoffScreen } from "../reflection/PrayerHandoffScreen";
+import { ReflectionScreen } from "../reflection/ReflectionScreen";
 import { BibleScreen } from "../scripture/BibleScreen";
 import { Icon, type IconName } from "./visual/Icon";
 import { BrandMark } from "./visual/BrandMark";
@@ -50,8 +52,8 @@ export function App() {
       <div className="workspace">
         <header className="utility-bar">
           <div>
-            <span className="phase-label">M’Cheyne & Today</span>
-            <span className="phase-value">Phase 4</span>
+            <span className="phase-label">Reflection & Scripture Capture</span>
+            <span className="phase-value">Phase 5</span>
           </div>
           <ThemeSwitcher />
         </header>
@@ -60,9 +62,11 @@ export function App() {
           <Route path="/" element={<Navigate to="/today" replace />} />
           <Route path="/today" element={<TodayScreen />} />
           <Route path="/today/plan" element={<PlanScreen />} />
+          <Route path="/today/reflection/:localDate" element={<ReflectionScreen />} />
           <Route path="/bible" element={<BibleScreen />} />
           <Route path="/bible/:bookId/:chapter" element={<BibleScreen />} />
           <Route path="/prayer" element={<PrayerVisual />} />
+          <Route path="/prayer/new" element={<PrayerHandoffScreen />} />
           <Route path="/history" element={<HistoryVisual />} />
           <Route path="*" element={<Navigate to="/today" replace />} />
         </Routes>

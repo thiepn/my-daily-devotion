@@ -9,25 +9,17 @@ import "./styles/shell.css";
 import "./styles/screens.css";
 import "./styles/scripture.css";
 import "./styles/phase4.css";
+import "./styles/phase5.css";
 
 const rootElement = document.getElementById("root");
 
-if (!rootElement) {
-  throw new Error("MDD root element is missing.");
-}
-
+if (!rootElement) throw new Error("MDD root element is missing.");
 const root = createRoot(rootElement);
 
 async function start(): Promise<void> {
   try {
     await prepareDatabase();
-    root.render(
-      <StrictMode>
-        <HashRouter>
-          <App />
-        </HashRouter>
-      </StrictMode>,
-    );
+    root.render(<StrictMode><HashRouter><App /></HashRouter></StrictMode>);
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown startup error";
     root.render(
@@ -40,5 +32,4 @@ async function start(): Promise<void> {
     );
   }
 }
-
 void start();

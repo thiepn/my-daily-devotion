@@ -1,13 +1,12 @@
 {
   "name": "my-daily-devotion",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "private": true,
   "type": "module",
   "description": "My Daily Devotion — private, local-first Scripture, reflection, prayer, and devotional history.",
   "scripts": {
     "bible:build": "node scripts/build-bsb.mjs",
     "mcheyne:build": "node scripts/build-mcheyne.mjs",
-    "mcheyne:materialize": "npm run bible:build && node scripts/generate-mcheyne.mjs",
     "dev": "npm run bible:build && npm run mcheyne:build && vite",
     "build": "npm run bible:build && npm run mcheyne:build && tsc -b && vite build",
     "typecheck": "tsc -b --pretty false",
@@ -17,7 +16,8 @@
     "verify:phase1": "npm run verify:phase0 && npm run typecheck && npm run test && npm run build",
     "verify:phase2": "npm run verify:phase1 && node scripts/verify-phase2.mjs",
     "verify:phase3": "npm run verify:phase2 && node scripts/verify-phase3.mjs",
-    "verify:phase4": "npm run verify:phase3 && node scripts/verify-phase4.mjs"
+    "verify:phase4": "npm run verify:phase3 && node scripts/verify-phase4.mjs",
+    "verify:phase5": "npm run verify:phase4 && node scripts/verify-phase5.mjs"
   },
   "dependencies": {
     "dexie": "4.4.6",
@@ -35,7 +35,5 @@
     "vite": "8.3.0",
     "vitest": "5.0.1"
   },
-  "engines": {
-    "node": ">=22.12"
-  }
+  "engines": { "node": ">=22.12" }
 }
