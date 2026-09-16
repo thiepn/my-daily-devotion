@@ -26,7 +26,9 @@ assert.equal(manifest.translationId, "BSB");
 assert.equal(manifest.books.length, 66);
 assert.ok(manifest.totalVerses >= 31000);
 assert.equal(manifest.source.sha256, source.source.deterministicMirror.sha256);
-assert.equal(manifest.parserVersion, "mdd-usj-normalizer/2");
+const parserVersion = /^mdd-usj-normalizer\/(\d+)$/.exec(manifest.parserVersion);
+assert.ok(parserVersion, `Unexpected BSB parser version: ${manifest.parserVersion}`);
+assert.ok(Number(parserVersion[1]) >= 2, `BSB parser version must retain the Phase 3 fixes: ${manifest.parserVersion}`);
 
 for (const book of manifest.books) {
   assert.ok(book.chapterCount > 0, `${book.id} must have chapters`);
