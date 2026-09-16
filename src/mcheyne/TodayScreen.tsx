@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Icon } from "../app/visual/Icon";
 import { todayLocalDate } from "../domain/time";
 import type { LocalDate, PlanEnrollment, ReadingProgress } from "../domain/types";
+import { TodayPrayerPanel } from "../prayer/TodayPrayerPanel";
 import { TodayReflectionPanel } from "../reflection/TodayReflectionPanel";
 import { assignmentForCalendarDate, calendarYear, sequenceOnOrAfter, sequenceOnOrBefore } from "./calendar";
 import { buildPlanReadingUrl } from "./context";
@@ -78,7 +79,7 @@ export function TodayScreen() {
           </div>
           <div className="existing-progress"><div><p className="section-kicker">Already following this year?</p><h3>Import completed-through date</h3><p>This changes plan state only. It does not fabricate devotional-history events.</p></div><div className="import-controls"><input type="date" min={`${calendarYear(today)}-01-01`} max={today} value={importDate} onChange={(event) => setImportDate(event.target.value as LocalDate)} /><button type="button" onClick={() => void importExistingProgress()}>Import through this date</button></div></div>
         </section>
-        <div className="today-lower-grid future-devotional-tools"><TodayReflectionPanel localDate={today} /><section className="editorial-section"><p className="section-kicker">Pray</p><h2>Prayer follows reading.</h2><p className="muted-copy">Focused prayer becomes functional in Phase 6. Reflection can already carry its source context forward.</p></section></div>
+        <div className="today-lower-grid future-devotional-tools"><TodayReflectionPanel localDate={today} /><TodayPrayerPanel /></div>
       </main>
     );
   }
@@ -94,7 +95,7 @@ export function TodayScreen() {
         <div className="plan-links-row"><Link to="/today/plan">Open full plan</Link>{earlierUnread.length > 0 ? <span>{unreadReadingCount} earlier unread {unreadReadingCount === 1 ? "reading" : "readings"} across {earlierUnread.length} {earlierUnread.length === 1 ? "day" : "days"}</span> : <span>No earlier unread assignments in your tracked range.</span>}</div>
       </section>
       {earlierUnread.length > 0 ? <section className="earlier-unread" aria-labelledby="earlier-heading"><div><p className="section-kicker">Earlier unread</p><h2 id="earlier-heading">Available when you want them.</h2><p>These stay visible because they are unread, not because you owe a streak.</p></div><div className="earlier-list">{earlierUnread.slice(-4).map((item) => <Link key={item.assignment.sequence} to="/today/plan"><span>Day {item.assignment.sequence}</span><strong>{4 - item.completedCount} unread</strong><Icon name="arrow" /></Link>)}</div></section> : null}
-      <div className="today-lower-grid future-devotional-tools"><TodayReflectionPanel localDate={today} /><section className="editorial-section"><p className="section-kicker">Pray</p><h2>Prayer follows reading.</h2><p className="muted-copy">Focused prayer becomes functional in Phase 6. Reflection can already hand off its date and Scripture context without creating a prayer prematurely.</p></section></div>
+      <div className="today-lower-grid future-devotional-tools"><TodayReflectionPanel localDate={today} /><TodayPrayerPanel /></div>
     </main>
   );
 }
