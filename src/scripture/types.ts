@@ -10,45 +10,21 @@ export interface ScriptureSegment {
   redLetter: boolean;
   emphasis: string | null;
 }
+export interface ScriptureNote { verseKey: VerseKey | null; marker: string; text: string; }
+export interface ScriptureBlock { kind: ScriptureBlockKind; marker: string; level: number; segments: ScriptureSegment[]; }
+export interface BibleChapterAsset { chapter: number; blocks: ScriptureBlock[]; notes: ScriptureNote[]; verseCount: number; }
+export interface BibleBookAsset { schemaVersion: number; translationId: "BSB"; bookId: string; name: string; testament: "OT" | "NT"; order: number; chapterCount: number; chapters: BibleChapterAsset[]; }
+export interface BibleManifestBook { order: number; id: string; name: string; testament: "OT" | "NT"; chapterCount: number; path: string; }
 
-export interface ScriptureNote {
-  verseKey: VerseKey | null;
-  marker: string;
-  text: string;
-}
-
-export interface ScriptureBlock {
-  kind: ScriptureBlockKind;
-  marker: string;
-  level: number;
-  segments: ScriptureSegment[];
-}
-
-export interface BibleChapterAsset {
-  chapter: number;
-  blocks: ScriptureBlock[];
-  notes: ScriptureNote[];
-  verseCount: number;
-}
-
-export interface BibleBookAsset {
-  schemaVersion: number;
-  translationId: "BSB";
+export interface BibleSearchDocument {
+  verseKey: VerseKey;
   bookId: string;
-  name: string;
+  bookName: string;
   testament: "OT" | "NT";
   order: number;
-  chapterCount: number;
-  chapters: BibleChapterAsset[];
-}
-
-export interface BibleManifestBook {
-  order: number;
-  id: string;
-  name: string;
-  testament: "OT" | "NT";
-  chapterCount: number;
-  path: string;
+  chapter: number;
+  verse: number;
+  text: string;
 }
 
 export interface BibleManifest {
@@ -59,13 +35,8 @@ export interface BibleManifest {
   parserVersion: string;
   normalizedDataVersion: number;
   generatedAt: string;
-  source: {
-    canonicalDownload: string;
-    downloadedFrom: string;
-    release: string;
-    sha256: string;
-    format: "USJ";
-  };
+  searchIndexPath: string;
+  source: { canonicalDownload: string; downloadedFrom: string; release: string; sha256: string; format: "USJ"; };
   totalVerses: number;
   books: BibleManifestBook[];
 }
