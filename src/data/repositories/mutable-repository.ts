@@ -14,7 +14,7 @@ export class MutableRepository<T extends MutableEntity> {
   }
 
   async get(id: UUID, includeDeleted = false): Promise<T | undefined> {
-    const entity = await this.table.get(id);
+    const entity = await this.table.where("id").equals(id).first();
     if (!entity || (!includeDeleted && entity.deletedAt)) return undefined;
     return entity;
   }
@@ -51,7 +51,7 @@ export class MutableRepository<T extends MutableEntity> {
   }
 
   protected async require(id: UUID): Promise<T> {
-    const entity = await this.table.get(id);
+    const entity = await this.table.where("id").equals(id).first();
     if (!entity || entity.deletedAt) throw new Error(`Record not found: ${id}`);
     return entity;
   }
