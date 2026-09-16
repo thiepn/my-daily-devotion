@@ -37,8 +37,14 @@ function stableDataJson(data: Record<string, unknown[]>): string {
   return JSON.stringify(ordered);
 }
 
+function ownedArrayBuffer(bytes: Uint8Array): ArrayBuffer {
+  const buffer = new ArrayBuffer(bytes.byteLength);
+  new Uint8Array(buffer).set(bytes);
+  return buffer;
+}
+
 async function sha256Bytes(bytes: Uint8Array): Promise<string> {
-  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  const digest = await crypto.subtle.digest("SHA-256", ownedArrayBuffer(bytes));
   return [...new Uint8Array(digest)].map((value) => value.toString(16).padStart(2, "0")).join("");
 }
 function randomBytes(length: number): Uint8Array { const bytes = new Uint8Array(length); crypto.getRandomValues(bytes); return bytes; }
@@ -50,14 +56,14 @@ function toBase64(bytes: Uint8Array): string {
 function fromBase64(value: string): Uint8Array { const binary = atob(value); const bytes = new Uint8Array(binary.length); for (let i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i); return bytes; }
 
 async function deriveKey(password: string, salt: Uint8Array, iterations: number): Promise<CryptoKey> {
-  const material = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
-  return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations, hash: "SHA-256" }, material, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+  const material = await crypto.subtle.importKey("raw", ownedArrayBuffer(new TextEncoder().encode(password)), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt: ownedArrayBuffer(salt), iterations, hash: "SHA-256" }, material, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
 }
 
 async function encryptBytes(plain: Uint8Array, password: string): Promise<{ payload: Uint8Array; encryption: ArchiveEncryption }> {
   if (password.length < 8) throw new Error("Encrypted backups require a password of at least 8 characters.");
   const salt = randomBytes(16); const iv = randomBytes(12); const key = await deriveKey(password, salt, PBKDF2_ITERATIONS);
-  const cipher = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, plain));
+  const cipher = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv: ownedArrayBuffer(iv) }, key, ownedArrayBuffer(plain)));
   return { payload: strToU8(JSON.stringify({ ciphertext: toBase64(cipher) })), encryption: { cipher: "AES-GCM", kdf: "PBKDF2-SHA-256", salt: toBase64(salt), iv: toBase64(iv), kdfParameters: { iterations: PBKDF2_ITERATIONS } } };
 }
 
@@ -66,8 +72,15 @@ async function decryptBytes(payload: Uint8Array, password: string, encryption: A
   const envelope = JSON.parse(strFromU8(payload)) as { ciphertext?: string };
   if (!envelope.ciphertext) throw new Error("Encrypted backup payload is invalid.");
   const key = await deriveKey(password, fromBase64(encryption.salt), encryption.kdfParameters.iterations);
-  try { return new Uint8Array(await crypto.subtle.decrypt({ name: "AES-GCM", iv: fromBase64(encryption.iv) }, key, fromBase64(envelope.ciphertext))); }
-  catch { throw new Error("Backup password is incorrect or the encrypted data is damaged."); }
+  try {
+    return new Uint8Array(await crypto.subtle.decrypt(
+      { name: "AES-GCM", iv: ownedArrayBuffer(fromBase64(encryption.iv)) },
+      key,
+      ownedArrayBuffer(fromBase64(envelope.ciphertext)),
+    ));
+  } catch {
+    throw new Error("Backup password is incorrect or the encrypted data is damaged.");
+  }
 }
 
 function validateArchiveManifest(value: unknown): asserts value is BackupArchiveManifest {
