@@ -68,12 +68,14 @@ export class PrayerRepository extends MutableRepository<Prayer> {
 
     return this.database.transaction(
       "rw",
-      this.database.prayers,
-      this.database.scriptureLinks,
-      this.database.activityEvents,
-      this.database.prayerSchedules,
-      this.database.people,
-      this.database.categories,
+      [
+        this.database.prayers,
+        this.database.scriptureLinks,
+        this.database.activityEvents,
+        this.database.prayerSchedules,
+        this.database.people,
+        this.database.categories,
+      ],
       async () => {
         await this.validateMetadata(input.personId ?? null, input.categoryId ?? null);
         let scheduleId = input.scheduleId ?? null;
