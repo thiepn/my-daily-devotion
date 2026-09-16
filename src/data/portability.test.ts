@@ -89,6 +89,26 @@ describe("MDD portability", () => {
     expect(await target.prayers.get(protectedPrayer.id)).toBeDefined();
   });
 
+  it("rejects undeclared payload files before current data is replaced", async () => {
+    const source = testDb(); const target = testDb(); await prepareDatabase(source); await prepareDatabase(target);
+    await new PrayerRepository(source).createPrayer({ body: "Incoming" });
+    const protectedPrayer = await new PrayerRepository(target).createPrayer({ body: "Keep me" });
+    const files = unzipSync(await createMddBackup(source, "0.8.0"));
+    files["unexpected.txt"] = strToU8("not declared by manifest.json");
+    await expect(importMddBackup(zipSync(files), "", "replace", target)).rejects.toThrow(/undeclared payload/i);
+    expect(await target.prayers.get(protectedPrayer.id)).toBeDefined();
+  });
+
+  it("rejects unsafe encrypted-backup KDF parameters before deriving a key", async () => {
+    const source = testDb(); const target = testDb(); await prepareDatabase(source); await prepareDatabase(target);
+    await new PrayerRepository(source).createPrayer({ body: "Encrypted incoming" });
+    const files = unzipSync(await createMddBackup(source, "0.8.0", "correct-horse-battery"));
+    const manifest = JSON.parse(strFromU8(files["manifest.json"]!)) as { encryption: { kdfParameters: { iterations: number } } };
+    manifest.encryption.kdfParameters.iterations = 50_000_000;
+    files["manifest.json"] = strToU8(JSON.stringify(manifest, null, 2));
+    await expect(previewMddBackup(zipSync(files), "correct-horse-battery", target)).rejects.toThrow(/PBKDF2 parameters/i);
+  });
+
   it("rejects a checksum-valid but relationally invalid candidate before live mutation", async () => {
     const source = testDb(); const target = testDb(); await prepareDatabase(source); await prepareDatabase(target);
     await new PrayerRepository(source).createPrayer({ body: "Incoming with broken relation" });
