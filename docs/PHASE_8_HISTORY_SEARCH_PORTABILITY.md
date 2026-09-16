@@ -43,7 +43,7 @@ Personal search groups results into:
 - People;
 - Saved Scripture, including Verse Notes and Scripture Collections.
 
-All queries run against local IndexedDB data.
+All queries run against local IndexedDB data. Tombstoned records are excluded from normal search results.
 
 ## Scripture Collections
 
@@ -59,6 +59,8 @@ The production backup format is a ZIP-compatible `.mddbackup` archive containing
 - `data.json`
 
 The manifest records the format version, app/schema version, export time, per-file byte counts and SHA-256 checksums.
+
+Import rejects malformed manifests, unsafe archive paths, duplicate file declarations, missing or undeclared payload files, checksum/length mismatches, newer unsupported schema versions, and unsupported encryption parameters before the live database can be modified.
 
 ### Optional encryption
 
@@ -77,8 +79,8 @@ MDD never stores the backup password and cannot recover a forgotten password.
 Import is deliberately multi-stage:
 
 1. open archive;
-2. validate manifest;
-3. validate file checksum;
+2. validate manifest and declared payload files;
+3. validate byte counts and checksums;
 4. decrypt if necessary;
 5. validate snapshot structure and checksum;
 6. restore into a temporary IndexedDB database;
@@ -108,7 +110,7 @@ This is a longevity feature: the user's devotional history must remain useful ev
 
 ## Integrity
 
-The import integrity audit now validates additional relationships including:
+The import integrity audit validates relationships including:
 
 - Reflection → DevotionDay;
 - answered Prayer → PrayerResolution;
@@ -136,4 +138,19 @@ Still deliberately absent:
 
 `npm run verify:phase8` reruns every previous phase gate and then certifies History routes, the generated BSB search corpus, grouped personal search, Scripture Collections, the portability UI, encryption/import architecture and Phase 8 visual integration.
 
-Automated tests cover automatic History derivation, Scripture Collection identity/tombstones, plain backup round-trip, encrypted backup password rejection, merge conflict behavior, tamper rejection before live mutation and Markdown archival output.
+Automated tests now exercise:
+
+- automatic History derivation and Moments filtering;
+- Scripture Collection identity and tombstones;
+- Bible reference, phrase, multiword and filtered search with deterministic ordering;
+- grouped personal search across prayers, updates, answers, reflections, people, Verse Notes and Collections, including tombstone exclusion;
+- plain and encrypted backup round-trips;
+- explicit replace semantics;
+- both directions of revision-based merge conflict handling plus incoming tombstones;
+- checksum tamper rejection;
+- rejection of undeclared payloads and unsafe KDF parameters;
+- checksum-valid but relationally invalid candidate rejection before live mutation;
+- newer-schema rejection without changing live data;
+- human-readable Markdown archival output.
+
+Superseded CI runs are cancelled per branch so certification always targets the newest commit rather than consuming runners on obsolete snapshots.
