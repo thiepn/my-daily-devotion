@@ -19,6 +19,14 @@
     "url": "https://www.moodymedia.org/about-us/downloads/",
     "role": "published M'Cheyne calendar reference"
   },
+  "materializationSource": {
+    "repository": "AndBible/ReadingPlanCreator",
+    "commit": "85a609f119c85fcf3afd6020f7c6a1bb26f120c6",
+    "path": "in/y1ot1nt2_mcheyne.txt",
+    "gitBlobSha1": "e1e04abccc2526eba013b81bc5fa1a20d372f498",
+    "rawUrl": "https://raw.githubusercontent.com/AndBible/ReadingPlanCreator/85a609f119c85fcf3afd6020f7c6a1bb26f120c6/in/y1ot1nt2_mcheyne.txt",
+    "role": "immutable machine-readable schedule mirror used only to materialize the in-repository canonical artifact; output is checked against canonical anchors and the pinned BSB corpus"
+  },
   "calendarContract": {
     "jan1Sequence": 1,
     "dec31Sequence": 365,
