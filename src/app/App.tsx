@@ -1,9 +1,11 @@
 import { NavLink, Navigate, Route, Routes } from "react-router-dom";
+import { PlanScreen } from "../mcheyne/PlanScreen";
+import { TodayScreen } from "../mcheyne/TodayScreen";
 import { BibleScreen } from "../scripture/BibleScreen";
 import { Icon, type IconName } from "./visual/Icon";
 import { BrandMark } from "./visual/BrandMark";
 import { ThemeSwitcher } from "./visual/ThemeSwitcher";
-import { HistoryVisual, PrayerVisual, TodayVisual } from "./visual/VisualScreens";
+import { HistoryVisual, PrayerVisual } from "./visual/VisualScreens";
 
 const sections: Array<{ label: string; to: string; icon: IconName }> = [
   { label: "Today", to: "/today", icon: "today" },
@@ -48,15 +50,16 @@ export function App() {
       <div className="workspace">
         <header className="utility-bar">
           <div>
-            <span className="phase-label">Scripture platform</span>
-            <span className="phase-value">Phase 3</span>
+            <span className="phase-label">M’Cheyne & Today</span>
+            <span className="phase-value">Phase 4</span>
           </div>
           <ThemeSwitcher />
         </header>
 
         <Routes>
           <Route path="/" element={<Navigate to="/today" replace />} />
-          <Route path="/today" element={<TodayVisual />} />
+          <Route path="/today" element={<TodayScreen />} />
+          <Route path="/today/plan" element={<PlanScreen />} />
           <Route path="/bible" element={<BibleScreen />} />
           <Route path="/bible/:bookId/:chapter" element={<BibleScreen />} />
           <Route path="/prayer" element={<PrayerVisual />} />
