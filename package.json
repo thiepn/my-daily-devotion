@@ -1,0 +1,13 @@
+{
+  "name": "my-daily-devotion",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "My Daily Devotion — private, local-first Scripture, reflection, prayer, and devotional history.",
+  "scripts": {
+    "verify:phase0": "node scripts/verify-phase0.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
