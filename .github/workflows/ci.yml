@@ -1,4 +1,4 @@
-name: PWA, Accessibility, Performance & Resilience CI
+name: UX Validation CI
 
 on:
   push:
@@ -14,7 +14,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -24,5 +24,17 @@ jobs:
           node-version: "24"
       - name: Install
         run: npm install --ignore-scripts
-      - name: Verify Phase 10
-        run: npm run verify:phase10
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Verify Phase 11
+        run: npm run verify:phase11
+      - name: Upload UX failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase11-ux-artifacts
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: ignore
+          retention-days: 7
