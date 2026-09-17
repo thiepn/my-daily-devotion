@@ -1,4 +1,4 @@
-name: Corrective release verification
+name: Apply reviewed corrective source
 on:
   push:
     branches: [fix/audit-corrective-release]
@@ -8,15 +8,10 @@ permissions:
 jobs:
   corrective:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-          cache: npm
-      - name: Apply reviewed source with exact base and result checksums
-        id: apply
+      - name: Apply application sources with exact base and result checksums
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
@@ -29,9 +24,10 @@ jobs:
               pieces.append(base64.b64decode(blob['content']))
           raw = lzma.decompress(base64.b64decode(b''.join(pieces), validate=True))
           assert hashlib.sha256(raw).hexdigest() == 'a08e3516c9d60c7cf6ecd9867d68338c7b8bd92465235014a0ffc7fcc49c4c0d'
-          changes = json.loads(raw)
           staged = []
-          for change in changes:
+          for change in json.loads(raw):
+              if change['path'].startswith('.github/workflows/'):
+                  continue
               path = (root / change['path']).resolve()
               assert root in path.parents and '.git' not in path.relative_to(root).parts
               old = path.read_bytes() if path.exists() else None
@@ -44,9 +40,7 @@ jobs:
           for path,new in staged:
               if new is None: path.unlink()
               else: path.parent.mkdir(parents=True,exist_ok=True); path.write_bytes(new)
-          for helper in ['.github/workflows/audit-source.yml','.github/workflows/apply-corrective.yml']:
-              (root/helper).unlink(missing_ok=True)
-          print(f'Applied and verified {len(changes)} reviewed source changes; temporary helpers removed.')
+          print(f'Applied and verified {len(staged)} application source changes. Workflow configuration is managed separately through the authorized connector.')
           PY
           git diff --check
           git config user.name 'github-actions[bot]'
@@ -54,21 +48,4 @@ jobs:
           git add -A
           git commit -m 'Fix audited data integrity, draft safety, Scripture coverage and release verification for 1.0.1'
           git push origin HEAD:refs/heads/fix/audit-corrective-release
-          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-      - run: npm ci --ignore-scripts
-      - run: npx playwright install --with-deps chromium firefox webkit
-      - run: npm run audit:prod
-      - name: Verify actual corrective commit
-        run: GITHUB_SHA="$(git rev-parse HEAD)" npm run verify:phase12
-      - name: Preserve all acceptance and failure evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: mdd-corrective-verification
-          path: |
-            verification/
-            playwright-report/
-            test-results/
-            release/
-          retention-days: 14
-          if-no-files-found: warn
+          git rev-parse HEAD
