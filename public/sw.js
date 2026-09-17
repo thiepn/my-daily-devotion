@@ -1,4 +1,4 @@
-const CACHE_NAME = "mdd-app-v0.10.0";
+const CACHE_NAME = "mdd-app-v0.11.0";
 const CACHE_PREFIX = "mdd-app-v";
 
 function scopeRoot() {
