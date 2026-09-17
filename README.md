@@ -8,7 +8,7 @@ MDD is intentionally not a social network, content feed, habit game, or general-
 
 ## Current status
 
-**My Daily Devotion 1.0.0 — Phase 12 Release Hardening**
+**My Daily Devotion 1.0.1 — Phase 12 Release Hardening**
 
 The planned Phase 0–12 development sequence is complete. Phase 12 converts the Phase 11-validated product into a reproducible, checksummed release candidate without adding another devotional feature system or changing IndexedDB schema version 1.
 
@@ -62,3 +62,7 @@ npm run release:package
 This writes the deployable web/PWA archive and integrity metadata to `release/`. CI uploads the same directory only after the full release certification passes.
 
 After 1.0, work should proceed through ordinary maintenance, bug-fix, dependency-update, or explicitly scoped feature releases rather than automatic new roadmap phases.
+
+## Corrective release evidence
+
+See `docs/CORRECTIVE_RELEASE_1.0.1.md`. CI uploads unit and browser JSON reports plus a commit-linked summary. These are execution evidence, not a claim of physical-device or screen-reader certification.

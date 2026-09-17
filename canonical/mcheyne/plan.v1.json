@@ -2958,12 +2958,12 @@
       "readings": [
         {
           "group": "family",
-          "displayReference": "Exodus 12:21-50",
+          "displayReference": "Exodus 12:21-51",
           "references": [
             {
               "translationId": "BSB",
               "startVerseKey": "EXO.12.21",
-              "endVerseKey": "EXO.12.50"
+              "endVerseKey": "EXO.12.51"
             }
           ]
         },

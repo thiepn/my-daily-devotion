@@ -10,7 +10,7 @@ const SOURCE_PATH = join(ROOT, "canonical/bsb/source-manifest.json");
 const OUTPUT_DIR = join(ROOT, "public/bible");
 const BOOKS_DIR = join(OUTPUT_DIR, "books");
 const SEARCH_FILE = join(OUTPUT_DIR, "search-index.json");
-const PARSER_VERSION = "mdd-usj-normalizer/4";
+const PARSER_VERSION = "mdd-usj-normalizer/5";
 const NORMALIZED_DATA_VERSION = 1;
 
 function textContent(content) {
@@ -35,6 +35,10 @@ function verseFromKey(key) { if (!key) return null; const value = Number(key.spl
 function appendSegment(segments, segment) {
   if (!segment.text) return;
   const previous = segments.at(-1);
+  // A closing quotation followed by narration is a word boundary, including
+  // after omitted notes and red-letter/add-span exits in the pinned source.
+  // Never insert a separator indiscriminately between inline emphasis spans.
+  if (previous && previous.verseKey === segment.verseKey && /[”"]$/.test(previous.text) && /^[\p{L}\p{N}]/u.test(segment.text)) previous.text += " ";
   if (previous && !segment.isVerseStart && previous.verseKey === segment.verseKey && previous.redLetter === segment.redLetter && previous.emphasis === segment.emphasis) { previous.text += segment.text; return; }
   segments.push(segment);
 }
@@ -115,7 +119,14 @@ async function alreadyBuilt(expectedSha) {
   } catch { return false; }
 }
 async function downloadPinnedSource(source) {
-  const mirror = source.source.deterministicMirror; const urls = [mirror.download, source.source.preferredDownload]; let lastError = null;
+  const mirror = source.source.deterministicMirror;
+  if (process.env.MDD_BSB_SOURCE_ARCHIVE) {
+    const bytes = new Uint8Array(await readFile(process.env.MDD_BSB_SOURCE_ARCHIVE));
+    const digest = await sha256(bytes);
+    if (digest !== mirror.sha256) throw new Error("Local BSB source archive does not match the pinned checksum.");
+    return { bytes, url: mirror.download, digest };
+  }
+  const urls = [mirror.download, source.source.preferredDownload]; let lastError = null;
   for (const url of urls) {
     try { const response = await fetch(url, { redirect: "follow" }); if (!response.ok) throw new Error(`${response.status} ${response.statusText}`); const bytes = new Uint8Array(await response.arrayBuffer()); const digest = await sha256(bytes); if (digest !== mirror.sha256) throw new Error(`SHA-256 mismatch for ${url}: expected ${mirror.sha256}, received ${digest}`); return { bytes, url, digest }; }
     catch (error) { lastError = error; }

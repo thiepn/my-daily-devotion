@@ -9,9 +9,11 @@ const node = (args) => {
 };
 const npm = (name) => node([process.env.npm_execpath, "run", name]);
 node(["scripts/verify-phase0.mjs"]);
-for (const name of ["typecheck", "test", "build"]) npm(name);
+for (const name of ["typecheck", "test:report", "build"]) npm(name);
 for (let phase = 2; phase <= 10; phase += 1) node([`scripts/verify-phase${phase}.mjs`]);
 npm("test:ux");
 node(["scripts/verify-phase11.mjs"]);
-npm("release:package");
+// Package the exact dist tested above: never rebuild after browser acceptance.
+node(["scripts/package-release.mjs"]);
+node(["scripts/release-evidence.mjs"]);
 node(["scripts/verify-phase12.mjs"]);

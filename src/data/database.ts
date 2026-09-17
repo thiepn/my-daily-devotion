@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from "dexie";
+import { repairDuplicateReadingProgress } from "./repairs";
 import type {
   ActivityEvent,
   Bookmark,
@@ -72,6 +73,7 @@ export async function prepareDatabase(database: MddDatabase = db): Promise<void>
       createdAt: now,
       updatedAt: now,
     });
+    await repairDuplicateReadingProgress(database);
     return;
   }
 
@@ -90,4 +92,5 @@ export async function prepareDatabase(database: MddDatabase = db): Promise<void>
       updatedAt: now,
     });
   }
+  await repairDuplicateReadingProgress(database);
 }

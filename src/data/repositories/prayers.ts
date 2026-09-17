@@ -1,4 +1,5 @@
 import { ActivityLog } from "../activity";
+import { assertExpectedRevision } from "../conflicts";
 import { newMutableFields, nextMutableFields, nowInstant } from "../../domain/identity";
 import { assertLocalDate } from "../../domain/time";
 import { assertPrayerTransition } from "../../domain/prayer";
@@ -123,14 +124,20 @@ export class PrayerRepository extends MutableRepository<Prayer> {
   async updateBody(id: UUID, body: string, expectedRevision?: number): Promise<Prayer> {
     const normalized = body.trim();
     if (!normalized) throw new Error("Prayer body is required.");
-    return this.patch(id, { body: normalized }, expectedRevision);
+    return this.database.transaction("rw", this.database.prayers, async () => {
+      const current = await this.require(id);
+      if (current.status !== "ACTIVE" && current.status !== "WAITING") throw new Error("Answered or archived prayer wording cannot be edited.");
+      return this.patch(id, { body: normalized }, expectedRevision);
+    });
   }
 
-  async updateAdministration(id: UUID, input: PrayerAdministrationInput): Promise<Prayer> {
+  async updateAdministration(id: UUID, input: PrayerAdministrationInput, expectedRevision?: number): Promise<Prayer> {
     if (input.eventDate) assertLocalDate(input.eventDate);
     if (input.focusUntil) assertLocalDate(input.focusUntil);
     return this.database.transaction("rw", this.database.prayers, this.database.prayerSchedules, this.database.people, this.database.categories, async () => {
       const prayer = await this.require(id);
+      assertExpectedRevision(prayer, expectedRevision);
+      if (prayer.status !== "ACTIVE" && prayer.status !== "WAITING") throw new Error("Only active or waiting prayer details can be edited.");
       await this.validateMetadata(input.personId, input.categoryId);
       const existingSchedule = prayer.scheduleId ? await this.database.prayerSchedules.get(prayer.scheduleId) : undefined;
       let scheduleId: UUID | null = null;

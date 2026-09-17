@@ -18,10 +18,10 @@ export class PersonRepository extends MutableRepository<Person> {
     return this.create({ name: normalized, relationship: relationship?.trim() || null, notes: notes?.trim() || null });
   }
 
-  async updatePerson(id: UUID, input: { name: string; relationship?: string | null; notes?: string | null }): Promise<Person> {
+  async updatePerson(id: UUID, input: { name: string; relationship?: string | null; notes?: string | null }, expectedRevision?: number): Promise<Person> {
     const name = input.name.trim();
     if (!name) throw new Error("Person name is required.");
-    return this.patch(id, { name, relationship: input.relationship?.trim() || null, notes: input.notes?.trim() || null });
+    return this.patch(id, { name, relationship: input.relationship?.trim() || null, notes: input.notes?.trim() || null }, expectedRevision);
   }
 
   async removePerson(id: UUID): Promise<void> {
@@ -62,14 +62,14 @@ export class CategoryRepository extends MutableRepository<Category> {
     return this.create({ name: normalized, sortOrder });
   }
 
-  async updateCategory(id: UUID, name: string): Promise<Category> {
-    return this.database.transaction("rw", this.database.categories, () => this.updateCategoryInternal(id, name));
+  async updateCategory(id: UUID, name: string, expectedRevision?: number): Promise<Category> {
+    return this.database.transaction("rw", this.database.categories, () => this.updateCategoryInternal(id, name, expectedRevision));
   }
-  private async updateCategoryInternal(id: UUID, name: string): Promise<Category> {
+  private async updateCategoryInternal(id: UUID, name: string, expectedRevision?: number): Promise<Category> {
     const normalized = name.trim();
     if (!normalized) throw new Error("Category name is required.");
     if ((await this.listActive()).some((item) => item.id !== id && item.name.toLocaleLowerCase() === normalized.toLocaleLowerCase())) throw new Error("A category with this name already exists.");
-    return this.patch(id, { name: normalized });
+    return this.patch(id, { name: normalized }, expectedRevision);
   }
 
   async removeCategory(id: UUID): Promise<void> {

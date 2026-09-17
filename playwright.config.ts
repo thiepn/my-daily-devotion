@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : 2,
   retries: process.env.CI ? 1 : 0,
   failOnFlakyTests: Boolean(process.env.CI),
-  reporter: process.env.CI ? [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]] : "list",
+  reporter: process.env.CI ? [["list"], ["html", { open: "never", outputFolder: "playwright-report" }], ["json", { outputFile: "verification/browser.json" }]] : "list",
   use: {
     baseURL: "http://127.0.0.1:4173",
     locale: "en-US",
@@ -24,6 +24,8 @@ export default defineConfig({
     timeout: 120_000,
   },
   projects: [
+    { name: "desktop-firefox", testMatch: /(?:core-flow|release-smoke|corrective-release)\.spec\.ts/, use: { ...devices["Desktop Firefox"], serviceWorkers: "block" } },
+    { name: "desktop-webkit", testMatch: /(?:core-flow|release-smoke|corrective-release)\.spec\.ts/, use: { ...devices["Desktop Safari"], serviceWorkers: "block" } },
     {
       name: "desktop-chromium",
       testIgnore: /pwa\.spec\.ts/,

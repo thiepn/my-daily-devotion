@@ -27,3 +27,19 @@ describe("Scripture word boundaries", () => {
     expect(searchDocumentsForBook(normalized)[0].text).toBe("The LORD, our God.");
   });
 });
+
+describe("corrective Scripture normalization", () => {
+  it("separates red-letter quotation exits from added narration", () => {
+    const normalized = book([{ marker: "p", content: [verse, { marker: "wj", content: ["“Come, follow Me,”"] }, { marker: "add", content: ["Jesus"] }, " said."] }]);
+    expect(searchDocumentsForBook(normalized)[0].text).toBe("“Come, follow Me,” Jesus said.");
+  });
+  it("preserves the word boundary after an omitted note", () => {
+    const normalized = book([{ marker: "p", content: [verse, "“Do not sin.”", { type: "note", marker: "f", content: ["A source note"] }, "Do not let the sun go down."] }]);
+    expect(searchDocumentsForBook(normalized)[0].text).toBe("“Do not sin.” Do not let the sun go down.");
+    expect(normalized.chapters[0].notes).toHaveLength(1);
+  });
+  it("does not split words or detach punctuation at emphasis boundaries", () => {
+    const normalized = book([{ marker: "p", content: [verse, "be", { marker: "it", content: ["lieve"] }, ", and obey."] }]);
+    expect(searchDocumentsForBook(normalized)[0].text).toBe("believe, and obey.");
+  });
+});
