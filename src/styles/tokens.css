@@ -16,6 +16,7 @@
   --color-accent-soft: #dfe8e1;
   --color-answer: #8c6841;
   --color-answer-soft: #eee2d2;
+  --color-warning-text: #76512f;
   --color-focus-ring: #2e6350;
 
   --space-1: .25rem;
@@ -58,6 +59,7 @@
     --color-accent-soft: #273a32;
     --color-answer: #d1ad80;
     --color-answer-soft: #3b3025;
+    --color-warning-text: #d1ad80;
     --color-focus-ring: #9ac5b1;
   }
 }
@@ -81,5 +83,6 @@
   --color-accent-soft: #273a32;
   --color-answer: #d1ad80;
   --color-answer-soft: #3b3025;
+  --color-warning-text: #d1ad80;
   --color-focus-ring: #9ac5b1;
 }
