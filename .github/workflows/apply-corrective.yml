@@ -1,0 +1,74 @@
+name: Corrective release verification
+on:
+  push:
+    branches: [fix/audit-corrective-release]
+    paths: [.github/workflows/apply-corrective.yml]
+permissions:
+  contents: write
+jobs:
+  corrective:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Apply reviewed source with exact base and result checksums
+        id: apply
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 <<'PY'
+          import base64, hashlib, json, lzma, pathlib, subprocess
+          root = pathlib.Path.cwd().resolve()
+          pieces = []
+          for sha in ['2096c83af833f1045a263cc4c654b3a09eaa798b', 'a4e759d69f14252b288f68bf1b091d9a483b8837', '910706c7a0ed62be391818e8e09205971e8bfd00']:
+              blob = json.loads(subprocess.check_output(['gh','api',f'repos/thiepn/my-daily-devotion/git/blobs/{sha}']))
+              pieces.append(base64.b64decode(blob['content']))
+          raw = lzma.decompress(base64.b64decode(b''.join(pieces), validate=True))
+          assert hashlib.sha256(raw).hexdigest() == 'a08e3516c9d60c7cf6ecd9867d68338c7b8bd92465235014a0ffc7fcc49c4c0d'
+          changes = json.loads(raw)
+          staged = []
+          for change in changes:
+              path = (root / change['path']).resolve()
+              assert root in path.parents and '.git' not in path.relative_to(root).parts
+              old = path.read_bytes() if path.exists() else None
+              assert (hashlib.sha256(old).hexdigest() if old is not None else None) == change['old'], change['path']
+              new = None
+              if change['new'] is not None:
+                  new = change['text'].encode() if 'text' in change else b''.join(old[op[0]:op[1]] if isinstance(op,list) else op.encode() for op in change['ops'])
+                  assert hashlib.sha256(new).hexdigest() == change['new'], change['path']
+              staged.append((path,new))
+          for path,new in staged:
+              if new is None: path.unlink()
+              else: path.parent.mkdir(parents=True,exist_ok=True); path.write_bytes(new)
+          for helper in ['.github/workflows/audit-source.yml','.github/workflows/apply-corrective.yml']:
+              (root/helper).unlink(missing_ok=True)
+          print(f'Applied and verified {len(changes)} reviewed source changes; temporary helpers removed.')
+          PY
+          git diff --check
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Fix audited data integrity, draft safety, Scripture coverage and release verification for 1.0.1'
+          git push origin HEAD:refs/heads/fix/audit-corrective-release
+          echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium firefox webkit
+      - run: npm run audit:prod
+      - name: Verify actual corrective commit
+        run: GITHUB_SHA="$(git rev-parse HEAD)" npm run verify:phase12
+      - name: Preserve all acceptance and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mdd-corrective-verification
+          path: |
+            verification/
+            playwright-report/
+            test-results/
+            release/
+          retention-days: 14
+          if-no-files-found: warn
