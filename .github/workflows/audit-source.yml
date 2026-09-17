@@ -1,0 +1,31 @@
+name: Pinned Scripture verification input
+on:
+  push:
+    branches: [fix/audit-corrective-release]
+    paths: [.github/workflows/audit-source.yml]
+permissions:
+  contents: read
+jobs:
+  source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Retrieve and verify canonical input
+        run: |
+          node --input-type=module <<'NODE'
+          import {readFile,writeFile} from 'node:fs/promises';
+          import {createHash} from 'node:crypto';
+          const m=JSON.parse(await readFile('canonical/bsb/source-manifest.json','utf8')).source.deterministicMirror;
+          const r=await fetch(m.download); if(!r.ok)throw new Error(`Source HTTP ${r.status}`);
+          const b=Buffer.from(await r.arrayBuffer());
+          if(createHash('sha256').update(b).digest('hex')!==m.sha256)throw new Error('Source checksum mismatch');
+          await writeFile(`${process.env.RUNNER_TEMP}/BSB_usj.zip`,b);
+          NODE
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mdd-pinned-scripture-input
+          path: ${{ runner.temp }}/BSB_usj.zip
+          retention-days: 1
