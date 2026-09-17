@@ -10,6 +10,8 @@ MDD is intentionally not a social network, content feed, habit game, or general-
 
 **Phase 10 — PWA, Accessibility, Performance & Resilience**
 
+Phase 10 is implemented and its cumulative certification gate is active on `main`.
+
 MDD now includes the full BSB reader and M’Cheyne workflow, reflection/Verse Notes, the prayer scheduling/session engine, automatic devotional history, grouped local search, Scripture Collections, encrypted/checksum-verified backup and validated restore, the Phase 9 quiet-editorial UI system, plus an installable offline-first platform layer. The production PWA precaches the full BSB corpus, local verse-search index, M’Cheyne plan and built application shell; route features are code-split, theme preference is persisted, storage-persistence status is visible, service-worker updates are user-controlled, and destructive backup recovery is tested.
 
 - Phase 0 contract: [`docs/PHASE_0_IMPLEMENTATION_CONTRACT.md`](docs/PHASE_0_IMPLEMENTATION_CONTRACT.md)
