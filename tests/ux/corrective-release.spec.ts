@@ -129,7 +129,9 @@ test("Today refreshes at local midnight without changing a historical reflection
   await page.clock.fastForward(61_000); await expect(page.getByRole("heading", { name: "Day 261 readings" })).toBeVisible();
   const other = await context.newPage(); await openRoute(other, "/today/reflection/2026-09-17");
   await other.getByLabel("Daily reflection").fill("A historical reflection remains dated.");
-  await other.getByRole("button", { name: "Save reflection" }).click(); await other.reload();
+  await other.getByRole("button", { name: "Save reflection" }).click();
+  await expect(other.getByText("Reflection created and saved locally.", { exact: true })).toBeVisible();
+  await other.reload();
   await expect(other.getByLabel("Daily reflection")).toHaveValue("A historical reflection remains dated.");
 });
 
