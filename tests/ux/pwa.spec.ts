@@ -1,4 +1,5 @@
 import { expect, test } from "@playwright/test";
+import { APP_VERSION } from "../../src/app/version";
 import { createServer } from "node:http";
 import { readFile } from "node:fs/promises";
 import { resolve, extname } from "node:path";
@@ -112,7 +113,7 @@ test.describe("offline PWA UX", () => {
           watchInstalling(); void registration.update().catch(reject);
         });
       });
-      await expect.poll(() => page.evaluate(() => caches.keys())).toEqual(["mdd-app-v1.0.0-fixture-old"]);
+      await expect.poll(() => page.evaluate(() => caches.keys())).toEqual([`mdd-app-v${APP_VERSION}-fixture-old`]);
       await context.setOffline(true); await page.reload(); await expect(page.getByRole("heading", { name: "Today", exact: true })).toBeVisible();
       // Publish the complete generation before the online event automatically checks for updates.
       generation = "new";
@@ -123,7 +124,7 @@ test.describe("offline PWA UX", () => {
       await expect(page.getByRole("heading", { name: "Today", exact: true })).toBeVisible();
       expect(await oldTab.evaluate(async () => (await fetch("./assets/old-only.js")).text())).toBe("old tab lazy asset");
       await oldTab.close(); await page.reload();
-      await expect.poll(() => page.evaluate(() => caches.keys())).toEqual(["mdd-app-v1.0.0-fixture-new"]);
+      await expect.poll(() => page.evaluate(() => caches.keys())).toEqual([`mdd-app-v${APP_VERSION}-fixture-new`]);
       await context.setOffline(true); await page.goto(base+"#/search?q=John+3%3A16"); await expect(page.locator(".search-hit").first()).toContainText("John 3:16");
     } finally { await context.close(); await new Promise<void>((done) => server.close(() => done())); }
   });

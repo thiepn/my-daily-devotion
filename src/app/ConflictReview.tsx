@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 /** Reviewing never replaces a draft. Replacement requires the explicit button. */
 export function ConflictReview<T>({ active, draftText, loadLatest, describe, useLatest }: {
@@ -7,6 +7,7 @@ export function ConflictReview<T>({ active, draftText, loadLatest, describe, use
   const [latest, setLatest] = useState<{ record: T } | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
+  useEffect(() => { if (!active) { setLatest(null); setError(""); } }, [active]);
   if (!active) return null;
   return <section className="conflict-review" aria-label="Edit conflict">
     <p>Your draft has not been overwritten. Compare it with the saved version before replacing either one.</p>

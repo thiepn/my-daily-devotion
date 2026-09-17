@@ -15,22 +15,27 @@ async function prayer(page: Page) {
   await expect(page.getByLabel("Request", { exact: true })).toHaveValue("Pray for the visit.");
   return page.url().split("#")[1]!;
 }
-async function failNextWrite(page: Page, table: string) {
-  await page.evaluate((table) => {
-    const original = IDBObjectStore.prototype.add;
-    IDBObjectStore.prototype.add = function (...args: Parameters<IDBObjectStore["add"]>) {
-      if (this.name === table) { IDBObjectStore.prototype.add = original; throw new DOMException("Test storage full. Try again.", "QuotaExceededError"); }
+async function failNextWrite(page: Page, table: string, method: "add" | "put" = "add") {
+  await page.evaluate(({ table, method }) => {
+    const original = IDBObjectStore.prototype[method];
+    IDBObjectStore.prototype[method] = function (...args: Parameters<IDBObjectStore["add"]>) {
+      if (this.name === table) {
+        IDBObjectStore.prototype[method] = original;
+        document.documentElement.dataset.injectedWrite = `${table}:${method}`;
+        throw new DOMException("Test storage full. Try again.", "QuotaExceededError");
+      }
       return original.apply(this, args);
     };
-  }, table);
+  }, { table, method });
 }
 
-test("People in-page switches offer save, discard and cancel without losing notes", async ({ page }) => {
+test("People in-page switches offer save, discard and cancel without losing notes", async ({ page }, testInfo) => {
   await openRoute(page, "/prayer/people"); await person(page, "Anna", "Original"); await person(page, "Ben");
   const edit = (name: string) => page.locator(".metadata-row").filter({ hasText: name }).getByRole("button", { name: "Edit", exact: true });
   await edit("Anna").click(); await page.getByLabel("Notes", { exact: false }).fill("Keep these unsaved notes.");
   await edit("Ben").click(); const dialog = page.getByRole("dialog"); await expect(dialog).toBeVisible();
   await expectNoHorizontalOverflow(page); await expectNoAxeViolations(page);
+  await page.screenshot({ path: testInfo.outputPath("draft-resolution-dialog.png") });
   await dialog.getByRole("button", { name: "Keep editing" }).click();
   await expect(page.getByLabel("Notes", { exact: false })).toHaveValue("Keep these unsaved notes.");
   await edit("Ben").click(); await dialog.getByRole("button", { name: "Save and continue" }).click();
@@ -41,7 +46,7 @@ test("People in-page switches offer save, discard and cancel without losing note
   await expect(page.getByLabel("Notes", { exact: false })).toHaveValue("Keep these unsaved notes.");
 });
 
-test("stale People notes can be compared without replacing the unsaved draft", async ({ page, context }) => {
+test("stale People notes can be compared without replacing the unsaved draft", async ({ page, context }, testInfo) => {
   await openRoute(page, "/prayer/people"); await person(page, "Anna", "Original");
   await page.getByRole("button", { name: "Edit", exact: true }).click();
   const other = await context.newPage(); await openRoute(other, "/prayer/people"); await other.getByRole("button", { name: "Edit", exact: true }).click();
@@ -51,6 +56,7 @@ test("stale People notes can be compared without replacing the unsaved draft", a
   await expect(page.locator(".prayer-form-status")).toContainText("another tab");
   await page.getByRole("button", { name: "Review latest saved version" }).click();
   await expect(page.getByLabel("Latest saved version")).toHaveValue(/Newer notes from another tab\./);
+  await page.screenshot({ path: testInfo.outputPath("conflict-version-review.png") });
   await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Anne");
   await page.getByRole("button", { name: "Use saved version" }).click();
   await expect(page.getByLabel("Notes", { exact: false })).toHaveValue("Newer notes from another tab.");
@@ -81,6 +87,7 @@ test("archiving saves wording and encouragement drafts only after explicit conse
   await expect(page.getByLabel("Prayer update")).toHaveValue("Keep this encouragement.");
   await page.getByRole("button", { name: "Archive", exact: true }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Save and continue" }).click();
+  await expect(page.locator(".prayer-detail-heading .eyebrow")).toContainText("archived");
   await expect(page.getByLabel("Request", { exact: true })).toBeDisabled();
   await page.reload();
   await expect(page.getByLabel("Request", { exact: true })).toHaveValue("A changed request worth keeping.");
@@ -107,18 +114,19 @@ test("failed enrollment and reading writes show an error and succeed on retry", 
   await expect(page.getByRole("alert")).toContainText("Test storage full");
   await page.getByRole("button", { name: /Follow today’s calendar/ }).click();
   await expect(page.getByText("0 of 4", { exact: true })).toBeVisible();
-  await failNextWrite(page, "readingProgress"); await page.locator(".reading-toggle").first().click();
+  await failNextWrite(page, "readingProgress", "put"); await page.locator(".reading-toggle").first().click();
   await expect(page.getByRole("alert")).toContainText("Test storage full");
+  await expect(page.locator("html")).toHaveAttribute("data-injected-write", "readingProgress:put");
   await expect(page.getByText("0 of 4", { exact: true })).toBeVisible();
   await page.locator(".reading-toggle").first().click();
   await expect(page.getByText("1 of 4", { exact: true })).toBeVisible(); expect(errors).toEqual([]);
 });
 
 test("Today refreshes at local midnight without changing a historical reflection", async ({ page, context }) => {
-  await page.clock.install({ time: new Date("2026-09-17T21:59:50Z") });
-  await page.clock.pauseAt(new Date("2026-09-17T21:59:58Z"));
+  // Keep timers running so IndexedDB scheduling and React can finish startup.
+  await page.clock.install({ time: new Date("2026-09-17T21:59:00Z") });
   await enrollCalendarPlan(page); await expect(page.getByRole("heading", { name: "Day 260 readings" })).toBeVisible();
-  await page.clock.fastForward(5000); await expect(page.getByRole("heading", { name: "Day 261 readings" })).toBeVisible();
+  await page.clock.fastForward(61_000); await expect(page.getByRole("heading", { name: "Day 261 readings" })).toBeVisible();
   const other = await context.newPage(); await openRoute(other, "/today/reflection/2026-09-17");
   await other.getByLabel("Daily reflection").fill("A historical reflection remains dated.");
   await other.getByRole("button", { name: "Save reflection" }).click(); await other.reload();
