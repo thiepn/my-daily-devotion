@@ -6,6 +6,7 @@ function localUrl(path) { return new URL(path.replace(/^\//, ""), scopeRoot()).h
 async function fetchRequired(url) { const response = await fetch(url, { cache: "reload", credentials: "same-origin" }); if (!response.ok) throw new Error(`Required offline asset failed: ${response.status} ${url}`); return response; }
 async function cacheRequired(cache, url) { const response = await fetchRequired(url); await cache.put(url, response.clone()); return response; }
 async function cacheInBatches(cache, urls, size = 8) { for (let index = 0; index < urls.length; index += size) { const batch = urls.slice(index, index + size); await Promise.all(batch.map((url) => cacheRequired(cache, url))); } }
+async function matchCached(request) { return caches.match(request, { ignoreVary: true }); }
 
 async function precache() {
   const cache = await caches.open(CACHE_NAME);
@@ -39,6 +40,6 @@ self.addEventListener("activate", (event) => { event.waitUntil((async () => { co
 self.addEventListener("message", (event) => { if (event.data?.type === "SKIP_WAITING") self.skipWaiting(); });
 self.addEventListener("fetch", (event) => {
   const request = event.request; if (request.method !== "GET") return; const url = new URL(request.url); if (url.origin !== self.location.origin) return; if (url.pathname.endsWith("/sw.js")) return;
-  if (request.mode === "navigate") { event.respondWith((async () => { try { const response = await fetch(request); if (response.ok) { const cache = await caches.open(CACHE_NAME); await cache.put(scopeRoot().href, response.clone()); } return response; } catch { const cached = await caches.match(scopeRoot().href); return cached ?? Response.error(); } })()); return; }
-  event.respondWith((async () => { const cached = await caches.match(request); if (cached) return cached; try { const response = await fetch(request); if (response.ok && response.type === "basic") { const cache = await caches.open(CACHE_NAME); await cache.put(request, response.clone()); } return response; } catch { return Response.error(); } })());
+  if (request.mode === "navigate") { event.respondWith((async () => { try { const response = await fetch(request); if (response.ok) { const cache = await caches.open(CACHE_NAME); await cache.put(scopeRoot().href, response.clone()); } return response; } catch { const cached = await matchCached(scopeRoot().href); return cached ?? Response.error(); } })()); return; }
+  event.respondWith((async () => { const cached = await matchCached(request); if (cached) return cached; try { const response = await fetch(request); if (response.ok && response.type === "basic") { const cache = await caches.open(CACHE_NAME); await cache.put(request, response.clone()); } return response; } catch { return Response.error(); } })());
 });
