@@ -7,8 +7,9 @@ const [pkgRaw, config, core, accessibility, responsive, pwa, app, today, plan, h
   read("package.json"), read("playwright.config.ts"), read("tests/ux/core-flow.spec.ts"), read("tests/ux/accessibility.spec.ts"), read("tests/ux/responsive.spec.ts"), read("tests/ux/pwa.spec.ts"), read("src/app/App.tsx"), read("src/mcheyne/TodayScreen.tsx"), read("src/mcheyne/PlanScreen.tsx"), read("src/history/HistoryScreens.tsx"), read("src/data/schema.ts"), read("src/styles/tokens.css"), read("vite.config.ts"), read("public/sw.js"), read("src/main.tsx"), read("src/styles/phase11.css"), read("docs/PHASE_11_UX_VALIDATION.md"),
 ]);
 const pkg = JSON.parse(pkgRaw);
-
-assert.equal(pkg.version, "0.11.0");
+const version = /^(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/.exec(pkg.version);
+assert.ok(version, `Expected semantic package version, got ${pkg.version}`);
+assert.ok(Number(version[1]) > 0 || Number(version[2]) >= 11, `Phase 11 requires app version >=0.11.0, got ${pkg.version}`);
 assert.equal(pkg.scripts["test:ux"], "playwright test");
 assert.equal(pkg.scripts["verify:phase11"], "npm run verify:phase10 && npm run test:ux && node scripts/verify-phase11.mjs");
 assert.equal(pkg.devDependencies["@playwright/test"], "1.63.0");
