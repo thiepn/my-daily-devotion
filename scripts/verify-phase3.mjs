@@ -18,6 +18,7 @@ const [sourceRaw, packageRaw, app, main, reader, repository, manifestRaw] = awai
 const source = JSON.parse(sourceRaw);
 const pkg = JSON.parse(packageRaw);
 const manifest = JSON.parse(manifestRaw);
+const referenceLimits = JSON.parse(await read("src/scripture/reference-limits.json"));
 
 assert.equal(source.source.deterministicMirror.release, "v5.9");
 assert.equal(source.source.deterministicMirror.asset, "BSB_usj.zip");
@@ -33,6 +34,8 @@ assert.ok(Number(parserVersion[1]) >= 2, `BSB parser version must retain the Pha
 for (const book of manifest.books) {
   assert.ok(book.chapterCount > 0, `${book.id} must have chapters`);
   await access(new URL(`public${book.path}`, root));
+  const asset = JSON.parse(await read(`public${book.path}`));
+  assert.deepEqual(referenceLimits[book.id], asset.chapters.map((chapter) => Math.max(...chapter.blocks.flatMap((block) => block.segments.map((segment) => segment.verse ?? 0)))), `${book.id} restore reference bounds must match the pinned BSB assets`);
 }
 
 assert.ok(pkg.scripts["bible:build"]);

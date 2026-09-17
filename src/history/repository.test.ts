@@ -10,6 +10,16 @@ function testDb(): MddDatabase { const database = new MddDatabase(`mdd-history-t
 afterEach(async () => { for (const database of databases.splice(0)) { database.close(); await database.delete(); } });
 
 describe("HistoryRepository", () => {
+  it("keeps a factual event after removal without resurfacing deleted private text or dead links", async () => {
+    const database = testDb(); await prepareDatabase(database);
+    const prayers = new PrayerRepository(database); const prayer = await prayers.createPrayer({ body: "Private removed prayer" });
+    await prayers.answer(prayer.id, "Private removed answer"); await prayers.removePrayer(prayer.id);
+    const reflections = new ReflectionRepository(database); await reflections.saveDaily("2026-09-17", "Private removed reflection"); await reflections.removeDaily("2026-09-17");
+    const moments = await new HistoryRepository(database).listMoments();
+    expect(moments).toHaveLength(3);
+    expect(moments.every((entry) => entry.body === null && entry.href === null)).toBe(true);
+    expect(moments.map((entry) => entry.title)).toContain("Reflection removed");
+  });
   it("groups meaningful activity by local date without precreating empty days", async () => {
     const database = testDb(); await prepareDatabase(database);
     await new ReflectionRepository(database).saveDaily("2026-09-16" as LocalDate, "Grace stood out today.");

@@ -120,10 +120,10 @@ export class PrayerRepository extends MutableRepository<Prayer> {
     );
   }
 
-  async updateBody(id: UUID, body: string): Promise<Prayer> {
+  async updateBody(id: UUID, body: string, expectedRevision?: number): Promise<Prayer> {
     const normalized = body.trim();
     if (!normalized) throw new Error("Prayer body is required.");
-    return this.patch(id, { body: normalized });
+    return this.patch(id, { body: normalized }, expectedRevision);
   }
 
   async updateAdministration(id: UUID, input: PrayerAdministrationInput): Promise<Prayer> {
@@ -193,6 +193,7 @@ export class PrayerRepository extends MutableRepository<Prayer> {
   }
 
   async transition(id: UUID, status: PrayerStatus): Promise<Prayer> {
+    return this.database.transaction("rw", this.database.prayers, async () => {
     const prayer = await this.require(id);
     assertPrayerTransition(prayer.status, status);
     if (status === "ANSWERED") throw new Error("Use answer() so an answered prayer always has a resolution record.");
@@ -206,6 +207,18 @@ export class PrayerRepository extends MutableRepository<Prayer> {
     };
     await this.database.prayers.put(next);
     return next;
+    });
+  }
+
+  async restoreArchived(id: UUID): Promise<Prayer> {
+    return this.database.transaction("rw", this.database.prayers, this.database.prayerResolutions, async () => {
+      const prayer = await this.require(id);
+      if (prayer.status !== "ARCHIVED") throw new Error("Only archived prayers can be restored.");
+      const resolution = await this.getResolution(id);
+      const next: Prayer = { ...prayer, status: resolution ? "ANSWERED" : "ACTIVE", archivedAt: null, ...nextMutableFields(prayer) };
+      await this.database.prayers.put(next);
+      return next;
+    });
   }
 
   async markPrayed(id: UUID, at: Instant = nowInstant()): Promise<Prayer> {

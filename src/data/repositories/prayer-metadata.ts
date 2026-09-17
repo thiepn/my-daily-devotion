@@ -25,6 +25,9 @@ export class PersonRepository extends MutableRepository<Person> {
   }
 
   async removePerson(id: UUID): Promise<void> {
+    return this.database.transaction("rw", this.database.people, this.database.prayers, () => this.removePersonInternal(id));
+  }
+  private async removePersonInternal(id: UUID): Promise<void> {
     const referenced = await this.database.prayers.where("personId").equals(id).filter((prayer) => prayer.deletedAt === null).count();
     if (referenced) throw new Error("Reassign prayers before removing this person.");
     await this.softDelete(id);
@@ -35,6 +38,9 @@ export class CategoryRepository extends MutableRepository<Category> {
   constructor(private readonly database: MddDatabase) { super(database.categories); }
 
   async ensureDefaults(): Promise<void> {
+    return this.database.transaction("rw", this.database.categories, () => this.ensureDefaultsInternal());
+  }
+  private async ensureDefaultsInternal(): Promise<void> {
     if (await this.database.categories.count()) return;
     await this.database.categories.bulkAdd(DEFAULT_CATEGORIES.map((name, sortOrder) => ({ ...newMutableFields(), name, sortOrder })));
   }
@@ -45,6 +51,9 @@ export class CategoryRepository extends MutableRepository<Category> {
   }
 
   async createCategory(name: string): Promise<Category> {
+    return this.database.transaction("rw", this.database.categories, () => this.createCategoryInternal(name));
+  }
+  private async createCategoryInternal(name: string): Promise<Category> {
     const normalized = name.trim();
     if (!normalized) throw new Error("Category name is required.");
     const existing = (await this.listActive()).find((item) => item.name.toLocaleLowerCase() === normalized.toLocaleLowerCase());
@@ -54,12 +63,19 @@ export class CategoryRepository extends MutableRepository<Category> {
   }
 
   async updateCategory(id: UUID, name: string): Promise<Category> {
+    return this.database.transaction("rw", this.database.categories, () => this.updateCategoryInternal(id, name));
+  }
+  private async updateCategoryInternal(id: UUID, name: string): Promise<Category> {
     const normalized = name.trim();
     if (!normalized) throw new Error("Category name is required.");
+    if ((await this.listActive()).some((item) => item.id !== id && item.name.toLocaleLowerCase() === normalized.toLocaleLowerCase())) throw new Error("A category with this name already exists.");
     return this.patch(id, { name: normalized });
   }
 
   async removeCategory(id: UUID): Promise<void> {
+    return this.database.transaction("rw", this.database.categories, this.database.prayers, () => this.removeCategoryInternal(id));
+  }
+  private async removeCategoryInternal(id: UUID): Promise<void> {
     const referenced = await this.database.prayers.where("categoryId").equals(id).filter((prayer) => prayer.deletedAt === null).count();
     if (referenced) throw new Error("Reassign prayers before removing this category.");
     await this.softDelete(id);

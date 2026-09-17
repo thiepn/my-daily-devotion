@@ -23,8 +23,10 @@ export class MutableRepository<T extends MutableEntity> {
     return this.table.filter((entity) => entity.deletedAt === null).toArray();
   }
 
-  async patch(id: UUID, patch: Partial<Omit<T, keyof MutableEntity | "id">>): Promise<T> {
+  async patch(id: UUID, patch: Partial<Omit<T, keyof MutableEntity | "id">>, expectedRevision?: number): Promise<T> {
+    return this.table.db.transaction("rw", this.table, async () => {
     const current = await this.require(id);
+    if (expectedRevision !== undefined && current.revision !== expectedRevision) throw new Error("This record changed in another tab. Your edits are still here; copy them before reopening the latest version.");
     const next = {
       ...current,
       ...patch,
@@ -35,9 +37,11 @@ export class MutableRepository<T extends MutableEntity> {
     } as T;
     await this.table.put(next);
     return next;
+    });
   }
 
   async softDelete(id: UUID): Promise<T> {
+    return this.table.db.transaction("rw", this.table, async () => {
     const current = await this.require(id);
     const at = nowInstant();
     const next = {
@@ -48,6 +52,7 @@ export class MutableRepository<T extends MutableEntity> {
     } as T;
     await this.table.put(next);
     return next;
+    });
   }
 
   protected async require(id: UUID): Promise<T> {

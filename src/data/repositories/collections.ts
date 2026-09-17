@@ -14,6 +14,9 @@ export class CollectionRepository {
   }
 
   async create(name: string, description: string | null = null): Promise<Collection> {
+    return this.database.transaction("rw", this.database.collections, () => this.createInternal(name, description));
+  }
+  private async createInternal(name: string, description: string | null): Promise<Collection> {
     const normalized = name.trim();
     if (!normalized) throw new Error("Collection name is required.");
     const existing = (await this.list()).find((item) => item.name.toLocaleLowerCase() === normalized.toLocaleLowerCase());
@@ -25,10 +28,14 @@ export class CollectionRepository {
   }
 
   async rename(id: UUID, name: string, description: string | null = null): Promise<Collection> {
+    return this.database.transaction("rw", this.database.collections, () => this.renameInternal(id, name, description));
+  }
+  private async renameInternal(id: UUID, name: string, description: string | null): Promise<Collection> {
     const current = await this.database.collections.get(id);
     if (!current || current.deletedAt) throw new Error("Collection not found.");
     const normalized = name.trim();
     if (!normalized) throw new Error("Collection name is required.");
+    if ((await this.list()).some((item) => item.id !== id && item.name.toLocaleLowerCase() === normalized.toLocaleLowerCase())) throw new Error("A collection with this name already exists.");
     const next: Collection = { ...current, name: normalized, description: description?.trim() || null, ...nextMutableFields(current) };
     await this.database.collections.put(next);
     return next;
@@ -39,6 +46,9 @@ export class CollectionRepository {
   }
 
   async addReference(collectionId: UUID, reference: ScriptureReference, note: string | null = null): Promise<CollectionItem> {
+    return this.database.transaction("rw", this.database.collections, this.database.collectionItems, () => this.addReferenceInternal(collectionId, reference, note));
+  }
+  private async addReferenceInternal(collectionId: UUID, reference: ScriptureReference, note: string | null): Promise<CollectionItem> {
     const collection = await this.database.collections.get(collectionId);
     if (!collection || collection.deletedAt) throw new Error("Collection not found.");
     const all = await this.database.collectionItems.where("collectionId").equals(collectionId).toArray();
@@ -63,6 +73,9 @@ export class CollectionRepository {
   }
 
   async removeCollection(id: UUID): Promise<void> {
+    return this.database.transaction("rw", this.database.collections, this.database.collectionItems, () => this.removeCollectionInternal(id));
+  }
+  private async removeCollectionInternal(id: UUID): Promise<void> {
     const collection = await this.database.collections.get(id);
     if (!collection || collection.deletedAt) return;
     const at = nowInstant();

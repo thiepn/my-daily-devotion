@@ -1,5 +1,8 @@
 import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
+import Dexie from "dexie";
+import { APP_VERSION } from "../app/version";
 import { createBackupSnapshot, restoreBackupSnapshot, sha256Hex, validateBackupSnapshot, type BackupSnapshot } from "./backup";
+import type { Reflection, Prayer, PrayerUpdate, PrayerResolution, Highlight, VerseNote } from "../domain/types";
 import { MddDatabase, prepareDatabase } from "./database";
 import { auditDatabase } from "./integrity";
 import { DATABASE_SCHEMA_VERSION, DOMAIN_CONTRACT_VERSION } from "./schema";
@@ -135,7 +138,7 @@ async function verifyArchiveFiles(files: Record<string, Uint8Array>, manifest: B
   }
 }
 
-export async function createMddBackup(database: MddDatabase, appVersion = "0.8.0", password?: string): Promise<Uint8Array> {
+export async function createMddBackup(database: MddDatabase, appVersion: string = APP_VERSION, password?: string): Promise<Uint8Array> {
   const snapshot = await createBackupSnapshot(database, appVersion);
   const plain = strToU8(stableDataJson(snapshot.data));
   const encrypted = password ? await encryptBytes(plain, password) : null;
@@ -149,7 +152,15 @@ export async function createMddBackup(database: MddDatabase, appVersion = "0.8.0
 
 async function readArchive(bytes: Uint8Array, password: string, database: MddDatabase): Promise<{ manifest: BackupArchiveManifest; snapshot: BackupSnapshot }> {
   let files: Record<string, Uint8Array>;
-  try { files = unzipSync(bytes); } catch { throw new Error("This file is not a valid .mddbackup archive."); }
+  try {
+    if (bytes.byteLength > 64 * 1024 * 1024) throw new Error("Archive too large");
+    const names = new Set<string>(); let expandedBytes = 0;
+    files = unzipSync(bytes, { filter: (entry) => {
+      expandedBytes += entry.originalSize;
+      if (names.has(entry.name) || expandedBytes > 128 * 1024 * 1024) throw new Error("Unsafe archive");
+      names.add(entry.name); return true;
+    } });
+  } catch { throw new Error("This file is not a valid .mddbackup archive, or exceeds the supported size."); }
   const manifestBytes = files["manifest.json"]; const dataBytes = files["data.json"];
   if (!manifestBytes || !dataBytes) throw new Error("Backup must contain manifest.json and data.json.");
   let manifestValue: unknown;
@@ -160,6 +171,7 @@ async function readArchive(bytes: Uint8Array, password: string, database: MddDat
   const plain = manifest.encryption ? await decryptBytes(dataBytes, password, manifest.encryption) : dataBytes;
   let data: Record<string, unknown[]>;
   try { data = JSON.parse(strFromU8(plain)) as Record<string, unknown[]>; } catch { throw new Error("Backup data.json is invalid."); }
+  if (!record(data) || Object.values(data).some((rows) => !Array.isArray(rows))) throw new Error("Backup data.json must contain tables of records.");
   const snapshot: BackupSnapshot = {
     manifest: { formatId: FORMAT, formatVersion: FORMAT_VERSION, schemaVersion: manifest.schemaVersion, contractVersion: DOMAIN_CONTRACT_VERSION, appVersion: manifest.appVersion, exportedAt: manifest.exportedAt, checksums: { dataSha256: await sha256Hex(stableDataJson(data)) } }, data,
   };
@@ -190,8 +202,7 @@ function incomingWins(local: unknown, incoming: unknown): boolean {
   return false;
 }
 
-async function mergedSnapshot(incoming: BackupSnapshot, database: MddDatabase): Promise<BackupSnapshot> {
-  const local = await createBackupSnapshot(database, "0.8.0");
+async function mergedSnapshot(incoming: BackupSnapshot, local: BackupSnapshot): Promise<BackupSnapshot> {
   const data: Record<string, unknown[]> = {};
   for (const name of Object.keys(local.data)) {
     const map = new Map((local.data[name] ?? []).map((row) => [rowKey(row), row]));
@@ -211,36 +222,50 @@ export async function previewMddBackup(bytes: Uint8Array, password: string, data
 }
 
 export async function importMddBackup(bytes: Uint8Array, password: string, mode: ImportMode, database: MddDatabase): Promise<void> {
+  if (mode !== "merge" && mode !== "replace") throw new Error("Choose a valid restore mode.");
   const { snapshot } = await readArchive(bytes, password, database);
-  const candidate = mode === "merge" ? await mergedSnapshot(snapshot, database) : snapshot;
+  const local = await createBackupSnapshot(database);
+  const candidate = mode === "merge" ? await mergedSnapshot(snapshot, local) : snapshot;
   await validateInTemporaryDatabase(candidate);
-  await restoreBackupSnapshot(candidate, database);
+  // Validation is intentionally outside the live transaction. Before committing,
+  // reject a stale candidate rather than erasing writes made in another tab.
+  const tables = database.tables.filter((table) => table.name !== "schemaMetadata");
+  await database.transaction("rw", tables, async () => {
+    const current: Record<string, unknown[]> = {};
+    for (const table of tables) current[table.name] = await table.toArray();
+    if (stableDataJson(current) !== stableDataJson(local.data)) throw new Error("Local data changed during validation. Preview the backup again before restoring.");
+    await Dexie.waitFor(validateBackupSnapshot(candidate, database));
+    for (const table of tables) {
+      await table.clear();
+      if (candidate.data[table.name]?.length) await table.bulkAdd(candidate.data[table.name]!);
+    }
+  });
 }
 
 function safeMarkdown(value: string): string { return value.replace(/\r\n/g, "\n").trim(); }
 function pathSafe(value: string): string { return value.replace(/[\\/:*?"<>|]/g, "-").slice(0, 80); }
 
 export async function createMarkdownArchive(database: MddDatabase): Promise<Uint8Array> {
-  const snapshot = await createBackupSnapshot(database, "0.8.0");
+  const snapshot = await createBackupSnapshot(database);
   const files: Record<string, Uint8Array> = { "README.md": strToU8("# My Daily Devotion archive\n\nHuman-readable export. `data.json` contains the complete machine-readable local data snapshot.\n"), "data.json": strToU8(stableDataJson(snapshot.data)) };
-  const reflections = await database.reflections.filter((item) => item.deletedAt === null).toArray();
+  const reflections = (snapshot.data.reflections as Reflection[]).filter((item) => item.deletedAt === null);
   for (const reflection of reflections) files[`Reflections/${reflection.localDate.slice(0, 4)}/${reflection.localDate}.md`] = strToU8(`# ${reflection.localDate}\n\n${safeMarkdown(reflection.bodyMd)}\n`);
-  const prayers = await database.prayers.filter((item) => item.deletedAt === null).toArray();
+  const prayers = (snapshot.data.prayers as Prayer[]).filter((item) => item.deletedAt === null);
   for (const status of ["ACTIVE", "WAITING", "ANSWERED", "ARCHIVED"] as const) {
     const lines = [`# ${status[0]}${status.slice(1).toLowerCase()} prayers`, ""];
     for (const prayer of prayers.filter((item) => item.status === status)) {
       lines.push(`## ${prayer.body}`, "", `Created: ${prayer.createdAt}`, prayer.lastPrayedAt ? `Last prayed: ${prayer.lastPrayedAt}` : "", "");
-      const updates = await database.prayerUpdates.where("prayerId").equals(prayer.id).filter((item) => item.deletedAt === null).sortBy("occurredAt");
+      const updates = (snapshot.data.prayerUpdates as PrayerUpdate[]).filter((item) => item.prayerId === prayer.id && item.deletedAt === null).sort((a,b) => a.occurredAt.localeCompare(b.occurredAt));
       for (const update of updates) lines.push(`- **${update.type}** (${update.occurredAt}): ${update.body}`);
-      const resolution = await database.prayerResolutions.where("prayerId").equals(prayer.id).first();
+      const resolution = (snapshot.data.prayerResolutions as PrayerResolution[]).find((item) => item.prayerId === prayer.id && !item.deletedAt);
       if (resolution && !resolution.deletedAt) lines.push("", `Answered: ${resolution.answeredAt}`, resolution.reflectionMd ? safeMarkdown(resolution.reflectionMd) : "");
       lines.push("");
     }
     files[`Prayers/${pathSafe(status[0] + status.slice(1).toLowerCase())}.md`] = strToU8(lines.filter((line) => line !== undefined).join("\n"));
   }
-  const highlights = await database.highlights.filter((item) => item.deletedAt === null).toArray();
+  const highlights = (snapshot.data.highlights as Highlight[]).filter((item) => item.deletedAt === null);
   files["Scripture/Highlights.md"] = strToU8(["# Highlights", "", ...highlights.map((item) => `- ${item.startVerseKey}${item.endVerseKey !== item.startVerseKey ? `–${item.endVerseKey}` : ""}`)].join("\n"));
-  const notes = await database.verseNotes.filter((item) => item.deletedAt === null).toArray();
+  const notes = (snapshot.data.verseNotes as VerseNote[]).filter((item) => item.deletedAt === null);
   files["Scripture/Verse Notes.md"] = strToU8(["# Verse Notes", "", ...notes.flatMap((item) => [`## ${item.startVerseKey}${item.endVerseKey !== item.startVerseKey ? `–${item.endVerseKey}` : ""}`, "", safeMarkdown(item.bodyMd), ""])].join("\n"));
   return zipSync(files, { level: 6 });
 }

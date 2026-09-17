@@ -97,8 +97,7 @@ export class McheyneRepository {
   }
 
   async getReadingProgress(enrollmentId: UUID, sequence: number, readingIndex: number): Promise<ReadingProgress | undefined> {
-    const items = await this.listProgress(enrollmentId);
-    return items.find((item) => item.assignmentSequence === sequence && item.readingIndex === readingIndex);
+    return this.database.readingProgress.where("[planEnrollmentId+assignmentSequence+readingIndex]").equals([enrollmentId, sequence, readingIndex]).filter((item) => item.deletedAt === null).first();
   }
 
   async completionMap(enrollmentId: UUID): Promise<Map<string, ReadingProgress>> {
@@ -106,6 +105,16 @@ export class McheyneRepository {
   }
 
   async setReadingCompleted(
+    enrollmentId: UUID, sequence: number, readingIndex: number, completed: boolean, localDate: LocalDate = todayLocalDate(),
+  ): Promise<ReadingProgress | undefined> {
+    if (!Number.isInteger(sequence) || sequence < 1 || sequence > 365 || !Number.isInteger(readingIndex) || readingIndex < 0 || readingIndex > 3) throw new Error("Invalid reading assignment.");
+    return this.database.transaction("rw", [this.database.planEnrollments, this.database.readingProgress, this.database.devotionDays, this.database.activityEvents], async () => {
+      if (!await this.getEnrollment(enrollmentId)) throw new Error("Reading plan is no longer available.");
+      return this.setReadingCompletedInternal(enrollmentId, sequence, readingIndex, completed, localDate);
+    });
+  }
+
+  private async setReadingCompletedInternal(
     enrollmentId: UUID,
     sequence: number,
     readingIndex: number,

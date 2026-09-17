@@ -1,3 +1,5 @@
+import { loadMcheynePlan } from "../mcheyne/loader";
+import { buildPlanReadingUrl } from "../mcheyne/context";
 import type { MddDatabase } from "../data/database";
 import type { ActivityEvent, ActivityEventType, LocalDate, ScriptureReference } from "../domain/types";
 
@@ -45,8 +47,8 @@ function metadataNumber(event: ActivityEvent, key: string): number | null {
 export class HistoryRepository {
   constructor(private readonly database: MddDatabase) {}
 
-  async listDaySummaries(): Promise<HistoryDaySummary[]> {
-    const events = await this.database.activityEvents.toArray();
+  async listDaySummaries(month?: string): Promise<HistoryDaySummary[]> {
+    const events = month ? await this.database.activityEvents.where("localDate").between(`${month}-01`, `${month}-31`, true, true).toArray() : await this.database.activityEvents.toArray();
     const map = new Map<LocalDate, HistoryDaySummary>();
     for (const event of events) {
       const current = map.get(event.localDate) ?? { localDate: event.localDate, counts: {}, total: 0 };
@@ -64,10 +66,7 @@ export class HistoryRepository {
   }
 
   async listMoments(limit = 200): Promise<HistoryEntry[]> {
-    const events = (await this.database.activityEvents.toArray())
-      .filter((event) => MOMENT_TYPES.has(event.type))
-      .sort((a, b) => b.occurredAt.localeCompare(a.occurredAt))
-      .slice(0, limit);
+    const events = await this.database.activityEvents.orderBy("occurredAt").reverse().filter((event) => MOMENT_TYPES.has(event.type)).limit(limit).toArray();
     const entries = await Promise.all(events.map((event) => this.resolve(event)));
     return entries.filter((entry): entry is HistoryEntry => entry !== null);
   }
@@ -76,47 +75,51 @@ export class HistoryRepository {
     if (event.type === "READING_COMPLETED") {
       const sequence = metadataNumber(event, "assignmentSequence");
       const readingIndex = metadataNumber(event, "readingIndex");
+      const plan = await loadMcheynePlan();
+      const reading = sequence && readingIndex !== null ? plan.assignments[sequence-1]?.readings[readingIndex] : null;
+      const enrollmentId = typeof event.metadata.enrollmentId === "string" ? event.metadata.enrollmentId : null;
       return {
         id: event.id, eventType: event.type, localDate: event.localDate, occurredAt: event.occurredAt, kind: "scripture",
         title: sequence ? `M’Cheyne day ${sequence} reading completed` : "Scripture reading completed",
-        body: readingIndex === null ? null : `Reading ${readingIndex + 1} of 4`, href: "/today/plan", reference: null, metadata: event.metadata,
+        body: readingIndex === null ? null : `Reading ${readingIndex + 1} of 4`, href: reading && enrollmentId && sequence && readingIndex !== null ? buildPlanReadingUrl(reading,enrollmentId,sequence,readingIndex,"plan") : "/today/plan", reference: reading?.references[0] ?? null, metadata: event.metadata,
       };
     }
 
     if (event.type === "HIGHLIGHT_CREATED") {
       const item = await this.database.highlights.get(event.subjectId);
       const reference = item ? { translationId: item.translationId, startVerseKey: item.startVerseKey, endVerseKey: item.endVerseKey } : null;
-      return { id: event.id, eventType: event.type, localDate: event.localDate, occurredAt: event.occurredAt, kind: "highlight", title: "Scripture highlighted", body: null, href: reference ? `/bible/${reference.startVerseKey.split(".")[0]}/${reference.startVerseKey.split(".")[1]}` : null, reference, metadata: event.metadata };
+      return { id: event.id, eventType: event.type, localDate: event.localDate, occurredAt: event.occurredAt, kind: "highlight", title: "Scripture highlighted", body: null, href: reference ? `/bible/${reference.startVerseKey.split(".")[0]}/${reference.startVerseKey.split(".")[1]}?verse=${reference.startVerseKey.split(".")[2]}` : null, reference, metadata: event.metadata };
     }
 
     if (event.type === "REFLECTION_CREATED") {
       const reflection = await this.database.reflections.get(event.subjectId);
-      return { id: event.id, eventType: event.type, localDate: event.localDate, occurredAt: event.occurredAt, kind: "reflection", title: "Reflection written", body: excerpt(reflection?.bodyMd), href: `/today/reflection/${event.localDate}`, reference: null, metadata: event.metadata };
+      return { id: event.id, eventType: event.type, localDate: event.localDate, occurredAt: event.occurredAt, kind: "reflection", title: reflection && !reflection.deletedAt ? "Reflection written" : "Reflection removed", body: reflection?.deletedAt ? null : excerpt(reflection?.bodyMd), href: reflection && !reflection.deletedAt ? `/today/reflection/${event.localDate}` : null, reference: null, metadata: event.metadata };
     }
 
     if (event.type === "PRAYER_UPDATED" || event.type === "ENCOURAGEMENT_RECORDED") {
       const update = await this.database.prayerUpdates.get(event.subjectId);
       const prayerId = update?.prayerId ?? (typeof event.metadata.prayerId === "string" ? event.metadata.prayerId : null);
+      const prayer = prayerId ? await this.database.prayers.get(prayerId) : null;
       return {
         id: event.id, eventType: event.type, localDate: event.localDate, occurredAt: event.occurredAt,
         kind: event.type === "ENCOURAGEMENT_RECORDED" ? "encouragement" : "prayer",
         title: event.type === "ENCOURAGEMENT_RECORDED" ? "Prayer encouragement" : "Prayer updated",
-        body: excerpt(update?.body), href: prayerId ? `/prayer/${prayerId}` : null, reference: null, metadata: event.metadata,
+        body: update && !update.deletedAt && prayer && !prayer.deletedAt ? excerpt(update.body) : null, href: prayer && !prayer.deletedAt ? `/prayer/${prayer.id}` : null, reference: null, metadata: event.metadata,
       };
     }
 
     if (event.type === "PRAYER_ANSWERED") {
       const prayer = await this.database.prayers.get(event.subjectId);
       const resolution = await this.database.prayerResolutions.where("prayerId").equals(event.subjectId).first();
-      return { id: event.id, eventType: event.type, localDate: event.localDate, occurredAt: event.occurredAt, kind: "answer", title: "Answered prayer", body: excerpt(resolution?.reflectionMd ?? prayer?.body), href: `/prayer/${event.subjectId}`, reference: null, metadata: event.metadata };
+      return { id: event.id, eventType: event.type, localDate: event.localDate, occurredAt: event.occurredAt, kind: "answer", title: prayer && !prayer.deletedAt ? "Answered prayer" : "Prayer removed", body: prayer && !prayer.deletedAt ? excerpt(resolution?.reflectionMd ?? prayer.body) : null, href: prayer && !prayer.deletedAt ? `/prayer/${event.subjectId}` : null, reference: null, metadata: event.metadata };
     }
 
     if (event.type === "PRAYER_CREATED" || event.type === "PRAYER_PRAYED") {
       const prayer = await this.database.prayers.get(event.subjectId);
       return {
         id: event.id, eventType: event.type, localDate: event.localDate, occurredAt: event.occurredAt, kind: "prayer",
-        title: event.type === "PRAYER_CREATED" ? "Prayer captured" : "Prayer prayed",
-        body: excerpt(prayer?.body), href: prayer ? `/prayer/${prayer.id}` : null, reference: null, metadata: event.metadata,
+        title: !prayer || prayer.deletedAt ? "Prayer removed" : event.type === "PRAYER_CREATED" ? "Prayer captured" : "Prayer prayed",
+        body: prayer && !prayer.deletedAt ? excerpt(prayer.body) : null, href: prayer && !prayer.deletedAt ? `/prayer/${prayer.id}` : null, reference: null, metadata: event.metadata,
       };
     }
 

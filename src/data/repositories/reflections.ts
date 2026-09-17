@@ -27,7 +27,17 @@ export class ReflectionRepository {
     return item && item.deletedAt === null ? item : undefined;
   }
 
-  async saveDaily(localDate: LocalDate, bodyMd: string): Promise<{ reflection: Reflection; created: boolean }> {
+  async saveDaily(localDate: LocalDate, bodyMd: string, expectedRevision?: number | null, reference?: ScriptureReference): Promise<{ reflection: Reflection; created: boolean }> {
+    return this.database.transaction("rw", [this.database.devotionDays, this.database.reflections, this.database.activityEvents, this.database.scriptureLinks], async () => {
+      const current = await this.getDaily(localDate);
+      if (expectedRevision !== undefined && (current?.revision ?? null) !== expectedRevision) throw new Error("This reflection changed in another tab. Your text is still here; copy it before reopening the latest version.");
+      const result = await this.saveDailyInternal(localDate, bodyMd);
+      if (reference) await this.attachScripture(result.reflection.id, reference);
+      return result;
+    });
+  }
+
+  private async saveDailyInternal(localDate: LocalDate, bodyMd: string): Promise<{ reflection: Reflection; created: boolean }> {
     const normalized = bodyMd.replace(/\r\n/g, "\n").trimEnd();
     if (!normalized.trim()) throw new Error("Reflection text is required before saving.");
 
@@ -93,6 +103,10 @@ export class ReflectionRepository {
   }
 
   async attachScripture(reflectionId: UUID, reference: ScriptureReference): Promise<ScriptureLink> {
+    return this.database.transaction("rw", this.database.reflections, this.database.scriptureLinks, () => this.attachScriptureInternal(reflectionId, reference));
+  }
+
+  private async attachScriptureInternal(reflectionId: UUID, reference: ScriptureReference): Promise<ScriptureLink> {
     const reflection = await this.getById(reflectionId);
     if (!reflection) throw new Error("Reflection not found.");
     const items = await this.database.scriptureLinks

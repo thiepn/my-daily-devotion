@@ -35,7 +35,15 @@ export class VerseNoteRepository {
     });
   }
 
-  async save(reference: ScriptureReference, bodyMd: string): Promise<VerseNote> {
+  async save(reference: ScriptureReference, bodyMd: string, expectedRevision?: number | null): Promise<VerseNote> {
+    return this.database.transaction("rw", this.database.verseNotes, async () => {
+      const current = await this.getExact(reference);
+      if (expectedRevision !== undefined && (current?.revision ?? null) !== expectedRevision) throw new Error("This verse note changed in another tab. Your draft has been kept; reopen the note to compare before saving.");
+      return this.saveInternal(reference, bodyMd);
+    });
+  }
+
+  private async saveInternal(reference: ScriptureReference, bodyMd: string): Promise<VerseNote> {
     const normalized = bodyMd.replace(/\r\n/g, "\n").trimEnd();
     if (!normalized.trim()) throw new Error("Verse note text is required before saving.");
     const matches = await this.matches(reference);

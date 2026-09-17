@@ -55,8 +55,23 @@ export async function auditDatabase(database: MddDatabase): Promise<IntegrityRep
   const progress = await database.readingProgress.filter((item) => item.deletedAt === null).toArray();
   for (const item of progress) { const enrollment = await database.planEnrollments.get(item.planEnrollmentId); if (!enrollment || enrollment.deletedAt) issues.push({ code: "ORPHAN_READING_PROGRESS", message: `ReadingProgress ${item.id} has no active enrollment.`, recordId: item.id }); }
 
+  const unique = <T extends { id: string }>(rows: T[], key: (row: T) => string, code: string) => {
+    const seen = new Set<string>();
+    for (const row of rows) { const value = key(row); if (seen.has(value)) issues.push({ code, message: "Conflicting active records describe the same item.", recordId: row.id }); seen.add(value); }
+  };
+  unique(progress, (row) => `${row.planEnrollmentId}|${row.assignmentSequence}|${row.readingIndex}`, "DUPLICATE_READING_PROGRESS");
+  unique(activeResolutions, (row) => row.prayerId, "DUPLICATE_PRAYER_RESOLUTION");
+  unique(collectionItems, (row) => `${row.collectionId}|${row.translationId}|${row.startVerseKey}|${row.endVerseKey}`, "DUPLICATE_COLLECTION_PASSAGE");
+  const notes = await database.verseNotes.filter((item) => item.deletedAt === null).toArray();
+  unique(notes, (row) => `${row.translationId}|${row.startVerseKey}|${row.endVerseKey}`, "DUPLICATE_VERSE_NOTE");
+  for (const reflection of activeReflections) {
+    const day = await database.devotionDays.get(reflection.devotionDayId);
+    if (day && day.localDate !== reflection.localDate) issues.push({ code: "REFLECTION_DATE_MISMATCH", message: "Reflection date differs from its devotional day.", recordId: reflection.id });
+  }
+
   const sessionItems = await database.prayerSessionItems.filter((item) => item.deletedAt === null).toArray();
-  for (const item of sessionItems) { const session = await database.prayerSessions.get(item.sessionId); if (!session || session.deletedAt) issues.push({ code: "ORPHAN_PRAYER_SESSION_ITEM", message: `PrayerSessionItem ${item.id} has no session.`, recordId: item.id }); }
+  for (const item of sessionItems) { const session = await database.prayerSessions.get(item.sessionId); if (!session || session.deletedAt) issues.push({ code: "ORPHAN_PRAYER_SESSION_ITEM", message: `PrayerSessionItem ${item.id} has no session.`, recordId: item.id }); if (!await database.prayers.get(item.prayerId)) issues.push({ code: "ORPHAN_SESSION_PRAYER", message: "Session item has no prayer record.", recordId: item.id }); }
+  unique(sessionItems, (row) => `${row.sessionId}|${row.position}`, "DUPLICATE_SESSION_POSITION");
 
   return { ok: issues.length === 0, checkedAt: new Date().toISOString(), issues, counts };
 }

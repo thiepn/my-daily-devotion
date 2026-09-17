@@ -1,5 +1,7 @@
 import type { MddDatabase } from "./database";
 import { DATABASE_SCHEMA_VERSION, DOMAIN_CONTRACT_VERSION } from "./schema";
+import { APP_VERSION } from "../app/version";
+import { validateBackupRecords } from "./validation";
 
 export const BACKUP_FORMAT_ID = "mdd-backup";
 export const BACKUP_FORMAT_VERSION = 1;
@@ -21,7 +23,7 @@ export interface BackupSnapshot {
 
 const EXCLUDED_TABLES = new Set(["schemaMetadata"]);
 
-function stableDataJson(data: Record<string, unknown[]>): string {
+export function stableDataJson(data: Record<string, unknown[]>): string {
   const ordered = Object.fromEntries(
     Object.entries(data)
       .sort(([a], [b]) => a.localeCompare(b))
@@ -43,11 +45,12 @@ export async function sha256Hex(text: string): Promise<string> {
   return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-export async function createBackupSnapshot(database: MddDatabase, appVersion = "0.1.0"): Promise<BackupSnapshot> {
+export async function createBackupSnapshot(database: MddDatabase, appVersion: string = APP_VERSION): Promise<BackupSnapshot> {
   const data: Record<string, unknown[]> = {};
-  for (const table of database.tables) {
-    if (!EXCLUDED_TABLES.has(table.name)) data[table.name] = await table.toArray();
-  }
+  const tables = database.tables.filter((table) => !EXCLUDED_TABLES.has(table.name));
+  await database.transaction("r", tables, async () => {
+    for (const table of tables) data[table.name] = await table.toArray();
+  });
   const dataSha256 = await sha256Hex(stableDataJson(data));
   return {
     manifest: {
@@ -64,9 +67,11 @@ export async function createBackupSnapshot(database: MddDatabase, appVersion = "
 }
 
 export async function validateBackupSnapshot(snapshot: BackupSnapshot, database: MddDatabase): Promise<void> {
+  if (!snapshot || typeof snapshot !== "object" || !snapshot.manifest || !snapshot.data || typeof snapshot.data !== "object" || Array.isArray(snapshot.data)) throw new Error("Invalid backup snapshot.");
   if (snapshot.manifest.formatId !== BACKUP_FORMAT_ID) throw new Error("Unsupported backup format.");
   if (snapshot.manifest.formatVersion !== BACKUP_FORMAT_VERSION) throw new Error("Unsupported backup version.");
   if (snapshot.manifest.schemaVersion > DATABASE_SCHEMA_VERSION) throw new Error("Backup was created by a newer database schema.");
+  if (snapshot.manifest.schemaVersion !== DATABASE_SCHEMA_VERSION) throw new Error("Unsupported backup database schema.");
   if (snapshot.manifest.contractVersion !== DOMAIN_CONTRACT_VERSION) throw new Error("Backup domain contract does not match this app.");
 
   const expectedTables = new Set(database.tables.map((table) => table.name).filter((name) => !EXCLUDED_TABLES.has(name)));
@@ -80,6 +85,7 @@ export async function validateBackupSnapshot(snapshot: BackupSnapshot, database:
 
   const checksum = await sha256Hex(stableDataJson(snapshot.data));
   if (checksum !== snapshot.manifest.checksums.dataSha256) throw new Error("Backup checksum validation failed.");
+  validateBackupRecords(snapshot.data);
 }
 
 export async function restoreBackupSnapshot(snapshot: BackupSnapshot, database: MddDatabase): Promise<void> {

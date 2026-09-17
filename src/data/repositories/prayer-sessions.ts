@@ -98,11 +98,10 @@ export class PrayerSessionRepository {
   }
 
   async answer(sessionId: UUID, itemId: UUID, reflectionMd: string | null, at: Instant = nowInstant()): Promise<void> {
-    const item = await this.requirePendingItem(sessionId, itemId);
-    await this.prayers.answer(item.prayerId, reflectionMd, at);
-    await this.database.transaction("rw", this.database.prayerSessions, this.database.prayerSessionItems, async () => {
+    await this.database.transaction("rw", [this.database.prayerSessions, this.database.prayerSessionItems, this.database.prayers, this.database.prayerResolutions, this.database.activityEvents], async () => {
       const session = await this.requireOpenSession(sessionId);
       const fresh = await this.requirePendingItem(sessionId, itemId);
+      await this.prayers.answer(fresh.prayerId, reflectionMd, at);
       await this.database.prayerSessionItems.put({ ...fresh, outcome: "ANSWERED", actedAt: at, updatedAt: at, revision: fresh.revision + 1 });
       await this.finishIfDone(session, at);
     });

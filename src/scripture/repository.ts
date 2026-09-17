@@ -68,6 +68,10 @@ export class ScriptureRepository {
   }
 
   async saveReaderPosition(bookId: string, chapter: number, verseKey: VerseKey | null, offset = 0): Promise<ReaderPosition> {
+    return this.database.transaction("rw", this.database.readerPositions, () => this.saveReaderPositionInternal(bookId, chapter, verseKey, offset));
+  }
+
+  private async saveReaderPositionInternal(bookId: string, chapter: number, verseKey: VerseKey | null, offset = 0): Promise<ReaderPosition> {
     const current = await this.findReaderPosition(bookId, chapter);
 
     if (!current) {
@@ -131,6 +135,10 @@ export class ScriptureRepository {
   }
 
   async toggleHighlight(reference: ScriptureReference, style = "accent"): Promise<Highlight | null> {
+    return this.database.transaction("rw", this.database.highlights, this.database.activityEvents, () => this.toggleHighlightInternal(reference, style));
+  }
+
+  private async toggleHighlightInternal(reference: ScriptureReference, style = "accent"): Promise<Highlight | null> {
     const matches = await this.database.highlights
       .where("translationId")
       .equals(reference.translationId)
@@ -166,6 +174,10 @@ export class ScriptureRepository {
   }
 
   async toggleBookmark(reference: ScriptureReference, label: string | null = null): Promise<Bookmark | null> {
+    return this.database.transaction("rw", this.database.bookmarks, () => this.toggleBookmarkInternal(reference, label));
+  }
+
+  private async toggleBookmarkInternal(reference: ScriptureReference, label: string | null = null): Promise<Bookmark | null> {
     const matches = await this.database.bookmarks
       .where("translationId")
       .equals(reference.translationId)
