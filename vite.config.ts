@@ -6,19 +6,14 @@ export default defineConfig({
   plugins: [react()],
   build: {
     target: "es2022",
+    manifest: true,
     chunkSizeWarningLimit: 350,
     rolldownOptions: {
       output: {
         codeSplitting: {
           groups: [
-            {
-              name: "react-vendor",
-              test: /node_modules\/(?:react|react-dom|react-router|react-router-dom)\//,
-            },
-            {
-              name: "dexie-vendor",
-              test: /node_modules\/dexie\//,
-            },
+            { name: "react-vendor", test: /node_modules\/(?:react|react-dom|react-router|react-router-dom)\// },
+            { name: "dexie-vendor", test: /node_modules\/dexie\// },
           ],
         },
       },
