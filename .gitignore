@@ -6,6 +6,7 @@ playwright-report/
 test-results/
 .DS_Store
 *.log
+*.tsbuildinfo
 /public/bible/
 /public/plans/
 /public/THIRD_PARTY_NOTICES.txt

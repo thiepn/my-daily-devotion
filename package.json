@@ -9,7 +9,7 @@
     "mcheyne:build": "node scripts/build-mcheyne.mjs",
     "notices:build": "node scripts/build-third-party-notices.mjs",
     "dev": "npm run bible:build && npm run mcheyne:build && npm run notices:build && vite",
-    "build": "npm run bible:build && npm run mcheyne:build && npm run notices:build && tsc -b && vite build",
+    "build": "npm run bible:build && npm run mcheyne:build && npm run notices:build && tsc -b && vite build && node scripts/finalize-sw.mjs",
     "preview:ux": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
@@ -29,7 +29,7 @@
     "verify:phase9": "npm run verify:phase8 && node scripts/verify-phase9.mjs",
     "verify:phase10": "npm run verify:phase9 && node scripts/verify-phase10.mjs",
     "verify:phase11": "npm run verify:phase10 && npm run test:ux && node scripts/verify-phase11.mjs",
-    "verify:phase12": "npm run verify:phase11 && npm run release:package && node scripts/verify-phase12.mjs"
+    "verify:phase12": "node scripts/certify.mjs"
   },
   "dependencies": {
     "dexie": "4.4.6",

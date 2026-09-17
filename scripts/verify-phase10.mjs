@@ -24,7 +24,7 @@ for (const token of [`CACHE_NAME = "mdd-app-v${pkg.version}"`, "bible/manifest.j
 const directRootFallback = /caches\.match\(scopeRoot\(\)\.href(?:,\s*\{[^}]*ignoreVary:\s*true[^}]*\})?\)/.test(sw);
 const helperRootFallback = /matchCached\(scopeRoot\(\)\.href\)/.test(sw);
 assert.ok(directRootFallback || helperRootFallback, "Service worker must retain a cached-root navigation fallback");
-if (helperRootFallback) assert.match(sw, /function\s+matchCached\([^)]*\)\s*\{[^}]*caches\.match\([^,]+,\s*\{[^}]*ignoreVary:\s*true[^}]*\}\)/s, "Cached-root helper must use Cache Storage with ignoreVary");
+if (helperRootFallback) assert.match(sw, /function\s+matchCached\([^)]*\)\s*\{[^}]*cache\.match\([^,]+,\s*\{[^}]*ignoreVary:\s*true[^}]*\}\)/s, "Cached-root helper must use its build's Cache Storage with ignoreVary");
 assert.doesNotMatch(sw, /skipWaiting\(\);\s*\}\s*\);\s*self\.addEventListener\("activate"/s, "Updates must not auto-activate during install");
 for (const token of ["navigator.storage", "storage.persisted", "storage.persist()", "storage.estimate()", "serviceWorker.register", 'updateViaCache: "none"', "PLATFORM_UPDATE_EVENT", 'waiting.postMessage({ type: "SKIP_WAITING" })']) assert.ok(platform.includes(token), `Platform layer missing ${token}`);
 assert.match(app, /lazy\(\(\) => import\(/); assert.ok((app.match(/lazy\(\(\) => import\(/g) ?? []).length >= 10); assert.match(app, /<Suspense fallback=\{<RouteLoading \/>\}>/); assert.match(app, /className="skip-link"/); assert.match(app, /id="main-content"/); assert.match(app, /<RouteAnnouncer \/>/); assert.match(app, /<PlatformStatus \/>/);

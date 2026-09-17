@@ -33,6 +33,7 @@ Release hardening adds a committed npm lockfile, `npm ci` certification, high/cr
 - Phase 12 Release Hardening: [`docs/PHASE_12_RELEASE_HARDENING.md`](docs/PHASE_12_RELEASE_HARDENING.md)
 - Privacy & data behavior: [`docs/PRIVACY_AND_DATA.md`](docs/PRIVACY_AND_DATA.md)
 - Release checklist: [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md)
+- Complete product audit and remediation: [`docs/PRODUCT_AUDIT_2026-09-17.md`](docs/PRODUCT_AUDIT_2026-09-17.md)
 - Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 
 ## Local development

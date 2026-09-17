@@ -51,3 +51,13 @@ First complete release of My Daily Devotion.
 - Self-only Content Security Policy and no-referrer policy.
 - Runtime-error release smoke tests and invalid-route recovery validation.
 - Versioned release ZIP, release manifest and SHA-256 checksum.
+
+### Complete product audit and remediation
+
+- Protect drafts and reject stale edits; serialize related writes and repeated reading completion.
+- Validate backup record shapes, Scripture bounds, duplicates and relationships; preserve newer local writes during restore validation.
+- Restore archived answered prayers correctly; complete collection management and exact-verse navigation.
+- Keep deleted devotional text out of History and constrain internal return links.
+- Refine editorial headings, reader spacing, mobile utilities, control readability, wrapping and restore feedback.
+- Isolate offline caches per build; preserve old-tab chunks and pending updates; recover from interrupted installation.
+- Expand behavioral, adversarial, accessibility, responsive and offline coverage. See [the product audit](docs/PRODUCT_AUDIT_2026-09-17.md).

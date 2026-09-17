@@ -5,7 +5,7 @@ export default defineConfig({
   timeout: 45_000,
   expect: { timeout: 8_000 },
   fullyParallel: false,
-  workers: process.env.CI ? 1 : undefined,
+  workers: process.env.CI ? 1 : 2,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [["list"], ["html", { open: "never", outputFolder: "playwright-report" }]] : "list",
   use: {
@@ -34,7 +34,7 @@ export default defineConfig({
     },
     {
       name: "mobile-chromium",
-      testIgnore: /(?:pwa|accessibility)\.spec\.ts/,
+      testIgnore: /(?:pwa|accessibility|visual-certification)\.spec\.ts/,
       use: {
         browserName: "chromium",
         viewport: { width: 390, height: 844 },

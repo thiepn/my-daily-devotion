@@ -30,7 +30,10 @@ assert.equal(pkg.scripts["notices:build"], "node scripts/build-third-party-notic
 assert.match(pkg.scripts.build, /npm run notices:build/);
 assert.equal(pkg.scripts["release:package"], "npm run build && node scripts/package-release.mjs");
 assert.equal(pkg.scripts["audit:prod"], "npm audit --omit=dev --audit-level=high");
-assert.equal(pkg.scripts["verify:phase12"], "npm run verify:phase11 && npm run release:package && node scripts/verify-phase12.mjs");
+assert.equal(pkg.scripts["verify:phase12"], "node scripts/certify.mjs");
+const certification = await read("scripts/certify.mjs");
+for (const gate of ["verify-phase0.mjs", "typecheck", '"test"', '"build"', "test:ux", "verify-phase11.mjs", "release:package", "verify-phase12.mjs"]) assert.ok(certification.includes(gate), `Certification missing ${gate}`);
+assert.match(certification, /phase = 2; phase <= 10/);
 
 assert.equal(lock.lockfileVersion, 3);
 assert.equal(lock.version, pkg.version);

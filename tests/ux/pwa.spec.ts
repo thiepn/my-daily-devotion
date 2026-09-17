@@ -1,4 +1,7 @@
 import { expect, test } from "@playwright/test";
+import { createServer } from "node:http";
+import { readFile } from "node:fs/promises";
+import { resolve, extname } from "node:path";
 
 test.describe("offline PWA UX", () => {
   test("a controlled cold start can read Scripture and search while fully offline", async ({ context, page }) => {
@@ -42,6 +45,59 @@ test.describe("offline PWA UX", () => {
     await coldPage.getByRole("button", { name: "Search", exact: true }).click();
     await expect(coldPage.getByText("John 3:16", { exact: true }).first()).toBeVisible();
     await expect(coldPage.locator(".platform-status")).toContainText(/Offline|offline/i);
+    await coldPage.goto("/#/prayer/new");
+    await coldPage.getByLabel("What do you want to pray about?").fill("A request saved while completely offline.");
+    await coldPage.getByRole("button", { name: "Save prayer", exact: true }).click();
+    await coldPage.getByRole("button", { name: "Prayed now", exact: true }).click();
+    await expect(coldPage.getByText("Prayed now recorded.")).toBeVisible();
+    await coldPage.goto("/#/history/moments");
+    await expect(coldPage.getByText("A request saved while completely offline.")).toBeVisible();
+    await coldPage.reload(); await expect(coldPage.getByText("A request saved while completely offline.")).toBeVisible();
     expect(pageErrors).toEqual([]);
+  });
+
+  test("interrupted updates preserve the working subpath app and old tabs retain lazy assets", async ({ browser }) => {
+    test.setTimeout(120_000);
+    let generation = "old"; let interrupted = false;
+    const root = resolve("dist");
+    const server = createServer(async (request, response) => {
+      const path = new URL(request.url!, "http://localhost").pathname.replace(/^\/devotion\//, "");
+      if (interrupted && path === "bible/books/GEN.json") { response.writeHead(503); response.end("Interrupted deployment"); return; }
+      if (path === "assets/old-only.js") { response.writeHead(generation === "old" ? 200 : 404, { "Content-Type": "text/javascript" }); response.end("old tab lazy asset"); return; }
+      const file = resolve(root, path || "index.html");
+      if (!file.startsWith(root)) { response.writeHead(400); response.end(); return; }
+      try {
+        let bytes = await readFile(file);
+        if (path === "sw.js") bytes = Buffer.from(bytes.toString().replace(/const BUILD_ID = "[^"]+"/, `const BUILD_ID = "fixture-${generation}"`));
+        if (path === ".vite/manifest.json" && generation === "old") { const manifest = JSON.parse(bytes.toString()); manifest.oldTab = { file: "assets/old-only.js" }; bytes = Buffer.from(JSON.stringify(manifest)); }
+        const types: Record<string,string> = { ".html":"text/html", ".js":"text/javascript", ".css":"text/css", ".json":"application/json", ".webmanifest":"application/manifest+json", ".svg":"image/svg+xml", ".png":"image/png" };
+        response.writeHead(200, { "Content-Type": types[extname(file)] || "application/octet-stream", "Cache-Control": "no-store" }); response.end(bytes);
+      } catch { response.writeHead(404); response.end(); }
+    });
+    await new Promise<void>((done) => server.listen(0, "127.0.0.1", done));
+    const port = (server.address() as { port: number }).port;
+    const base = `http://127.0.0.1:${port}/devotion/`;
+    const context = await browser.newContext({ serviceWorkers: "allow" });
+    try {
+      const page = await context.newPage(); await page.goto(base+"#/today");
+      await page.waitForFunction(async () => Boolean((await navigator.serviceWorker.ready).active));
+      await page.reload(); await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
+      const oldTab = await context.newPage(); await oldTab.goto(base+"#/bible/JHN/3"); await expect(oldTab.getByRole("heading", { name: "John 3", exact: true })).toBeVisible();
+      generation = "broken"; interrupted = true;
+      await page.evaluate(async () => { const registration = await navigator.serviceWorker.ready; await registration.update(); await new Promise<void>((done) => { const worker = registration.installing; if (!worker || worker.state === "redundant") { done(); return; } worker.addEventListener("statechange", () => { if (worker.state === "redundant") done(); }); }); });
+      expect(await page.evaluate(() => caches.keys())).toEqual(["mdd-app-v1.0.0-fixture-old"]);
+      await context.setOffline(true); await page.reload(); await expect(page.getByRole("heading", { name: "Today", exact: true })).toBeVisible();
+      // Publish the complete generation before the online event automatically checks for updates.
+      generation = "new"; interrupted = false;
+      await context.setOffline(false);
+      await page.evaluate(async () => { await (await navigator.serviceWorker.ready).update(); });
+      await page.waitForFunction(async () => Boolean((await navigator.serviceWorker.getRegistration())?.waiting));
+      await Promise.all([page.waitForEvent("load"), page.getByRole("button", { name: "Reload to update" }).click()]);
+      await expect(page.getByRole("heading", { name: "Today", exact: true })).toBeVisible();
+      expect(await oldTab.evaluate(async () => (await fetch("./assets/old-only.js")).text())).toBe("old tab lazy asset");
+      await oldTab.close(); await page.reload();
+      await expect.poll(() => page.evaluate(() => caches.keys())).toEqual(["mdd-app-v1.0.0-fixture-new"]);
+      await context.setOffline(true); await page.goto(base+"#/search?q=John+3%3A16"); await expect(page.locator(".search-hit").first()).toContainText("John 3:16");
+    } finally { await context.close(); await new Promise<void>((done) => server.close(() => done())); }
   });
 });
