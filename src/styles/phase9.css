@@ -995,7 +995,8 @@ button:disabled,
 .prayer-administration-fields label, .metadata-editor label { font-size: .875rem; }
 .prayer-detail-body { font-size: clamp(1.3rem, 2.2vw, 1.75rem); line-height: 1.55; }
 .focused-prayer-card > h1 { max-width: 28ch; font-size: clamp(1.9rem, 4vw, 3.2rem); line-height: 1.2; overflow-wrap: anywhere; white-space: pre-wrap; }
-.focused-prayer-screen > h1 { font-family: var(--font-editorial); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 500; line-height: 1.2; }
+.focused-prayer-screen > h1, .recovery-screen > h1 { font-family: var(--font-editorial); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 500; line-height: 1.2; }
+.recovery-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
 .history-entry > div > a { display: block; width: fit-content; margin-top: 8px; }
 .collection-manage, .collection-rename { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 .collection-rename { padding-bottom: 20px; align-items: end; }

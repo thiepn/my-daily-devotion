@@ -116,5 +116,10 @@ test("compact verse-note editing and storage recovery visual states", async ({ p
   });
   await page.reload();
   await expect(page.getByRole("heading", { name: "My Daily Devotion could not open its local data." })).toBeVisible();
+  await expect(page.getByText(/MDD has not cleared your saved data/)).toBeVisible();
+  await expect(page.getByText("The user denied permission to access the database.")).not.toBeVisible();
+  await expectNoHorizontalOverflow(page); await expectNoAxeViolations(page);
   await page.screenshot({ path: testInfo.outputPath("storage-unavailable.png"), fullPage: true });
+  await page.getByText("Technical details", { exact: true }).click();
+  await expect(page.getByText("The user denied permission to access the database.")).toBeVisible();
 });

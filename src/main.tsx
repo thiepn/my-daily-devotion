@@ -35,11 +35,12 @@ async function start(): Promise<void> {
     const message = error instanceof Error ? error.message : "Unknown startup error";
     root.render(
       <main className="startup-error" role="alert">
-        <p className="eyebrow">Local data error</p>
+        <p className="eyebrow">Unable to open</p>
         <h1>My Daily Devotion could not open its local data.</h1>
-        <p>{message}</p>
-        <p>Your existing browser data has not been intentionally cleared. Reloading or restoring a validated backup remains safer than deleting browser storage.</p>
-        <button type="button" onClick={() => window.location.reload()}>Try opening MDD again</button>
+        <p>Try opening the app again. If this continues, check that your browser allows this site to store data and that you are using the latest version of MDD.</p>
+        <p>MDD has not cleared your saved data. Avoid clearing browser storage; it can remove data that has not been backed up.</p>
+        <button className="quiet-button" type="button" onClick={() => window.location.reload()}>Try opening MDD again</button>
+        <details><summary>Technical details</summary><p>{message}</p></details>
       </main>,
     );
   }
