@@ -93,3 +93,31 @@ test("requested viewport matrix, system theme, text scaling and Scripture forms"
   await expect(page.locator("html")).toHaveCSS("font-size", "32px");
   for (const surface of emptySurfaces) await capture(page, testInfo, "text-200", surface);
 });
+
+test("compact verse-note editing and storage recovery visual states", async ({ page }, testInfo) => {
+  test.setTimeout(90_000);
+  for (const width of [320, 390]) {
+    await page.setViewportSize({ width, height: 568 });
+    await openRoute(page, "/bible/JHN/3?verse=16");
+    await page.getByRole("button", { name: "More", exact: true }).click();
+    await page.getByRole("button", { name: "Add verse note" }).click();
+    await page.getByLabel("Verse note", { exact: true }).fill("A quiet reminder of God’s love.");
+    await page.getByRole("button", { name: "Save note", exact: true }).click();
+    await expect(page.getByText("Verse note saved locally.")).toBeVisible();
+    await page.getByRole("button", { name: "Edit verse note" }).click();
+    await expectNoHorizontalOverflow(page);
+    await page.screenshot({ path: testInfo.outputPath(`note-editor-${width}.png`) });
+    await page.getByRole("button", { name: "Close", exact: true }).click();
+    // Remove the test note so each viewport exercises the same capture state.
+    await page.getByRole("button", { name: "Edit verse note" }).click();
+    page.once("dialog", dialog => dialog.accept());
+    await page.getByRole("button", { name: "Remove note", exact: true }).click();
+    await expect(page.getByText("Verse note removed from current views.")).toBeVisible();
+  }
+  await page.addInitScript(() => {
+    Object.defineProperty(IDBFactory.prototype, "open", { value() { throw new DOMException("The user denied permission to access the database.", "SecurityError"); } });
+  });
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "My Daily Devotion could not open its local data." })).toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("storage-unavailable.png"), fullPage: true });
+});

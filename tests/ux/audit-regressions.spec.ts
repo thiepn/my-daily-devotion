@@ -52,7 +52,7 @@ test("reflection drafts survive cancelled navigation, reload and stale saves", a
   await other.reload(); await expect(other.getByLabel("Daily reflection")).toHaveValue("A newer version from a second tab.");
 });
 
-test("verse notes protect drafts and saved annotations survive reload", async ({ page }) => {
+test("verse notes protect drafts and saved annotations survive reload", async ({ page }, testInfo) => {
   await openRoute(page, "/bible/JHN/3?verse=16");
   const verse = page.getByRole("button", { name: "Select John 3:16", exact: true });
   await expect(verse).toHaveAttribute("aria-pressed", "true");
@@ -73,6 +73,9 @@ test("verse notes protect drafts and saved annotations survive reload", async ({
   await page.reload(); await expect(verse).toHaveClass(/is-bookmarked/); await expect(verse).toHaveClass(/is-noted/);
   await page.getByRole("button", { name: "More", exact: true }).click(); await page.getByRole("button", { name: "Edit verse note" }).click();
   await expect(page.getByLabel("Verse note", { exact: true })).toHaveValue("Remember this promise of love.");
+  await openRoute(page, "/search?q=Remember+this+promise");
+  await expect(page.locator(".search-hit").filter({ hasText: "Verse note" }).locator("strong")).toHaveText("John 3:16");
+  await page.screenshot({ path: testInfo.outputPath("search-verse-note-reference.png") });
 });
 
 test("prayer activity preserves draft wording and archive restores answered state", async ({ page }) => {
@@ -255,7 +258,8 @@ test("weekday scheduling shows keyboard focus, selection, and readable validatio
   await expect(monday.locator("+ span")).toHaveCSS("outline-width", "2px");
   await page.keyboard.press("Space"); await expect(monday).toBeChecked();
   await expect(monday.locator("+ span .icon")).toBeVisible();
-  await page.getByRole("checkbox", { name: "Sun", exact: true }).check();
+  await page.getByRole("checkbox", { name: "Sun", exact: true }).focus();
+  await page.keyboard.press("Space");
   await expectNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath("weekday-keyboard-selection-light.png"), fullPage: true });
   await page.getByRole("button", { name: "Dark theme" }).click();
