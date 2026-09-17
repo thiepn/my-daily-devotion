@@ -1,6 +1,6 @@
 {
   "name": "my-daily-devotion",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "private": true,
   "type": "module",
   "description": "My Daily Devotion — private, local-first Scripture, reflection, prayer, and devotional history.",
@@ -9,9 +9,11 @@
     "mcheyne:build": "node scripts/build-mcheyne.mjs",
     "dev": "npm run bible:build && npm run mcheyne:build && vite",
     "build": "npm run bible:build && npm run mcheyne:build && tsc -b && vite build",
+    "preview:ux": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:ux": "playwright test",
     "verify:phase0": "node scripts/verify-phase0.mjs",
     "verify:phase1": "npm run verify:phase0 && npm run typecheck && npm run test && npm run build",
     "verify:phase2": "npm run verify:phase1 && node scripts/verify-phase2.mjs",
@@ -22,9 +24,10 @@
     "verify:phase7": "npm run verify:phase6 && node scripts/verify-phase7.mjs",
     "verify:phase8": "npm run verify:phase7 && node scripts/verify-phase8.mjs",
     "verify:phase9": "npm run verify:phase8 && node scripts/verify-phase9.mjs",
-    "verify:phase10": "npm run verify:phase9 && node scripts/verify-phase10.mjs"
+    "verify:phase10": "npm run verify:phase9 && node scripts/verify-phase10.mjs",
+    "verify:phase11": "npm run verify:phase10 && npm run test:ux && node scripts/verify-phase11.mjs"
   },
   "dependencies": { "dexie": "4.4.6", "react": "19.3.0", "react-dom": "19.3.0", "react-router-dom": "7.18.3" },
-  "devDependencies": { "@types/react": "19.3.0", "@types/react-dom": "19.3.0", "@vitejs/plugin-react": "6.1.1", "fake-indexeddb": "6.2.5", "fflate": "0.8.3", "typescript": "7.0.2", "vite": "8.3.0", "vitest": "5.0.1" },
+  "devDependencies": { "@axe-core/playwright": "4.13.0", "@playwright/test": "1.63.0", "@types/react": "19.3.0", "@types/react-dom": "19.3.0", "@vitejs/plugin-react": "6.1.1", "fake-indexeddb": "6.2.5", "fflate": "0.8.3", "typescript": "7.0.2", "vite": "8.3.0", "vitest": "5.0.1" },
   "engines": { "node": ">=22.12" }
 }
