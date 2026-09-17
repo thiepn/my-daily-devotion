@@ -12,6 +12,8 @@ MDD is intentionally not a social network, content feed, habit game, or general-
 
 The planned Phase 0–12 development sequence is complete. Phase 12 converts the Phase 11-validated product into a reproducible, checksummed release candidate without adding another devotional feature system or changing IndexedDB schema version 1.
 
+The final 1.0 ship rule is enforced on `main`: the independent Phase 0 Contract and cumulative Release Certification CI must both be green on the same commit.
+
 MDD 1.0 includes the full offline BSB reader and M’Cheyne workflow, reflection and Verse Notes, prayer capture/lifecycle/scheduling/focused sessions, automatic devotional history, grouped local search, Scripture Collections, encrypted/checksum-validated backup and restore, the quiet-editorial phone/tablet/desktop UI, installable offline PWA behavior, and browser validation of the complete **Read → Respond → Pray → Remember** journey.
 
 Release hardening adds a committed npm lockfile, `npm ci` certification, high/critical production-dependency auditing, self-only Content Security Policy, no-referrer policy, generated third-party license notices, runtime-error/deep-link release smoke tests, and a versioned production ZIP with SHA-256 and release manifest.
