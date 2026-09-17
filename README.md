@@ -8,13 +8,13 @@ MDD is intentionally not a social network, content feed, habit game, or general-
 
 ## Current status
 
-**Phase 11 — UX Validation**
+**My Daily Devotion 1.0.0 — Phase 12 Release Hardening**
 
-Phase 11 is implemented and cumulatively certified. MDD now has browser-level validation for the actual devotional journeys built across Phases 0–10 rather than relying only on repository and component tests.
+The planned Phase 0–12 development sequence is complete. Phase 12 converts the Phase 11-validated product into a reproducible, checksummed release candidate without adding another devotional feature system or changing IndexedDB schema version 1.
 
-The automated UX matrix covers first-run M’Cheyne setup, Scripture reading and factual completion, the complete **Read → Respond → Pray → Remember** flow, Scripture Search and Collections, desktop and touch/mobile layouts, keyboard navigation and route focus, WCAG A/AA automated checks, 320 px reflow, 200% text resizing, and a controlled cold-start PWA journey with the network fully disabled.
+MDD 1.0 includes the full offline BSB reader and M’Cheyne workflow, reflection and Verse Notes, prayer capture/lifecycle/scheduling/focused sessions, automatic devotional history, grouped local search, Scripture Collections, encrypted/checksum-validated backup and restore, the quiet-editorial phone/tablet/desktop UI, installable offline PWA behavior, and browser validation of the complete **Read → Respond → Pray → Remember** journey.
 
-Validation also closed concrete defects found during testing: light-theme secondary-text contrast, accessible date/history controls, SPA route focus, transient false-empty History states, complete offline precaching of lazy route chunks, and Vary-safe Cache Storage matching for offline modules. Phase 11 did not add a new devotional feature system or change the IndexedDB schema.
+Release hardening adds a committed npm lockfile, `npm ci` certification, high/critical production-dependency auditing, self-only Content Security Policy, no-referrer policy, generated third-party license notices, runtime-error/deep-link release smoke tests, and a versioned production ZIP with SHA-256 and release manifest.
 
 - Phase 0 contract: [`docs/PHASE_0_IMPLEMENTATION_CONTRACT.md`](docs/PHASE_0_IMPLEMENTATION_CONTRACT.md)
 - Phase 1 foundation: [`docs/PHASE_1_LOCAL_FOUNDATION.md`](docs/PHASE_1_LOCAL_FOUNDATION.md)
@@ -28,20 +28,34 @@ Validation also closed concrete defects found during testing: light-theme second
 - Phase 9 Dedicated UI Refinement: [`docs/PHASE_9_UI_REFINEMENT.md`](docs/PHASE_9_UI_REFINEMENT.md)
 - Phase 10 PWA, Accessibility, Performance & Resilience: [`docs/PHASE_10_PWA_ACCESSIBILITY_PERFORMANCE_RESILIENCE.md`](docs/PHASE_10_PWA_ACCESSIBILITY_PERFORMANCE_RESILIENCE.md)
 - Phase 11 UX Validation: [`docs/PHASE_11_UX_VALIDATION.md`](docs/PHASE_11_UX_VALIDATION.md)
+- Phase 12 Release Hardening: [`docs/PHASE_12_RELEASE_HARDENING.md`](docs/PHASE_12_RELEASE_HARDENING.md)
+- Privacy & data behavior: [`docs/PRIVACY_AND_DATA.md`](docs/PRIVACY_AND_DATA.md)
+- Release checklist: [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md)
+- Changelog: [`CHANGELOG.md`](CHANGELOG.md)
 
 ## Local development
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-The build generates pinned BSB, the local verse-search corpus, and M’Cheyne runtime assets from their canonical sources. Service-worker registration is production-only, so normal Vite development does not cache development assets.
+The build generates the pinned BSB corpus, local verse-search index, M’Cheyne runtime asset, and third-party notices from canonical/locked sources. Service-worker registration is production-only, so normal Vite development does not cache development assets.
 
-## Verification
+## Final verification
 
 ```bash
-npm run verify:phase11
+npm run verify:phase12
 ```
 
-The Phase 11 gate reruns every earlier contract, TypeScript verification, the full Vitest suite, production Scripture/M’Cheyne builds, all prior phase gates, and the Playwright browser UX matrix before certifying the finished user journeys, accessibility/reflow behavior, and controlled cold-offline PWA experience.
+The Phase 12 gate reruns the complete Phase 0–11 chain, TypeScript and all Vitest tests, production builds, desktop/mobile/offline Playwright validation and release smoke tests, then packages and reopens the final archive to verify version alignment, schema, full BSB/search/M’Cheyne contents, security metadata, license notices, absence of source maps/development residue, and SHA-256 integrity.
+
+## Build a release package
+
+```bash
+npm run release:package
+```
+
+This writes the deployable web/PWA archive and integrity metadata to `release/`. CI uploads the same directory only after the full release certification passes.
+
+After 1.0, work should proceed through ordinary maintenance, bug-fix, dependency-update, or explicitly scoped feature releases rather than automatic new roadmap phases.
