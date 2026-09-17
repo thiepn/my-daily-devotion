@@ -25,6 +25,7 @@
 }
 
 .brand-mark {
+  flex-shrink: 0;
   width: 35px;
   height: 35px;
   color: var(--color-ink);
@@ -41,14 +42,15 @@
   font-size: .98rem;
   font-weight: 700;
   letter-spacing: -.015em;
-  white-space: nowrap;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .brand-copy small {
   color: var(--color-ink-faint);
   font-size: .63rem;
   letter-spacing: .045em;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 .side-nav {

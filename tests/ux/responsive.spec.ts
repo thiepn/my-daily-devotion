@@ -29,6 +29,7 @@ test.describe("responsive and reflow UX", () => {
     for (const route of coreRoutes) {
       await openRoute(page, route);
       await expect(page.locator("html")).toHaveCSS("font-size", "32px");
+      expect(await page.locator(".brand-copy").evaluate((element) => element.scrollWidth - element.clientWidth), "Enlarged branding must remain inside the navigation rail").toBeLessThanOrEqual(1);
       await expectNoHorizontalOverflow(page);
     }
   });
