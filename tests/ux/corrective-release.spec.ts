@@ -115,7 +115,8 @@ test("failed enrollment and reading writes show an error and succeed on retry", 
 });
 
 test("Today refreshes at local midnight without changing a historical reflection", async ({ page, context }) => {
-  await page.clock.install({ time: new Date("2026-09-17T21:59:58Z") });
+  await page.clock.install({ time: new Date("2026-09-17T21:59:50Z") });
+  await page.clock.pauseAt(new Date("2026-09-17T21:59:58Z"));
   await enrollCalendarPlan(page); await expect(page.getByRole("heading", { name: "Day 260 readings" })).toBeVisible();
   await page.clock.fastForward(5000); await expect(page.getByRole("heading", { name: "Day 261 readings" })).toBeVisible();
   const other = await context.newPage(); await openRoute(other, "/today/reflection/2026-09-17");
@@ -142,7 +143,7 @@ test("encrypted backup restores in a fresh browser context on this engine", asyn
   try {
     const restored = await target.newPage(); await openRoute(restored, "/data");
     await restored.getByLabel("Backup file").setInputFiles({ name: "test.mddbackup", mimeType: "application/zip", buffer: bytes });
-    await restored.getByLabel("Backup password", { exact: false }).fill("engine-test-passphrase");
+    await restored.getByLabel("Backup password", { exact: false }).last().fill("engine-test-passphrase");
     await restored.getByRole("button", { name: "Preview & validate" }).click();
     await restored.getByRole("button", { name: "Merge validated backup" }).click();
     await expect(restored.getByRole("status")).toContainText("merged successfully");
