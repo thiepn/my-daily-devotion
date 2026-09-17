@@ -1,4 +1,4 @@
-name: History, Search & Data Portability CI
+name: Dedicated UI Refinement CI
 
 on:
   push:
@@ -24,5 +24,5 @@ jobs:
           node-version: "24"
       - name: Install
         run: npm install --ignore-scripts
-      - name: Verify Phase 8
-        run: npm run verify:phase8
+      - name: Verify Phase 9
+        run: npm run verify:phase9
