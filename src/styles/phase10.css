@@ -1,0 +1,233 @@
+/* Phase 10 — PWA, Accessibility, Performance & Resilience */
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+.skip-link {
+  position: fixed;
+  z-index: 100;
+  top: 8px;
+  left: 8px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 14px;
+  border: 1px solid var(--color-ink);
+  border-radius: var(--radius-small);
+  color: var(--color-surface);
+  background: var(--color-ink);
+  text-decoration: none;
+  transform: translateY(-160%);
+  transition: transform var(--transition-fast);
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+}
+
+.workspace-content {
+  min-width: 0;
+}
+
+.route-loading {
+  width: min(calc(100% - (var(--screen-gutter, 32px) * 2)), var(--content-max));
+  margin: 0 auto;
+  padding: clamp(48px, 7vw, 84px) 0;
+  color: var(--color-ink-soft);
+}
+
+.route-loading strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--color-ink);
+  font-family: var(--font-editorial);
+  font-size: 1.1rem;
+}
+
+.platform-status {
+  display: grid;
+  gap: 1px;
+  padding: 10px var(--screen-gutter, 32px);
+  border-bottom: 1px solid var(--color-line);
+  color: var(--color-ink-soft);
+  background: var(--color-surface-subtle);
+  font-size: .76rem;
+}
+
+.platform-status > span {
+  min-height: 32px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px 10px;
+}
+
+.platform-status strong {
+  color: var(--color-ink);
+}
+
+.platform-status button {
+  min-height: 36px;
+  padding: 0 9px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-small);
+  color: var(--color-ink);
+  background: var(--color-surface);
+}
+
+.storage-resilience {
+  max-width: 760px;
+  border-top: 1px solid var(--color-line-strong);
+  padding-top: 22px;
+}
+
+.storage-resilience h2 {
+  margin: 6px 0 12px;
+  font-family: var(--font-editorial);
+  font-size: clamp(1.55rem, 2.8vw, 2.2rem);
+  font-weight: 500;
+}
+
+.storage-resilience p {
+  max-width: 68ch;
+  color: var(--color-ink-soft);
+  line-height: 1.65;
+}
+
+.storage-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 20px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.storage-facts div {
+  min-height: 66px;
+  display: grid;
+  align-content: center;
+  gap: 2px;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.storage-facts div:nth-child(odd) {
+  padding-right: 18px;
+  border-right: 1px solid var(--color-line);
+}
+
+.storage-facts div:nth-child(even) {
+  padding-left: 18px;
+}
+
+.storage-facts dt {
+  color: var(--color-ink-faint);
+  font-size: .68rem;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+}
+
+.storage-facts dd {
+  margin: 0;
+  font-family: var(--font-editorial);
+  font-size: 1rem;
+}
+
+.storage-resilience button {
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-small);
+  color: var(--color-ink-soft);
+  background: transparent;
+}
+
+.import-mode {
+  min-width: 0;
+  padding: 16px 0 0;
+  border: 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.import-mode legend {
+  padding: 0 10px 0 0;
+  color: var(--color-ink-faint);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.collection-nav-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  border-bottom: 1px solid var(--color-line);
+}
+
+.collection-nav-row > button {
+  min-height: 58px;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink-soft);
+  text-align: left;
+}
+
+.collection-nav-row > button.is-active {
+  color: var(--color-ink);
+}
+
+.collection-add-here {
+  min-width: 72px;
+  min-height: 44px;
+  align-self: center;
+  padding: 0 8px;
+  border: 0;
+  border-left: 1px solid var(--color-line);
+  color: var(--color-accent-strong);
+  background: transparent;
+  font-size: .68rem;
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --color-line: var(--color-line-strong);
+  }
+
+  .nav-link.active,
+  .history-tabs a.is-active,
+  .prayer-status-tabs a.is-active {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+}
+
+@media (forced-colors: active) {
+  .reading-state,
+  .event-mark,
+  .history-entry-mark,
+  .history-day-marks i,
+  .history-calendar-legend i {
+    forced-color-adjust: auto;
+  }
+}
+
+@media (max-width: 620px) {
+  .platform-status {
+    padding-inline: 18px;
+  }
+
+  .platform-status > span {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .storage-facts {
+    grid-template-columns: 1fr;
+  }
+
+  .storage-facts div:nth-child(odd),
+  .storage-facts div:nth-child(even) {
+    padding-inline: 0;
+    border-right: 0;
+  }
+}
