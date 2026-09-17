@@ -14,15 +14,15 @@ async function capture(page: Page, testInfo: TestInfo, name: string, surface: Su
 
 test("visual record of empty major screens in light, dark, and mobile", async ({ page }, testInfo) => {
   test.setTimeout(120_000);
-  for (const mode of ["light", "dark", "mobile"] as const) {
-    await page.setViewportSize(mode === "mobile" ? { width: 390, height: 844 } : { width: 1440, height: 900 });
-    await openRoute(page, "/today"); await page.getByRole("button", { name: mode === "dark" ? "Dark theme" : "Light theme" }).click();
+  for (const mode of ["light", "dark", "mobile", "mobile-dark"]) {
+    await page.setViewportSize(mode.includes("mobile") ? { width: mode === "small-mobile" ? 320 : 390, height: mode === "small-mobile" ? 568 : 844 } : mode === "tablet-portrait" ? { width: 768, height: 1024 } : mode === "tablet-landscape" ? { width: 1024, height: 768 } : { width: 1440, height: 900 });
+    await openRoute(page, "/today"); await page.getByRole("button", { name: mode.includes("dark") ? "Dark theme" : "Light theme" }).click();
     for (const surface of emptySurfaces) await capture(page, testInfo, `empty-${mode}`, surface);
   }
 });
 
 test("visual record of populated devotional journeys and management screens", async ({ page }, testInfo) => {
-  test.setTimeout(180_000);
+  test.setTimeout(300_000);
   const errors: string[] = []; page.on("pageerror", (error) => errors.push(error.message));
   await enrollCalendarPlan(page);
   await page.locator(".reading-toggle").first().click();
@@ -46,15 +46,18 @@ test("visual record of populated devotional journeys and management screens", as
   await openRoute(page, "/bible/collections?translation=BSB&start=JHN.3.16&end=JHN.3.16"); await page.getByLabel("New collection").fill("Promises to remember");
   await page.getByRole("button", { name: "Add", exact: true }).click(); await page.getByRole("button", { name: "Add selected passage to Promises to remember" }).click();
   await expect(page.getByRole("link", { name: "John 3:16", exact: true })).toBeVisible();
+  await openRoute(page, "/bible/JHN/3?verse=16");
+  await page.getByRole("button", { name: "Highlight", exact: true }).click();
+  await expect(page.getByRole("button", { name: "Remove highlight" })).toBeVisible();
   const surfaces: Surface[] = [
     ...emptySurfaces.filter((item) => item[0] !== "search"),
     ["plan", "/today/plan", "Reading plan"], ["prayer-new", "/prayer/new", "Add prayer"], ["prayer-detail", prayer, "Prayer"],
     ["prayer-settings", `${prayer}/settings`, "Prayer details"], ["people", "/prayer/people", "People"], ["categories", "/prayer/categories", "Categories"],
     ["moments", "/history/moments", "Moments"], ["search-results", "/search?q=love", "Search"],
   ];
-  for (const mode of ["light", "dark", "mobile"] as const) {
-    await page.setViewportSize(mode === "mobile" ? { width: 390, height: 844 } : { width: 1440, height: 900 });
-    await page.getByRole("button", { name: mode === "dark" ? "Dark theme" : "Light theme" }).click();
+  for (const mode of ["light", "dark", "mobile", "mobile-dark", "small-mobile", "tablet-portrait", "tablet-landscape"] as const) {
+    await page.setViewportSize(mode.includes("mobile") ? { width: mode === "small-mobile" ? 320 : 390, height: mode === "small-mobile" ? 568 : 844 } : mode === "tablet-portrait" ? { width: 768, height: 1024 } : mode === "tablet-landscape" ? { width: 1024, height: 768 } : { width: 1440, height: 900 });
+    await page.getByRole("button", { name: mode.includes("dark") ? "Dark theme" : "Light theme" }).click();
     for (const surface of surfaces) await capture(page, testInfo, `populated-${mode}`, surface);
     await openRoute(page, "/prayer/session?depth=quick"); await expect(page.locator(".focused-prayer-card")).toBeVisible();
     await expectNoHorizontalOverflow(page); await page.screenshot({ path: testInfo.outputPath(`populated-${mode}-focused-prayer.png`) });
@@ -67,7 +70,7 @@ test("visual record of populated devotional journeys and management screens", as
 });
 
 test("requested viewport matrix, system theme, text scaling and Scripture forms", async ({ page }, testInfo) => {
-  test.setTimeout(180_000);
+  test.setTimeout(300_000);
   for (const [width, height] of [[1440,900],[1920,1080],[768,1024],[1024,768],[320,568],[360,800],[390,844],[430,932],[844,390]]) {
     await page.setViewportSize({ width: width!, height: height! });
     for (const surface of emptySurfaces.filter((item) => ["today","bible","prayer","history"].includes(item[0]))) await capture(page, testInfo, `${width}x${height}`, surface);

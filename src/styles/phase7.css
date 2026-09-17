@@ -8,7 +8,10 @@
 .weekday-picker { display: flex; flex-wrap: wrap; gap: 7px; }
 .weekday-picker label { display: block; }
 .weekday-picker input { position: absolute; opacity: 0; pointer-events: none; }
-.weekday-picker span { min-width: 46px; min-height: 38px; display: grid; place-items: center; border: 1px solid var(--color-line); border-radius: var(--radius-small); cursor: pointer; font-size: .7rem; }
+.weekday-picker span { min-width: 46px; min-height: 38px; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0 8px; border: 1px solid var(--color-line); border-radius: var(--radius-small); cursor: pointer; font-size: .7rem; }
+.weekday-picker .icon { width: 14px; height: 14px; visibility: hidden; }
+.weekday-picker input:checked + span .icon { visibility: visible; }
+.weekday-picker input:focus-visible + span { outline: 2px solid var(--color-focus-ring); outline-offset: 3px; }
 .weekday-picker input:checked + span { border-color: var(--color-accent); color: var(--color-accent-strong); background: var(--color-accent-soft); }
 .field-help { margin: -6px 0 0; line-height: 1.55; }
 .metadata-manage-links, .prayer-management-links { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; }

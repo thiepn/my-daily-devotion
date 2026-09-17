@@ -10,7 +10,7 @@ const SOURCE_PATH = join(ROOT, "canonical/bsb/source-manifest.json");
 const OUTPUT_DIR = join(ROOT, "public/bible");
 const BOOKS_DIR = join(OUTPUT_DIR, "books");
 const SEARCH_FILE = join(OUTPUT_DIR, "search-index.json");
-const PARSER_VERSION = "mdd-usj-normalizer/3";
+const PARSER_VERSION = "mdd-usj-normalizer/4";
 const NORMALIZED_DATA_VERSION = 1;
 
 function textContent(content) {
@@ -47,7 +47,7 @@ export function normalizeUsjBook(usj, bookMeta) {
   const beginChapter = (node) => { const number = Number(node.number); if (!Number.isInteger(number) || number < 1) return; chapter = { chapter: number, blocks: [], notes: [], verseCount: 0 }; chapters.push(chapter); currentVerseKey = null; nextIsVerseStart = false; };
   const walkContent = (content, segments, notes, style = { redLetter: false, emphasis: null }) => {
     if (!Array.isArray(content)) return;
-    for (const item of content) {
+    for (const [index, item] of content.entries()) {
       if (typeof item === "string") {
         const text = item.replace(/\s+/g, " "); if (!text) continue;
         appendSegment(segments, { verseKey: currentVerseKey, verse: verseFromKey(currentVerseKey), text, isVerseStart: nextIsVerseStart, redLetter: style.redLetter, emphasis: style.emphasis }); nextIsVerseStart = false; continue;
@@ -56,6 +56,12 @@ export function normalizeUsjBook(usj, bookMeta) {
       if (item.type === "verse") { if (item.number && item.sid) { currentVerseKey = sidToVerseKey(item.sid); nextIsVerseStart = currentVerseKey !== null; } continue; }
       if (item.type === "note") { const noteText = textContent(item.content); if (noteText) notes.push({ verseKey: currentVerseKey, marker: item.marker ?? "note", text: noteText }); continue; }
       const marker = typeof item.marker === "string" ? item.marker : "";
+      // The pinned BSB source sometimes places separate added words in adjacent
+      // add spans without a space (for example "in keeping" + "His", 2 Peter 3:9).
+      const previousItem = content[index - 1];
+      if (marker === "add" && previousItem?.marker === "add" && /[\p{L}\p{N}]$/u.test(segments.at(-1)?.text ?? "") && /^[\p{L}\p{N}]/u.test(textContent(item.content))) {
+        segments.at(-1).text += " ";
+      }
       const nextStyle = { redLetter: style.redLetter || marker === "wj", emphasis: style.emphasis ?? (/^(?:bd|bdit|em|it|k|nd|sc|sup)$/.test(marker) ? marker : null) };
       walkContent(item.content, segments, notes, nextStyle);
     }
@@ -79,14 +85,18 @@ export function normalizeUsjBook(usj, bookMeta) {
   return { schemaVersion: NORMALIZED_DATA_VERSION, translationId: "BSB", bookId: bookMeta.id, name: bookMeta.name, testament: bookMeta.testament, order: bookMeta.order, chapterCount: chapters.length, chapters };
 }
 
-function searchDocumentsForBook(book) {
+export function searchDocumentsForBook(book) {
   const docs = [];
   for (const chapter of book.chapters) {
     const verses = new Map();
     for (const block of chapter.blocks) {
+      const blockVerses = new Map();
       for (const segment of block.segments) {
         if (!segment.verseKey || segment.verse === null || !segment.text) continue;
-        verses.set(segment.verseKey, `${verses.get(segment.verseKey) ?? ""}${segment.text}`);
+        blockVerses.set(segment.verseKey, `${blockVerses.get(segment.verseKey) ?? ""}${segment.text}`);
+      }
+      for (const [verseKey, text] of blockVerses) {
+        verses.set(verseKey, `${verses.get(verseKey) ?? ""} ${text}`);
       }
     }
     for (const [verseKey, text] of verses) {

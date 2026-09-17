@@ -46,7 +46,7 @@ export function normalizePrayerScheduleDraft(draft: PrayerScheduleDraft): Prayer
   if (mode === "WEEKDAYS") {
     const weekdays = [...new Set(draft.weekdays ?? [])].sort((a, b) => a - b);
     if (!weekdays.length || weekdays.some((day) => !Number.isInteger(day) || day < 1 || day > 7)) {
-      throw new Error("Selected weekdays must use ISO weekdays 1 (Monday) through 7 (Sunday).");
+      throw new Error("Choose at least one weekday, from Monday to Sunday.");
     }
     return { mode, weekdays, intervalDays: null, monthlyDay: null, onDate: null, anchorDate: null };
   }
@@ -102,7 +102,10 @@ export function eventQueueReason(prayer: Prayer, localDate: LocalDate): EventQue
 export function scheduleLabel(schedule: PrayerSchedule | null): string {
   if (!schedule || schedule.mode === "ROTATION") return "Normal rotation";
   if (schedule.mode === "DAILY") return "Daily";
-  if (schedule.mode === "WEEKDAYS") return `Selected weekdays (${schedule.weekdays.join(", ")})`;
+  if (schedule.mode === "WEEKDAYS") {
+    const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+    return `Every ${schedule.weekdays.map((day) => days[day - 1]).join(", ")}`;
+  }
   if (schedule.mode === "INTERVAL_DAYS") return `Every ${schedule.intervalDays} days`;
   if (schedule.mode === "MONTHLY") return `Monthly · day ${schedule.monthlyDay}`;
   if (schedule.mode === "ON_DATE") return `One date · ${schedule.onDate}`;

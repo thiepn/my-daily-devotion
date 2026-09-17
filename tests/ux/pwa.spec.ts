@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 import { resolve, extname } from "node:path";
 
 test.describe("offline PWA UX", () => {
-  test("a controlled cold start can read Scripture and search while fully offline", async ({ context, page }) => {
+  test("a controlled cold start can read Scripture and search while fully offline", async ({ context, page }, testInfo) => {
     test.setTimeout(120_000);
     await page.goto("/#/bible/JHN/3");
     await expect(page.getByRole("heading", { level: 2, name: "John 3" })).toBeVisible();
@@ -53,6 +53,15 @@ test.describe("offline PWA UX", () => {
     await coldPage.goto("/#/history/moments");
     await expect(coldPage.getByText("A request saved while completely offline.")).toBeVisible();
     await coldPage.reload(); await expect(coldPage.getByText("A request saved while completely offline.")).toBeVisible();
+    for (const theme of ["Light", "Dark"]) {
+      await coldPage.getByRole("button", { name: `${theme} theme` }).click();
+      for (const [name, route, heading] of [["today", "/today", "Today"], ["bible", "/bible/JHN/3", "Bible"], ["search", "/search?q=John+3%3A16", "Search"], ["prayer", "/prayer", "Prayer"], ["history", "/history", "History"]]) {
+        await coldPage.goto(`/#${route}`); await expect(coldPage.getByRole("heading", { name: heading!, exact: true, level: 1 })).toBeVisible();
+        if (name === "bible") await expect(coldPage.locator(".scripture-copy")).toBeVisible();
+        if (name === "search") await expect(coldPage.locator(".search-hit").first()).toBeVisible();
+        await coldPage.screenshot({ path: testInfo.outputPath(`offline-${theme}-${name}.png`) });
+      }
+    }
     expect(pageErrors).toEqual([]);
   });
 

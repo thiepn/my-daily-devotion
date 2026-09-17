@@ -1,6 +1,7 @@
 import type { Category, LocalDate, Person, Prayer, PrayerSchedule, PrayerScheduleMode, UUID } from "../domain/types";
 import { todayLocalDate } from "../domain/time";
 import type { PrayerAdministrationInput } from "../data/repositories/prayers";
+import { Icon } from "../app/visual/Icon";
 
 export interface PrayerAdministrationValue {
   personId: UUID | null;
@@ -61,7 +62,7 @@ export function PrayerAdministrationFields({ value, people, categories, onChange
       <label className="schedule-field"><span>Schedule</span><select value={value.scheduleMode} onChange={(event) => set({ scheduleMode: event.target.value as PrayerScheduleMode })}>
         <option value="ROTATION">Normal rotation</option><option value="DAILY">Daily</option><option value="WEEKDAYS">Selected weekdays</option><option value="INTERVAL_DAYS">Every few days</option><option value="MONTHLY">Monthly</option><option value="ON_DATE">One specific date</option><option value="MANUAL_ONLY">Manual only</option>
       </select></label>
-      {value.scheduleMode === "WEEKDAYS" ? <div className="weekday-picker" aria-label="Scheduled weekdays">{weekdayOptions.map(([day, label]) => <label key={day}><input type="checkbox" checked={value.weekdays.includes(day)} onChange={() => toggleWeekday(day)} /><span>{label}</span></label>)}</div> : null}
+      {value.scheduleMode === "WEEKDAYS" ? <div className="weekday-picker" aria-label="Scheduled weekdays">{weekdayOptions.map(([day, label]) => <label key={day}><input type="checkbox" checked={value.weekdays.includes(day)} onChange={() => toggleWeekday(day)} /><span><Icon name="check" aria-hidden="true" />{label}</span></label>)}</div> : null}
       {value.scheduleMode === "INTERVAL_DAYS" ? <div className="prayer-field-grid"><label><span>Every</span><input type="number" min="1" max="3650" value={value.intervalDays} onChange={(event) => set({ intervalDays: event.target.value })} /></label><label><span>Starting</span><input type="date" value={value.anchorDate} onChange={(event) => set({ anchorDate: event.target.value })} /></label></div> : null}
       {value.scheduleMode === "MONTHLY" ? <label><span>Day of month</span><input type="number" min="1" max="31" value={value.monthlyDay} onChange={(event) => set({ monthlyDay: event.target.value })} /></label> : null}
       {value.scheduleMode === "ON_DATE" ? <label><span>Date</span><input type="date" value={value.onDate} onChange={(event) => set({ onDate: event.target.value })} /></label> : null}
