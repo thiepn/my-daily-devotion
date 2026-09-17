@@ -2,7 +2,7 @@ import { ActivityLog } from "../data/activity";
 import { db, type MddDatabase } from "../data/database";
 import { DevotionDayRepository } from "../data/repositories/devotion-days";
 import { newMutableFields, nextMutableFields, nowInstant } from "../domain/identity";
-import { todayLocalDate } from "../domain/time";
+import { assertLocalDate, todayLocalDate } from "../domain/time";
 import type { LocalDate, PlanEnrollment, ReadingProgress, UUID } from "../domain/types";
 import { calendarYear } from "./calendar";
 import type { AssignmentProgressSummary, McheynePlan } from "./types";
@@ -57,6 +57,8 @@ export class McheyneRepository {
   }
 
   async enrollCalendar(localDate: LocalDate, startSequence: number): Promise<PlanEnrollment> {
+    assertLocalDate(localDate);
+    if (!Number.isInteger(startSequence) || startSequence < 1 || startSequence > 365) throw new Error("Invalid starting sequence.");
     const enrollment: PlanEnrollment = {
       ...newMutableFields(),
       planId: "mcheyne-classic",
@@ -73,6 +75,7 @@ export class McheyneRepository {
   }
 
   async enrollSelfPaced(localDate: LocalDate): Promise<PlanEnrollment> {
+    assertLocalDate(localDate);
     const enrollment: PlanEnrollment = {
       ...newMutableFields(),
       planId: "mcheyne-classic",
@@ -86,6 +89,14 @@ export class McheyneRepository {
       await this.setActiveEnrollment(enrollment.id);
     });
     return enrollment;
+  }
+
+  async enrollCalendarWithProgress(localDate: LocalDate, throughSequence: number): Promise<PlanEnrollment> {
+    return this.database.transaction("rw", this.database.planEnrollments, this.database.preferences, this.database.readingProgress, async () => {
+      const enrollment = await this.enrollCalendar(localDate, 1);
+      await this.bulkImportThrough(enrollment.id, throughSequence);
+      return enrollment;
+    });
   }
 
   async listProgress(enrollmentId: UUID): Promise<ReadingProgress[]> {
@@ -163,39 +174,34 @@ export class McheyneRepository {
   }
 
   async bulkImportThrough(enrollmentId: UUID, throughSequence: number): Promise<number> {
-    const enrollment = await this.getEnrollment(enrollmentId);
-    if (!enrollment) throw new Error("M'Cheyne enrollment not found.");
-    const bounded = Math.max(0, Math.min(365, throughSequence));
-    const existing = await this.listProgress(enrollmentId);
-    const byKey = new Map(existing.map((item) => [readingKey(item.assignmentSequence, item.readingIndex), item]));
-    const at = nowInstant();
-    const rows: ReadingProgress[] = [];
-
-    for (let sequence = 1; sequence <= bounded; sequence += 1) {
-      for (let readingIndex = 0; readingIndex < 4; readingIndex += 1) {
-        const current = byKey.get(readingKey(sequence, readingIndex));
-        if (isComplete(current)) continue;
-        rows.push(current
-          ? { ...current, ...nextMutableFields(current, at), completedAt: at, deletedAt: null }
-          : {
-              ...newMutableFields(at),
-              planEnrollmentId: enrollmentId,
-              assignmentSequence: sequence,
-              readingIndex,
-              completedAt: at,
-            });
-      }
+    if (!Number.isInteger(throughSequence) || throughSequence < 0 || throughSequence > 365) {
+      throw new Error("Import sequence must be an integer from 0 to 365.");
     }
-
-    const nextEnrollment: PlanEnrollment = enrollment.startSequence === 1
-      ? enrollment
-      : { ...enrollment, ...nextMutableFields(enrollment, at), startSequence: 1 };
-
-    await this.database.transaction("rw", this.database.readingProgress, this.database.planEnrollments, async () => {
-      if (rows.length > 0) await this.database.readingProgress.bulkPut(rows);
-      if (nextEnrollment !== enrollment) await this.database.planEnrollments.put(nextEnrollment);
+    // Read, decide and write under the same lock. An explicit completion/undo
+    // queued after this transaction wins; another import sees its committed rows.
+    return this.database.transaction("rw", this.database.readingProgress, this.database.planEnrollments, async () => {
+      const enrollment = await this.getEnrollment(enrollmentId);
+      if (!enrollment) throw new Error("M'Cheyne enrollment not found.");
+      if (throughSequence === 0) return 0;
+      const existing = await this.listProgress(enrollmentId);
+      const byKey = new Map(existing.map((item) => [readingKey(item.assignmentSequence, item.readingIndex), item]));
+      const at = nowInstant();
+      const rows: ReadingProgress[] = [];
+      for (let sequence = 1; sequence <= throughSequence; sequence += 1) {
+        for (let readingIndex = 0; readingIndex < 4; readingIndex += 1) {
+          const current = byKey.get(readingKey(sequence, readingIndex));
+          if (isComplete(current)) continue;
+          rows.push(current
+            ? { ...current, ...nextMutableFields(current, at), completedAt: at, deletedAt: null }
+            : { ...newMutableFields(at), planEnrollmentId: enrollmentId, assignmentSequence: sequence, readingIndex, completedAt: at });
+        }
+      }
+      if (rows.length) await this.database.readingProgress.bulkPut(rows);
+      if (enrollment.startSequence !== 1) {
+        await this.database.planEnrollments.put({ ...enrollment, ...nextMutableFields(enrollment, at), startSequence: 1 });
+      }
+      return rows.length;
     });
-    return rows.length;
   }
 
   async getCurrentSelfPacedSequence(plan: McheynePlan, enrollment: PlanEnrollment): Promise<number | null> {

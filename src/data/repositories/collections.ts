@@ -1,3 +1,4 @@
+import { assertExpectedRevision } from "../conflicts";
 import { newMutableFields, nextMutableFields, nowInstant } from "../../domain/identity";
 import type { Collection, CollectionItem, ScriptureReference, UUID } from "../../domain/types";
 import type { MddDatabase } from "../database";
@@ -27,12 +28,13 @@ export class CollectionRepository {
     return collection;
   }
 
-  async rename(id: UUID, name: string, description: string | null = null): Promise<Collection> {
-    return this.database.transaction("rw", this.database.collections, () => this.renameInternal(id, name, description));
+  async rename(id: UUID, name: string, description: string | null = null, expectedRevision?: number): Promise<Collection> {
+    return this.database.transaction("rw", this.database.collections, () => this.renameInternal(id, name, description, expectedRevision));
   }
-  private async renameInternal(id: UUID, name: string, description: string | null): Promise<Collection> {
+  private async renameInternal(id: UUID, name: string, description: string | null, expectedRevision?: number): Promise<Collection> {
     const current = await this.database.collections.get(id);
     if (!current || current.deletedAt) throw new Error("Collection not found.");
+    assertExpectedRevision(current, expectedRevision);
     const normalized = name.trim();
     if (!normalized) throw new Error("Collection name is required.");
     if ((await this.list()).some((item) => item.id !== id && item.name.toLocaleLowerCase() === normalized.toLocaleLowerCase())) throw new Error("A collection with this name already exists.");

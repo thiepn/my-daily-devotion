@@ -1,15 +1,15 @@
 {
   "name": "my-daily-devotion",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
-  "description": "My Daily Devotion — private, local-first Scripture, reflection, prayer, and devotional history.",
+  "description": "My Daily Devotion \u2014 private, local-first Scripture, reflection, prayer, and devotional history.",
   "scripts": {
     "bible:build": "node scripts/build-bsb.mjs",
     "mcheyne:build": "node scripts/build-mcheyne.mjs",
     "notices:build": "node scripts/build-third-party-notices.mjs",
     "dev": "npm run bible:build && npm run mcheyne:build && npm run notices:build && vite",
-    "build": "npm run bible:build && npm run mcheyne:build && npm run notices:build && tsc -b && vite build && node scripts/finalize-sw.mjs",
+    "build": "npm run bible:build && npm run mcheyne:build && npm run scripture:verify && npm run notices:build && tsc -b && vite build && node scripts/finalize-sw.mjs",
     "preview:ux": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
@@ -29,13 +29,16 @@
     "verify:phase9": "npm run verify:phase8 && node scripts/verify-phase9.mjs",
     "verify:phase10": "npm run verify:phase9 && node scripts/verify-phase10.mjs",
     "verify:phase11": "npm run verify:phase10 && npm run test:ux && node scripts/verify-phase11.mjs",
-    "verify:phase12": "node scripts/certify.mjs"
+    "verify:phase12": "node scripts/certify.mjs",
+    "scripture:verify": "node --experimental-strip-types scripts/verify-scripture-content.mjs",
+    "test:report": "vitest run --reporter=default --reporter=json --outputFile=verification/unit.json"
   },
   "dependencies": {
     "dexie": "4.4.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",
-    "react-router-dom": "7.18.3"
+    "react-router-dom": "7.18.3",
+    "fflate": "0.8.3"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
@@ -44,7 +47,6 @@
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.1.1",
     "fake-indexeddb": "6.2.5",
-    "fflate": "0.8.3",
     "typescript": "7.0.2",
     "vite": "8.3.0",
     "vitest": "5.0.1"

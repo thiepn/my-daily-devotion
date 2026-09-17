@@ -29,8 +29,9 @@ export function DataScreen() {
 
   return (
     <main className="visual-screen data-screen">
-      <header className="screen-heading compact-heading"><p className="eyebrow">Data & privacy</p><h1>Your data</h1><p className="screen-intro">Your devotional history stays on this device. Keep a backup somewhere safe so you can restore it when needed.</p><Link className="quiet-back-link" to="/today">← Back</Link></header>
+      <header className="screen-heading compact-heading"><p className="eyebrow">Data & privacy</p><h1>Your data</h1><p className="section-kicker">Version {APP_VERSION} · Local database schema 1</p><p className="screen-intro">Your devotional history stays on this device. Keep a backup somewhere safe so you can restore it when needed.</p><Link className="quiet-back-link" to="/today">← Back</Link></header>
       <p className="data-status" role="status" aria-live="polite">{busy ? "Working with your local data…" : status}</p>
+      <section className="data-panel" aria-label="Privacy boundaries"><h2>Local does not mean encrypted.</h2><p>Your live records are stored in this browser profile without application-level encryption. The encrypted backup option protects the exported file, not the live database.</p><p>Removed entries are hidden with deletion markers; their retained text may remain in backups. Remove is not secure erasure. Other apps hosted on this exact origin share the browser-storage trust boundary.</p><p>Version 1.0.1 repairs duplicate reading records without erasing originals or history. The March 1 reading now includes Exodus 12:51; existing completion choices are preserved.</p></section>
       <div className="data-sections">
 
 

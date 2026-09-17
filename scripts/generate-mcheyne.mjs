@@ -178,7 +178,14 @@ export async function generateMcheynePlan() {
     const item = schedule[index];
     const readings = [];
     for (let readingIndex = 0; readingIndex < 4; readingIndex += 1) {
-      const normalized = await normalizeReference(item.readings[readingIndex], aliases, canonById, bookCache);
+      let inputReference = item.readings[readingIndex];
+      for (const correction of sourceManifest.documentedCorrections ?? []) {
+        if (correction.calendarKey === item.calendarKey && correction.readingIndex === readingIndex) {
+          assert.equal(inputReference, correction.from, "The pinned source changed; review its documented correction.");
+          inputReference = correction.to;
+        }
+      }
+      const normalized = await normalizeReference(inputReference, aliases, canonById, bookCache);
       readings.push({
         group: readingIndex < 2 ? "family" : "secret",
         ...normalized,

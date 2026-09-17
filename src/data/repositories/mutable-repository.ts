@@ -1,4 +1,5 @@
 import type { EntityTable } from "dexie";
+import { assertExpectedRevision } from "../conflicts";
 import { newMutableFields, nextMutableFields, nowInstant } from "../../domain/identity";
 import type { MutableEntity, UUID } from "../../domain/types";
 
@@ -26,7 +27,7 @@ export class MutableRepository<T extends MutableEntity> {
   async patch(id: UUID, patch: Partial<Omit<T, keyof MutableEntity | "id">>, expectedRevision?: number): Promise<T> {
     return this.table.db.transaction("rw", this.table, async () => {
     const current = await this.require(id);
-    if (expectedRevision !== undefined && current.revision !== expectedRevision) throw new Error("This record changed in another tab. Your edits are still here; copy them before reopening the latest version.");
+    assertExpectedRevision(current, expectedRevision);
     const next = {
       ...current,
       ...patch,

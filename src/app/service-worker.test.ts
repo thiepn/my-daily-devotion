@@ -5,7 +5,7 @@ function worker(failPath = "", clients: string[] = []) {
   const stores = new Map<string, Map<string, Response>>();
   const listeners: Record<string, (event: any) => void> = {};
   const root = "https://mdd.test/app/";
-  const key = "mdd-app-v1.0.0-development";
+  const key = `${/CACHE_NAME = "([^"]+)"/.exec(source)![1]}-development`;
   const old = new Map([[root, new Response("old shell")], [root+"assets/old.js", new Response("old chunk")]]);
   stores.set("mdd-app-v1.0.0-previous", old);
   const caches = {

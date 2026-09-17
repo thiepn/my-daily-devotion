@@ -7,8 +7,17 @@
   "assignmentCount": 365,
   "readingsPerAssignment": 4,
   "groups": [
-    {"id":"family","historicalLabel":"Family","countPerDay":2},
-    {"id":"secret","historicalLabel":"Secret","preferredUiLabel":"Private","countPerDay":2}
+    {
+      "id": "family",
+      "historicalLabel": "Family",
+      "countPerDay": 2
+    },
+    {
+      "id": "secret",
+      "historicalLabel": "Secret",
+      "preferredUiLabel": "Private",
+      "countPerDay": 2
+    }
   ],
   "canonicalReference": {
     "url": "https://www.mcheyneplan.com/calendar.html",
@@ -42,12 +51,87 @@
     "streaks": false
   },
   "verificationAnchors": [
-    {"calendarKey":"01-01","sequence":1,"family":["Genesis 1","Matthew 1"],"secret":["Ezra 1","Acts 1"]},
-    {"calendarKey":"02-28","sequence":59,"family":["Exodus 11:1-12:20","Luke 14"],"secret":["Job 29","1 Corinthians 15"]},
-    {"calendarKey":"03-01","sequence":60,"family":["Exodus 12:21-50","Luke 15"],"secret":["Job 30","1 Corinthians 16"]},
-    {"calendarKey":"06-30","sequence":181,"family":["Joshua 2","Psalm 123-125"],"secret":["Isaiah 62","Matthew 10"]},
-    {"calendarKey":"09-16","sequence":259,"family":["2 Samuel 12","2 Corinthians 5"],"secret":["Ezekiel 19","Psalm 64-65"]},
-    {"calendarKey":"12-31","sequence":365,"family":["2 Chronicles 36","Revelation 22"],"secret":["Malachi 4","John 21"]}
+    {
+      "calendarKey": "01-01",
+      "sequence": 1,
+      "family": [
+        "Genesis 1",
+        "Matthew 1"
+      ],
+      "secret": [
+        "Ezra 1",
+        "Acts 1"
+      ]
+    },
+    {
+      "calendarKey": "02-28",
+      "sequence": 59,
+      "family": [
+        "Exodus 11:1-12:20",
+        "Luke 14"
+      ],
+      "secret": [
+        "Job 29",
+        "1 Corinthians 15"
+      ]
+    },
+    {
+      "calendarKey": "03-01",
+      "sequence": 60,
+      "family": [
+        "Exodus 12:21-51",
+        "Luke 15"
+      ],
+      "secret": [
+        "Job 30",
+        "1 Corinthians 16"
+      ]
+    },
+    {
+      "calendarKey": "06-30",
+      "sequence": 181,
+      "family": [
+        "Joshua 2",
+        "Psalm 123-125"
+      ],
+      "secret": [
+        "Isaiah 62",
+        "Matthew 10"
+      ]
+    },
+    {
+      "calendarKey": "09-16",
+      "sequence": 259,
+      "family": [
+        "2 Samuel 12",
+        "2 Corinthians 5"
+      ],
+      "secret": [
+        "Ezekiel 19",
+        "Psalm 64-65"
+      ]
+    },
+    {
+      "calendarKey": "12-31",
+      "sequence": 365,
+      "family": [
+        "2 Chronicles 36",
+        "Revelation 22"
+      ],
+      "secret": [
+        "Malachi 4",
+        "John 21"
+      ]
+    }
   ],
-  "implementationRule": "Before Phase 4 is accepted, the normalized 365-assignment artifact must be vendored in-repo and verified against the complete canonical reference and these anchors."
+  "implementationRule": "Before Phase 4 is accepted, the normalized 365-assignment artifact must be vendored in-repo and verified against the complete canonical reference and these anchors.",
+  "documentedCorrections": [
+    {
+      "calendarKey": "03-01",
+      "readingIndex": 0,
+      "from": "Exodus 12:21-50",
+      "to": "Exodus 12:21-51",
+      "reason": "The selected schedule mirror omits Exodus 12:51. Including the final verse restores complete annual coverage without shifting dates or discarding existing completion."
+    }
+  ]
 }

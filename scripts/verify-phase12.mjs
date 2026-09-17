@@ -23,16 +23,16 @@ const lock = JSON.parse(lockRaw);
 const manifest = JSON.parse(manifestRaw);
 const releaseManifest = JSON.parse(releaseManifestRaw);
 
-assert.equal(pkg.version, "1.0.0", "Phase 12 certifies the MDD 1.0.0 release boundary");
-assert.match(versionSource, /APP_VERSION\s*=\s*"1\.0\.0"/);
-assert.match(sw, /CACHE_NAME\s*=\s*"mdd-app-v1\.0\.0"/);
+assert.match(pkg.version, /^1\.0\.\d+$/, "Release boundary is the 1.0 corrective series");
+assert.equal(/APP_VERSION\s*=\s*"([^"]+)"/.exec(versionSource)?.[1], pkg.version);
+assert.equal(/CACHE_NAME\s*=\s*"([^"]+)"/.exec(sw)?.[1], `mdd-app-v${pkg.version}`);
 assert.equal(pkg.scripts["notices:build"], "node scripts/build-third-party-notices.mjs");
 assert.match(pkg.scripts.build, /npm run notices:build/);
 assert.equal(pkg.scripts["release:package"], "npm run build && node scripts/package-release.mjs");
 assert.equal(pkg.scripts["audit:prod"], "npm audit --omit=dev --audit-level=high");
 assert.equal(pkg.scripts["verify:phase12"], "node scripts/certify.mjs");
 const certification = await read("scripts/certify.mjs");
-for (const gate of ["verify-phase0.mjs", "typecheck", '"test"', '"build"', "test:ux", "verify-phase11.mjs", "release:package", "verify-phase12.mjs"]) assert.ok(certification.includes(gate), `Certification missing ${gate}`);
+for (const gate of ["verify-phase0.mjs", "typecheck", '"test:report"', '"build"', "test:ux", "verify-phase11.mjs", "package-release.mjs", "verify-phase12.mjs"]) assert.ok(certification.includes(gate), `Certification missing ${gate}`);
 assert.match(certification, /phase = 2; phase <= 10/);
 
 assert.equal(lock.lockfileVersion, 3);
@@ -58,7 +58,7 @@ assert.match(ci, /^name:\s*Release Certification CI/m);
 assert.match(ci, /npm ci --ignore-scripts/);
 assert.match(ci, /npm run audit:prod/);
 assert.match(ci, /npm run verify:phase12/);
-assert.match(ci, /name:\s*mdd-1\.0\.0-release/);
+assert.match(ci, /name:\s*mdd-certified-release/);
 assert.match(ci, /path:\s*release\//);
 assert.doesNotMatch(ci, /npm install --ignore-scripts/);
 
@@ -87,7 +87,7 @@ const distDir = join(ROOT, "dist");
 await access(join(distDir, "index.html"));
 await access(join(distDir, "THIRD_PARTY_NOTICES.txt"));
 const notices = await readFile(join(distDir, "THIRD_PARTY_NOTICES.txt"), "utf8");
-for (const token of ["Berean Standard Bible", "public domain", "dexie 4.4.6", "Apache-2.0", "react 19.3.0", "MIT", "react-router-dom 7.18.3"]) assert.match(notices, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), `Third-party notices missing ${token}`);
+for (const token of ["Berean Standard Bible", "public domain", "dexie 4.4.6", "Apache-2.0", "react 19.3.0", "MIT", "react-router-dom 7.18.3", "fflate 0.8.3"]) assert.match(notices, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), `Third-party notices missing ${token}`);
 
 const distFiles = await collectFiles(distDir);
 assert.ok(distFiles.length > 70, `Production package is unexpectedly small: ${distFiles.length} files`);
@@ -154,7 +154,11 @@ const artifactStats = await stat(artifactPath);
 assert.equal(artifactStats.size, releaseManifest.archiveBytes);
 
 console.log("✓ Phase 12 Release Hardening verification passed");
-console.log("  v1.0.0 version, lockfile, security metadata, third-party notices and release documentation certified");
+console.log(`  v${pkg.version} version, lockfile, security metadata, third-party notices and release documentation verified`);
 console.log(`  ${distFiles.length} production files · 66 BSB books · ${searchIndex.length} searchable verses`);
 console.log(`  ${releaseManifest.artifact} · sha256 ${archiveSha}`);
 console.log("  release candidate contains no source maps; first-party shipped code contains no development hosts or unresolved TODO/FIXME/HACK markers");
+
+assert.equal(pkg.dependencies.fflate, "0.8.3");
+assert.equal(pkg.devDependencies.fflate, undefined);
+assert.equal(lock.packages["node_modules/fflate"].dev, undefined);

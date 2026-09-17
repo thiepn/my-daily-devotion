@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import { mkdir, readFile, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { join, relative, sep } from "node:path";
@@ -52,7 +53,7 @@ const releaseManifest = {
   fileCount: files.length,
   unpackedBytes,
   archiveBytes: archive.byteLength,
-  sourceCommit: process.env.GITHUB_SHA ?? null,
+  sourceCommit: execFileSync("git", ["rev-parse", "HEAD"], { cwd: ROOT, encoding: "utf8" }).trim(),
 };
 await writeFile(join(RELEASE, "release-manifest.json"), `${JSON.stringify(releaseManifest, null, 2)}\n`);
 await writeFile(join(RELEASE, "SHA256SUMS"), `${sha256}  ${artifactName}\n`);

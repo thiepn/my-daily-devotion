@@ -39,3 +39,15 @@ The bundled Berean Standard Bible source is tracked through the repository's can
 ## Future services
 
 If a future version adds optional sync, accounts, collaboration or another network service, that release must document the new data flow explicitly. The 1.0 local-first behavior should not be silently converted into remote storage.
+
+## Explicit security boundaries (1.0.1)
+
+Live IndexedDB records are not encrypted by MDD. Password encryption applies only to exported encrypted backup files. A person or program with access to this browser profile may be able to read live records.
+
+Remove uses soft-deletion markers, not secure erasure. Original record text and deleted records can remain in local storage and complete backups. Keep backup files private and manage their retention separately.
+
+Storage is isolated by origin, not URL path. Other applications on the exact same scheme/host/port share this trust boundary. A dedicated MDD origin is recommended for stronger app separation, but moving origin requires explicit export/import; this corrective release does not move the site or clear storage.
+
+Unsaved editor drafts are guarded against navigation and context changes; they are not a guarantee against OS termination. Save meaningful writing and keep periodic encrypted backups.
+
+Duplicate reading-progress repair is non-destructive and idempotent: it retains the newest explicit state, tombstones redundant records, preserves original history, and records repair details in local preferences. Schema remains 1.

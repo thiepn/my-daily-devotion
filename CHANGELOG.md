@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.1 — 2026-09-17
+
+- Serialize reading imports and completion edits; repair historical duplicate reading records without erasing data or changing schema 1.
+- Reject stale prayer settings, People, category, and collection saves. Add explicit conflict comparison and draft-safe in-page actions.
+- Add recoverable mutation errors, pending guards, atomic enrollment/import, and calendar-date validation.
+- Refresh date-sensitive reading and prayer entry screens across midnight and foreground changes without resetting historical editors.
+- Correct March 1 to Exodus 12:21–51, preserving existing completion; verify every bundled verse against the complete annual schedule.
+- Normalize 28 closing-quote boundaries and preserve block/verse spacing in copied passages; cross-check reader, search, and copy text across the full corpus.
+- Include shipped fflate in runtime dependency auditing and notices.
+- Add Firefox/WebKit regression projects and commit-linked machine-readable release evidence; package the tested build without rebuilding it.
+- Clarify unencrypted local storage, origin boundaries, soft deletion, and backup retention.
+
 ## 1.0.0 — 2026-09-17
 
 First complete release of My Daily Devotion.

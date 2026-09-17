@@ -1,3 +1,5 @@
+> Historical audit snapshot, not certification of the current commit. See CORRECTIVE_RELEASE_1.0.1.md and the exact-run verification artifacts for current evidence.
+
 # Complete product audit — 17 September 2026
 
 This maintenance pass retains application version **1.0.0**, IndexedDB schema **1**, the local-first architecture, and Read → Respond → Pray → Remember. No dependency versions or cloud services were added.

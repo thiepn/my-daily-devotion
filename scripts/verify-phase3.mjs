@@ -40,7 +40,7 @@ for (const book of manifest.books) {
 
 assert.ok(pkg.scripts["bible:build"]);
 assert.ok(pkg.scripts["verify:phase3"]);
-assert.equal(pkg.devDependencies.fflate, "0.8.3");
+assert.equal(pkg.dependencies.fflate, "0.8.3");
 assert.match(app, /BibleScreen/);
 assert.match(app, /\/bible\/:bookId\/:chapter/);
 assert.ok(main.includes("scripture.css"));
