@@ -28,12 +28,16 @@ test("reflection drafts survive cancelled navigation, reload and stale saves", a
   await openRoute(page, "/today/reflection/2026-09-17");
   const editor = page.getByLabel("Daily reflection");
   await editor.fill("A reflection worth keeping.\nA second line.");
-  page.once("dialog", (dialog) => dialog.dismiss());
-  await visibleNavLink(page, "Today").click();
+  await Promise.all([
+    page.waitForEvent("dialog").then(async (dialog) => { expect(dialog.type()).toBe("confirm"); await dialog.dismiss(); }),
+    visibleNavLink(page, "Today").click(),
+  ]);
   await expect(editor).toHaveValue("A reflection worth keeping.\nA second line.");
   // Reload is tested via the native beforeunload event, with a real user gesture above.
-  page.once("dialog", (dialog) => dialog.dismiss());
-  await page.reload({ timeout: 2000, waitUntil: "commit" }).catch(() => undefined);
+  await Promise.all([
+    page.waitForEvent("dialog").then(async (dialog) => { expect(dialog.type()).toBe("beforeunload"); await dialog.dismiss(); }),
+    page.reload({ timeout: 2000, waitUntil: "commit" }).catch(() => undefined),
+  ]);
   await expect(editor).toHaveValue("A reflection worth keeping.\nA second line.");
   await page.getByRole("button", { name: "Save reflection" }).click();
   await expect(page.getByText("Reflection created and saved locally.")).toBeVisible();
