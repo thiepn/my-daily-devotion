@@ -17,7 +17,7 @@ const phase8Index = main.indexOf('"./styles/phase8.css"');
 const phase9Index = main.indexOf('"./styles/phase9.css"');
 assert.ok(phase8Index >= 0 && phase9Index > phase8Index, "Phase 9 refinement CSS must load after Phase 8 feature styles");
 
-assert.match(app, /Private on this device/);
+assert.match(app, /Devotional workspace/);
 assert.match(app, /className=\{\(\{ isActive \}\) => `nav-link\$\{isActive \? " active" : ""\}`\}/);
 assert.doesNotMatch(app, /Phase 8|History, Search & Portability/);
 
@@ -46,11 +46,12 @@ assert.doesNotMatch(css, /(?:linear|radial|conic)-gradient\s*\(/i);
 assert.doesNotMatch(css, /box-shadow\s*:/i);
 assert.doesNotMatch(css, /border-radius:\s*999px/i);
 
-assert.equal(pkg.version, "0.9.0");
+const version = /^(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/.exec(pkg.version);
+assert.ok(version, `Expected semantic package version, got ${pkg.version}`);
+assert.ok(Number(version[1]) > 0 || Number(version[2]) >= 9, `Phase 9 requires app version >=0.9.0, got ${pkg.version}`);
 assert.equal(pkg.scripts["verify:phase9"], "npm run verify:phase8 && node scripts/verify-phase9.mjs");
-assert.match(dataScreen, /createMddBackup\(db, "0\.9\.0"\)/);
-assert.match(dataScreen, /createMddBackup\(db, "0\.9\.0", exportPassword\)/);
-assert.doesNotMatch(dataScreen, /createMddBackup\(db, "0\.8\.0"/);
+assert.match(dataScreen, /createMddBackup\(db, APP_VERSION\)/);
+assert.match(dataScreen, /createMddBackup\(db, APP_VERSION, exportPassword\)/);
 
 assert.match(phase9Doc, /Status:\s*\*\*implemented\*\*/i);
 assert.match(phase9Doc, /Phase 10/i);
