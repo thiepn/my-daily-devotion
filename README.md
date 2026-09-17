@@ -8,11 +8,13 @@ MDD is intentionally not a social network, content feed, habit game, or general-
 
 ## Current status
 
-**Phase 10 — PWA, Accessibility, Performance & Resilience**
+**Phase 11 — UX Validation**
 
-Phase 10 is implemented and its cumulative certification gate is active on `main`.
+Phase 11 is implemented and cumulatively certified. MDD now has browser-level validation for the actual devotional journeys built across Phases 0–10 rather than relying only on repository and component tests.
 
-MDD now includes the full BSB reader and M’Cheyne workflow, reflection/Verse Notes, the prayer scheduling/session engine, automatic devotional history, grouped local search, Scripture Collections, encrypted/checksum-verified backup and validated restore, the Phase 9 quiet-editorial UI system, plus an installable offline-first platform layer. The production PWA precaches the full BSB corpus, local verse-search index, M’Cheyne plan and built application shell; route features are code-split, theme preference is persisted, storage-persistence status is visible, service-worker updates are user-controlled, and destructive backup recovery is tested.
+The automated UX matrix covers first-run M’Cheyne setup, Scripture reading and factual completion, the complete **Read → Respond → Pray → Remember** flow, Scripture Search and Collections, desktop and touch/mobile layouts, keyboard navigation and route focus, WCAG A/AA automated checks, 320 px reflow, 200% text resizing, and a controlled cold-start PWA journey with the network fully disabled.
+
+Validation also closed concrete defects found during testing: light-theme secondary-text contrast, accessible date/history controls, SPA route focus, transient false-empty History states, complete offline precaching of lazy route chunks, and Vary-safe Cache Storage matching for offline modules. Phase 11 did not add a new devotional feature system or change the IndexedDB schema.
 
 - Phase 0 contract: [`docs/PHASE_0_IMPLEMENTATION_CONTRACT.md`](docs/PHASE_0_IMPLEMENTATION_CONTRACT.md)
 - Phase 1 foundation: [`docs/PHASE_1_LOCAL_FOUNDATION.md`](docs/PHASE_1_LOCAL_FOUNDATION.md)
@@ -25,6 +27,7 @@ MDD now includes the full BSB reader and M’Cheyne workflow, reflection/Verse N
 - Phase 8 History, Search & Data Portability: [`docs/PHASE_8_HISTORY_SEARCH_PORTABILITY.md`](docs/PHASE_8_HISTORY_SEARCH_PORTABILITY.md)
 - Phase 9 Dedicated UI Refinement: [`docs/PHASE_9_UI_REFINEMENT.md`](docs/PHASE_9_UI_REFINEMENT.md)
 - Phase 10 PWA, Accessibility, Performance & Resilience: [`docs/PHASE_10_PWA_ACCESSIBILITY_PERFORMANCE_RESILIENCE.md`](docs/PHASE_10_PWA_ACCESSIBILITY_PERFORMANCE_RESILIENCE.md)
+- Phase 11 UX Validation: [`docs/PHASE_11_UX_VALIDATION.md`](docs/PHASE_11_UX_VALIDATION.md)
 
 ## Local development
 
@@ -38,7 +41,7 @@ The build generates pinned BSB, the local verse-search corpus, and M’Cheyne ru
 ## Verification
 
 ```bash
-npm run verify:phase10
+npm run verify:phase11
 ```
 
-The Phase 10 gate reruns every earlier contract, the complete test suite and the production build before checking install metadata, application-icon dimensions, full offline Scripture/search coverage, safe service-worker updates, persistent-storage wiring, accessibility primitives, route code splitting and destructive backup recovery.
+The Phase 11 gate reruns every earlier contract, TypeScript verification, the full Vitest suite, production Scripture/M’Cheyne builds, all prior phase gates, and the Playwright browser UX matrix before certifying the finished user journeys, accessibility/reflow behavior, and controlled cold-offline PWA experience.
