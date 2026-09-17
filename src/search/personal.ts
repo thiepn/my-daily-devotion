@@ -28,7 +28,7 @@ export async function searchPersonal(database: MddDatabase, rawQuery: string, li
   const query = normalize(rawQuery.trim());
   if (!query) return { prayers: [], reflections: [], people: [], saved: [] };
 
-  const [prayers, updates, resolutions, reflections, people, notes, collections, collectionItems] = await Promise.all([
+  const [prayers, updates, resolutions, reflections, people, notes, collections, collectionItems, categories] = await Promise.all([
     database.prayers.filter((item) => item.deletedAt === null).toArray(),
     database.prayerUpdates.filter((item) => item.deletedAt === null).toArray(),
     database.prayerResolutions.filter((item) => item.deletedAt === null).toArray(),
@@ -37,12 +37,15 @@ export async function searchPersonal(database: MddDatabase, rawQuery: string, li
     database.verseNotes.filter((item) => item.deletedAt === null).toArray(),
     database.collections.filter((item) => item.deletedAt === null).toArray(),
     database.collectionItems.filter((item) => item.deletedAt === null).toArray(),
+    database.categories.filter((item) => item.deletedAt === null).toArray(),
   ]);
 
+  const peopleById = new Map(people.map((person) => [person.id, person]));
+  const categoriesById = new Map(categories.map((category) => [category.id, category]));
   const prayerMap = new Map(prayers.map((item) => [item.id, item]));
   const prayerHits = new Map<string, PersonalSearchHit>();
   for (const prayer of prayers) {
-    if (matches(prayer.body, query)) prayerHits.set(prayer.id, { id: prayer.id, title: prayer.body, excerpt: prayer.body, href: `/prayer/${prayer.id}`, kind: `Prayer · ${prayer.status.toLowerCase()}`, updatedAt: prayer.updatedAt });
+    if (matches(prayer.body, query) || matches(peopleById.get(prayer.personId ?? "")?.name, query) || matches(categoriesById.get(prayer.categoryId ?? "")?.name, query)) prayerHits.set(prayer.id, { id: prayer.id, title: prayer.body, excerpt: prayer.body, href: `/prayer/${prayer.id}`, kind: `Prayer · ${prayer.status.toLowerCase()}`, updatedAt: prayer.updatedAt });
   }
   for (const update of updates) {
     if (!matches(update.body, query)) continue;
@@ -60,7 +63,7 @@ export async function searchPersonal(database: MddDatabase, rawQuery: string, li
   const reflectionHits = reflections.filter((item) => matches(item.bodyMd, query)).map((item) => ({ id: item.id, title: `Reflection · ${item.localDate}`, excerpt: excerpt(item.bodyMd), href: `/today/reflection/${item.localDate}`, kind: "Reflection", updatedAt: item.updatedAt }));
   const peopleHits = people.filter((item) => [item.name, item.relationship, item.notes].some((value) => matches(value, query))).map((item) => ({ id: item.id, title: item.name, excerpt: excerpt([item.relationship, item.notes].filter(Boolean).join(" · ") || "Prayer person"), href: "/prayer/people", kind: "Person", updatedAt: item.updatedAt }));
 
-  const saved: PersonalSearchHit[] = notes.filter((item) => matches(item.bodyMd, query)).map((item) => ({ id: item.id, title: `${item.startVerseKey}–${item.endVerseKey}`, excerpt: excerpt(item.bodyMd), href: `/bible/${item.startVerseKey.split(".")[0]}/${item.startVerseKey.split(".")[1]}`, kind: "Verse note", updatedAt: item.updatedAt }));
+  const saved: PersonalSearchHit[] = notes.filter((item) => matches(item.bodyMd, query)).map((item) => ({ id: item.id, title: `${item.startVerseKey}–${item.endVerseKey}`, excerpt: excerpt(item.bodyMd), href: `/bible/${item.startVerseKey.split(".")[0]}/${item.startVerseKey.split(".")[1]}?verse=${item.startVerseKey.split(".")[2]}`, kind: "Verse note", updatedAt: item.updatedAt }));
   for (const collection of collections) {
     if (matches(collection.name, query) || matches(collection.description, query)) saved.push({ id: collection.id, title: collection.name, excerpt: excerpt(collection.description ?? "Scripture collection"), href: `/bible/collections?collection=${collection.id}`, kind: "Collection", updatedAt: collection.updatedAt });
   }

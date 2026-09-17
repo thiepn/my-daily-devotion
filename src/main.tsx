@@ -1,6 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { HashRouter } from "react-router-dom";
+import { createHashRouter, RouterProvider } from "react-router-dom";
 import { App } from "./app/App";
 import { inspectStorage, registerMddServiceWorker } from "./app/platform";
 import { prepareDatabase } from "./data/database";
@@ -25,7 +25,8 @@ const root = createRoot(rootElement);
 async function start(): Promise<void> {
   try {
     await prepareDatabase();
-    root.render(<StrictMode><HashRouter><App /></HashRouter></StrictMode>);
+    const router = createHashRouter([{ path: "*", element: <App /> }]);
+    root.render(<StrictMode><RouterProvider router={router} /></StrictMode>);
     void inspectStorage(true).catch(() => undefined);
     void registerMddServiceWorker().catch((error: unknown) => {
       console.warn("MDD service worker registration failed; the app remains usable online.", error);

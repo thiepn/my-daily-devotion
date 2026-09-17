@@ -4,7 +4,7 @@
 :root {
   --control-height: 44px;
   --screen-gutter: clamp(22px, 4.5vw, 64px);
-  --section-rhythm: clamp(52px, 7vw, 84px);
+  --section-rhythm: clamp(32px, 4vw, 48px);
 }
 
 /* Application chrome */
@@ -98,22 +98,22 @@
 /* Screen rhythm and typography */
 .visual-screen {
   width: min(calc(100% - (var(--screen-gutter) * 2)), var(--content-max));
-  padding-top: clamp(44px, 6vw, 76px);
+  padding-top: clamp(28px, 3.5vw, 44px);
   padding-bottom: clamp(72px, 8vw, 112px);
 }
 
 .screen-heading {
-  margin-bottom: clamp(44px, 6vw, 68px);
+  margin-bottom: clamp(26px, 3.5vw, 40px);
 }
 
 .screen-heading h1 {
   margin-top: 8px;
-  font-size: clamp(3rem, 6vw, 5.35rem);
-  line-height: .97;
+  font-size: clamp(2.5rem, 4vw, 3.6rem);
+  line-height: 1.08;
 }
 
 .compact-heading {
-  margin-bottom: clamp(38px, 5vw, 58px);
+  margin-bottom: clamp(26px, 3.5vw, 40px);
 }
 
 .screen-intro {
@@ -280,7 +280,7 @@ button:disabled,
 
 .setup-options .primary-editorial-action,
 .setup-options .editorial-option {
-  min-height: 142px;
+  min-height: 120px;
   padding: 24px 26px;
   border-radius: 0;
   background: transparent;
@@ -515,7 +515,7 @@ button:disabled,
 }
 
 .history-day {
-  min-height: 94px;
+  min-height: 70px;
   padding: 10px;
   transition: background-color var(--transition-fast), color var(--transition-fast);
 }
@@ -535,7 +535,7 @@ button:disabled,
 /* Search */
 .global-search-form {
   gap: 10px;
-  margin-bottom: 52px;
+  margin-bottom: 32px;
 }
 
 .global-search-form > input {
@@ -684,12 +684,12 @@ button:disabled,
   }
 
   .screen-heading h1 {
-    font-size: clamp(3rem, 8vw, 4.8rem);
+    font-size: clamp(2.5rem, 6vw, 3.6rem);
   }
 
   .today-lower-grid,
   .prayer-layout {
-    gap: 64px;
+    gap: 40px;
   }
 }
 
@@ -713,7 +713,7 @@ button:disabled,
   .prayer-detail-layout,
   .metadata-layout,
   .collections-layout {
-    gap: 52px;
+    gap: 36px;
   }
 
   .history-day {
@@ -723,7 +723,7 @@ button:disabled,
 
   .data-sections,
   .search-groups {
-    gap: 52px;
+    gap: 36px;
   }
 }
 
@@ -758,16 +758,16 @@ button:disabled,
 
   .visual-screen {
     width: calc(100% - (var(--screen-gutter) * 2));
-    padding-top: 38px;
+    padding-top: 26px;
     padding-bottom: 72px;
   }
 
   .screen-heading {
-    margin-bottom: 42px;
+    margin-bottom: 28px;
   }
 
   .screen-heading h1 {
-    font-size: clamp(2.9rem, 15vw, 4.1rem);
+    font-size: clamp(2.35rem, 10vw, 3rem);
   }
 
   .screen-intro {
@@ -848,7 +848,7 @@ button:disabled,
   }
 
   .global-search-form {
-    margin-bottom: 42px;
+    margin-bottom: 28px;
   }
 
   .search-filters select {
@@ -888,7 +888,7 @@ button:disabled,
   }
 
   .screen-heading h1 {
-    font-size: clamp(2.75rem, 15.5vw, 3.75rem);
+    font-size: clamp(2.25rem, 10vw, 2.75rem);
   }
 
   .section-heading-line {
@@ -964,10 +964,77 @@ button:disabled,
   }
 
   .screen-heading h1 {
-    font-size: clamp(2.7rem, 8vw, 4rem);
+    font-size: clamp(2.25rem, 7vw, 3rem);
   }
 
   .focused-prayer-card {
     padding-top: 28px;
   }
+}
+
+/* Release audit: readable controls, restrained page headings and resilient content. */
+.setup-options .editorial-option { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 8px; text-align: left; }
+.today-lower-grid { margin-top: var(--section-rhythm); }
+.screen-heading h1 { letter-spacing: -.035em; }
+.bible-screen-heading { margin-bottom: 24px; }
+.bible-screen-heading .screen-intro { max-width: 54ch; }
+.bible-screen-heading h1 { font-size: 2.5rem; margin-block: 6px 10px; }
+.bible-secondary-links { margin-top: 12px; }
+.reader-page { padding-top: 28px; }
+.reader-heading { padding-bottom: 16px; }
+.scripture-copy { margin-top: 26px; }
+.scripture-content > :first-child { margin-top: 0; }
+.reflection-textarea { min-height: clamp(260px, 34vh, 440px); }
+.reflection-context-panel h2 { font-size: 1.55rem; line-height: 1.25; }
+.quiet-button, .prayer-lifecycle-actions button, .prayer-update-form button,
+.prayer-answer-form button, .metadata-row button, .metadata-editor button,
+.prayer-settings-actions button, .verse-actions button, .verse-action-menu button,
+.markdown-toolbar button, .collection-sidebar form button { font-size: .85rem; }
+.prayer-management-links a, .metadata-manage-links a, .quiet-back-link,
+.field-help, .prayer-administration-fields label small { font-size: .8rem; }
+.prayer-administration-fields label, .metadata-editor label { font-size: .875rem; }
+.prayer-detail-body { font-size: clamp(1.3rem, 2.2vw, 1.75rem); line-height: 1.55; }
+.focused-prayer-card > h1 { max-width: 28ch; font-size: clamp(1.9rem, 4vw, 3.2rem); line-height: 1.2; overflow-wrap: anywhere; white-space: pre-wrap; }
+.collection-manage, .collection-rename { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.collection-rename { padding-bottom: 20px; align-items: end; }
+.collection-rename label { display: grid; gap: 8px; }
+.collection-rename input { min-height: 44px; max-width: 100%; padding: 8px; color: var(--color-ink); background: var(--color-surface); border: 1px solid var(--color-line-strong); border-radius: var(--radius-small); }
+.collection-nav-row { min-width: 0; }
+.collection-sidebar form > div { min-width: 0; }
+.collection-sidebar form input { min-width: 0; flex: 1; }
+.collection-sidebar form button { flex: 0 0 auto; }
+.collection-nav-row button, .section-heading-line h2, .prayer-live-row strong { overflow-wrap: anywhere; }
+.search-group, .search-hit { min-width: 0; overflow-wrap: anywhere; }
+.collection-items article { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.collection-items a { flex: 1; }
+.collection-items p { flex-basis: 100%; }
+.collection-items button { font-size: .85rem; min-height: 44px; padding-inline: 12px; }
+.data-status:empty, .reader-status:empty, .prayer-form-status:empty { display: none; }
+.data-status { max-width: 70ch; padding: 12px 0; overflow-wrap: anywhere; }
+.data-status:not(:empty) { position: sticky; top: 72px; z-index: 13; padding: 12px 16px; background: var(--color-surface); border: 1px solid var(--color-line-strong); font-size: .9rem; }
+.backup-counts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 20px; }
+.backup-counts div { display: flex; justify-content: space-between; gap: 12px; }
+.backup-counts dd { margin: 0; font-variant-numeric: tabular-nums; }
+.replace-confirmation { display: flex; align-items: flex-start; gap: 10px; margin-block: 18px; }
+.replace-confirmation input { flex: 0 0 auto; margin-top: 4px; }
+input, select, textarea { max-width: 100%; }
+.utility-mobile-title { display: none; font-family: var(--font-editorial); font-weight: 600; }
+@media (max-width: 760px) { .collections-layout { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 620px) {
+  .bible-screen-heading .screen-intro { display: none; }
+  .bible-toolbar { margin-bottom: 16px; }
+  .reader-heading { flex-direction: row; align-items: end; gap: 12px; }
+  .reader-heading p { margin-top: 0; }
+  .reader-context { order: 0; max-width: 10ch; text-align: right; }
+  .utility-bar { flex-wrap: wrap; gap: 4px 8px; }
+  .utility-context-title { display: none; }
+  .utility-mobile-title { display: block; }
+  .utility-actions { gap: 4px; }
+  .utility-actions > a { display: inline-flex; padding-inline: 6px; min-width: 44px; justify-content: center; }
+  input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: max(1rem, 16px); }
+  .reflection-textarea, .prayer-capture-editor textarea { min-height: 34vh; }
+  .focused-prayer-card > h1 { font-size: 2rem; }
+  .prayer-main-heading { margin-bottom: 28px; }
+  .collection-content .section-heading-line { align-items: flex-start; }
+  .section-heading-line h2 { font-size: 1.6rem; }
 }

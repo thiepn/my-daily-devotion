@@ -17,7 +17,8 @@ async function parseReference(query: string): Promise<{ bookId: string; chapter:
   if (!match) return null;
   const manifest = await loadBibleManifest();
   const bookText = normalized(match[1]! ).replace(/\s+/g, " ").trim();
-  const book = manifest.books.find((item) => normalized(item.name) === bookText || normalized(item.id) === bookText.replace(/\s+/g, ""));
+  const aliases: Record<string, string> = { jn: "JHN", john: "JHN", ps: "PSA", psalm: "PSA", prov: "PRO", gen: "GEN", rev: "REV", matt: "MAT", mk: "MRK", lk: "LUK", rom: "ROM" };
+  const book = manifest.books.find((item) => item.id === aliases[bookText.replace(/\.$/, "")] || normalized(item.name) === bookText || normalized(item.id) === bookText.replace(/\s+/g, ""));
   if (!book) return null;
   const chapter = Number(match[2]);
   const startVerse = match[3] ? Number(match[3]) : null;
@@ -66,5 +67,5 @@ export async function searchBible(rawQuery: string, options: BibleSearchOptions 
   return results.sort((a, b) => b.score - a.score || a.order - b.order || a.chapter - b.chapter || a.verse - b.verse).slice(0, limit);
 }
 
-export function bibleSearchHref(result: BibleSearchDocument): string { return `/bible/${result.bookId}/${result.chapter}`; }
+export function bibleSearchHref(result: BibleSearchDocument): string { return `/bible/${result.bookId}/${result.chapter}?verse=${result.verse}`; }
 export function verseKeyForSearch(result: BibleSearchDocument): VerseKey { return result.verseKey; }

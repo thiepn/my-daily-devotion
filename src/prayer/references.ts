@@ -12,5 +12,5 @@ export function prayerReferenceLabel(reference: ScriptureReference, manifest: Bi
 
 export function prayerBibleHref(reference: ScriptureReference): string {
   const start = parseVerseKey(reference.startVerseKey);
-  return `/bible/${start.bookId}/${start.chapter}`;
+  return `/bible/${start.bookId}/${start.chapter}?verse=${start.verse}`;
 }

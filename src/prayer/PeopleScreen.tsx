@@ -1,15 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useUnsavedChanges } from "../app/useUnsavedChanges";
 import { db } from "../data/database";
 import { PersonRepository } from "../data/repositories/prayer-metadata";
 import type { Person } from "../domain/types";
 const repository = new PersonRepository(db);
 export function PeopleScreen() {
   const [items, setItems] = useState<Person[]>([]); const [name, setName] = useState(""); const [relationship, setRelationship] = useState(""); const [notes, setNotes] = useState(""); const [editing, setEditing] = useState<Person | null>(null); const [status, setStatus] = useState("");
-  const refresh = useCallback(async () => setItems(await repository.list()), []); useEffect(() => { void refresh(); }, [refresh]);
+  const refresh = useCallback(async () => setItems(await repository.list()), []); useEffect(() => { void refresh().catch(() => setStatus("Could not open this list. Reload to try again.")); }, [refresh]);
   const clear = () => { setName(""); setRelationship(""); setNotes(""); setEditing(null); };
+  useUnsavedChanges(name !== (editing?.name ?? "") || relationship !== (editing?.relationship ?? "") || notes !== (editing?.notes ?? ""));
   const save = async () => { try { if (editing) await repository.updatePerson(editing.id, { name, relationship, notes }); else await repository.createPerson(name, relationship, notes); clear(); setStatus(""); await refresh(); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not save person."); } };
   const edit = (item: Person) => { setEditing(item); setName(item.name); setRelationship(item.relationship ?? ""); setNotes(item.notes ?? ""); };
-  const remove = async (item: Person) => { try { await repository.removePerson(item.id); await refresh(); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not remove person."); } };
+  const remove = async (item: Person) => { try { if (!window.confirm(`Remove ${item.name}?`)) return; await repository.removePerson(item.id); await refresh(); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not remove person."); } };
   return <main className="visual-screen metadata-screen"><header className="screen-heading compact-heading"><p className="eyebrow">Prayer · People</p><h1>People</h1><p className="screen-intro">A person is optional, but useful when several requests belong to the same relationship and history.</p><Link className="quiet-back-link" to="/prayer">← Prayer</Link></header><div className="metadata-layout"><section className="metadata-list"><p className="section-kicker">Saved people</p>{items.length ? items.map((item) => <div className="metadata-row" key={item.id}><div><strong>{item.name}</strong><span>{item.relationship ?? "No relationship label"}</span></div><div><button type="button" onClick={() => edit(item)}>Edit</button><button type="button" onClick={() => void remove(item)}>Remove</button></div></div>) : <p className="muted-copy">No people yet.</p>}</section><section className="metadata-editor"><p className="section-kicker">{editing ? "Edit person" : "Add person"}</p><label><span>Name</span><input value={name} onChange={(event) => setName(event.target.value)} /></label><label><span>Relationship <small>optional</small></span><input value={relationship} onChange={(event) => setRelationship(event.target.value)} /></label><label><span>Notes <small>optional</small></span><textarea value={notes} onChange={(event) => setNotes(event.target.value)} /></label><div><button type="button" disabled={!name.trim()} onClick={() => void save()}>{editing ? "Save changes" : "Add person"}</button>{editing ? <button type="button" onClick={clear}>Cancel</button> : null}</div><p className="prayer-form-status" aria-live="polite">{status}</p></section></div></main>;
 }

@@ -4,9 +4,8 @@ import { expectNoHorizontalOverflow, openRoute } from "./helpers";
 const coreRoutes = ["/today", "/bible/JHN/3", "/prayer", "/history", "/search", "/data"];
 
 test.describe("responsive and reflow UX", () => {
-  test("320px mobile layouts keep primary journeys inside the viewport", async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name !== "mobile-chromium", "mobile validation project only");
-    await page.setViewportSize({ width: 320, height: 740 });
+  test("320px mobile layouts keep primary journeys inside the viewport", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
     for (const route of coreRoutes) {
       await openRoute(page, route);
       await expectNoHorizontalOverflow(page);
@@ -20,8 +19,7 @@ test.describe("responsive and reflow UX", () => {
     }
   });
 
-  test("200% text resizing does not create horizontal scrolling on core screens", async ({ page }, testInfo) => {
-    test.skip(testInfo.project.name !== "desktop-chromium", "desktop text-resize validation only");
+  test("200% text resizing does not create horizontal scrolling on core screens", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await page.addInitScript(() => {
       document.addEventListener("DOMContentLoaded", () => {
@@ -30,6 +28,7 @@ test.describe("responsive and reflow UX", () => {
     });
     for (const route of coreRoutes) {
       await openRoute(page, route);
+      await expect(page.locator("html")).toHaveCSS("font-size", "32px");
       await expectNoHorizontalOverflow(page);
     }
   });

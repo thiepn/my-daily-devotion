@@ -12,7 +12,7 @@ async function fetchJson<T>(url: string): Promise<T> {
 }
 
 export function loadBibleManifest(): Promise<BibleManifest> {
-  manifestPromise ??= fetchJson<BibleManifest>(`${bibleBase}/manifest.json`);
+  manifestPromise ??= fetchJson<BibleManifest>(`${bibleBase}/manifest.json`).catch((error) => { manifestPromise = null; throw error; });
   return manifestPromise;
 }
 

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useUnsavedChanges } from "../app/useUnsavedChanges";
 import { db } from "../data/database";
 import { ReflectionRepository } from "../data/repositories/reflections";
 import { assertLocalDate } from "../domain/time";
@@ -33,7 +34,7 @@ function labelReference(reference: ScriptureReference, manifest: BibleManifest |
 
 function bibleHref(reference: ScriptureReference): string {
   const start = parseVerseKey(reference.startVerseKey);
-  return `/bible/${start.bookId}/${start.chapter}`;
+  return `/bible/${start.bookId}/${start.chapter}?verse=${start.verse}`;
 }
 
 export function ReflectionScreen() {
@@ -44,7 +45,7 @@ export function ReflectionScreen() {
   try { assertLocalDate(rawDate); localDate = rawDate as LocalDate; } catch { localDate = null; }
   const pending = useMemo(() => parsePendingScripture(searchParams), [searchParams]);
   const returnParam = searchParams.get("return");
-  const backTarget = returnParam?.startsWith("/") ? returnParam : "/today";
+  const backTarget = (returnParam?.startsWith("/") && !returnParam.startsWith("//")) ? returnParam : "/today";
   const textarea = useRef<HTMLTextAreaElement | null>(null);
   const [reflection, setReflection] = useState<Reflection | null>(null);
   const [links, setLinks] = useState<ScriptureLink[]>([]);
@@ -73,33 +74,41 @@ export function ReflectionScreen() {
     return () => { cancelled = true; };
   }, [refresh]);
 
+  const pendingAlreadyLinked = pending ? links.some((item) => item.translationId === pending.translationId && item.startVerseKey === pending.startVerseKey && item.endVerseKey === pending.endVerseKey) : false;
+  const dirty = body !== savedBody || Boolean(pending && !pendingAlreadyLinked);
+  useUnsavedChanges(!loading && body !== savedBody);
+  const saving = useRef(false);
+  const [busy, setBusy] = useState(false);
+
   if (!localDate) return <main className="visual-screen reflection-screen"><p className="eyebrow">Reflection</p><h1>Invalid date</h1><Link to="/today">Return to Today</Link></main>;
   if (loading) return <main className="visual-screen reflection-screen"><p className="eyebrow">Reflection</p><p>Opening your local reflection…</p></main>;
 
-  const pendingAlreadyLinked = pending ? links.some((item) => item.translationId === pending.translationId && item.startVerseKey === pending.startVerseKey && item.endVerseKey === pending.endVerseKey) : false;
-  const dirty = body !== savedBody || Boolean(pending && !pendingAlreadyLinked);
-
   const save = async () => {
+    if (saving.current || !body.trim()) return;
+    saving.current = true; setBusy(true);
+    const text = body;
     try {
-      const result = await repository.saveDaily(localDate!, body);
-      if (pending && !pendingAlreadyLinked) await repository.attachScripture(result.reflection.id, pending);
+      const result = await repository.saveDaily(localDate!, text, reflection?.revision ?? null, pending && !pendingAlreadyLinked ? pending : undefined);
       const nextLinks = await repository.listScriptureLinks(result.reflection.id);
       setReflection(result.reflection);
       setLinks(nextLinks);
       setSavedBody(result.reflection.bodyMd);
+      setBody((current) => current === text ? result.reflection.bodyMd : current);
       setStatus(result.created ? "Reflection created and saved locally." : "Reflection saved locally.");
     } catch (reason) {
       setStatus(reason instanceof Error ? reason.message : "Could not save reflection.");
-    }
+    } finally { saving.current = false; setBusy(false); }
   };
 
   const remove = async () => {
-    await repository.removeDaily(localDate!);
+    if (!window.confirm("Remove this reflection and its linked passages?")) return;
+    try { await repository.removeDaily(localDate!);
     setReflection(null);
     setLinks([]);
     setBody("");
     setSavedBody("");
-    setStatus("Reflection removed from current views. Its historical creation event remains intact.");
+    setStatus("Reflection removed.");
+    } catch { setStatus("Could not remove the reflection. Please try again."); }
   };
 
   const insert = (before: string, after = "", placeholder = "text") => {
@@ -127,14 +136,14 @@ export function ReflectionScreen() {
       <header className="screen-heading compact-heading reflection-heading">
         <p className="eyebrow">Personal reflection · {formatDate(localDate)}</p>
         <h1>Reflect</h1>
-        <p className="screen-intro">Respond only when something matters. This is a private dated reflection, not another devotional task to complete.</p>
+        <p className="screen-intro">Write what stood out and what you want to remember.</p>
         <Link className="quiet-back-link" to={backTarget}>← Back</Link>
       </header>
 
       <div className="reflection-layout">
         <section className="reflection-editor-panel" aria-labelledby="editor-heading">
           <div className="reflection-editor-topline">
-            <div><p className="section-kicker">Today’s response</p><h2 id="editor-heading">Write freely.</h2></div>
+            <div><p className="section-kicker">Your response</p><h2 id="editor-heading">Write freely.</h2></div>
             <span className={dirty ? "save-state is-dirty" : "save-state"}>{dirty ? "Unsaved changes" : reflection ? "Saved locally" : "Not saved yet"}</span>
           </div>
 
@@ -163,7 +172,7 @@ export function ReflectionScreen() {
           />
 
           <div className="reflection-editor-actions">
-            <button className="primary-editorial-action compact-action" type="button" disabled={!dirty || !body.trim()} onClick={() => void save()}>Save reflection</button>
+            <button className="primary-editorial-action compact-action" type="button" disabled={busy || !dirty || !body.trim()} onClick={() => void save()}>Save reflection</button>
             <button className="quiet-button" type="button" aria-expanded={showPrompts} onClick={() => setShowPrompts((value) => !value)}>{showPrompts ? "Hide prompts" : "Optional prompts"}</button>
             {reflection ? <button className="quiet-button danger-quiet" type="button" onClick={() => void remove()}>Remove reflection</button> : null}
           </div>
@@ -175,7 +184,7 @@ export function ReflectionScreen() {
         <aside className="reflection-context-panel">
           <section>
             <p className="section-kicker">Linked Scripture</p>
-            <h2>Context that stays attached.</h2>
+            <h2>From Scripture</h2>
             {pending && !pendingAlreadyLinked ? <div className="pending-scripture"><span>Will attach on save</span><strong>{labelReference(pending, manifest)}</strong></div> : null}
             {links.length ? (
               <div className="linked-scripture-list">
@@ -186,13 +195,13 @@ export function ReflectionScreen() {
                   </div>
                 ))}
               </div>
-            ) : pending ? null : <p className="muted-copy">Select Scripture in the Bible reader and choose Reflect to attach it structurally.</p>}
+            ) : pending ? null : <p className="muted-copy">Select a verse in the Bible reader and choose Reflect to link it here.</p>}
           </section>
 
           <section className="reflection-prayer-handoff">
             <p className="section-kicker">Prayer</p>
-            <h2>Carry the response forward.</h2>
-            <p className="muted-copy">Create a prayer while preserving this reflection date and linked Scripture.</p>
+            <h2>Bring it into prayer</h2>
+            <p className="muted-copy">Your reflection and linked passages will stay with the prayer.</p>
             {reflection ? <Link className="future-text-link" to={buildPrayerHandoffUrl(reflection)}>Create prayer →</Link> : <span className="disabled-handoff">Save the reflection first.</span>}
           </section>
         </aside>

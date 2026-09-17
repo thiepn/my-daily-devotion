@@ -19,7 +19,7 @@ export function loadMcheynePlan(): Promise<McheynePlan> {
           throw new Error("The bundled M'Cheyne plan is invalid.");
         }
         return plan;
-      });
+      }).catch((error) => { planPromise = null; throw error; });
   }
   return planPromise;
 }
