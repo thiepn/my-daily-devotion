@@ -25,7 +25,7 @@ This maintenance pass retains application version **1.0.0**, IndexedDB schema **
 - The visual capture suite records **129 screenshots** covering empty/populated major surfaces, light/dark/system themes, 1440×900, 1920×1080, 768×1024, 1024×768, 320×568, 360×800, 390×844, 430×932, 844×390, 200% text, and representative Scripture forms.
 - Existing 320px/200% checks now run in both desktop and mobile projects; there are no intentionally skipped test cases.
 - CI rejects retry-only passes. The reflection navigation test awaits dismissal of the SPA confirmation before installing the reload-dialog listener, preventing two handlers from racing over the same dialog. Both dialog types and retained draft content remain asserted.
-- The interrupted-update fixture publishes its replacement build before restoring connectivity, because the app legitimately checks for updates on the online event. Awaiting reload completion avoids testing the old DOM. These corrections preserve the intended failure and old-tab assertions.
+- The interrupted-update fixture publishes its replacement build before restoring connectivity, because the app legitimately checks for updates on the online event. Each simulated worker tags its requests so the broken build stays broken even during an overlapping automatic check; the test explicitly observes its redundant state. Awaiting reload completion avoids testing the old DOM. These corrections preserve the intended failure and old-tab assertions.
 
 ## Walkthrough and interaction cost
 

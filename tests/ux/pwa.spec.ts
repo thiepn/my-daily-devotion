@@ -58,18 +58,22 @@ test.describe("offline PWA UX", () => {
 
   test("interrupted updates preserve the working subpath app and old tabs retain lazy assets", async ({ browser }) => {
     test.setTimeout(120_000);
-    let generation = "old"; let interrupted = false;
+    let generation = "old";
     const root = resolve("dist");
     const server = createServer(async (request, response) => {
+      const requestGeneration = generation;
       const path = new URL(request.url!, "http://localhost").pathname.replace(/^\/devotion\//, "");
-      if (interrupted && path === "bible/books/GEN.json") { response.writeHead(503); response.end("Interrupted deployment"); return; }
+      // A failed build stays failed even if an automatic update overlaps the next deployment.
+      if (request.headers["x-mdd-test-build"] === "broken" && path === "bible/books/GEN.json") { response.writeHead(503); response.end("Interrupted deployment"); return; }
       if (path === "assets/old-only.js") { response.writeHead(generation === "old" ? 200 : 404, { "Content-Type": "text/javascript" }); response.end("old tab lazy asset"); return; }
       const file = resolve(root, path || "index.html");
       if (!file.startsWith(root)) { response.writeHead(400); response.end(); return; }
       try {
         let bytes = await readFile(file);
-        if (path === "sw.js") bytes = Buffer.from(bytes.toString().replace(/const BUILD_ID = "[^"]+"/, `const BUILD_ID = "fixture-${generation}"`));
-        if (path === ".vite/manifest.json" && generation === "old") { const manifest = JSON.parse(bytes.toString()); manifest.oldTab = { file: "assets/old-only.js" }; bytes = Buffer.from(JSON.stringify(manifest)); }
+        if (path === "sw.js") bytes = Buffer.from(bytes.toString()
+          .replace(/const BUILD_ID = "[^"]+"/, `const BUILD_ID = "fixture-${requestGeneration}"`)
+          .replace('fetch(url, { cache:', `fetch(url, { headers: { "X-Mdd-Test-Build": "${requestGeneration}" }, cache:`));
+        if (path === ".vite/manifest.json" && requestGeneration === "old") { const manifest = JSON.parse(bytes.toString()); manifest.oldTab = { file: "assets/old-only.js" }; bytes = Buffer.from(JSON.stringify(manifest)); }
         const types: Record<string,string> = { ".html":"text/html", ".js":"text/javascript", ".css":"text/css", ".json":"application/json", ".webmanifest":"application/manifest+json", ".svg":"image/svg+xml", ".png":"image/png" };
         response.writeHead(200, { "Content-Type": types[extname(file)] || "application/octet-stream", "Cache-Control": "no-store" }); response.end(bytes);
       } catch { response.writeHead(404); response.end(); }
@@ -83,12 +87,26 @@ test.describe("offline PWA UX", () => {
       await page.waitForFunction(async () => Boolean((await navigator.serviceWorker.ready).active));
       await page.reload(); await page.waitForFunction(() => Boolean(navigator.serviceWorker.controller));
       const oldTab = await context.newPage(); await oldTab.goto(base+"#/bible/JHN/3"); await expect(oldTab.getByRole("heading", { name: "John 3", exact: true })).toBeVisible();
-      generation = "broken"; interrupted = true;
-      await page.evaluate(async () => { const registration = await navigator.serviceWorker.ready; await registration.update(); await new Promise<void>((done) => { const worker = registration.installing; if (!worker || worker.state === "redundant") { done(); return; } worker.addEventListener("statechange", () => { if (worker.state === "redundant") done(); }); }); });
-      expect(await page.evaluate(() => caches.keys())).toEqual(["mdd-app-v1.0.0-fixture-old"]);
+      generation = "broken";
+      await page.evaluate(async () => {
+        const registration = await navigator.serviceWorker.ready;
+        await new Promise<void>((done, reject) => {
+          const watchInstalling = () => {
+            const worker = registration.installing; if (!worker) return;
+            const checkState = () => {
+              if (worker.state === "redundant") { registration.removeEventListener("updatefound", watchInstalling); done(); }
+              if (worker.state === "installed") reject(new Error("The interrupted build unexpectedly installed"));
+            };
+            worker.addEventListener("statechange", checkState); checkState();
+          };
+          registration.addEventListener("updatefound", watchInstalling);
+          watchInstalling(); void registration.update().catch(reject);
+        });
+      });
+      await expect.poll(() => page.evaluate(() => caches.keys())).toEqual(["mdd-app-v1.0.0-fixture-old"]);
       await context.setOffline(true); await page.reload(); await expect(page.getByRole("heading", { name: "Today", exact: true })).toBeVisible();
       // Publish the complete generation before the online event automatically checks for updates.
-      generation = "new"; interrupted = false;
+      generation = "new";
       await context.setOffline(false);
       await page.evaluate(async () => { await (await navigator.serviceWorker.ready).update(); });
       await page.waitForFunction(async () => Boolean((await navigator.serviceWorker.getRegistration())?.waiting));
