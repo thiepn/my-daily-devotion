@@ -95,8 +95,21 @@ for (const absolute of distFiles.filter((path) => textExtensions.test(path))) {
   const text = await readFile(absolute, "utf8");
   const rel = relative(distDir, absolute).split(sep).join("/");
   assert.doesNotMatch(text, /sourceMappingURL=/, `${rel} contains a source-map pointer`);
-  assert.doesNotMatch(text, /https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?/i, `${rel} contains a development host`);
-  assert.doesNotMatch(text, /\b(?:TODO|FIXME|HACK)\b/, `${rel} contains development residue`);
+
+  // Third-party vendor code and canonical content can legitimately contain words or
+  // URLs that resemble development markers. Development-residue checks therefore
+  // target MDD's own executable/shell assets while source-map checks remain global.
+  const firstPartyCode =
+    rel === "index.html" ||
+    rel === "sw.js" ||
+    rel === "manifest.webmanifest" ||
+    rel === "brand-mark.svg" ||
+    rel.endsWith(".css") ||
+    (rel.startsWith("assets/") && rel.endsWith(".js") && !/(?:react|dexie)-vendor-/.test(rel));
+  if (firstPartyCode) {
+    assert.doesNotMatch(text, /https?:\/\/(?:localhost|127\.0\.0\.1)(?::\d+)?/i, `${rel} contains a development host`);
+    assert.doesNotMatch(text, /\b(?:TODO|FIXME|HACK)\b/, `${rel} contains development residue`);
+  }
 }
 
 const artifactPath = join(ROOT, "release", releaseManifest.artifact);
@@ -141,4 +154,4 @@ console.log("✓ Phase 12 Release Hardening verification passed");
 console.log("  v1.0.0 version, lockfile, security metadata, third-party notices and release documentation certified");
 console.log(`  ${distFiles.length} production files · 66 BSB books · ${searchIndex.length} searchable verses`);
 console.log(`  ${releaseManifest.artifact} · sha256 ${archiveSha}`);
-console.log("  release candidate contains no source maps, development hosts or unresolved TODO/FIXME/HACK markers");
+console.log("  release candidate contains no source maps; first-party shipped code contains no development hosts or unresolved TODO/FIXME/HACK markers");
