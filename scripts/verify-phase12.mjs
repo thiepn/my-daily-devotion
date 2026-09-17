@@ -26,6 +26,8 @@ const releaseManifest = JSON.parse(releaseManifestRaw);
 assert.equal(pkg.version, "1.0.0", "Phase 12 certifies the MDD 1.0.0 release boundary");
 assert.match(versionSource, /APP_VERSION\s*=\s*"1\.0\.0"/);
 assert.match(sw, /CACHE_NAME\s*=\s*"mdd-app-v1\.0\.0"/);
+assert.equal(pkg.scripts["notices:build"], "node scripts/build-third-party-notices.mjs");
+assert.match(pkg.scripts.build, /npm run notices:build/);
 assert.equal(pkg.scripts["release:package"], "npm run build && node scripts/package-release.mjs");
 assert.equal(pkg.scripts["audit:prod"], "npm audit --omit=dev --audit-level=high");
 assert.equal(pkg.scripts["verify:phase12"], "npm run verify:phase11 && npm run release:package && node scripts/verify-phase12.mjs");
@@ -57,7 +59,7 @@ assert.match(ci, /name:\s*mdd-1\.0\.0-release/);
 assert.match(ci, /path:\s*release\//);
 assert.doesNotMatch(ci, /npm install --ignore-scripts/);
 
-for (const token of ["release/", "playwright-report/", "test-results/"]) assert.ok(gitignore.includes(token), `.gitignore missing ${token}`);
+for (const token of ["release/", "playwright-report/", "test-results/", "/public/THIRD_PARTY_NOTICES.txt"]) assert.ok(gitignore.includes(token), `.gitignore missing ${token}`);
 assert.match(schema, /DATABASE_SCHEMA_VERSION\s*=\s*1/);
 assert.match(changelog, /## 1\.0\.0 — 2026-09-17/);
 assert.match(privacyDoc, /local-first/i);
@@ -80,6 +82,10 @@ async function collectFiles(directory) {
 
 const distDir = join(ROOT, "dist");
 await access(join(distDir, "index.html"));
+await access(join(distDir, "THIRD_PARTY_NOTICES.txt"));
+const notices = await readFile(join(distDir, "THIRD_PARTY_NOTICES.txt"), "utf8");
+for (const token of ["Berean Standard Bible", "public domain", "dexie 4.4.6", "Apache-2.0", "react 19.3.0", "MIT", "react-router-dom 7.18.3"]) assert.match(notices, new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i"), `Third-party notices missing ${token}`);
+
 const distFiles = await collectFiles(distDir);
 assert.ok(distFiles.length > 70, `Production package is unexpectedly small: ${distFiles.length} files`);
 assert.equal(distFiles.filter((path) => path.endsWith(".map")).length, 0, "Production release must not ship source maps");
@@ -109,7 +115,7 @@ if (process.env.GITHUB_SHA) assert.equal(releaseManifest.sourceCommit, process.e
 const zipped = unzipSync(new Uint8Array(archive));
 const prefix = "my-daily-devotion/";
 for (const relativePath of [
-  "index.html", "manifest.webmanifest", "sw.js", "brand-mark.svg",
+  "index.html", "manifest.webmanifest", "sw.js", "brand-mark.svg", "THIRD_PARTY_NOTICES.txt",
   "icons/icon-192.png", "icons/icon-512.png", "icons/maskable-512.png", "apple-touch-icon.png",
   "bible/manifest.json", "bible/search-index.json", "plans/mcheyne-classic.v1.json",
 ]) assert.ok(zipped[`${prefix}${relativePath}`], `Release archive missing ${relativePath}`);
@@ -132,7 +138,7 @@ const artifactStats = await stat(artifactPath);
 assert.equal(artifactStats.size, releaseManifest.archiveBytes);
 
 console.log("✓ Phase 12 Release Hardening verification passed");
-console.log("  v1.0.0 version, lockfile, security metadata and release documentation certified");
+console.log("  v1.0.0 version, lockfile, security metadata, third-party notices and release documentation certified");
 console.log(`  ${distFiles.length} production files · 66 BSB books · ${searchIndex.length} searchable verses`);
 console.log(`  ${releaseManifest.artifact} · sha256 ${archiveSha}`);
 console.log("  release candidate contains no source maps, development hosts or unresolved TODO/FIXME/HACK markers");
