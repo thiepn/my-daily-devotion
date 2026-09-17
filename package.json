@@ -1,6 +1,6 @@
 {
   "name": "my-daily-devotion",
-  "version": "0.11.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "description": "My Daily Devotion — private, local-first Scripture, reflection, prayer, and devotional history.",
@@ -14,6 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ux": "playwright test",
+    "audit:prod": "npm audit --omit=dev --audit-level=high",
+    "release:package": "npm run build && node scripts/package-release.mjs",
     "verify:phase0": "node scripts/verify-phase0.mjs",
     "verify:phase1": "npm run verify:phase0 && npm run typecheck && npm run test && npm run build",
     "verify:phase2": "npm run verify:phase1 && node scripts/verify-phase2.mjs",
@@ -25,9 +27,28 @@
     "verify:phase8": "npm run verify:phase7 && node scripts/verify-phase8.mjs",
     "verify:phase9": "npm run verify:phase8 && node scripts/verify-phase9.mjs",
     "verify:phase10": "npm run verify:phase9 && node scripts/verify-phase10.mjs",
-    "verify:phase11": "npm run verify:phase10 && npm run test:ux && node scripts/verify-phase11.mjs"
+    "verify:phase11": "npm run verify:phase10 && npm run test:ux && node scripts/verify-phase11.mjs",
+    "verify:phase12": "npm run verify:phase11 && npm run release:package && node scripts/verify-phase12.mjs"
   },
-  "dependencies": { "dexie": "4.4.6", "react": "19.3.0", "react-dom": "19.3.0", "react-router-dom": "7.18.3" },
-  "devDependencies": { "@axe-core/playwright": "4.13.0", "@playwright/test": "1.63.0", "@types/react": "19.3.0", "@types/react-dom": "19.3.0", "@vitejs/plugin-react": "6.1.1", "fake-indexeddb": "6.2.5", "fflate": "0.8.3", "typescript": "7.0.2", "vite": "8.3.0", "vitest": "5.0.1" },
-  "engines": { "node": ">=22.12" }
+  "dependencies": {
+    "dexie": "4.4.6",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-router-dom": "7.18.3"
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.63.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.1",
+    "fake-indexeddb": "6.2.5",
+    "fflate": "0.8.3",
+    "typescript": "7.0.2",
+    "vite": "8.3.0",
+    "vitest": "5.0.1"
+  },
+  "engines": {
+    "node": ">=22.12"
+  }
 }
