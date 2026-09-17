@@ -1,0 +1,12 @@
+/* Phase 11 — UX validation defect closure */
+
+.data-warning {
+  color: var(--color-warning-text) !important;
+}
+
+.history-loading {
+  padding: 28px 0;
+  border-top: 1px solid var(--color-line-strong);
+  color: var(--color-ink-soft);
+  font-family: var(--font-editorial);
+}
