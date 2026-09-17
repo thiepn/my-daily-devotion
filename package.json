@@ -7,8 +7,9 @@
   "scripts": {
     "bible:build": "node scripts/build-bsb.mjs",
     "mcheyne:build": "node scripts/build-mcheyne.mjs",
-    "dev": "npm run bible:build && npm run mcheyne:build && vite",
-    "build": "npm run bible:build && npm run mcheyne:build && tsc -b && vite build",
+    "notices:build": "node scripts/build-third-party-notices.mjs",
+    "dev": "npm run bible:build && npm run mcheyne:build && npm run notices:build && vite",
+    "build": "npm run bible:build && npm run mcheyne:build && npm run notices:build && tsc -b && vite build",
     "preview:ux": "vite preview --host 127.0.0.1 --port 4173 --strictPort",
     "typecheck": "tsc -b --pretty false",
     "test": "vitest run",
