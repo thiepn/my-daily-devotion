@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useRef } from "react";
 import { Link, Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { PlatformStatus } from "./PlatformStatus";
 import { BrandMark } from "./visual/BrandMark";
@@ -31,16 +31,7 @@ const sections: Array<{ label: string; to: string; icon: IconName }> = [
 ];
 
 function PrimaryNavigation({ mobile = false }: { mobile?: boolean }) {
-  return (
-    <nav className={mobile ? "mobile-nav" : "side-nav"} aria-label="Primary">
-      {sections.map(({ label, to, icon }) => (
-        <NavLink key={to} to={to} className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>
-          <Icon name={icon} aria-hidden="true" />
-          <span>{label}</span>
-        </NavLink>
-      ))}
-    </nav>
-  );
+  return <nav className={mobile ? "mobile-nav" : "side-nav"} aria-label="Primary">{sections.map(({ label, to, icon }) => <NavLink key={to} to={to} className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}><Icon name={icon} aria-hidden="true" /><span>{label}</span></NavLink>)}</nav>;
 }
 
 function routeLabel(pathname: string): string {
@@ -65,64 +56,17 @@ function routeLabel(pathname: string): string {
 function RouteAnnouncer() {
   const location = useLocation();
   const label = routeLabel(location.pathname);
-  useEffect(() => { document.title = label === "My Daily Devotion" ? label : `${label} — My Daily Devotion`; }, [label]);
+  const initialRoute = useRef(true);
+  useEffect(() => {
+    document.title = label === "My Daily Devotion" ? label : `${label} — My Daily Devotion`;
+    if (initialRoute.current) { initialRoute.current = false; return; }
+    requestAnimationFrame(() => document.getElementById("main-content")?.focus({ preventScroll: true }));
+  }, [label, location.pathname]);
   return <p className="sr-only" aria-live="polite" aria-atomic="true">{label}</p>;
 }
 
-function RouteLoading() {
-  return <div className="route-loading" role="status"><strong>Opening…</strong><span>Your local devotional data stays on this device.</span></div>;
-}
+function RouteLoading() { return <div className="route-loading" role="status"><strong>Opening…</strong><span>Your local devotional data stays on this device.</span></div>; }
 
 export function App() {
-  return (
-    <div className="app-shell">
-      <a className="skip-link" href="#main-content">Skip to main content</a>
-      <aside className="side-rail">
-        <NavLink className="brand" to="/today" aria-label="My Daily Devotion home">
-          <BrandMark className="brand-mark" />
-          <span className="brand-copy"><strong>My Daily Devotion</strong><small>Scripture · Prayer · Memory</small></span>
-        </NavLink>
-        <PrimaryNavigation />
-        <div className="rail-note"><span className="rail-rule" aria-hidden="true" /><p>Read Scripture. Respond where it matters. Pray intentionally.</p></div>
-      </aside>
-      <div className="workspace">
-        <header className="utility-bar">
-          <div className="utility-context" aria-label="Application context">
-            <span className="utility-context-title">Devotional workspace</span>
-            <span className="utility-context-note">Private · offline-ready</span>
-          </div>
-          <div className="utility-actions"><Link to="/search">Search</Link><Link to="/data">Data</Link><ThemeSwitcher /></div>
-        </header>
-        <PlatformStatus />
-        <div className="workspace-content" id="main-content" tabIndex={-1}>
-          <RouteAnnouncer />
-          <Suspense fallback={<RouteLoading />}>
-            <Routes>
-              <Route path="/" element={<Navigate to="/today" replace />} />
-              <Route path="/today" element={<TodayScreen />} />
-              <Route path="/today/plan" element={<PlanScreen />} />
-              <Route path="/today/reflection/:localDate" element={<ReflectionScreen />} />
-              <Route path="/bible" element={<BibleScreen />} />
-              <Route path="/bible/collections" element={<CollectionsScreen />} />
-              <Route path="/bible/:bookId/:chapter" element={<BibleScreen />} />
-              <Route path="/prayer" element={<PrayerScreen />} />
-              <Route path="/prayer/new" element={<NewPrayerScreen />} />
-              <Route path="/prayer/people" element={<PeopleScreen />} />
-              <Route path="/prayer/categories" element={<CategoriesScreen />} />
-              <Route path="/prayer/session" element={<PrayerSessionScreen />} />
-              <Route path="/prayer/:prayerId/settings" element={<PrayerSettingsScreen />} />
-              <Route path="/prayer/:prayerId" element={<PrayerDetailScreen />} />
-              <Route path="/history" element={<HistoryScreen />} />
-              <Route path="/history/moments" element={<HistoryMomentsScreen />} />
-              <Route path="/history/day/:localDate" element={<HistoryDayScreen />} />
-              <Route path="/search" element={<SearchScreen />} />
-              <Route path="/data" element={<DataScreen />} />
-              <Route path="*" element={<Navigate to="/today" replace />} />
-            </Routes>
-          </Suspense>
-        </div>
-      </div>
-      <PrimaryNavigation mobile />
-    </div>
-  );
+  return <div className="app-shell"><a className="skip-link" href="#main-content">Skip to main content</a><aside className="side-rail"><NavLink className="brand" to="/today" aria-label="My Daily Devotion home"><BrandMark className="brand-mark" /><span className="brand-copy"><strong>My Daily Devotion</strong><small>Scripture · Prayer · Memory</small></span></NavLink><PrimaryNavigation /><div className="rail-note"><span className="rail-rule" aria-hidden="true" /><p>Read Scripture. Respond where it matters. Pray intentionally.</p></div></aside><div className="workspace"><header className="utility-bar"><div className="utility-context" aria-label="Application context"><span className="utility-context-title">Devotional workspace</span><span className="utility-context-note">Private · offline-ready</span></div><div className="utility-actions"><Link to="/search">Search</Link><Link to="/data">Data</Link><ThemeSwitcher /></div></header><PlatformStatus /><div className="workspace-content" id="main-content" tabIndex={-1}><RouteAnnouncer /><Suspense fallback={<RouteLoading />}><Routes><Route path="/" element={<Navigate to="/today" replace />} /><Route path="/today" element={<TodayScreen />} /><Route path="/today/plan" element={<PlanScreen />} /><Route path="/today/reflection/:localDate" element={<ReflectionScreen />} /><Route path="/bible" element={<BibleScreen />} /><Route path="/bible/collections" element={<CollectionsScreen />} /><Route path="/bible/:bookId/:chapter" element={<BibleScreen />} /><Route path="/prayer" element={<PrayerScreen />} /><Route path="/prayer/new" element={<NewPrayerScreen />} /><Route path="/prayer/people" element={<PeopleScreen />} /><Route path="/prayer/categories" element={<CategoriesScreen />} /><Route path="/prayer/session" element={<PrayerSessionScreen />} /><Route path="/prayer/:prayerId/settings" element={<PrayerSettingsScreen />} /><Route path="/prayer/:prayerId" element={<PrayerDetailScreen />} /><Route path="/history" element={<HistoryScreen />} /><Route path="/history/moments" element={<HistoryMomentsScreen />} /><Route path="/history/day/:localDate" element={<HistoryDayScreen />} /><Route path="/search" element={<SearchScreen />} /><Route path="/data" element={<DataScreen />} /><Route path="*" element={<Navigate to="/today" replace />} /></Routes></Suspense></div></div><PrimaryNavigation mobile /></div>;
 }
