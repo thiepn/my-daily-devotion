@@ -1,6 +1,9 @@
 node_modules/
 dist/
+release/
 coverage/
+playwright-report/
+test-results/
 .DS_Store
 *.log
 /public/bible/
