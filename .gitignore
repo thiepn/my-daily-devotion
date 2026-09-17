@@ -8,3 +8,4 @@ test-results/
 *.log
 /public/bible/
 /public/plans/
+/public/THIRD_PARTY_NOTICES.txt
