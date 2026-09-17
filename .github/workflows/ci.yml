@@ -1,4 +1,4 @@
-name: UX Validation CI
+name: Release Certification CI
 
 on:
   push:
@@ -14,7 +14,7 @@ concurrency:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -22,19 +22,30 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "24"
-      - name: Install
-        run: npm install --ignore-scripts
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
-      - name: Verify Phase 11
-        run: npm run verify:phase11
-      - name: Upload UX failure artifacts
+      - name: Audit production dependencies
+        run: npm run audit:prod
+      - name: Verify Phase 12
+        run: npm run verify:phase12
+      - name: Upload failure evidence
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: phase11-ux-artifacts
+          name: phase12-failure-evidence
           path: |
             playwright-report
             test-results
           if-no-files-found: ignore
           retention-days: 7
+      - name: Upload certified release package
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mdd-1.0.0-release
+          path: release/
+          if-no-files-found: error
+          retention-days: 30
