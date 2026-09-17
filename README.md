@@ -8,9 +8,9 @@ MDD is intentionally not a social network, content feed, habit game, or general-
 
 ## Current status
 
-**Phase 9 — Dedicated UI Refinement**
+**Phase 10 — PWA, Accessibility, Performance & Resilience**
 
-MDD now includes the full offline BSB reader and M’Cheyne workflow, optional reflection/Verse Notes, the complete prayer scheduling/session engine, automatic Calendar/Day/Moments history, grouped local search, Scripture Collections, encrypted/checksum-verified backup and validated restore, plus a unified final UI refinement layer. The implemented product now shares one quiet-editorial hierarchy for chrome, forms, controls, action groups, empty states and responsive layouts while remaining local-first with no account or cloud dependency.
+MDD now includes the full BSB reader and M’Cheyne workflow, reflection/Verse Notes, the prayer scheduling/session engine, automatic devotional history, grouped local search, Scripture Collections, encrypted/checksum-verified backup and validated restore, the Phase 9 quiet-editorial UI system, plus an installable offline-first platform layer. The production PWA precaches the full BSB corpus, local verse-search index, M’Cheyne plan and built application shell; route features are code-split, theme preference is persisted, storage-persistence status is visible, service-worker updates are user-controlled, and destructive backup recovery is tested.
 
 - Phase 0 contract: [`docs/PHASE_0_IMPLEMENTATION_CONTRACT.md`](docs/PHASE_0_IMPLEMENTATION_CONTRACT.md)
 - Phase 1 foundation: [`docs/PHASE_1_LOCAL_FOUNDATION.md`](docs/PHASE_1_LOCAL_FOUNDATION.md)
@@ -22,6 +22,7 @@ MDD now includes the full offline BSB reader and M’Cheyne workflow, optional r
 - Phase 7 Prayer Scheduling, Queue & Focused Session: [`docs/PHASE_7_PRAYER_SCHEDULING_QUEUE_SESSION.md`](docs/PHASE_7_PRAYER_SCHEDULING_QUEUE_SESSION.md)
 - Phase 8 History, Search & Data Portability: [`docs/PHASE_8_HISTORY_SEARCH_PORTABILITY.md`](docs/PHASE_8_HISTORY_SEARCH_PORTABILITY.md)
 - Phase 9 Dedicated UI Refinement: [`docs/PHASE_9_UI_REFINEMENT.md`](docs/PHASE_9_UI_REFINEMENT.md)
+- Phase 10 PWA, Accessibility, Performance & Resilience: [`docs/PHASE_10_PWA_ACCESSIBILITY_PERFORMANCE_RESILIENCE.md`](docs/PHASE_10_PWA_ACCESSIBILITY_PERFORMANCE_RESILIENCE.md)
 
 ## Local development
 
@@ -30,12 +31,12 @@ npm install
 npm run dev
 ```
 
-The build generates pinned BSB, the local verse-search corpus, and M’Cheyne runtime assets from their canonical sources.
+The build generates pinned BSB, the local verse-search corpus, and M’Cheyne runtime assets from their canonical sources. Service-worker registration is production-only, so normal Vite development does not cache development assets.
 
 ## Verification
 
 ```bash
-npm run verify:phase9
+npm run verify:phase10
 ```
 
-The Phase 9 gate reruns all earlier contracts, persistence tests, Scripture/M’Cheyne builds and feature guardrails before certifying the final cross-screen editorial refinement, product chrome, responsive composition and UI consistency.
+The Phase 10 gate reruns every earlier contract, the complete test suite and the production build before checking install metadata, application-icon dimensions, full offline Scripture/search coverage, safe service-worker updates, persistent-storage wiring, accessibility primitives, route code splitting and destructive backup recovery.
