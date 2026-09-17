@@ -1,22 +1,27 @@
-import { Link, Navigate, NavLink, Route, Routes } from "react-router-dom";
-import { DataScreen } from "../data/DataScreen";
-import { HistoryDayScreen, HistoryMomentsScreen, HistoryScreen } from "../history/HistoryScreens";
-import { PlanScreen } from "../mcheyne/PlanScreen";
-import { TodayScreen } from "../mcheyne/TodayScreen";
-import { CategoriesScreen } from "../prayer/CategoriesScreen";
-import { NewPrayerScreen } from "../prayer/NewPrayerScreen";
-import { PeopleScreen } from "../prayer/PeopleScreen";
-import { PrayerDetailScreen } from "../prayer/PrayerDetailScreen";
-import { PrayerScreen } from "../prayer/PrayerScreen";
-import { PrayerSessionScreen } from "../prayer/PrayerSessionScreen";
-import { PrayerSettingsScreen } from "../prayer/PrayerSettingsScreen";
-import { ReflectionScreen } from "../reflection/ReflectionScreen";
-import { SearchScreen } from "../search/SearchScreen";
-import { BibleScreen } from "../scripture/BibleScreen";
-import { CollectionsScreen } from "../scripture/CollectionsScreen";
+import { lazy, Suspense, useEffect } from "react";
+import { Link, Navigate, NavLink, Route, Routes, useLocation } from "react-router-dom";
+import { PlatformStatus } from "./PlatformStatus";
 import { BrandMark } from "./visual/BrandMark";
 import { Icon, type IconName } from "./visual/Icon";
 import { ThemeSwitcher } from "./visual/ThemeSwitcher";
+
+const TodayScreen = lazy(() => import("../mcheyne/TodayScreen").then((module) => ({ default: module.TodayScreen })));
+const PlanScreen = lazy(() => import("../mcheyne/PlanScreen").then((module) => ({ default: module.PlanScreen })));
+const ReflectionScreen = lazy(() => import("../reflection/ReflectionScreen").then((module) => ({ default: module.ReflectionScreen })));
+const BibleScreen = lazy(() => import("../scripture/BibleScreen").then((module) => ({ default: module.BibleScreen })));
+const CollectionsScreen = lazy(() => import("../scripture/CollectionsScreen").then((module) => ({ default: module.CollectionsScreen })));
+const PrayerScreen = lazy(() => import("../prayer/PrayerScreen").then((module) => ({ default: module.PrayerScreen })));
+const NewPrayerScreen = lazy(() => import("../prayer/NewPrayerScreen").then((module) => ({ default: module.NewPrayerScreen })));
+const PeopleScreen = lazy(() => import("../prayer/PeopleScreen").then((module) => ({ default: module.PeopleScreen })));
+const CategoriesScreen = lazy(() => import("../prayer/CategoriesScreen").then((module) => ({ default: module.CategoriesScreen })));
+const PrayerSessionScreen = lazy(() => import("../prayer/PrayerSessionScreen").then((module) => ({ default: module.PrayerSessionScreen })));
+const PrayerSettingsScreen = lazy(() => import("../prayer/PrayerSettingsScreen").then((module) => ({ default: module.PrayerSettingsScreen })));
+const PrayerDetailScreen = lazy(() => import("../prayer/PrayerDetailScreen").then((module) => ({ default: module.PrayerDetailScreen })));
+const HistoryScreen = lazy(() => import("../history/HistoryScreens").then((module) => ({ default: module.HistoryScreen })));
+const HistoryMomentsScreen = lazy(() => import("../history/HistoryScreens").then((module) => ({ default: module.HistoryMomentsScreen })));
+const HistoryDayScreen = lazy(() => import("../history/HistoryScreens").then((module) => ({ default: module.HistoryDayScreen })));
+const SearchScreen = lazy(() => import("../search/SearchScreen").then((module) => ({ default: module.SearchScreen })));
+const DataScreen = lazy(() => import("../data/DataScreen").then((module) => ({ default: module.DataScreen })));
 
 const sections: Array<{ label: string; to: string; icon: IconName }> = [
   { label: "Today", to: "/today", icon: "today" },
@@ -38,9 +43,40 @@ function PrimaryNavigation({ mobile = false }: { mobile?: boolean }) {
   );
 }
 
+function routeLabel(pathname: string): string {
+  if (pathname === "/today/plan") return "Reading plan";
+  if (pathname.startsWith("/today/reflection/")) return "Reflection";
+  if (pathname.startsWith("/today")) return "Today";
+  if (pathname === "/bible/collections") return "Scripture collections";
+  if (pathname.startsWith("/bible")) return "Bible";
+  if (pathname === "/prayer/new") return "Add prayer";
+  if (pathname === "/prayer/people") return "Prayer people";
+  if (pathname === "/prayer/categories") return "Prayer categories";
+  if (pathname === "/prayer/session") return "Focused prayer";
+  if (pathname.startsWith("/prayer")) return "Prayer";
+  if (pathname === "/history/moments") return "History moments";
+  if (pathname.startsWith("/history/day/")) return "History day";
+  if (pathname.startsWith("/history")) return "History";
+  if (pathname.startsWith("/search")) return "Search";
+  if (pathname.startsWith("/data")) return "Data and privacy";
+  return "My Daily Devotion";
+}
+
+function RouteAnnouncer() {
+  const location = useLocation();
+  const label = routeLabel(location.pathname);
+  useEffect(() => { document.title = label === "My Daily Devotion" ? label : `${label} — My Daily Devotion`; }, [label]);
+  return <p className="sr-only" aria-live="polite" aria-atomic="true">{label}</p>;
+}
+
+function RouteLoading() {
+  return <div className="route-loading" role="status"><strong>Opening…</strong><span>Your local devotional data stays on this device.</span></div>;
+}
+
 export function App() {
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">Skip to main content</a>
       <aside className="side-rail">
         <NavLink className="brand" to="/today" aria-label="My Daily Devotion home">
           <BrandMark className="brand-mark" />
@@ -53,32 +89,38 @@ export function App() {
         <header className="utility-bar">
           <div className="utility-context" aria-label="Application context">
             <span className="utility-context-title">Devotional workspace</span>
-            <span className="utility-context-note">Private on this device</span>
+            <span className="utility-context-note">Private · offline-ready</span>
           </div>
           <div className="utility-actions"><Link to="/search">Search</Link><Link to="/data">Data</Link><ThemeSwitcher /></div>
         </header>
-        <Routes>
-          <Route path="/" element={<Navigate to="/today" replace />} />
-          <Route path="/today" element={<TodayScreen />} />
-          <Route path="/today/plan" element={<PlanScreen />} />
-          <Route path="/today/reflection/:localDate" element={<ReflectionScreen />} />
-          <Route path="/bible" element={<BibleScreen />} />
-          <Route path="/bible/collections" element={<CollectionsScreen />} />
-          <Route path="/bible/:bookId/:chapter" element={<BibleScreen />} />
-          <Route path="/prayer" element={<PrayerScreen />} />
-          <Route path="/prayer/new" element={<NewPrayerScreen />} />
-          <Route path="/prayer/people" element={<PeopleScreen />} />
-          <Route path="/prayer/categories" element={<CategoriesScreen />} />
-          <Route path="/prayer/session" element={<PrayerSessionScreen />} />
-          <Route path="/prayer/:prayerId/settings" element={<PrayerSettingsScreen />} />
-          <Route path="/prayer/:prayerId" element={<PrayerDetailScreen />} />
-          <Route path="/history" element={<HistoryScreen />} />
-          <Route path="/history/moments" element={<HistoryMomentsScreen />} />
-          <Route path="/history/day/:localDate" element={<HistoryDayScreen />} />
-          <Route path="/search" element={<SearchScreen />} />
-          <Route path="/data" element={<DataScreen />} />
-          <Route path="*" element={<Navigate to="/today" replace />} />
-        </Routes>
+        <PlatformStatus />
+        <div className="workspace-content" id="main-content" tabIndex={-1}>
+          <RouteAnnouncer />
+          <Suspense fallback={<RouteLoading />}>
+            <Routes>
+              <Route path="/" element={<Navigate to="/today" replace />} />
+              <Route path="/today" element={<TodayScreen />} />
+              <Route path="/today/plan" element={<PlanScreen />} />
+              <Route path="/today/reflection/:localDate" element={<ReflectionScreen />} />
+              <Route path="/bible" element={<BibleScreen />} />
+              <Route path="/bible/collections" element={<CollectionsScreen />} />
+              <Route path="/bible/:bookId/:chapter" element={<BibleScreen />} />
+              <Route path="/prayer" element={<PrayerScreen />} />
+              <Route path="/prayer/new" element={<NewPrayerScreen />} />
+              <Route path="/prayer/people" element={<PeopleScreen />} />
+              <Route path="/prayer/categories" element={<CategoriesScreen />} />
+              <Route path="/prayer/session" element={<PrayerSessionScreen />} />
+              <Route path="/prayer/:prayerId/settings" element={<PrayerSettingsScreen />} />
+              <Route path="/prayer/:prayerId" element={<PrayerDetailScreen />} />
+              <Route path="/history" element={<HistoryScreen />} />
+              <Route path="/history/moments" element={<HistoryMomentsScreen />} />
+              <Route path="/history/day/:localDate" element={<HistoryDayScreen />} />
+              <Route path="/search" element={<SearchScreen />} />
+              <Route path="/data" element={<DataScreen />} />
+              <Route path="*" element={<Navigate to="/today" replace />} />
+            </Routes>
+          </Suspense>
+        </div>
       </div>
       <PrimaryNavigation mobile />
     </div>
