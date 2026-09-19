@@ -17,7 +17,7 @@ const phase8Index = main.indexOf('"./styles/phase8.css"');
 const phase9Index = main.indexOf('"./styles/phase9.css"');
 assert.ok(phase8Index >= 0 && phase9Index > phase8Index, "Phase 9 refinement CSS must load after Phase 8 feature styles");
 
-assert.match(app, /Devotional workspace/);
+assert.match(app, /Scripture · Prayer · Reflection/);\nassert.match(app, /A quieter life\\. A stronger faith\\./);\nassert.doesNotMatch(app, /Devotional workspace/);
 assert.match(app, /className=\{\(\{ isActive \}\) => `nav-link\$\{isActive \? " active" : ""\}`\}/);
 assert.doesNotMatch(app, /Phase 8|History, Search & Portability/);
 
