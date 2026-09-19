@@ -18,6 +18,7 @@ import "./styles/phase9.css";
 import "./styles/phase10.css";
 import "./styles/phase11.css";
 import "./styles/corrective.css";
+import "./styles/morning-grace.css";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("MDD root element is missing.");
