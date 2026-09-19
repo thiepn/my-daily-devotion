@@ -1,0 +1,110 @@
+{
+  "version": 1,
+  "name": "Morning Grace Secondary Workflows",
+  "parentCanonicalScreens": "canonical/morning-grace-canonical-screens.v1.json",
+  "status": "phase-4-frozen",
+  "workspaces": {
+    "reflection": {
+      "metaphor": "personal devotional journal",
+      "primarySurface": "large reading-serif writing page",
+      "supportingSurface": "linked Scripture and prayer handoff",
+      "motif": "single quiet botanical cue"
+    },
+    "readingPlan": {
+      "metaphor": "devotional almanac",
+      "primarySurface": "month-by-month assignments with explicit completion",
+      "rule": "factual progress only; no streak or debt framing"
+    },
+    "prayerDetail": {
+      "metaphor": "prayer story",
+      "primarySurface": "request wording, lifecycle, answer, updates",
+      "accent": "terracotta",
+      "rule": "request and story before administrative metadata"
+    },
+    "prayerAdministration": {
+      "metaphor": "quiet directory",
+      "includes": [
+        "settings",
+        "people",
+        "categories"
+      ],
+      "rule": "forms remain clear but visually subordinate to devotional content"
+    },
+    "focusedPrayer": {
+      "metaphor": "sanctuary mode",
+      "primarySurface": "one request at a time",
+      "rule": "minimal navigation, botanical cue, one dominant Prayed Next action"
+    },
+    "collections": {
+      "metaphor": "Scripture library index",
+      "primarySurface": "collection index plus passage shelf"
+    },
+    "search": {
+      "metaphor": "editorial index",
+      "primarySurface": "prominent local search with grouped results",
+      "rule": "result text uses reading typography where useful"
+    },
+    "data": {
+      "metaphor": "personal archive",
+      "primarySurface": "privacy, export, backup and validated restore",
+      "rule": "restrained utility styling; destructive actions remain explicit"
+    }
+  },
+  "visualRules": [
+    "secondary screens inherit Morning Grace typography, color, borders, and motifs",
+    "utility workflows are calmer than canonical screens and use less artwork",
+    "devotional content receives more visual weight than administration",
+    "forms use paper surfaces and fine rules rather than dashboard cards",
+    "no decorative gradients or glassmorphism",
+    "no spiritual gamification or productivity jargon",
+    "destructive and restore operations remain visually explicit"
+  ],
+  "responsive": {
+    "phone": "single-column secondary workspaces",
+    "tablet": "two-column master-detail only when useful",
+    "desktop": "editorial master-detail with sticky context where existing behavior supports it",
+    "textResize": "200 percent reflows to one column without horizontal overflow"
+  },
+  "implementation": {
+    "styleLayer": "src/styles/morning-grace-secondary.css",
+    "modifiedScreens": [
+      "src/reflection/ReflectionScreen.tsx",
+      "src/mcheyne/PlanScreen.tsx",
+      "src/prayer/PrayerDetailScreen.tsx",
+      "src/prayer/PrayerSettingsScreen.tsx",
+      "src/prayer/PeopleScreen.tsx",
+      "src/prayer/CategoriesScreen.tsx",
+      "src/prayer/PrayerSessionScreen.tsx",
+      "src/scripture/CollectionsScreen.tsx",
+      "src/search/SearchScreen.tsx",
+      "src/data/DataScreen.tsx"
+    ]
+  },
+  "behaviorPreservation": [
+    "reflection revision and draft protection unchanged",
+    "M'Cheyne import and completion semantics unchanged",
+    "prayer conflict protection and lifecycle semantics unchanged",
+    "focused prayer queue/session semantics unchanged",
+    "collection persistence unchanged",
+    "search corpus and local personal search unchanged",
+    "backup validation/import/replace semantics unchanged",
+    "database schema unchanged"
+  ],
+  "phaseBoundary": {
+    "finalizedNow": [
+      "reflection-workspace",
+      "full-plan-workspace",
+      "prayer-detail-settings-people-categories",
+      "focused-prayer",
+      "collections",
+      "search",
+      "data-backup"
+    ],
+    "deferred": [
+      "final-cross-app-polish",
+      "motion-pass",
+      "visual-fidelity-audit",
+      "release-merge"
+    ]
+  }
+}
