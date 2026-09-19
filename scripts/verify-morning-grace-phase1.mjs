@@ -37,6 +37,7 @@ for (const token of [
   "--color-prayer: #9f563b",
   "--color-morning: #d29a3a",
   "--color-highlight: #e8d6ab",
+  "--color-red-letter: #93493f",
   "--radius-xs: 4px",
   "--radius-sm: 8px",
   "--radius-md: 12px",
