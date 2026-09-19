@@ -36,6 +36,7 @@ test.describe("Morning Grace final visual polish",()=>{
 
     await page.setViewportSize({width:1280,height:900});
     await page.addInitScript(()=>document.addEventListener("DOMContentLoaded",()=>{document.documentElement.style.fontSize="200%";}));
+    await page.reload();
     for(const route of ["/prayer/new","/history/moments","/data"]){
       await openRoute(page,route);
       await expect(page.locator("html")).toHaveCSS("font-size","32px");
