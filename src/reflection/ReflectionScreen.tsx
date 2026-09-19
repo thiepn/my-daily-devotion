@@ -133,7 +133,7 @@ export function ReflectionScreen() {
   };
 
   return (
-    <main className="visual-screen reflection-screen">
+    <main className="visual-screen reflection-screen mg-secondary-screen mg-reflection-workspace">
       <header className="screen-heading compact-heading reflection-heading mg-secondary-header">
         <p className="eyebrow">Personal reflection · {formatDate(localDate)}</p>
         <h1>Reflect</h1>
