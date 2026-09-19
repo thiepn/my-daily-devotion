@@ -14,6 +14,7 @@ for (let phase = 2; phase <= 10; phase += 1) node([`scripts/verify-phase${phase}
 npm("test:ux");
 node(["scripts/verify-phase11.mjs"]);
 node(["scripts/verify-morning-grace-phase1.mjs"]);
+node(["scripts/verify-morning-grace-phase2.mjs"]);
 // Package the exact dist tested above: never rebuild after browser acceptance.
 node(["scripts/package-release.mjs"]);
 node(["scripts/release-evidence.mjs"]);
