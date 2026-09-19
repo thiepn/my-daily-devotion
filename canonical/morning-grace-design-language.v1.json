@@ -47,7 +47,8 @@
       "reflection": "#48706d",
       "prayer": "#9f563b",
       "morning": "#d29a3a",
-      "highlight": "#e8d6ab"
+      "highlight": "#e8d6ab",
+      "redLetter": "#93493f"
     },
     "dark": {
       "canvas": "#171b18",
@@ -64,7 +65,8 @@
       "reflection": "#86aba7",
       "prayer": "#d58b6d",
       "morning": "#e1b667",
-      "highlight": "#5a4a2a"
+      "highlight": "#5a4a2a",
+      "redLetter": "#e0a097"
     }
   },
   "domainAccents": {
