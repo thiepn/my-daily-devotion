@@ -1,6 +1,6 @@
 {
   "name": "my-daily-devotion",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "private": true,
   "type": "module",
   "description": "My Daily Devotion — private, local-first Scripture, reflection, prayer, and devotional history.",
