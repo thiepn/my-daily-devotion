@@ -265,6 +265,31 @@ textarea:focus {
   transform: translateY(0);
 }
 
+/* The first-run reading choice predates Morning Grace and has a higher-specificity transparent rule.
+   Reassert the primary action at equal/higher specificity so text and surface remain AA-compliant. */
+.setup-options .primary-editorial-action {
+  border: 1px solid var(--domain-accent-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-action-on);
+  background: var(--domain-accent-strong);
+}
+
+.setup-options .primary-editorial-action strong,
+.setup-options .primary-editorial-action small {
+  color: var(--color-action-on);
+}
+
+.setup-options .primary-editorial-action:hover {
+  color: var(--color-action-on);
+  background: var(--domain-accent-strong);
+}
+
+.brand-copy strong,
+.brand-copy small {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
 .workspace[data-domain="prayer"] .primary-editorial-action,
 .workspace[data-domain="prayer"] .focus-next {
   border-color: var(--color-prayer);
