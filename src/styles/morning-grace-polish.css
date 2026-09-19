@@ -391,6 +391,23 @@ textarea:focus-visible {
   color: var(--color-ink);
 }
 
+/* Release acceptance: small Prayer and Data text must remain readable on warm paper. */
+.mg-prayer-hero .primary-editorial-action {
+  color: #fffaf1;
+  border-color: #8f4a34;
+  background: #8f4a34;
+}
+
+.mg-prayer-hero .prayer-management-links a {
+  color: var(--color-ink-soft);
+}
+
+.mg-data-workspace .data-password span,
+.mg-data-workspace .import-mode legend,
+.mg-data-workspace .backup-counts dt {
+  color: var(--color-ink-soft);
+}
+
 /* Residual secondary routes */
 .mg-prayer-capture-workspace .prayer-capture-layout {
   grid-template-columns: minmax(0, 1.38fr) minmax(280px, .62fr);
