@@ -22,7 +22,7 @@ for (const token of ["setOffline(true)", "navigator.serviceWorker.controller", "
 
 assert.match(app, /main-content/); assert.match(app, /focus\(\{ preventScroll: true \}\)/);
 assert.match(today, /aria-label="Completed through date"/); assert.match(plan, /aria-label="Completed through date"/);
-assert.match(history, /aria-label="Previous month"/); assert.match(history, /aria-label="Next month"/); assert.match(history, /aria-label=\{`Open history for \$\{dateLabel\(date\)\}`\}/); assert.match(history, /aria-current=/); assert.match(history, /Opening history…/); assert.match(history, /const\[loading,setLoading\]/);
+assert.match(history, /aria-label="Previous month"/); assert.match(history, /aria-label="Next month"/); assert.match(history, /aria-label=\{`Open history for \$\{dateLabel\(date\)\}`\}/); assert.match(history, /aria-current=/); assert.match(history, /Opening history…/); assert.match(history, /const\s*\[\s*loading\s*,\s*setLoading\s*\]/);
 assert.match(schema, /DATABASE_SCHEMA_VERSION = 1/);
 assert.match(tokens, /--color-ink-faint:\s*#686d65/); assert.match(tokens, /--color-warning-text:\s*#7a4f2f/);
 assert.match(vite, /manifest:\s*true/);
