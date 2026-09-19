@@ -235,6 +235,20 @@
   color: var(--color-prayer);
 }
 
+.mg-panel-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.mg-panel-kicker .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.reflection-preview .mg-panel-kicker { color: var(--color-reflection); }
+.prayer-preview .mg-panel-kicker { color: var(--color-prayer); }
+
 /* Bible — chapter first, controls secondary. */
 .mg-bible-shell-header {
   display: flex;
