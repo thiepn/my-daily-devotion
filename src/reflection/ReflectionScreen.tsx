@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useUnsavedChanges } from "../app/useUnsavedChanges";
+import { BotanicalSprig } from "../app/visual/MorningGraceMotifs";
 import { db } from "../data/database";
 import { ReflectionRepository } from "../data/repositories/reflections";
 import { assertLocalDate } from "../domain/time";
@@ -181,7 +182,7 @@ export function ReflectionScreen() {
           <p className="reflection-status" aria-live="polite">{status}</p>
         </section>
 
-        <aside className="reflection-context-panel">
+        <aside className="reflection-context-panel"><BotanicalSprig className="mg-reflection-sprig" />
           <section>
             <p className="section-kicker">Linked Scripture</p>
             <h2>From Scripture</h2>
