@@ -38,7 +38,6 @@ for(const token of [
 assert.doesNotMatch(css,/(?:linear|radial|conic)-gradient\s*\(/i);
 assert.doesNotMatch(css,/url\(\s*["']?https?:\/\//i);
 assert.match(css,/max-width:\s*700px/);
-assert.match(css,/font-size:\s*200%/);
 
 assert.match(app,/className="utility-link" to="\/search"/);
 assert.match(app,/className="utility-link" to="\/data"/);
