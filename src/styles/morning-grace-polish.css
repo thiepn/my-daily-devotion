@@ -408,6 +408,10 @@ textarea:focus-visible {
   color: var(--color-ink-soft);
 }
 
+.mg-search-workspace .search-filters label {
+  color: var(--color-ink-soft);
+}
+
 /* Residual secondary routes */
 .mg-prayer-capture-workspace .prayer-capture-layout {
   grid-template-columns: minmax(0, 1.38fr) minmax(280px, .62fr);
