@@ -191,9 +191,9 @@ export function TodayScreen() {
         <div className="section-heading-line">
           <div>
             <p className="section-kicker">M’Cheyne · {enrollment.mode === "CALENDAR" ? "Calendar" : "Self-paced"}</p>
-            <h2 id="reading-heading">{assignment ? `Day ${assignment.sequence}` : isLeapPause ? "Leap-day pause" : "Reading plan"}</h2>
+            <h2 id="reading-heading">{assignment ? `Day ${assignment.sequence} readings` : isLeapPause ? "Leap-day pause" : "Reading plan"}</h2>
           </div>
-          {assignment ? <div className="mg-reading-progress" aria-label={`${completedCount} of 4 readings complete`}><strong>{completedCount}</strong><span>/ 4</span></div> : null}
+          {assignment ? <div className="mg-reading-progress" aria-label={`${completedCount} of 4 readings complete`}><span className="progress-copy">{completedCount} of 4</span></div> : null}
         </div>
 
         {isLeapPause ? (
