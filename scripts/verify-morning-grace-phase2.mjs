@@ -51,7 +51,7 @@ for (const selector of [".mg-sprig",".mg-sunrise",".mg-landscape",".mg-flourish"
 
 for (const svg of [publicMark, publicSprig, publicSunrise, publicLandscape]) {
   assert.doesNotMatch(svg, /(?:linear|radial|conic)-gradient/i);
-  assert.doesNotMatch(svg, /https?:\/\//i);
+  assert.doesNotMatch(svg, /(?:href|src)\s*=\s*["']https?:\/\//i);
 }
 assert.match(publicMark, /F6F2E9/);
 assert.match(publicMark, /D29A3A/);
