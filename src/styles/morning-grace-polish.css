@@ -404,7 +404,7 @@ textarea:focus-visible {
 
 .mg-data-workspace .data-password span,
 .mg-data-workspace .import-mode legend,
-.mg-data-workspace .backup-counts dt {
+.mg-data-workspace dt {
   color: var(--color-ink-soft);
 }
 
