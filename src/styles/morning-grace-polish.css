@@ -380,6 +380,17 @@ textarea:focus-visible {
   font-family: var(--font-reading);
 }
 
+/* History calendar text must remain subdued without dropping below normal-text contrast. */
+.mg-history-calendar .history-weekdays,
+.mg-history-calendar .history-day.empty,
+.mg-history-calendar .history-calendar-legend {
+  color: var(--color-ink-soft);
+}
+
+.mg-history-calendar .history-day.is-today strong {
+  color: var(--color-ink);
+}
+
 /* Residual secondary routes */
 .mg-prayer-capture-workspace .prayer-capture-layout {
   grid-template-columns: minmax(0, 1.38fr) minmax(280px, .62fr);
