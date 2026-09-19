@@ -1,9 +1,8 @@
 import assert from "node:assert/strict";
-import { readFile, stat } from "node:fs/promises";
+import { readFile } from "node:fs/promises";
 
 const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
-const info = (path) => stat(new URL(path, root));
 
 const [contractRaw, brandMark, icons, motifs, css, publicMark, publicSprig, publicSunrise, publicLandscape, manifestRaw, indexHtml, main, doc] = await Promise.all([
   read("canonical/morning-grace-brand-assets.v1.json"),
@@ -61,9 +60,19 @@ assert.equal(manifest.background_color, "#f6f2e9");
 assert.equal(manifest.theme_color, "#f6f2e9");
 assert.match(indexHtml, /name="theme-color" content="#f6f2e9"/);
 
-for (const path of ["public/icons/icon-192.png","public/icons/icon-512.png","public/icons/maskable-512.png","public/apple-touch-icon.png"]) {
-  const file = await info(path);
-  assert.ok(file.size > 1000, `${path} must be a non-empty Morning Grace raster asset`);
+function pngDimensions(buffer) {
+  assert.deepEqual([...buffer.subarray(0, 8)], [137,80,78,71,13,10,26,10], "Expected PNG signature");
+  return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) };
+}
+for (const [path, width, height] of [
+  ["public/icons/icon-192.png", 192, 192],
+  ["public/icons/icon-512.png", 512, 512],
+  ["public/icons/maskable-512.png", 512, 512],
+  ["public/apple-touch-icon.png", 180, 180],
+]) {
+  const bytes = await readFile(new URL(path, root));
+  assert.ok(bytes.length > 1000, `${path} must be a non-empty Morning Grace raster asset`);
+  assert.deepEqual(pngDimensions(bytes), { width, height }, `Unexpected Morning Grace icon dimensions for ${path}`);
 }
 
 const phase1Index = main.indexOf('"./styles/morning-grace.css"');
