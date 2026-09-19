@@ -32,9 +32,10 @@
     "verify:phase12": "node scripts/certify.mjs",
     "scripture:verify": "node --experimental-strip-types scripts/verify-scripture-content.mjs",
     "test:report": "vitest run --reporter=default --reporter=json --outputFile=verification/unit.json",
-    "verify:morning-grace": "npm run verify:morning-grace:phase1 && npm run verify:morning-grace:phase2",
+    "verify:morning-grace": "npm run verify:morning-grace:phase1 && npm run verify:morning-grace:phase2 && npm run verify:morning-grace:phase3",
     "verify:morning-grace:phase1": "node scripts/verify-morning-grace-phase1.mjs",
-    "verify:morning-grace:phase2": "node scripts/verify-morning-grace-phase2.mjs"
+    "verify:morning-grace:phase2": "node scripts/verify-morning-grace-phase2.mjs",
+    "verify:morning-grace:phase3": "node scripts/verify-morning-grace-phase3.mjs"
   },
   "dependencies": {
     "dexie": "4.4.6",
