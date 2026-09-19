@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "name": "Morning Grace Brand Assets",
+  "parentDesignLanguage": "canonical/morning-grace-design-language.v1.json",
+  "status": "phase-2-frozen",
+  "mark": {
+    "name": "Morning Sprig Book",
+    "meaning": {
+      "book": "Scripture as the root of the devotional life",
+      "sprig": "daily growth and faithful formation",
+      "sun": "new mercies and morning grace"
+    },
+    "geometry": "open-book base with an upward sprig and small rising sun",
+    "minimumDigitalSizePx": 24,
+    "preferredShellSizePx": 34,
+    "clearSpace": "one sun diameter on all sides",
+    "variants": [
+      "full-color-light",
+      "theme-aware-interface",
+      "maskable-app-icon"
+    ],
+    "prohibited": [
+      "stretching",
+      "rotating",
+      "adding-cross-or-text-inside-mark",
+      "gradient-fill",
+      "drop-shadow",
+      "placing-on-busy-artwork"
+    ]
+  },
+  "iconography": {
+    "gridPx": 20,
+    "strokeWidthPx": 1.55,
+    "cap": "round",
+    "join": "round",
+    "style": "editorial-outline",
+    "selectedState": "same geometry with semantic domain color and slightly stronger optical weight",
+    "primary": {
+      "today": "sunrise over quiet horizon",
+      "bible": "open book",
+      "prayer": "mirrored praying hands",
+      "history": "editorial timeline"
+    },
+    "supporting": [
+      "leaf",
+      "sprig",
+      "search",
+      "plus",
+      "reflection",
+      "answered",
+      "people",
+      "highlight",
+      "share",
+      "more",
+      "settings",
+      "bookmark",
+      "note"
+    ],
+    "prohibited": [
+      "emoji",
+      "mixed-icon-libraries",
+      "filled-3d-icons",
+      "cartoon-symbols",
+      "different-stroke-families"
+    ]
+  },
+  "botanicals": {
+    "canonicalPlant": "olive-like editorial sprig",
+    "usage": "one meaningful botanical gesture per major composition",
+    "density": "low",
+    "allowed": [
+      "section-end",
+      "focus-prayer",
+      "empty-state",
+      "hero-edge",
+      "history-closing-band"
+    ],
+    "prohibited": [
+      "wallpaper-pattern",
+      "repeating-border",
+      "behind-scripture-body",
+      "decorative-clutter"
+    ]
+  },
+  "landscapeArt": {
+    "style": "flat-editorial-watercolor-ink-hybrid",
+    "construction": "broad quiet layers, limited detail, no gradients required",
+    "subjects": [
+      "morning hills",
+      "quiet paths",
+      "calm lakes",
+      "distant villages",
+      "fields",
+      "olive and pine silhouettes"
+    ],
+    "composition": {
+      "todayHero": "16:7 with clear text-safe area",
+      "bibleContext": "5:2 and optional; never behind Scripture paragraphs",
+      "historyClosingBand": "16:5",
+      "emptyState": "4:3 with substantial negative space"
+    },
+    "colorLimit": "canvas + sage family + one morning-gold accent",
+    "prohibited": [
+      "embedded-text",
+      "people-as-subject",
+      "literal-Jesus-image",
+      "HDR-photography",
+      "fantasy-scenery",
+      "dramatic-clouds",
+      "neon",
+      "stock-photo-look"
+    ]
+  },
+  "generatedArtDirection": {
+    "masterPrompt": "Quiet editorial landscape for My Daily Devotion, early-morning natural light, restrained watercolor and fine ink character, warm ivory paper atmosphere, muted sage and olive hills, small golden morning sun, generous negative space, simple natural forms, mature Christian devotional publishing aesthetic, no people, no text, no logos, no gradients, no fantasy, no photorealistic stock-photo look.",
+    "consistencyRules": [
+      "all scenic art must feel painted by one restrained editorial illustrator",
+      "never generate text inside artwork",
+      "prefer broad shapes over fine visual noise",
+      "gold appears only as a small light cue",
+      "do not use generated art as a substitute for interface hierarchy"
+    ]
+  },
+  "darkMode": {
+    "rule": "use the same geometry with lower motif opacity and warmer pale sage; do not invert raster art",
+    "scenicTreatment": "prefer separate dark-toned illustration or simplified line motif rather than filter inversion"
+  },
+  "assets": {
+    "react": [
+      "src/app/visual/BrandMark.tsx",
+      "src/app/visual/Icon.tsx",
+      "src/app/visual/MorningGraceMotifs.tsx"
+    ],
+    "css": "src/styles/morning-grace-brand.css",
+    "public": [
+      "public/brand-mark.svg",
+      "public/brand/morning-grace-sprig.svg",
+      "public/brand/morning-grace-sunrise.svg",
+      "public/brand/morning-grace-landscape.svg",
+      "public/icons/icon-192.png",
+      "public/icons/icon-512.png",
+      "public/icons/maskable-512.png",
+      "public/apple-touch-icon.png"
+    ]
+  },
+  "phaseBoundary": {
+    "finalizedNow": [
+      "brand-mark",
+      "icon-family",
+      "botanical-language",
+      "landscape-art-direction",
+      "PWA-icon-family",
+      "light-dark-asset-rules"
+    ],
+    "deferred": [
+      "canonical-today-screen",
+      "canonical-bible-screen",
+      "canonical-prayer-screen",
+      "canonical-history-screen",
+      "tablet-desktop-screen-compositions"
+    ]
+  }
+}
