@@ -505,6 +505,30 @@ textarea:focus-visible {
   min-height: 92px;
 }
 
+/* Focused Prayer needs stronger contrast than secondary metadata elsewhere. */
+.mg-focused-prayer-workspace {
+  --mg-prayer-action: #8f4a34;
+  --mg-prayer-action-on: #fffaf1;
+}
+
+.mg-focused-prayer-workspace .focused-prayer-header,
+.mg-focused-prayer-workspace .focused-prayer-header > a,
+.mg-focused-prayer-workspace .focused-prayer-header > span,
+.mg-focused-prayer-workspace .end-session-button,
+.mg-focused-prayer-workspace .focused-prayer-secondary,
+.mg-focused-prayer-workspace .focused-prayer-secondary > a,
+.mg-focused-prayer-workspace .focused-prayer-secondary > button {
+  color: var(--color-ink-soft);
+}
+
+.mg-focused-prayer-workspace .focused-next-button,
+.mg-focused-prayer-workspace .focused-next-button:hover:not(:disabled),
+.mg-focused-prayer-workspace .focused-next-button:active:not(:disabled) {
+  color: var(--mg-prayer-action-on);
+  border-color: var(--mg-prayer-action);
+  background: var(--mg-prayer-action);
+}
+
 /* Dark mode: keep artwork and rules visible rather than muddy. */
 :root[data-theme="dark"] {
   --mg-hover: color-mix(in srgb, var(--color-surface-muted) 68%, transparent);
