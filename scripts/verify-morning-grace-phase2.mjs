@@ -20,6 +20,7 @@ const [contractRaw, brandMark, icons, motifs, css, publicMark, publicSprig, publ
   read("docs/PHASE_2_MORNING_GRACE_BRAND_ASSETS.md"),
 ]);
 
+const themeSwitcher = await read("src/app/visual/ThemeSwitcher.tsx");
 const contract = JSON.parse(contractRaw);
 const manifest = JSON.parse(manifestRaw);
 
@@ -59,6 +60,10 @@ assert.match(publicLandscape, /viewBox="0 0 720 280"/);
 assert.equal(manifest.background_color, "#f6f2e9");
 assert.equal(manifest.theme_color, "#f6f2e9");
 assert.match(indexHtml, /name="theme-color" content="#f6f2e9"/);
+assert.match(indexHtml, /"#171b18" : "#f6f2e9"/);
+assert.match(themeSwitcher, /LIGHT_THEME_COLOR = "#f6f2e9"/);
+assert.match(themeSwitcher, /DARK_THEME_COLOR = "#171b18"/);
+assert.match(themeSwitcher, /prefers-color-scheme: dark/);
 
 function pngDimensions(buffer) {
   assert.deepEqual([...buffer.subarray(0, 8)], [137,80,78,71,13,10,26,10], "Expected PNG signature");
