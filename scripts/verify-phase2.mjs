@@ -38,7 +38,7 @@ assert.match(tokens, /data-theme="light"/);
 assert.match(tokens, /--font-display:/);
 assert.match(tokens, /--font-reading:/);
 assert.match(tokens, /--color-canvas:\s*#f6f2e9/);
-assert.match(tokens, /--color-prayer:\s*#b86c4d/);
+assert.match(tokens, /--color-prayer:\s*#9f563b/);
 assert.match(base, /prefers-reduced-motion:\s*reduce/);
 assert.match(shell, /\.mobile-nav/);
 assert.match(shell, /max-width:\s*860px/);
