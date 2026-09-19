@@ -3,7 +3,7 @@
   "version": "1.0.1",
   "private": true,
   "type": "module",
-  "description": "My Daily Devotion \u2014 private, local-first Scripture, reflection, prayer, and devotional history.",
+  "description": "My Daily Devotion — private, local-first Scripture, reflection, prayer, and devotional history.",
   "scripts": {
     "bible:build": "node scripts/build-bsb.mjs",
     "mcheyne:build": "node scripts/build-mcheyne.mjs",
@@ -31,7 +31,8 @@
     "verify:phase11": "npm run verify:phase10 && npm run test:ux && node scripts/verify-phase11.mjs",
     "verify:phase12": "node scripts/certify.mjs",
     "scripture:verify": "node --experimental-strip-types scripts/verify-scripture-content.mjs",
-    "test:report": "vitest run --reporter=default --reporter=json --outputFile=verification/unit.json"
+    "test:report": "vitest run --reporter=default --reporter=json --outputFile=verification/unit.json",
+    "verify:morning-grace": "node scripts/verify-morning-grace-phase1.mjs"
   },
   "dependencies": {
     "dexie": "4.4.6",
