@@ -80,7 +80,7 @@ export function ReflectionScreen() {
   const saving = useRef(false);
   const [busy, setBusy] = useState(false);
 
-  if (!localDate) return <main className="visual-screen reflection-screen"><p className="eyebrow">Reflection</p><h1>Invalid date</h1><Link to="/today">Return to Today</Link></main>;
+  if (!localDate) return <main className="visual-screen reflection-screen mg-secondary-screen mg-reflection-workspace"><p className="eyebrow">Reflection</p><h1>Invalid date</h1><Link to="/today">Return to Today</Link></main>;
   if (loading) return <main className="visual-screen reflection-screen"><p className="eyebrow">Reflection</p><p>Opening your local reflection…</p></main>;
 
   const save = async () => {
@@ -133,7 +133,7 @@ export function ReflectionScreen() {
 
   return (
     <main className="visual-screen reflection-screen">
-      <header className="screen-heading compact-heading reflection-heading">
+      <header className="screen-heading compact-heading reflection-heading mg-secondary-header">
         <p className="eyebrow">Personal reflection · {formatDate(localDate)}</p>
         <h1>Reflect</h1>
         <p className="screen-intro">Write what stood out and what you want to remember.</p>
