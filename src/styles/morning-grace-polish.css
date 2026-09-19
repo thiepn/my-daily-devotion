@@ -1,0 +1,673 @@
+/* Morning Grace Editorial — Phase 5 final visual polish
+   Cross-app consistency, state design, interaction feel, dark-mode tuning and residual workflow cleanup. */
+
+:root {
+  --mg-control-height: 44px;
+  --mg-rule: var(--color-line);
+  --mg-rule-strong: var(--color-line-strong);
+  --mg-hover: color-mix(in srgb, var(--color-surface-muted) 56%, transparent);
+  --mg-paper-hover: color-mix(in srgb, var(--color-surface) 86%, var(--color-accent-soft));
+}
+
+/* Global typographic finish */
+h1,
+h2,
+h3,
+.screen-intro,
+.reader-heading,
+.mg-hero-copy {
+  text-wrap: balance;
+}
+
+.screen-intro,
+.muted-copy,
+.history-entry blockquote,
+.search-hit p,
+.prayer-live-row p {
+  text-wrap: pretty;
+}
+
+.eyebrow,
+.section-kicker {
+  line-height: 1.35;
+}
+
+.visual-screen {
+  animation: mg-screen-in 190ms ease-out both;
+}
+
+@keyframes mg-screen-in {
+  from { opacity: .72; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Consistent interactive finish */
+.utility-link,
+.quiet-back-link,
+.future-text-link,
+.prayer-now-link,
+.bible-secondary-links a,
+.prayer-management-links a,
+.metadata-manage-links a,
+.plan-links-row a,
+.history-tabs a,
+.prayer-status-tabs a {
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+}
+
+.utility-link,
+.quiet-back-link,
+.future-text-link,
+.prayer-now-link,
+.bible-secondary-links a,
+.prayer-management-links a,
+.metadata-manage-links a {
+  transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.quiet-button,
+.editorial-option,
+.prayer-lifecycle-actions button,
+.prayer-update-form > button,
+.prayer-answer-form button,
+.prayer-settings-actions button,
+.metadata-row button,
+.metadata-editor button,
+.collection-sidebar form button,
+.collection-items button,
+.data-panel button,
+.backup-preview button,
+.history-month-heading button,
+.chapter-navigation button,
+.verse-actions button,
+.verse-action-menu button {
+  border-color: var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.quiet-button:hover:not(:disabled),
+.editorial-option:hover:not(:disabled),
+.prayer-lifecycle-actions button:hover:not(:disabled),
+.prayer-update-form > button:hover:not(:disabled),
+.prayer-answer-form button:hover:not(:disabled),
+.prayer-settings-actions button:hover:not(:disabled),
+.metadata-row button:hover:not(:disabled),
+.metadata-editor button:hover:not(:disabled),
+.collection-sidebar form button:hover:not(:disabled),
+.collection-items button:hover:not(:disabled),
+.data-panel button:hover:not(:disabled),
+.backup-preview button:hover:not(:disabled),
+.history-month-heading button:hover:not(:disabled),
+.chapter-navigation button:hover:not(:disabled),
+.verse-actions button:hover:not(:disabled),
+.verse-action-menu button:hover:not(:disabled) {
+  color: var(--color-ink);
+  border-color: var(--color-accent);
+  background: var(--mg-hover);
+}
+
+.primary-editorial-action,
+.future-action,
+.focused-next-button,
+.global-search-form > button {
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast),
+    border-color var(--transition-fast),
+    transform var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+.primary-editorial-action:hover:not(:disabled),
+.future-action:hover:not(:disabled),
+.focused-next-button:hover:not(:disabled),
+.global-search-form > button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(48, 43, 35, .08);
+}
+
+.primary-editorial-action:active:not(:disabled),
+.future-action:active:not(:disabled),
+.focused-next-button:active:not(:disabled),
+.global-search-form > button:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+/* Inputs: one quiet paper-control system */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  border-color: var(--color-line);
+  background: var(--color-surface);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):hover:not(:disabled),
+select:hover:not(:disabled),
+textarea:hover:not(:disabled) {
+  border-color: var(--color-line-strong);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--color-focus-ring) 30%, transparent);
+  outline-offset: 1px;
+  border-color: var(--color-focus-ring);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-focus-ring) 10%, transparent);
+}
+
+/* Application chrome */
+.utility-bar {
+  border-bottom-color: var(--color-line);
+  background: color-mix(in srgb, var(--color-canvas) 96%, var(--color-surface));
+}
+
+.utility-actions {
+  align-items: center;
+}
+
+.utility-link {
+  gap: 6px;
+  border-radius: var(--radius-sm);
+}
+
+.utility-link .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.utility-link:hover {
+  background: var(--mg-hover);
+}
+
+.theme-switcher {
+  gap: 1px;
+  background: color-mix(in srgb, var(--color-surface) 82%, transparent);
+}
+
+.theme-option {
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.theme-option:hover:not([aria-pressed="true"]) {
+  background: var(--mg-hover);
+}
+
+.side-nav .nav-link,
+.mobile-nav .nav-link {
+  transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.side-nav .nav-link:hover {
+  background: var(--mg-hover);
+}
+
+.mobile-nav .nav-link {
+  border-radius: var(--radius-sm);
+}
+
+.mobile-nav .nav-link.active {
+  background: color-mix(in srgb, var(--color-accent-soft) 28%, transparent);
+}
+
+/* Branded route/loading/system states */
+.mg-route-loading {
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.route-loading-mark {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 auto;
+}
+
+.mg-route-loading strong {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.mg-route-loading span {
+  display: block;
+  margin-top: 4px;
+  color: var(--color-muted);
+  font-size: .8rem;
+}
+
+.mcheyne-loading,
+.bible-loading,
+.history-loading,
+.recovery-screen > p:not(.eyebrow),
+.startup-error > p:not(.eyebrow) {
+  color: var(--color-ink-soft);
+}
+
+.mg-state-screen,
+.startup-error {
+  width: min(calc(100% - 40px), 680px);
+  margin: 0 auto;
+  padding: clamp(64px, 10vh, 110px) 0;
+}
+
+.mg-state-mark {
+  width: 54px;
+  height: 54px;
+  margin-bottom: 26px;
+}
+
+.mg-state-screen h1,
+.startup-error h1 {
+  max-width: 18ch;
+  margin: 8px 0 16px;
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 4.5vw, 3.5rem);
+  font-weight: 500;
+  line-height: 1.05;
+}
+
+.recovery-actions {
+  margin-top: 28px;
+}
+
+.platform-status {
+  padding-block: 8px;
+  color: var(--color-ink-soft);
+  background: color-mix(in srgb, var(--color-morning-soft) 26%, var(--color-canvas));
+}
+
+.platform-status button {
+  border-radius: var(--radius-sm);
+}
+
+.prayer-empty,
+.search-empty {
+  border-top: 1px solid var(--color-line);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.prayer-empty h2,
+.search-empty {
+  font-family: var(--font-display);
+}
+
+/* Dialogs and conflict states */
+.draft-dialog {
+  width: min(36rem, calc(100vw - 2rem));
+  padding: clamp(24px, 4vw, 34px);
+  border: 1px solid var(--color-line-strong);
+  border-top: 3px solid var(--color-morning);
+  border-radius: var(--radius-lg);
+  color: var(--color-ink);
+  background: var(--color-surface);
+  box-shadow: 0 24px 70px rgba(18, 22, 18, .22);
+}
+
+.draft-dialog::backdrop {
+  background: rgba(20, 23, 20, .48);
+  backdrop-filter: blur(2px);
+}
+
+.draft-dialog h2 {
+  margin-bottom: 10px;
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 500;
+}
+
+.draft-dialog p {
+  color: var(--color-ink-soft);
+  line-height: 1.6;
+}
+
+.draft-dialog-actions {
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-line);
+}
+
+.draft-dialog-save {
+  color: var(--color-action-on) !important;
+  border-color: var(--color-accent-strong) !important;
+  background: var(--color-accent-strong) !important;
+}
+
+.draft-dialog-discard {
+  color: var(--color-prayer) !important;
+}
+
+.draft-dialog-keep {
+  margin-left: auto;
+}
+
+.conflict-review {
+  margin: 26px 0;
+  padding: 24px;
+  border: 1px solid var(--color-line);
+  border-left: 3px solid var(--color-morning);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+
+.conflict-review > p:first-child {
+  max-width: 62ch;
+  color: var(--color-ink-soft);
+  line-height: 1.6;
+}
+
+.conflict-review label {
+  color: var(--color-muted);
+  font-size: .72rem;
+  font-weight: 650;
+  letter-spacing: .04em;
+}
+
+.conflict-review textarea {
+  margin-top: 7px;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-reading);
+}
+
+/* Residual secondary routes */
+.mg-prayer-capture-workspace .prayer-capture-layout {
+  grid-template-columns: minmax(0, 1.38fr) minmax(280px, .62fr);
+  gap: clamp(34px, 5vw, 62px);
+}
+
+.mg-prayer-capture-workspace .prayer-capture-editor {
+  padding: clamp(24px, 4vw, 40px);
+  border: 1px solid var(--color-line);
+  border-top: 3px solid var(--color-prayer);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-paper);
+}
+
+.mg-prayer-capture-workspace .prayer-capture-editor > label {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--color-prayer);
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.mg-prayer-capture-workspace .prayer-capture-editor textarea {
+  min-height: 260px;
+  padding: 22px;
+  font-family: var(--font-reading);
+  font-size: 1.1rem;
+  line-height: 1.68;
+}
+
+.mg-prayer-capture-workspace .prayer-details-toggle {
+  margin-top: 12px;
+  color: var(--color-ink-soft);
+  border-color: var(--color-line);
+  background: transparent;
+}
+
+.mg-prayer-capture-workspace .prayer-capture-actions {
+  margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--color-line);
+}
+
+.mg-prayer-capture-workspace .prayer-source-context {
+  padding-top: 22px;
+  border-top: 1px solid var(--color-prayer);
+}
+
+.mg-prayer-capture-workspace .prayer-source-context h2 {
+  font-family: var(--font-display);
+  font-size: 1.55rem;
+  font-weight: 500;
+}
+
+.mg-prayer-capture-workspace .prayer-source-context blockquote {
+  margin-inline: 0;
+  padding-left: 16px;
+  border-left: 2px solid var(--color-line-strong);
+  font-family: var(--font-reading);
+  line-height: 1.6;
+}
+
+.mg-history-detail-workspace .history-entry-list,
+.mg-history-detail-workspace .moments-list {
+  max-width: 850px;
+}
+
+.mg-history-detail-workspace .history-prayer-summary {
+  margin-bottom: 34px;
+  padding: 18px 0;
+  border-top: 1px solid var(--color-prayer);
+  border-bottom: 1px solid var(--color-line);
+}
+
+.mg-history-detail-workspace .history-entry {
+  padding: 26px 0;
+}
+
+.mg-history-detail-workspace .history-entry blockquote {
+  margin: 10px 0 0;
+  font-family: var(--font-reading);
+  line-height: 1.65;
+}
+
+.mg-history-detail-workspace .moment-row {
+  border-bottom: 1px solid var(--color-line);
+}
+
+/* Canonical screen micro-polish */
+.mg-reading-card,
+.mg-prayer-row,
+.mg-history-recent a,
+.search-hit,
+.collection-items article,
+.metadata-row {
+  transition: background-color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.mg-reading-card:hover,
+.mg-prayer-row:hover,
+.mg-history-recent a:hover,
+.search-hit:hover {
+  background: var(--mg-paper-hover);
+}
+
+.mg-scripture-page {
+  box-shadow: 0 1px 2px rgba(48, 43, 35, .025), 0 14px 42px rgba(48, 43, 35, .045);
+}
+
+.mg-bible-chapter-art {
+  border-bottom-color: var(--color-line-strong);
+}
+
+.mg-prayer-hero-art p,
+.mg-history-closing p {
+  text-wrap: balance;
+}
+
+.mg-plan-workspace .plan-summary > div {
+  min-height: 92px;
+}
+
+/* Dark mode: keep artwork and rules visible rather than muddy. */
+:root[data-theme="dark"] {
+  --mg-hover: color-mix(in srgb, var(--color-surface-muted) 68%, transparent);
+  --mg-paper-hover: color-mix(in srgb, var(--color-surface) 90%, var(--color-accent-soft));
+}
+
+:root[data-theme="dark"] .mg-landscape,
+:root[data-theme="dark"] .mg-history-closing .mg-landscape {
+  opacity: .9;
+}
+
+:root[data-theme="dark"] .mg-landscape-back {
+  fill: color-mix(in srgb, var(--color-accent-soft) 88%, var(--color-canvas));
+}
+
+:root[data-theme="dark"] .mg-landscape-mid {
+  fill: color-mix(in srgb, var(--color-brand-leaf-soft) 48%, var(--color-canvas));
+}
+
+:root[data-theme="dark"] .mg-landscape-front {
+  fill: color-mix(in srgb, var(--color-accent) 45%, var(--color-canvas));
+}
+
+:root[data-theme="dark"] .mg-scripture-page,
+:root[data-theme="dark"] .mg-reflection-workspace .reflection-editor-panel,
+:root[data-theme="dark"] .mg-focused-prayer-workspace .focused-prayer-card,
+:root[data-theme="dark"] .mg-prayer-capture-workspace .prayer-capture-editor {
+  box-shadow: 0 12px 38px rgba(0, 0, 0, .18);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .mg-landscape,
+  :root:not([data-theme]) .mg-history-closing .mg-landscape {
+    opacity: .9;
+  }
+
+  :root:not([data-theme]) .mg-landscape-back {
+    fill: color-mix(in srgb, var(--color-accent-soft) 88%, var(--color-canvas));
+  }
+
+  :root:not([data-theme]) .mg-landscape-mid {
+    fill: color-mix(in srgb, var(--color-brand-leaf-soft) 48%, var(--color-canvas));
+  }
+
+  :root:not([data-theme]) .mg-landscape-front {
+    fill: color-mix(in srgb, var(--color-accent) 45%, var(--color-canvas));
+  }
+}
+
+/* Mobile chrome is icon-first so devotional content gets the width. */
+@media (max-width: 700px) {
+  .utility-bar {
+    min-height: 56px;
+    padding: 7px 14px;
+    gap: 8px;
+  }
+
+  .utility-context-title,
+  .utility-context-note {
+    display: none;
+  }
+
+  .utility-mobile-title {
+    display: block;
+    max-width: 16ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: var(--font-display);
+    font-size: .88rem;
+    font-weight: 600;
+  }
+
+  .utility-actions {
+    gap: 2px;
+  }
+
+  .utility-link {
+    min-width: 38px;
+    min-height: 38px;
+    justify-content: center;
+    padding: 0;
+  }
+
+  .utility-link span,
+  .theme-option span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .theme-switcher {
+    min-height: 40px;
+    padding: 2px;
+  }
+
+  .theme-option {
+    min-width: 34px;
+    min-height: 34px;
+    padding: 0;
+  }
+
+  .theme-option .icon {
+    width: 15px;
+    height: 15px;
+  }
+
+  .mg-prayer-capture-workspace .prayer-capture-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .mg-prayer-capture-workspace .prayer-source-context {
+    position: static;
+    max-height: none;
+  }
+
+  .draft-dialog-keep {
+    margin-left: 0;
+  }
+
+  .draft-dialog-actions > button {
+    flex: 1 1 100%;
+  }
+
+  .mg-route-loading {
+    min-height: 170px;
+  }
+}
+
+@media (max-width: 430px) {
+  .utility-mobile-title {
+    max-width: 11ch;
+  }
+
+  .utility-link {
+    min-width: 34px;
+  }
+
+  .theme-option {
+    min-width: 31px;
+  }
+
+  .mg-prayer-capture-workspace .prayer-capture-editor {
+    padding: 18px;
+  }
+
+  .mg-plan-workspace .plan-summary > div {
+    min-height: 72px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .visual-screen {
+    animation: none;
+  }
+
+  .primary-editorial-action:hover,
+  .future-action:hover,
+  .focused-next-button:hover,
+  .global-search-form > button:hover {
+    transform: none;
+  }
+}
