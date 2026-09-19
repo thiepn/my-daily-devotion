@@ -29,6 +29,7 @@
   --color-morning: #d29a3a;
   --color-morning-soft: #f2e5c5;
   --color-highlight: #e8d6ab;
+  --color-red-letter: #93493f;
 
   /* Existing semantic aliases retained for compatibility. */
   --color-answer: #8f6e49;
@@ -94,6 +95,7 @@
     --color-morning: #e1b667;
     --color-morning-soft: #3d3423;
     --color-highlight: #5a4a2a;
+    --color-red-letter: #e0a097;
     --color-answer: #d0aa7c;
     --color-answer-soft: #3b3025;
     --color-warning-text: #e0b585;
@@ -127,6 +129,7 @@
   --color-morning: #e1b667;
   --color-morning-soft: #3d3423;
   --color-highlight: #5a4a2a;
+  --color-red-letter: #e0a097;
   --color-answer: #d0aa7c;
   --color-answer-soft: #3b3025;
   --color-warning-text: #e0b585;
