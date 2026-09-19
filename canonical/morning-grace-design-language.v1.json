@@ -1,0 +1,163 @@
+{
+  "version": 1,
+  "name": "Morning Grace Editorial",
+  "character": "warm-scripture-first-editorial-devotional",
+  "status": "phase-1-frozen",
+  "selectedConcept": "Concept 11 — Morning Grace Editorial",
+  "supersedesVisualDirection": "canonical/visual-system.v1.json",
+  "principles": [
+    "scripture-readability-first",
+    "warm-editorial-not-dashboard",
+    "morning-light-without-visual-noise",
+    "personal-not-institutional",
+    "typography-before-containers",
+    "natural-imagery-used-sparingly",
+    "domain-color-with-neutral-dominance",
+    "progressive-disclosure-over-control-density",
+    "dark-mode-authored-not-inverted"
+  ],
+  "typography": {
+    "remoteFontDependency": false,
+    "display": {
+      "role": "headings-and-devotional-emphasis",
+      "stack": "Iowan Old Style, Baskerville, Palatino Linotype, Book Antiqua, Georgia, ui-serif, serif"
+    },
+    "reading": {
+      "role": "scripture-reflection-prayer-long-form",
+      "stack": "Charter, Iowan Old Style, Palatino Linotype, Book Antiqua, Georgia, ui-serif, serif"
+    },
+    "ui": {
+      "role": "navigation-controls-labels-metadata",
+      "stack": "Inter, Segoe UI Variable, Aptos, Segoe UI, ui-sans-serif, system-ui, sans-serif"
+    }
+  },
+  "palette": {
+    "light": {
+      "canvas": "#f6f2e9",
+      "canvasWarm": "#f1eadf",
+      "surface": "#fcf9f3",
+      "surfaceMuted": "#efe9de",
+      "ink": "#20241f",
+      "inkSoft": "#464b45",
+      "muted": "#74786f",
+      "line": "#dcd4c7",
+      "sage": "#587060",
+      "sageStrong": "#3b5546",
+      "sageSoft": "#dce5dc",
+      "reflection": "#4c7774",
+      "prayer": "#b86c4d",
+      "morning": "#d29a3a",
+      "highlight": "#e8d6ab"
+    },
+    "dark": {
+      "canvas": "#171b18",
+      "canvasWarm": "#1c211d",
+      "surface": "#20251f",
+      "surfaceMuted": "#282d27",
+      "ink": "#f4f0e8",
+      "inkSoft": "#c6c4ba",
+      "muted": "#969a90",
+      "line": "#3a4039",
+      "sage": "#9ab7a3",
+      "sageStrong": "#c0d4c5",
+      "sageSoft": "#2b3b31",
+      "reflection": "#86aba7",
+      "prayer": "#d58b6d",
+      "morning": "#e1b667",
+      "highlight": "#5a4a2a"
+    }
+  },
+  "domainAccents": {
+    "today": "morning + sage",
+    "bible": "sage",
+    "reflection": "muted teal",
+    "prayer": "terracotta",
+    "history": "deep sage"
+  },
+  "shape": {
+    "radiiPx": {
+      "xs": 4,
+      "sm": 8,
+      "md": 12,
+      "lg": 18
+    },
+    "shadowPolicy": "extremely-subtle-functional-elevation-only",
+    "primarySeparation": "spacing-rules-typography-before-cards"
+  },
+  "navigation": {
+    "mobile": "fixed-bottom-navigation",
+    "desktop": "slim-editorial-rail",
+    "primaryItems": [
+      "Today",
+      "Bible",
+      "Prayer",
+      "History"
+    ]
+  },
+  "imagery": {
+    "direction": "soft-editorial-landscape-and-restrained-botanical",
+    "preferredSubjects": [
+      "morning hills",
+      "quiet paths",
+      "olive branches",
+      "fields",
+      "calm lakes",
+      "distant villages"
+    ],
+    "avoid": [
+      "stock-Christian-photos",
+      "literal-Jesus-imagery",
+      "HDR-landscapes",
+      "fantasy-scenery",
+      "decorative-image-overuse"
+    ]
+  },
+  "contentVoice": {
+    "qualities": [
+      "simple",
+      "factual",
+      "calm",
+      "Christian-without-sentimentality"
+    ],
+    "avoid": [
+      "productivity-jargon",
+      "streak-language",
+      "spiritual-scoring",
+      "overdue-language"
+    ]
+  },
+  "forbiddenPatterns": [
+    "generic-ai-saas-layout",
+    "endless-card-grid",
+    "giant-rounded-cards",
+    "decorative-gradients",
+    "glassmorphism",
+    "purple-ai-palette",
+    "pill-controls-everywhere",
+    "floating-toolbars-everywhere",
+    "dashboard-analytics-as-primary-history",
+    "gamification",
+    "emoji-ui",
+    "oversized-mobile-hero-type"
+  ],
+  "phaseBoundary": {
+    "implementedNow": [
+      "tokens",
+      "typographic-roles",
+      "shape-language",
+      "surface-language",
+      "navigation-primitives",
+      "domain-accents",
+      "motion-guardrails",
+      "anti-generic-guardrails"
+    ],
+    "deferred": [
+      "final-brand-mark",
+      "final-icon-set",
+      "landscape-art-system",
+      "botanical-asset-system",
+      "canonical-screen-redesigns",
+      "desktop-screen-compositions"
+    ]
+  }
+}
