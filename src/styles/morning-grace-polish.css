@@ -392,10 +392,10 @@ textarea:focus-visible {
 }
 
 /* Release acceptance: small Prayer and Data text must remain readable on warm paper. */
-.mg-prayer-hero .primary-editorial-action {
+.workspace[data-domain="prayer"] .mg-prayer-hero .primary-editorial-action {
   color: #fffaf1;
-  border-color: #8f4a34;
-  background: #8f4a34;
+  border-color: #7d3f2d;
+  background: #7d3f2d;
 }
 
 .mg-prayer-hero .prayer-management-links a {
