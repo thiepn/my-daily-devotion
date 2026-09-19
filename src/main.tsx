@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { App } from "./app/App";
+import { BrandMark } from "./app/visual/BrandMark";
 import { inspectStorage, registerMddServiceWorker } from "./app/platform";
 import { prepareDatabase } from "./data/database";
 import "./styles/tokens.css";
@@ -22,6 +23,7 @@ import "./styles/morning-grace.css";
 import "./styles/morning-grace-brand.css";
 import "./styles/morning-grace-screens.css";
 import "./styles/morning-grace-secondary.css";
+import "./styles/morning-grace-polish.css";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("MDD root element is missing.");
@@ -39,7 +41,8 @@ async function start(): Promise<void> {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown startup error";
     root.render(
-      <main className="startup-error" role="alert">
+      <main className="startup-error mg-state-screen" role="alert">
+        <BrandMark className="mg-state-mark" />
         <p className="eyebrow">Unable to open</p>
         <h1>My Daily Devotion could not open its local data.</h1>
         <p>Try opening the app again. If this continues, check that your browser allows this site to store data and that you are using the latest version of MDD.</p>
