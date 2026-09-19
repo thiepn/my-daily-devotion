@@ -329,6 +329,10 @@ textarea:focus {
   font-family: var(--font-ui);
 }
 
+.scripture-run.is-red-letter .scripture-text {
+  color: var(--color-red-letter);
+}
+
 .scripture-run.is-highlighted,
 .scripture-run.is-selected {
   background-color: var(--color-highlight);
