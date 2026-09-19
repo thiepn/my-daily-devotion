@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.0 — 2026-09-19
+
+### Morning Grace Editorial
+
+- Replace the original visual presentation with the Morning Grace Editorial system across canonical and secondary screens.
+- Add the Morning Sprig Book brand mark, unified editorial icon family, botanical/sunrise/landscape motifs, warm paper palette and authored light/dark themes.
+- Redesign Today around the daily M’Cheyne readings and response flow; redesign Bible around Scripture-first chapter reading; redesign Prayer around requests and people; redesign History around reflective factual recall.
+- Extend Morning Grace to Reflection, full reading plan, Prayer detail/settings/People/Categories/Focused Prayer/Add Prayer, Collections, Search and Data/Backup.
+- Normalize application chrome, controls, loading/error/offline states, conflict review and unsaved-draft dialogs.
+- Preserve responsive 320px layouts, 200% text resizing, reduced-motion behavior and automated WCAG A/AA validation.
+- Preserve database schema 1, backup format 1, Scripture corpus, M’Cheyne semantics, prayer scheduling/queue behavior and all 1.0.1 corrective integrity fixes.
+
 ## 1.0.1 — 2026-09-17
 
 - Serialize reading imports and completion edits; repair historical duplicate reading records without erasing data or changing schema 1.
