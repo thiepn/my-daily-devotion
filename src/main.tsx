@@ -19,6 +19,7 @@ import "./styles/phase10.css";
 import "./styles/phase11.css";
 import "./styles/corrective.css";
 import "./styles/morning-grace.css";
+import "./styles/morning-grace-brand.css";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("MDD root element is missing.");
