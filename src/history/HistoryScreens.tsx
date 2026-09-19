@@ -212,8 +212,8 @@ export function HistoryDayScreen() {
   const visible = entries.filter((item) => item.eventType !== "PRAYER_PRAYED");
 
   return (
-    <main className="visual-screen history-day-screen">
-      <header className="screen-heading compact-heading">
+    <main className="visual-screen history-day-screen mg-secondary-screen mg-history-detail-workspace">
+      <header className="screen-heading compact-heading mg-secondary-header">
         <p className="eyebrow">History · {dateLabel(localDate)}</p>
         <h1>{localDate.slice(8)}</h1>
         <p className="screen-intro">Scripture, reflections and prayers from this day.</p>
@@ -243,8 +243,8 @@ export function HistoryMomentsScreen() {
   }, []);
 
   return (
-    <main className="visual-screen history-screen">
-      <header className="screen-heading compact-heading">
+    <main className="visual-screen history-screen mg-secondary-screen mg-history-detail-workspace">
+      <header className="screen-heading compact-heading mg-secondary-header">
         <p className="eyebrow">Remember</p>
         <h1>Moments</h1>
         <p className="screen-intro">Reflections, meaningful passages and answers to return to.</p>
