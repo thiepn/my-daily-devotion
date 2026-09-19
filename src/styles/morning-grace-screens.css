@@ -452,6 +452,15 @@
   align-self: center;
 }
 
+.mg-prayer-focus > .mg-prayer-focus-copy {
+  display: block;
+  margin-top: 0;
+}
+
+.mg-prayer-focus > .mg-session-depths {
+  margin-top: 0;
+}
+
 .mg-session-depths {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
