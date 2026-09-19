@@ -31,7 +31,7 @@ assert.equal(contract.status,"phase-4-frozen");
 for(const key of ["reflection","readingPlan","prayerDetail","prayerAdministration","focusedPrayer","collections","search","data"]) assert.ok(contract.workspaces[key],"Missing Phase 4 workspace "+key);
 
 for(const screen of screens) assert.ok(screen.includes("mg-secondary-screen"),"A Phase 4 screen is missing mg-secondary-screen");
-assert.ok(screens[0].includes("mg-reflection-workspace"));
+assert.match(screens[0], /return \(\s*<main className="visual-screen reflection-screen mg-secondary-screen mg-reflection-workspace">/);
 assert.ok(screens[1].includes("mg-plan-workspace"));
 assert.ok(screens[2].includes("mg-prayer-detail-workspace"));
 assert.ok(screens[3].includes("mg-prayer-settings-workspace"));
