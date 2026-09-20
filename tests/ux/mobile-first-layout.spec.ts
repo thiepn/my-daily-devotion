@@ -93,6 +93,11 @@ test.describe("mobile-first Morning Grace layout",()=>{
     await openRoute(page,"/bible/JHN/3");
     await expect(page.locator(".mg-bible-chapter-art")).toBeHidden();
     await expect(page.locator(".mobile-nav")).toBeVisible();
+    await expect(page.locator(".utility-link").filter({hasText:"Search"}).locator("span")).toBeHidden();
+    const firstVerse=page.locator(".scripture-copy .verse-number").first();
+    await expect(firstVerse).toBeVisible();
+    const verseBox=await firstVerse.boundingBox();
+    expect(verseBox?.y??999).toBeLessThan(330);
 
     await openRoute(page,"/prayer");
     await expect(page.locator(".mg-prayer-hero-art")).toBeHidden();
