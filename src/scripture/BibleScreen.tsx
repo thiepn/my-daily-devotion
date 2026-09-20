@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import type { Bookmark, Highlight, PlanEnrollment, ScriptureReference, VerseKey, VerseNote } from "../domain/types";
 import { Icon } from "../app/visual/Icon";
+import { BotanicalSprig, MorningLandscape } from "../app/visual/MorningGraceMotifs";
 import { useUnsavedChanges } from "../app/useUnsavedChanges";
 import { db } from "../data/database";
 import { VerseNoteRepository } from "../data/repositories/verse-notes";
@@ -51,5 +52,105 @@ export function BibleScreen() {
   const copySelection=async()=>{if(!selection)return;const text=scriptureTextForRange(chapterData,selection.start,selection.end);const label=referenceLabel(activeBook,routeChapter,selection);try{await navigator.clipboard.writeText(`${text}\n\n${label} — Berean Standard Bible`);setStatus("Selection copied.");}catch{setStatus("Copy is unavailable. You can select and copy the Scripture text directly.");}setMoreOpen(false);};const openVerseNote=async()=>{if(!selectedReference)return;const note=await verseNoteRepository.getExact(selectedReference);noteRevision.current=note?.revision??null;setNoteBody(note?.bodyMd??"");setSavedNoteBody(note?.bodyMd??"");setNoteEditorOpen(true);setMoreOpen(false);};const saveVerseNote=async()=>{if(!selectedReference)return;try{const saved=await verseNoteRepository.save(selectedReference,noteBody,noteRevision.current);noteRevision.current=saved.revision;setSavedNoteBody(saved.bodyMd);setNoteBody((current)=>current===noteBody?saved.bodyMd:current);await refreshAnnotations();setStatus("Verse note saved locally.");}catch(reason){setStatus(reason instanceof Error?reason.message:"Could not save verse note.");}};const removeVerseNote=async()=>{if(!selectedReference||!window.confirm("Remove this verse note?"))return;await verseNoteRepository.remove(selectedReference);setNoteBody("");setNoteEditorOpen(false);await refreshAnnotations();setStatus("Verse note removed from current views.");};const openReflection=()=>{if(selectedReference)navigate(buildReflectionUrl(todayLocalDate(),selectedReference,`${location.pathname}${location.search}`));};const openPrayer=()=>{if(selectedReference)navigate(buildPrayerFromScriptureUrl(selectedReference,`${location.pathname}${location.search}`));};const openCollection=()=>{if(!selectedReference)return;const query=new URLSearchParams({translation:selectedReference.translationId,start:selectedReference.startVerseKey,end:selectedReference.endVerseKey,return:`${location.pathname}${location.search}`});navigate(`/bible/collections?${query.toString()}`);};
   const renderBlock=(block:ScriptureBlock,blockIndex:number)=>{if(block.kind==="blank")return <div className="scripture-blank" key={blockIndex} aria-hidden="true"/>;const content=block.segments.map((segment,segmentIndex)=>{const verse=segment.verse;const selected=verse!==null&&selection!==null&&verse>=Math.min(selection.start,selection.end)&&verse<=Math.max(selection.start,selection.end);const highlighted=verse!==null&&highlights.some((item)=>rangeContainsVerse(item,activeBook.id,routeChapter,verse));const bookmarked=verse!==null&&bookmarks.some((item)=>rangeContainsVerse(item,activeBook.id,routeChapter,verse));const noted=verse!==null&&verseNotes.some((item)=>rangeContainsVerse(item,activeBook.id,routeChapter,verse));const planReading=verse!==null&&planContext!==null&&rangeContainsVerse(planContext.reading.references[planContext.locator.segmentIndex]!,activeBook.id,routeChapter,verse);const classes=["scripture-run",segment.redLetter?"is-red-letter":"",highlighted?"is-highlighted":"",selected?"is-selected":"",planReading?"is-plan-reading":"",segment.emphasis?`emphasis-${segment.emphasis}`:""].filter(Boolean).join(" ");return <span className={classes} key={`${blockIndex}-${segmentIndex}`}>{segment.isVerseStart&&segment.verseKey&&verse!==null?<button className={`verse-number${bookmarked?" is-bookmarked":""}${noted?" is-noted":""}`} type="button" data-verse-key={segment.verseKey} aria-label={`Select ${activeBook.name} ${routeChapter}:${verse}`} aria-pressed={selected} onClick={()=>chooseVerse(verse)}>{verse}</button>:null}<span className="scripture-text">{segment.text}</span></span>;});if(block.kind==="heading")return <h3 className={`scripture-heading level-${block.level}`} key={blockIndex}>{content}</h3>;if(block.kind==="superscription")return <p className="scripture-superscription" key={blockIndex}>{content}</p>;if(block.kind==="poetry")return <p className={`scripture-block scripture-poetry level-${block.level}`} key={blockIndex}>{content}</p>;return <p className="scripture-block" key={blockIndex}>{content}</p>;};
   const firstChapter=currentIndex===0&&routeChapter===1;const lastBook=currentIndex===manifest.books.length-1&&routeChapter===activeBook.chapterCount;const currentSegment=planContext?.reading.references[planContext.locator.segmentIndex]??null;const segmentCount=planContext?.reading.references.length??0;const backTarget=planContext?.locator.origin==="plan"?"/today/plan":"/today";
-  return <main className="visual-screen bible-screen"><header className="screen-heading bible-screen-heading"><p className="eyebrow">Scripture reader · BSB</p><h1>Bible</h1><p className="screen-intro">Read, return to a passage, or select a verse to respond.</p><div className="bible-secondary-links"><Link to="/search">Search Bible</Link><Link to="/bible/collections">Collections</Link></div></header>{planContext&&currentSegment?<section className="plan-reading-context" aria-label="M’Cheyne reading context"><div className="plan-context-copy"><p className="section-kicker">M’Cheyne · {planContext.reading.group==="family"?"Family":"Private"}</p><strong>{planContext.reading.displayReference}</strong><span>Day {planContext.locator.sequence}{segmentCount>1?` · Part ${planContext.locator.segmentIndex+1} of ${segmentCount}`:""}</span></div><div className="plan-context-actions"><Link to={backTarget}>Back to {planContext.locator.origin==="plan"?"plan":"Today"}</Link>{planContext.locator.segmentIndex>0?<Link to={buildPlanReadingUrl(planContext.reading,planContext.enrollment.id,planContext.locator.sequence,planContext.locator.readingIndex,planContext.locator.origin,planContext.locator.segmentIndex-1)}>Previous passage</Link>:null}{planContext.locator.segmentIndex+1<segmentCount?<Link to={buildPlanReadingUrl(planContext.reading,planContext.enrollment.id,planContext.locator.sequence,planContext.locator.readingIndex,planContext.locator.origin,planContext.locator.segmentIndex+1)}>Next passage</Link>:null}<button type="button" className={planContext.completed?"is-complete":""} onClick={()=>void runMutation(()=>togglePlanCompletion())}>{planContext.completed?"Mark unread":"Mark reading complete"}</button></div></section>:null}<div className="bible-toolbar" aria-label="Bible navigation"><label className="bible-select-label"><span>Book</span><select value={activeBook.id} onChange={(event)=>navigate(`/bible/${event.target.value}/1`)}>{manifest.books.map((book)=><option key={book.id} value={book.id}>{book.name}</option>)}</select></label><label className="bible-select-label chapter-select"><span>Chapter</span><select value={routeChapter} onChange={(event)=>navigateToChapter(activeBook.id,Number(event.target.value))}>{Array.from({length:activeBook.chapterCount},(_,index)=>index+1).map((chapter)=><option key={chapter} value={chapter}>{chapter}</option>)}</select></label><span className="bible-source-note">{manifest.name} · {chapterData.verseCount} verses</span></div><article className="reader-page scripture-reader" aria-label={`${activeBook.name} ${routeChapter}, Berean Standard Bible`}><header className="reader-heading scripture-reader-heading"><div><p>Berean Standard Bible</p><h2>{activeBook.name} {routeChapter}</h2></div><span className="reader-context">{activeBook.testament==="OT"?"Old Testament":"New Testament"}</span></header><div className="scripture-copy scripture-content">{chapterData.blocks.map(renderBlock)}</div><nav className="chapter-navigation" aria-label="Adjacent chapters"><button type="button" disabled={firstChapter} onClick={()=>navigateAdjacent(-1)}><span aria-hidden="true">←</span> Previous</button><span>{activeBook.name} {routeChapter}</span><button type="button" disabled={lastBook} onClick={()=>navigateAdjacent(1)}>Next <span aria-hidden="true">→</span></button></nav></article>{selection&&selectedReference?<div className="verse-action-dock" role="region" aria-label={`Actions for ${referenceLabel(activeBook,routeChapter,selection)}`}><div className="selection-reference"><strong>{referenceLabel(activeBook,routeChapter,selection)}</strong><button type="button" className="clear-selection" onClick={()=>{if(!discardNote())return;setSelection(null);setNoteEditorOpen(false);}} aria-label="Clear verse selection">×</button></div><div className="verse-actions"><button type="button" onClick={()=>void runMutation(()=>toggleHighlight())}>{exactHighlight?"Remove highlight":"Highlight"}</button><button type="button" onClick={openReflection}><Icon name="note"/> Reflect</button><button type="button" onClick={openPrayer}><Icon name="prayer"/> Pray</button><button type="button" onClick={()=>void runMutation(()=>toggleBookmark())}><Icon name="bookmark"/> {exactBookmark?"Remove bookmark":"Bookmark"}</button><button type="button" aria-expanded={moreOpen} onClick={()=>{if(!discardNote())return;setMoreOpen((value)=>!value);setNoteEditorOpen(false);}}>More</button></div>{moreOpen?<div className="verse-action-menu"><button type="button" onClick={()=>void copySelection()}>Copy selection</button><button type="button" onClick={()=>void runMutation(()=>openVerseNote())}>{exactVerseNote?"Edit verse note":"Add verse note"}</button><button type="button" onClick={openCollection}>Add to collection</button></div>:null}{noteEditorOpen?<div className="verse-note-editor"><textarea value={noteBody} onChange={(event)=>setNoteBody(event.target.value)} placeholder="A durable note attached to this Scripture passage." aria-label="Verse note"/><div className="verse-note-editor-actions"><button type="button" disabled={annotationBusy || !noteBody.trim()} onClick={()=>void runMutation(()=>saveVerseNote())}>Save note</button>{exactVerseNote?<button type="button" onClick={()=>void runMutation(()=>removeVerseNote())}>Remove note</button>:null}<button type="button" onClick={()=>{if(noteBody===savedNoteBody||window.confirm("Discard the unsaved verse note?"))setNoteEditorOpen(false);}}>Close</button></div></div>:null}</div>:null}<p className="reader-status" role={mutationFailed ? "alert" : "status"} aria-live="polite">{mutationStatus || status}</p></main>;
+  return (
+    <main className="visual-screen bible-screen mg-canonical-screen">
+      <header className="mg-bible-shell-header">
+        <div>
+          <p className="eyebrow">The living Word · BSB</p>
+          <h1>Bible</h1>
+          <p className="screen-intro">Read slowly. Select a verse when you want to reflect, pray, highlight, or remember it.</p>
+        </div>
+        <div className="bible-secondary-links"><Link to="/search"><Icon name="search" /> Search Bible</Link><Link to="/bible/collections"><Icon name="bookmark" /> Collections</Link></div>
+      </header>
+
+      {planContext && currentSegment ? (
+        <section className="plan-reading-context mg-plan-context" aria-label="M’Cheyne reading context">
+          <div className="plan-context-copy">
+            <p className="section-kicker">M’Cheyne · {planContext.reading.group === "family" ? "Family" : "Private"}</p>
+            <strong>{planContext.reading.displayReference}</strong>
+            <span>Day {planContext.locator.sequence}{segmentCount > 1 ? ` · Part ${planContext.locator.segmentIndex + 1} of ${segmentCount}` : ""}</span>
+          </div>
+          <div className="plan-context-actions">
+            <Link to={backTarget}>Back to {planContext.locator.origin === "plan" ? "plan" : "Today"}</Link>
+            {planContext.locator.segmentIndex > 0 ? <Link to={buildPlanReadingUrl(planContext.reading, planContext.enrollment.id, planContext.locator.sequence, planContext.locator.readingIndex, planContext.locator.origin, planContext.locator.segmentIndex - 1)}>Previous passage</Link> : null}
+            {planContext.locator.segmentIndex + 1 < segmentCount ? <Link to={buildPlanReadingUrl(planContext.reading, planContext.enrollment.id, planContext.locator.sequence, planContext.locator.readingIndex, planContext.locator.origin, planContext.locator.segmentIndex + 1)}>Next passage</Link> : null}
+            <button type="button" className={planContext.completed ? "is-complete" : ""} onClick={() => void runMutation(() => togglePlanCompletion())}>{planContext.completed ? "Mark unread" : "Mark reading complete"}</button>
+          </div>
+        </section>
+      ) : null}
+
+      <div className="bible-toolbar mg-bible-toolbar" aria-label="Bible navigation">
+        <label className="bible-select-label">
+          <span>Book</span>
+          <select value={activeBook.id} onChange={(event) => navigate(`/bible/${event.target.value}/1`)}>
+            {manifest.books.map((book) => <option key={book.id} value={book.id}>{book.name}</option>)}
+          </select>
+        </label>
+        <label className="bible-select-label chapter-select">
+          <span>Chapter</span>
+          <select value={routeChapter} onChange={(event) => navigateToChapter(activeBook.id, Number(event.target.value))}>
+            {Array.from({ length: activeBook.chapterCount }, (_, index) => index + 1).map((chapter) => <option key={chapter} value={chapter}>{chapter}</option>)}
+          </select>
+        </label>
+        <span className="bible-source-note">{manifest.name} · {chapterData.verseCount} verses</span>
+      </div>
+
+      <article className="reader-page scripture-reader mg-scripture-page" aria-label={`${activeBook.name} ${routeChapter}, Berean Standard Bible`}>
+        <div className="mg-bible-chapter-art" aria-hidden="true">
+          <MorningLandscape />
+          <BotanicalSprig />
+        </div>
+        <header className="reader-heading scripture-reader-heading mg-reader-heading">
+          <div>
+            <p>{activeBook.testament === "OT" ? "Old Testament" : "New Testament"} · Berean Standard Bible</p>
+            <h2>{activeBook.name} {routeChapter}</h2>
+          </div>
+          <span className="reader-context">{chapterData.verseCount} verses</span>
+        </header>
+
+        <div className="scripture-copy scripture-content">{chapterData.blocks.map(renderBlock)}</div>
+
+        <nav className="chapter-navigation mg-chapter-navigation" aria-label="Adjacent chapters">
+          <button type="button" disabled={firstChapter} onClick={() => navigateAdjacent(-1)}><span aria-hidden="true">←</span> Previous</button>
+          <span>{activeBook.name} {routeChapter}</span>
+          <button type="button" disabled={lastBook} onClick={() => navigateAdjacent(1)}>Next <span aria-hidden="true">→</span></button>
+        </nav>
+      </article>
+
+      {selection && selectedReference ? (
+        <div className="verse-action-dock mg-verse-action-dock" role="region" aria-label={`Actions for ${referenceLabel(activeBook, routeChapter, selection)}`}>
+          <div className="selection-reference">
+            <strong>{referenceLabel(activeBook, routeChapter, selection)}</strong>
+            <button type="button" className="clear-selection" onClick={() => { if (!discardNote()) return; setSelection(null); setNoteEditorOpen(false); }} aria-label="Clear verse selection">×</button>
+          </div>
+          <div className="verse-actions">
+            <button type="button" onClick={() => void runMutation(() => toggleHighlight())}><Icon name="highlight" /> {exactHighlight ? "Remove highlight" : "Highlight"}</button>
+            <button type="button" onClick={openReflection}><Icon name="reflection" /> Reflect</button>
+            <button type="button" onClick={openPrayer}><Icon name="prayer" /> Pray</button>
+            <button type="button" onClick={() => void runMutation(() => toggleBookmark())}><Icon name="bookmark" /> {exactBookmark ? "Remove bookmark" : "Bookmark"}</button>
+            <button type="button" aria-expanded={moreOpen} onClick={() => { if (!discardNote()) return; setMoreOpen((value) => !value); setNoteEditorOpen(false); }}><Icon name="more" /> More</button>
+          </div>
+          {moreOpen ? (
+            <div className="verse-action-menu">
+              <button type="button" onClick={() => void copySelection()}><Icon name="share" /> Copy selection</button>
+              <button type="button" onClick={() => void runMutation(() => openVerseNote())}><Icon name="note" /> {exactVerseNote ? "Edit verse note" : "Add verse note"}</button>
+              <button type="button" onClick={openCollection}><Icon name="bookmark" /> Add to collection</button>
+            </div>
+          ) : null}
+          {noteEditorOpen ? (
+            <div className="verse-note-editor">
+              <textarea value={noteBody} onChange={(event) => setNoteBody(event.target.value)} placeholder="A durable note attached to this Scripture passage." aria-label="Verse note" />
+              <div className="verse-note-editor-actions">
+                <button type="button" disabled={annotationBusy || !noteBody.trim()} onClick={() => void runMutation(() => saveVerseNote())}>Save note</button>
+                {exactVerseNote ? <button type="button" onClick={() => void runMutation(() => removeVerseNote())}>Remove note</button> : null}
+                <button type="button" onClick={() => { if (noteBody === savedNoteBody || window.confirm("Discard the unsaved verse note?")) setNoteEditorOpen(false); }}>Close</button>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      <p className="reader-status" role={mutationFailed ? "alert" : "status"} aria-live="polite">{mutationStatus || status}</p>
+    </main>
+  );
 }

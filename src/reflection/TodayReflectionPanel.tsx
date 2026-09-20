@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { Icon } from "../app/visual/Icon";
 import { db } from "../data/database";
 import { ReflectionRepository } from "../data/repositories/reflections";
 import type { LocalDate, Reflection } from "../domain/types";
@@ -29,7 +30,7 @@ export function TodayReflectionPanel({ localDate }: { localDate: LocalDate }) {
 
   return (
     <section className="editorial-section reflection-preview live-reflection-preview" aria-labelledby="reflection-heading">
-      <p className="section-kicker">Respond</p>
+      <p className="section-kicker mg-panel-kicker"><Icon name="reflection" aria-hidden="true" /> Reflect</p>
       <h2 id="reflection-heading">{reflection ? "Today’s reflection" : "Reflection stays optional."}</h2>
       {reflection ? (
         <>

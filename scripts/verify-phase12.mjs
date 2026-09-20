@@ -23,7 +23,7 @@ const lock = JSON.parse(lockRaw);
 const manifest = JSON.parse(manifestRaw);
 const releaseManifest = JSON.parse(releaseManifestRaw);
 
-assert.match(pkg.version, /^1\.0\.\d+$/, "Release boundary is the 1.0 corrective series");
+assert.match(pkg.version, /^1\.\d+\.\d+$/, "Release version must remain within stable major version 1");
 assert.equal(/APP_VERSION\s*=\s*"([^"]+)"/.exec(versionSource)?.[1], pkg.version);
 assert.equal(/CACHE_NAME\s*=\s*"([^"]+)"/.exec(sw)?.[1], `mdd-app-v${pkg.version}`);
 assert.equal(pkg.scripts["notices:build"], "node scripts/build-third-party-notices.mjs");
@@ -41,7 +41,7 @@ assert.equal(lock.packages?.[""]?.version, pkg.version);
 assert.deepEqual(lock.packages?.[""]?.dependencies, pkg.dependencies);
 assert.deepEqual(lock.packages?.[""]?.devDependencies, pkg.devDependencies);
 for (const [name, version] of Object.entries({ ...pkg.dependencies, ...pkg.devDependencies })) {
-  assert.match(version, /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/, `${name} must be pinned exactly for 1.0`);
+  assert.match(version, /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/, `${name} must be pinned exactly for release builds`);
 }
 
 assert.equal(manifest.lang, "en");

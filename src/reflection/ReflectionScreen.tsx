@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useUnsavedChanges } from "../app/useUnsavedChanges";
+import { BotanicalSprig } from "../app/visual/MorningGraceMotifs";
 import { db } from "../data/database";
 import { ReflectionRepository } from "../data/repositories/reflections";
 import { assertLocalDate } from "../domain/time";
@@ -80,7 +81,7 @@ export function ReflectionScreen() {
   const saving = useRef(false);
   const [busy, setBusy] = useState(false);
 
-  if (!localDate) return <main className="visual-screen reflection-screen"><p className="eyebrow">Reflection</p><h1>Invalid date</h1><Link to="/today">Return to Today</Link></main>;
+  if (!localDate) return <main className="visual-screen reflection-screen mg-secondary-screen mg-reflection-workspace"><p className="eyebrow">Reflection</p><h1>Invalid date</h1><Link to="/today">Return to Today</Link></main>;
   if (loading) return <main className="visual-screen reflection-screen"><p className="eyebrow">Reflection</p><p>Opening your local reflection…</p></main>;
 
   const save = async () => {
@@ -132,8 +133,8 @@ export function ReflectionScreen() {
   };
 
   return (
-    <main className="visual-screen reflection-screen">
-      <header className="screen-heading compact-heading reflection-heading">
+    <main className="visual-screen reflection-screen mg-secondary-screen mg-reflection-workspace">
+      <header className="screen-heading compact-heading reflection-heading mg-secondary-header">
         <p className="eyebrow">Personal reflection · {formatDate(localDate)}</p>
         <h1>Reflect</h1>
         <p className="screen-intro">Write what stood out and what you want to remember.</p>
@@ -181,7 +182,7 @@ export function ReflectionScreen() {
           <p className="reflection-status" aria-live="polite">{status}</p>
         </section>
 
-        <aside className="reflection-context-panel">
+        <aside className="reflection-context-panel"><BotanicalSprig className="mg-reflection-sprig" />
           <section>
             <p className="section-kicker">Linked Scripture</p>
             <h2>From Scripture</h2>

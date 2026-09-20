@@ -22,9 +22,9 @@ function DraftDialog({ save, discard, finish }: { save: (() => Promise<void>) | 
     <p>{save ? "Save before continuing, discard the draft, or return to editing." : "This action would hide unsaved answer notes. Finish the answer first, or explicitly discard the draft."}</p>
     {error ? <p role="alert">{error}</p> : null}
     <div className="draft-dialog-actions">
-      {save ? <button type="button" disabled={busy} onClick={() => void saveAndContinue()}>{busy ? "Saving…" : "Save and continue"}</button> : null}
-      <button type="button" disabled={busy} onClick={() => { discard(); finish(true); }}>Discard and continue</button>
-      <button type="button" autoFocus disabled={busy} onClick={() => finish(false)}>Keep editing</button>
+      {save ? <button className="draft-dialog-save" type="button" disabled={busy} onClick={() => void saveAndContinue()}>{busy ? "Saving…" : "Save and continue"}</button> : null}
+      <button className="draft-dialog-discard" type="button" disabled={busy} onClick={() => { discard(); finish(true); }}>Discard and continue</button>
+      <button className="draft-dialog-keep" type="button" autoFocus disabled={busy} onClick={() => finish(false)}>Keep editing</button>
     </div>
   </dialog>;
 }

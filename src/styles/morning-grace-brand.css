@@ -1,0 +1,138 @@
+/* Morning Grace Editorial — Phase 2 brand assets and visual motifs */
+
+:root {
+  --color-brand-leaf-soft: #748b7a;
+  --motif-opacity: .86;
+  --motif-quiet-opacity: .58;
+  --icon-stroke-width: 1.55;
+}
+
+:root[data-theme="dark"] {
+  --color-brand-leaf-soft: #87a08d;
+  --motif-opacity: .72;
+  --motif-quiet-opacity: .48;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --color-brand-leaf-soft: #87a08d;
+    --motif-opacity: .72;
+    --motif-quiet-opacity: .48;
+  }
+}
+
+.brand-mark {
+  overflow: visible;
+}
+
+.icon {
+  stroke-width: var(--icon-stroke-width);
+}
+
+.nav-link.active .icon-today {
+  color: var(--color-morning);
+}
+
+.nav-link.active .icon-bible,
+.nav-link.active .icon-history {
+  color: var(--color-accent-strong);
+}
+
+.nav-link.active .icon-prayer {
+  color: var(--color-prayer);
+}
+
+.mg-motif {
+  display: block;
+  max-width: 100%;
+  pointer-events: none;
+}
+
+.mg-sprig {
+  color: var(--color-accent);
+  opacity: var(--motif-opacity);
+}
+
+.mg-motif-stem,
+.mg-motif-line,
+.mg-motif-sun-line,
+.mg-motif-ray,
+.mg-landscape-tree-stem {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.mg-motif-leaf,
+.mg-flourish-sprig {
+  fill: var(--color-accent);
+  stroke: none;
+}
+
+.mg-motif-leaf-strong {
+  fill: var(--color-accent-strong);
+}
+
+.mg-motif-leaf-soft {
+  fill: var(--color-brand-leaf-soft);
+}
+
+.mg-sunrise {
+  color: var(--color-morning);
+}
+
+.mg-landscape {
+  color: var(--color-accent-strong);
+  opacity: var(--motif-opacity);
+}
+
+.mg-landscape-sun {
+  fill: var(--color-morning-soft);
+}
+
+.mg-landscape-back {
+  fill: color-mix(in srgb, var(--color-accent-soft) 76%, var(--color-canvas));
+}
+
+.mg-landscape-mid {
+  fill: color-mix(in srgb, var(--color-brand-leaf-soft) 36%, var(--color-canvas));
+}
+
+.mg-landscape-front {
+  fill: color-mix(in srgb, var(--color-accent) 34%, var(--color-canvas));
+}
+
+.mg-landscape-tree {
+  fill: color-mix(in srgb, var(--color-accent-strong) 76%, transparent);
+}
+
+.mg-flourish {
+  color: var(--color-line-strong);
+  opacity: var(--motif-quiet-opacity);
+}
+
+.mg-flourish-sprig {
+  fill: var(--color-accent);
+}
+
+/* Brand art must not compete with Scripture. */
+.scripture-content .mg-motif,
+.scripture-copy .mg-motif,
+.reader-body .mg-motif {
+  display: none;
+}
+
+@media (forced-colors: active) {
+  .mg-motif {
+    forced-color-adjust: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mg-motif {
+    animation: none !important;
+    transition: none !important;
+  }
+}

@@ -1,14 +1,14 @@
-# MDD 1.0 Release Checklist
+# MDD 1.1.0 Release Checklist
 
 This checklist is operational. Automated gates remain authoritative where they exist.
 
 ## Source and version
 
-- [x] Product version is `1.0.0` in `package.json` and `src/app/version.ts`.
-- [x] Service-worker cache generation is `mdd-app-v1.0.0`.
+- [x] Product version is `1.1.0` in `package.json` and `src/app/version.ts`.
+- [x] Service-worker cache generation is `mdd-app-v1.1.0`.
 - [x] Database schema remains version 1.
 - [x] Direct dependency versions are exact and `package-lock.json` is committed.
-- [x] No new Phase 12 product subsystem was introduced.
+- [x] Morning Grace changes presentation only; schema 1 and existing domain semantics remain unchanged.
 
 ## Data safety
 

@@ -102,7 +102,7 @@ jobs:
           retention-days: 90
 
   release:
-    name: Publish verified corrective release
+    name: Publish verified release
     needs: deploy
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
@@ -129,4 +129,4 @@ jobs:
             echo "A release for this version already exists; refusing to overwrite its assets or tag."
             exit 0
           fi
-          gh release create "v$VERSION" release/* --target "$GITHUB_SHA" --title "My Daily Devotion $VERSION" --notes-file docs/CORRECTIVE_RELEASE_1.0.1.md
+          gh release create "v$VERSION" release/* --target "$GITHUB_SHA" --title "My Daily Devotion $VERSION" --notes-file docs/RELEASE_1.1.0_MORNING_GRACE.md

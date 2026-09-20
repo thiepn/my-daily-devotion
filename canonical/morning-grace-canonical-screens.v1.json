@@ -1,0 +1,121 @@
+{
+  "version": 1,
+  "name": "Morning Grace Canonical Screens",
+  "parentDesignLanguage": "canonical/morning-grace-design-language.v1.json",
+  "parentBrandAssets": "canonical/morning-grace-brand-assets.v1.json",
+  "status": "phase-3-frozen",
+  "screens": {
+    "today": {
+      "intent": "opening-the-day-with-Scripture-and-response",
+      "composition": [
+        "morning-hero",
+        "four-reading-focus",
+        "continue-reading-action",
+        "reflection-prayer-response"
+      ],
+      "hero": "editorial copy paired with quiet Morning Grace landscape",
+      "primaryContent": "today's M'Cheyne readings",
+      "avoid": [
+        "dashboard-summary",
+        "streak-gamification",
+        "unrelated-widgets"
+      ]
+    },
+    "bible": {
+      "intent": "reading-Scripture-before-managing-Scripture",
+      "composition": [
+        "compact-app-header",
+        "contextual-navigation",
+        "chapter-art-band",
+        "book-like-reader",
+        "selection-actions"
+      ],
+      "maxReadingWidthPx": 700,
+      "artworkRule": "chapter art is above Scripture, never behind Scripture paragraphs",
+      "avoid": [
+        "dashboard-layout",
+        "persistent-heavy-toolbar",
+        "decorative-art-inside-Scripture-copy"
+      ]
+    },
+    "prayer": {
+      "intent": "human-prayer-life-before-administration",
+      "composition": [
+        "prayer-hero",
+        "focused-session-choice",
+        "status-tabs",
+        "human-request-list"
+      ],
+      "hero": "botanical devotional panel with restrained reference",
+      "listPriority": "request body and recency before metadata",
+      "avoid": [
+        "management-dashboard",
+        "dense-scheduling-controls-on-main-screen",
+        "analytics"
+      ]
+    },
+    "history": {
+      "intent": "look-back-and-see-faithfulness",
+      "composition": [
+        "reflective-hero",
+        "monthly-overview",
+        "recent-activity",
+        "calendar",
+        "closing-landscape"
+      ],
+      "statistics": "factual monthly counts only; no spiritual scores or streaks",
+      "avoid": [
+        "performance-dashboard",
+        "streak-celebration",
+        "spiritual-ranking"
+      ]
+    }
+  },
+  "responsive": {
+    "phone": "single-column with fixed bottom navigation and restrained artwork",
+    "tablet": "editorial split where space supports it",
+    "desktop": "wide editorial canvas with narrow application rail",
+    "textResize": "canonical screens reflow at 200 percent without horizontal overflow"
+  },
+  "visualRules": [
+    "typography-and-spacing-before-containers",
+    "art-supports-content-never-replaces-hierarchy",
+    "one-primary-action-per-major-section",
+    "warm-neutral-surfaces-dominate",
+    "domain-color-is-an-accent-not-a-background-system",
+    "Bible-is-the-most-visually-restrained-canonical-screen",
+    "History-remains-reflective-not-competitive"
+  ],
+  "behaviorPreservation": [
+    "M'Cheyne enrollment and completion semantics unchanged",
+    "Bible selection/highlight/bookmark/note/reflection/prayer/collection flows unchanged",
+    "Prayer statuses/session depths and request routing unchanged",
+    "History calendar/day/moments routes unchanged",
+    "Database schema unchanged",
+    "Backup format unchanged"
+  ],
+  "implementation": {
+    "styleLayer": "src/styles/morning-grace-screens.css",
+    "screens": [
+      "src/mcheyne/TodayScreen.tsx",
+      "src/scripture/BibleScreen.tsx",
+      "src/prayer/PrayerScreen.tsx",
+      "src/history/HistoryScreens.tsx"
+    ]
+  },
+  "phaseBoundary": {
+    "finalizedNow": [
+      "canonical-today-screen",
+      "canonical-bible-screen",
+      "canonical-prayer-screen",
+      "canonical-history-screen",
+      "canonical-responsive-compositions"
+    ],
+    "deferred": [
+      "secondary-screen-redesigns",
+      "settings-and-data-polish",
+      "full-design-fidelity-pass",
+      "final-production-merge"
+    ]
+  }
+}

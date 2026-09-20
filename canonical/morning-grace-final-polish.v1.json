@@ -1,0 +1,72 @@
+{
+  "version": 1,
+  "name": "Morning Grace Final Visual Polish",
+  "parentSecondaryWorkflows": "canonical/morning-grace-secondary-workflows.v1.json",
+  "status": "phase-5-frozen",
+  "goals": [
+    "remove residual pre-Morning-Grace visual inconsistencies",
+    "normalize application chrome and controls",
+    "polish loading, recovery, offline/update, draft and conflict states",
+    "bring Add Prayer and History detail routes into the Morning Grace system",
+    "tune dark-mode artwork and surfaces",
+    "add subtle motion with reduced-motion support",
+    "preserve 320px and 200 percent reflow"
+  ],
+  "polishAreas": {
+    "typography": "balanced headings, pretty body copy, consistent display/reading/UI roles",
+    "controls": "shared hover/focus/active behavior and restrained radii",
+    "mobileChrome": "icon-first Search/Data and compact theme controls",
+    "states": [
+      "route-loading",
+      "startup-error",
+      "route-error",
+      "offline-update",
+      "draft-dialog",
+      "conflict-review",
+      "empty-states"
+    ],
+    "residualRoutes": [
+      "add-prayer",
+      "history-day",
+      "history-moments"
+    ],
+    "darkMode": "brighter authored landscapes and consistent paper elevation",
+    "motion": "190ms opacity/4px route reveal; disabled for reduced-motion users"
+  },
+  "invariants": [
+    "no decorative gradients",
+    "no glassmorphism",
+    "no remote visual assets",
+    "no spiritual gamification",
+    "no data model changes",
+    "no backup format changes",
+    "no Scripture or M'Cheyne content changes",
+    "no weakening of draft/conflict/data safety behaviors"
+  ],
+  "implementation": {
+    "styleLayer": "src/styles/morning-grace-polish.css",
+    "codeTouches": [
+      "src/app/App.tsx",
+      "src/app/RouteErrorBoundary.tsx",
+      "src/app/useDraftGuard.tsx",
+      "src/main.tsx",
+      "src/prayer/NewPrayerScreen.tsx",
+      "src/history/HistoryScreens.tsx"
+    ]
+  },
+  "releaseBoundary": {
+    "finalizedNow": [
+      "cross-app-visual-consistency",
+      "state-design",
+      "mobile-chrome",
+      "dark-mode-polish",
+      "motion-polish",
+      "residual-route-coverage"
+    ],
+    "stillRequired": [
+      "final-visual-acceptance",
+      "intentional-pr-merge",
+      "production-deployment-verification"
+    ]
+  }
+}

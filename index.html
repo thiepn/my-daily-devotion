@@ -6,7 +6,7 @@
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self'; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'" />
     <meta name="referrer" content="no-referrer" />
     <meta name="application-name" content="My Daily Devotion" />
-    <meta name="theme-color" content="#f4f0e6" />
+    <meta name="theme-color" content="#f6f2e9" />
     <meta name="color-scheme" content="light dark" />
     <meta name="description" content="My Daily Devotion — private Scripture reading, reflection, prayer, and devotional history." />
     <meta name="mobile-web-app-capable" content="yes" />
@@ -21,6 +21,8 @@
       try {
         const theme = localStorage.getItem("mdd-theme");
         if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme;
+        const dark = theme === "dark" || (theme !== "light" && matchMedia("(prefers-color-scheme: dark)").matches);
+        document.querySelector('meta[name="theme-color"]')?.setAttribute("content", dark ? "#171b18" : "#f6f2e9");
       } catch {}
     </script>
     <title>My Daily Devotion</title>

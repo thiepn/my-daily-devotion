@@ -1,0 +1,405 @@
+/* Morning Grace Editorial — Phase 1 design-language foundation
+   Foundation only: tokens, type roles, shell tone, controls, surfaces and anti-generic guardrails. */
+
+:root {
+  --domain-accent: var(--color-accent);
+  --domain-accent-strong: var(--color-accent-strong);
+}
+
+/* Editorial type roles */
+h1,
+h2,
+h3,
+.display-type,
+.screen-heading h1,
+.section-heading-line h2,
+.reader-heading h2,
+.focus-preview h2 {
+  font-family: var(--font-display);
+}
+
+.scripture-copy,
+.scripture-content,
+.scripture-text,
+.journal-page p,
+.focus-preview blockquote,
+.reflection-body,
+.history-entry-copy,
+.prayer-body-copy {
+  font-family: var(--font-reading);
+}
+
+/* Route/domain identity without turning the product into five separate themes. */
+.workspace[data-domain="today"] {
+  --domain-accent: var(--color-morning);
+  --domain-accent-strong: var(--color-accent-strong);
+}
+
+.workspace[data-domain="bible"] {
+  --domain-accent: var(--color-accent);
+  --domain-accent-strong: var(--color-accent-strong);
+}
+
+.workspace[data-domain="reflection"] {
+  --domain-accent: var(--color-reflection);
+  --domain-accent-strong: var(--color-reflection);
+}
+
+.workspace[data-domain="prayer"] {
+  --domain-accent: var(--color-prayer);
+  --domain-accent-strong: var(--color-prayer);
+}
+
+.workspace[data-domain="history"] {
+  --domain-accent: var(--color-accent-strong);
+  --domain-accent-strong: var(--color-accent-strong);
+}
+
+/* Shell: paper, rules and typography rather than SaaS chrome. */
+.app-shell {
+  background: var(--color-canvas);
+}
+
+.side-rail {
+  padding: 30px 20px 24px;
+  border-right-color: var(--color-line);
+  background: var(--color-canvas-warm);
+}
+
+.brand {
+  gap: 11px;
+}
+
+.brand-mark {
+  width: 34px;
+  height: 34px;
+  color: var(--color-accent-strong);
+}
+
+.brand-copy strong {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -.02em;
+}
+
+.brand-copy small {
+  color: var(--color-muted);
+  font-size: .61rem;
+  font-weight: 600;
+  letter-spacing: .075em;
+  text-transform: uppercase;
+}
+
+.side-nav {
+  gap: 3px;
+  margin-top: 44px;
+}
+
+.nav-link {
+  min-height: 46px;
+  border-left-width: 1px;
+  color: var(--color-muted);
+}
+
+.nav-link:hover {
+  color: var(--color-ink);
+  background: color-mix(in srgb, var(--color-surface-muted) 58%, transparent);
+}
+
+.nav-link.active {
+  color: var(--color-accent-strong);
+  border-left-color: var(--color-accent);
+  background: color-mix(in srgb, var(--color-accent-soft) 42%, transparent);
+}
+
+.rail-note {
+  max-width: 18ch;
+  color: var(--color-muted);
+  font-family: var(--font-display);
+  font-size: .88rem;
+  line-height: 1.55;
+}
+
+.utility-bar {
+  min-height: 62px;
+  border-bottom-color: var(--color-line);
+  background: var(--color-canvas);
+}
+
+.utility-context-title {
+  color: var(--color-ink);
+  font-family: var(--font-display);
+  font-size: .94rem;
+  font-weight: 600;
+}
+
+.utility-context-note {
+  color: var(--color-muted);
+}
+
+.utility-actions > a {
+  color: var(--color-muted);
+}
+
+.utility-actions > a:hover {
+  color: var(--color-ink);
+}
+
+.theme-switcher {
+  border-color: var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: none;
+}
+
+.theme-option {
+  border-radius: var(--radius-sm);
+}
+
+.theme-option[aria-pressed="true"] {
+  color: var(--color-ink);
+  background: var(--color-surface-muted);
+}
+
+/* The mobile bar is intentionally solid paper, never floating glass. */
+.mobile-nav {
+  border-top-color: var(--color-line);
+  background: var(--color-surface);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  box-shadow: 0 -1px 0 rgba(32, 36, 31, .03);
+}
+
+.mobile-nav .nav-link.active {
+  color: var(--color-accent-strong);
+}
+
+.mobile-nav .nav-link.active .icon {
+  stroke-width: 1.8;
+}
+
+/* Editorial hierarchy. */
+.visual-screen {
+  padding-top: clamp(44px, 6vw, 78px);
+}
+
+.screen-heading {
+  margin-bottom: clamp(42px, 6vw, 72px);
+}
+
+.screen-heading h1 {
+  margin: 8px 0 14px;
+  font-size: clamp(2.65rem, 5vw, 4.8rem);
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: -.04em;
+}
+
+.screen-intro {
+  color: var(--color-ink-soft);
+  line-height: 1.68;
+}
+
+.eyebrow,
+.section-kicker,
+.phase-label {
+  color: var(--color-muted);
+  font-family: var(--font-ui);
+  font-weight: 650;
+  letter-spacing: .12em;
+}
+
+.editorial-section,
+.prayer-list-panel,
+.history-timeline,
+.storage-resilience {
+  border-color: var(--color-line-strong);
+}
+
+/* Form language */
+input:not([type="checkbox"]):not([type="radio"]),
+select,
+textarea {
+  border-color: var(--color-line);
+  border-radius: var(--radius-sm);
+  color: var(--color-ink);
+  background: var(--color-surface);
+}
+
+input:not([type="checkbox"]):not([type="radio"]):focus,
+select:focus,
+textarea:focus {
+  border-color: var(--domain-accent);
+}
+
+::placeholder {
+  color: color-mix(in srgb, var(--color-muted) 78%, transparent);
+}
+
+/* Primary action language. */
+.primary-editorial-action,
+.future-action,
+.focus-next {
+  min-height: 48px;
+  border: 1px solid var(--domain-accent-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-action-on);
+  background: var(--domain-accent-strong);
+  box-shadow: var(--shadow-soft);
+  transition:
+    transform var(--transition-fast),
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+.primary-editorial-action:hover,
+.future-action:hover,
+.focus-next:hover {
+  transform: translateY(-1px);
+}
+
+.primary-editorial-action:active,
+.future-action:active,
+.focus-next:active {
+  transform: translateY(0);
+}
+
+/* The first-run reading choice predates Morning Grace and has a higher-specificity transparent rule.
+   Reassert the primary action at equal/higher specificity so text and surface remain AA-compliant. */
+.setup-options .primary-editorial-action {
+  border: 1px solid var(--domain-accent-strong);
+  border-radius: var(--radius-md);
+  color: var(--color-action-on);
+  background: var(--domain-accent-strong);
+}
+
+.setup-options .primary-editorial-action strong,
+.setup-options .primary-editorial-action small {
+  color: var(--color-action-on);
+}
+
+.setup-options .primary-editorial-action:hover {
+  color: var(--color-action-on);
+  background: var(--domain-accent-strong);
+}
+
+.brand-copy strong,
+.brand-copy small {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.workspace[data-domain="prayer"] .primary-editorial-action,
+.workspace[data-domain="prayer"] .focus-next {
+  border-color: var(--color-prayer);
+  background: var(--color-prayer);
+}
+
+.workspace[data-domain="reflection"] .primary-editorial-action {
+  border-color: var(--color-reflection);
+  background: var(--color-reflection);
+}
+
+/* Book-like reading surface. */
+.reader-page {
+  border-color: var(--color-line-strong);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-paper);
+}
+
+.reader-heading {
+  border-bottom-color: var(--color-line);
+}
+
+.reader-heading h2 {
+  font-weight: 500;
+}
+
+.scripture-copy,
+.scripture-content {
+  max-width: var(--reading-max);
+  color: var(--color-ink);
+  font-size: clamp(1.13rem, 1.9vw, 1.3rem);
+  line-height: 1.68;
+}
+
+.verse-number {
+  color: var(--color-muted);
+  font-family: var(--font-ui);
+}
+
+.scripture-run.is-red-letter .scripture-text {
+  color: var(--color-red-letter);
+}
+
+.scripture-run.is-highlighted,
+.scripture-run.is-selected {
+  background-color: var(--color-highlight);
+}
+
+/* Journal and prayer cues stay material-light. */
+.journal-page {
+  border-left-color: var(--color-reflection);
+  background: color-mix(in srgb, var(--color-surface) 78%, transparent);
+}
+
+.focus-preview {
+  border-top-color: var(--color-prayer);
+}
+
+.focus-preview blockquote {
+  border-left-color: var(--color-line-strong);
+}
+
+/* Restrained surface hierarchy for utility panels already present in the product. */
+.data-panel,
+.backup-preview,
+.search-hit,
+.history-summary,
+.prayer-source-context {
+  border-color: var(--color-line);
+}
+
+.data-panel,
+.backup-preview {
+  background: color-mix(in srgb, var(--color-surface) 72%, var(--color-canvas));
+}
+
+/* Dark mode is warm and authored, not an inversion. */
+:root[data-theme="dark"] .mobile-nav,
+:root[data-theme="dark"] .utility-bar,
+:root[data-theme="dark"] .side-rail {
+  box-shadow: none;
+}
+
+:root[data-theme="dark"] .reader-page {
+  box-shadow: var(--shadow-paper-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .reader-page {
+    box-shadow: var(--shadow-paper-dark);
+  }
+}
+
+@media (max-width: 620px) {
+  .visual-screen {
+    width: min(calc(100% - 32px), var(--content-max));
+    padding-top: 36px;
+  }
+
+  .screen-heading {
+    margin-bottom: 40px;
+  }
+
+  .screen-heading h1 {
+    font-size: clamp(2.55rem, 14vw, 4rem);
+  }
+
+  .reader-page {
+    width: calc(100% + 32px);
+    margin-left: -16px;
+    box-shadow: none;
+  }
+}
