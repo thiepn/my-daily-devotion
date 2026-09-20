@@ -24,6 +24,7 @@ import "./styles/morning-grace-brand.css";
 import "./styles/morning-grace-screens.css";
 import "./styles/morning-grace-secondary.css";
 import "./styles/morning-grace-polish.css";
+import "./styles/morning-grace-mobile.css";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("MDD root element is missing.");
