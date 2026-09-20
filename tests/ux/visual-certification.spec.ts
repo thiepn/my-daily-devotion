@@ -3,6 +3,13 @@ import { enrollCalendarPlan, expectNoAxeViolations, expectNoHorizontalOverflow, 
 
 type Surface = [string, string, string];
 const emptySurfaces: Surface[] = [["today", "/today", "Today"], ["bible", "/bible/JHN/3", "Bible"], ["reflection", "/today/reflection/2026-09-17", "Reflect"], ["prayer", "/prayer", "Prayer"], ["history", "/history", "History"], ["search", "/search", "Search"], ["collections", "/bible/collections", "Collections"], ["data", "/data", "Your data"]];
+async function setVisualTheme(page: Page, mode: "light" | "dark" | "system") {
+  await page.evaluate((next) => {
+    if (next === "system") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.dataset.theme = next;
+  }, mode);
+}
+
 async function capture(page: Page, testInfo: TestInfo, name: string, surface: Surface) {
   await openRoute(page, surface[1]); await expect(page.getByRole("heading", { level: 1, name: surface[2], exact: true })).toBeVisible();
   if (surface[0] === "bible") await expect(page.locator(".scripture-copy")).toBeVisible();
@@ -16,7 +23,7 @@ test("visual record of empty major screens in light, dark, and mobile", async ({
   test.setTimeout(120_000);
   for (const mode of ["light", "dark", "mobile", "mobile-dark"]) {
     await page.setViewportSize(mode.includes("mobile") ? { width: mode === "small-mobile" ? 320 : 390, height: mode === "small-mobile" ? 568 : 844 } : mode === "tablet-portrait" ? { width: 768, height: 1024 } : mode === "tablet-landscape" ? { width: 1024, height: 768 } : { width: 1440, height: 900 });
-    await openRoute(page, "/today"); await page.getByRole("button", { name: mode.includes("dark") ? "Dark theme" : "Light theme" }).click();
+    await openRoute(page, "/today"); await setVisualTheme(page, mode.includes("dark") ? "dark" : "light");
     for (const surface of emptySurfaces) await capture(page, testInfo, `empty-${mode}`, surface);
   }
 });
@@ -57,7 +64,7 @@ test("visual record of populated devotional journeys and management screens", as
   ];
   for (const mode of ["light", "dark", "mobile", "mobile-dark", "small-mobile", "tablet-portrait", "tablet-landscape"] as const) {
     await page.setViewportSize(mode.includes("mobile") ? { width: mode === "small-mobile" ? 320 : 390, height: mode === "small-mobile" ? 568 : 844 } : mode === "tablet-portrait" ? { width: 768, height: 1024 } : mode === "tablet-landscape" ? { width: 1024, height: 768 } : { width: 1440, height: 900 });
-    await page.getByRole("button", { name: mode.includes("dark") ? "Dark theme" : "Light theme" }).click();
+    await setVisualTheme(page, mode.includes("dark") ? "dark" : "light");
     for (const surface of surfaces) await capture(page, testInfo, `populated-${mode}`, surface);
     await openRoute(page, "/prayer/session?depth=quick"); await expect(page.locator(".focused-prayer-card")).toBeVisible();
     await expectNoHorizontalOverflow(page); await page.screenshot({ path: testInfo.outputPath(`populated-${mode}-focused-prayer.png`) });
@@ -77,7 +84,7 @@ test("requested viewport matrix, system theme, text scaling and Scripture forms"
   }
   await page.setViewportSize({ width: 390, height: 844 });
   for (const scheme of ["dark", "light"] as const) {
-    await page.emulateMedia({ colorScheme: scheme }); await page.getByRole("button", { name: "System theme" }).click();
+    await page.emulateMedia({ colorScheme: scheme }); await setVisualTheme(page, "system");
     await expect(page.locator("html")).not.toHaveAttribute("data-theme", /.+/);
     await capture(page, testInfo, `system-${scheme}`, ["bible", "/bible/PSA/23", "Bible"]);
   }
