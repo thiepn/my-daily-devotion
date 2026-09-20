@@ -999,8 +999,8 @@
   }
 
   .mg-collections-workspace .collection-sidebar {
-    margin-inline: -12px;
-    padding-inline: 12px;
+    margin-inline: calc(var(--mobile-gutter) * -1);
+    padding-inline: var(--mobile-gutter);
   }
 
   .mg-search-workspace .global-search-form {
