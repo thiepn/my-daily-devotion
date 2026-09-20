@@ -1,4 +1,4 @@
-# MDD 1.1.0 Release Checklist
+# MDD 1.2.0 Release Checklist
 
 This checklist is operational. Automated gates remain authoritative where they exist.
 
@@ -55,3 +55,5 @@ This checklist is operational. Automated gates remain authoritative where they e
 ## Ship rule
 
 Ship only from a commit where the independent Phase 0 contract and cumulative Phase 12 Release Certification workflow both conclude successfully. Do not waive a failed gate by checking this document manually.
+
+- [x] Mobile-first layout contract passes, including 320px, phone landscape and desktop-preservation checks.
