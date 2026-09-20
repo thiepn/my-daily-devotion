@@ -13,3 +13,12 @@ export async function enrollCalendarPlan(page: Page): Promise<void> {
   if(await setup.isVisible()) await setup.click();
   await expect(readingHeading).toBeVisible();
 }
+
+export async function expectCanonicalTitle(page: Page, name: "Today" | "Bible" | "Prayer" | "History"): Promise<void> {
+  if ((page.viewportSize()?.width ?? 9999) <= 760) {
+    await expect(page.locator(".utility-mobile-title")).toHaveText(name);
+    await expect(page.locator("h1").filter({ hasText: name })).toHaveCount(1);
+  } else {
+    await expect(page.getByRole("heading", { level: 1, name, exact: true })).toBeVisible();
+  }
+}
