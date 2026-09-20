@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.2.0 — 2026-09-21
+
+### Mobile-first application redesign
+
+- Rebuild the phone layout as a dedicated application composition instead of stacked desktop screens.
+- Add compact sticky phone app bar and fixed four-tab bottom navigation.
+- Move phone appearance controls into Data / Appearance while preserving accessible Search and Data actions.
+- Replace large Today reading cards with a grouped four-reading list and compact response surfaces.
+- Make Bible reading-first on phone with compact sticky book/chapter controls and no decorative chapter artwork.
+- Recompose Prayer with tighter request rows, compact focused-prayer controls and horizontal status tabs.
+- Recompose History with compact segmented navigation, three-column monthly summary and denser calendar.
+- Extend compact phone treatment to Reflection, Plan, Add Prayer, Prayer Detail, Focused Prayer, Collections, Search, Data and History detail screens.
+- Treat phone landscape up to 900×500 as the mobile application layout instead of falling back to tablet composition.
+- Preserve desktop/tablet Morning Grace layouts, database schema 1, backup format 1 and all existing domain semantics.
+
 ## 1.1.0 — 2026-09-20
 
 ### Morning Grace Editorial
