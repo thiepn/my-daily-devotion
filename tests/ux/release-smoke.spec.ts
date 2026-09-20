@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
-import { openRoute } from "./helpers";
+import { expectCanonicalTitle, openRoute } from "./helpers";
 
-const primaryRoutes = [
-  "/today",
-  "/bible/JHN/3",
-  "/prayer",
-  "/history",
-  "/search",
-  "/data",
+const primaryRoutes: Array<[string, string]> = [
+  ["/today", "Today"],
+  ["/bible/JHN/3", "Bible"],
+  ["/prayer", "Prayer"],
+  ["/history", "History"],
+  ["/search", "Search"],
+  ["/data", "Your data"],
 ];
 
 test.describe("release smoke", () => {
@@ -18,9 +18,13 @@ test.describe("release smoke", () => {
       if (message.type() === "error") failures.push(`console: ${message.text()}`);
     });
 
-    for (const route of primaryRoutes) {
+    for (const [route, heading] of primaryRoutes) {
       await openRoute(page, route);
-      await expect(page.locator("h1").first()).toBeVisible();
+      if (heading === "Today" || heading === "Bible" || heading === "Prayer" || heading === "History") {
+        await expectCanonicalTitle(page, heading);
+      } else {
+        await expect(page.getByRole("heading", { level: 1, name: heading, exact: true })).toBeVisible();
+      }
     }
 
     expect(failures, failures.join("\n")).toEqual([]);
@@ -29,7 +33,7 @@ test.describe("release smoke", () => {
   test("unknown deep links recover to Today instead of a blank application", async ({ page }) => {
     await page.goto("/#/this-route-does-not-exist");
     await expect(page).toHaveURL(/#\/today$/);
-    await expect(page.getByRole("heading", { level: 1, name: "Today" })).toBeVisible();
+    await expectCanonicalTitle(page, "Today");
     await expect(page.locator("main").first()).toBeVisible();
   });
 });
