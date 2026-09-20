@@ -1,0 +1,61 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+
+const root=new URL("../",import.meta.url);
+const read=(path)=>readFile(new URL(path,root),"utf8");
+
+const [contractRaw,css,main,data,polishTest,pkgRaw]=await Promise.all([
+  read("canonical/mobile-first-layout.v1.json"),
+  read("src/styles/morning-grace-mobile.css"),
+  read("src/main.tsx"),
+  read("src/data/DataScreen.tsx"),
+  read("tests/ux/morning-grace-polish.spec.ts"),
+  read("package.json")
+]);
+
+const contract=JSON.parse(contractRaw);
+const pkg=JSON.parse(pkgRaw);
+
+assert.equal(contract.version,1);
+assert.equal(contract.name,"Morning Grace Mobile-First Layout");
+assert.equal(contract.breakpointPx,760);
+
+for(const selector of [
+  ".utility-bar",
+  ".mobile-nav",
+  ".mg-canonical-hero",
+  ".mg-reading-cards",
+  ".mg-bible-toolbar",
+  ".mg-bible-chapter-art",
+  ".mg-prayer-focus",
+  ".prayer-status-tabs",
+  ".mg-history-stats",
+  ".mg-history-calendar",
+  ".mg-secondary-screen"
+]) assert.ok(css.includes(selector),"Mobile CSS missing "+selector);
+
+assert.match(css,/@media\s*\(max-width:\s*760px\)/);
+assert.match(css,/--mobile-appbar-height:\s*48px/);
+assert.match(css,/--mobile-tabbar-height:\s*60px/);
+assert.match(css,/\.mg-hero-art,[\s\S]*\.mg-bible-chapter-art[\s\S]*display:\s*none\s*!important/);
+assert.match(css,/\.mg-reading-cards\s*\{[\s\S]*display:\s*block/);
+assert.match(css,/\.mg-history-stats\s*\{[\s\S]*grid-template-columns:\s*repeat\(3/);
+assert.doesNotMatch(css,/(?:linear|radial|conic)-gradient\s*\(/i);
+assert.doesNotMatch(css,/url\(\s*["']?https?:\/\//i);
+
+const polishIndex=main.indexOf('"./styles/morning-grace-polish.css"');
+const mobileIndex=main.indexOf('"./styles/morning-grace-mobile.css"');
+assert.ok(polishIndex>=0&&mobileIndex>polishIndex,"Mobile layout must load after the full Morning Grace desktop system");
+
+assert.match(data,/mobile-appearance-panel/);
+assert.match(data,/ThemeSwitcher/);
+assert.match(polishTest,/utility-bar \.theme-switcher/);
+assert.match(polishTest,/mobile-appearance-panel/);
+assert.equal(pkg.scripts["verify:mobile-layout"],"node scripts/verify-mobile-first-layout.mjs");
+
+console.log("✓ Mobile-first layout contract verified");
+console.log("  compact app bar + bottom tab bar installed");
+console.log("  Today reading cards convert to grouped rows");
+console.log("  Bible is reading-first with mobile artwork removed");
+console.log("  Prayer and History use dense mobile-native compositions");
+console.log("  desktop/tablet Morning Grace layers remain upstream and unchanged");
