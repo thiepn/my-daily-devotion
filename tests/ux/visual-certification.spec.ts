@@ -1,5 +1,5 @@
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
-import { enrollCalendarPlan, expectNoAxeViolations, expectNoHorizontalOverflow, openRoute } from "./helpers";
+import { enrollCalendarPlan, expectCanonicalTitle, expectNoAxeViolations, expectNoHorizontalOverflow, openRoute } from "./helpers";
 
 type Surface = [string, string, string];
 const emptySurfaces: Surface[] = [["today", "/today", "Today"], ["bible", "/bible/JHN/3", "Bible"], ["reflection", "/today/reflection/2026-09-17", "Reflect"], ["prayer", "/prayer", "Prayer"], ["history", "/history", "History"], ["search", "/search", "Search"], ["collections", "/bible/collections", "Collections"], ["data", "/data", "Your data"]];
@@ -11,7 +11,10 @@ async function setVisualTheme(page: Page, mode: "light" | "dark" | "system") {
 }
 
 async function capture(page: Page, testInfo: TestInfo, name: string, surface: Surface) {
-  await openRoute(page, surface[1]); await expect(page.getByRole("heading", { level: 1, name: surface[2], exact: true })).toBeVisible();
+  await openRoute(page, surface[1]);
+  const canonical = surface[0] === "today" || surface[0] === "bible" || surface[0] === "prayer" || surface[0] === "history";
+  if (canonical && (page.viewportSize()?.width ?? 9999) <= 760) await expectCanonicalTitle(page, surface[2] as "Today" | "Bible" | "Prayer" | "History");
+  else await expect(page.getByRole("heading", { level: 1, name: surface[2], exact: true })).toBeVisible();
   if (surface[0] === "bible") await expect(page.locator(".scripture-copy")).toBeVisible();
   if (surface[0] === "search-results") await expect(page.locator(".search-hit").first()).toBeVisible();
   await expectNoHorizontalOverflow(page);
