@@ -37,7 +37,8 @@
     "verify:morning-grace:phase2": "node scripts/verify-morning-grace-phase2.mjs",
     "verify:morning-grace:phase3": "node scripts/verify-morning-grace-phase3.mjs",
     "verify:morning-grace:phase4": "node scripts/verify-morning-grace-phase4.mjs",
-    "verify:morning-grace:phase5": "node scripts/verify-morning-grace-phase5.mjs"
+    "verify:morning-grace:phase5": "node scripts/verify-morning-grace-phase5.mjs",
+    "verify:mobile-layout": "node scripts/verify-mobile-first-layout.mjs"
   },
   "dependencies": {
     "dexie": "4.4.6",
