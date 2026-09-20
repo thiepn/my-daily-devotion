@@ -414,7 +414,23 @@
   }
 
   .mg-bible-shell-header > div:first-child {
+    display: block;
+    min-width: 0;
+    margin-right: auto;
+  }
+
+  .mg-bible-shell-header > div:first-child .eyebrow,
+  .mg-bible-shell-header > div:first-child .screen-intro {
     display: none;
+  }
+
+  .mg-bible-shell-header > div:first-child h1 {
+    margin: 0;
+    font-family: var(--font-ui);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -.015em;
   }
 
   .mg-bible-shell-header .bible-secondary-links {
@@ -660,8 +676,8 @@
   .prayer-status-tabs {
     display: flex;
     gap: 4px;
-    margin: 0 -12px 6px !important;
-    padding: 0 12px 8px;
+    margin: 0 calc(var(--mobile-gutter) * -1) 6px !important;
+    padding: 0 var(--mobile-gutter) 8px;
     overflow-x: auto;
     scrollbar-width: none;
   }
@@ -712,6 +728,28 @@
   .mg-prayer-row small,
   .prayer-status-word {
     font-size: .58rem;
+  }
+
+  .mg-prayer-empty {
+    min-height: 150px;
+    padding: 18px 0;
+  }
+
+  .mg-prayer-empty .mg-sprig {
+    width: 42px;
+    margin-bottom: 8px;
+  }
+
+  .mg-prayer-empty h2 {
+    margin-bottom: 4px;
+    font-size: 1.08rem;
+  }
+
+  .mg-prayer-empty p {
+    max-width: 30ch;
+    margin-bottom: 8px;
+    font-size: .76rem;
+    line-height: 1.4;
   }
 
   /* HISTORY — compact summary + calendar app screen */
