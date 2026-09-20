@@ -57,12 +57,7 @@
   }
 
   .utility-link span {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip: rect(0 0 0 0);
-    white-space: nowrap;
+    display: none;
   }
 
   .utility-mobile-title {
@@ -267,8 +262,8 @@
   .setup-options .primary-editorial-action,
   .setup-options .editorial-option {
     width: 100%;
-    min-height: 70px;
-    padding: 11px 12px;
+    min-height: 64px;
+    padding: 8px 12px;
     border: 0;
     border-radius: 0;
     text-align: left;
@@ -288,9 +283,9 @@
 
   .setup-options .primary-editorial-action small,
   .setup-options .editorial-option span {
-    margin-top: 3px;
-    font-size: .67rem;
-    line-height: 1.35;
+    margin-top: 2px;
+    font-size: .65rem;
+    line-height: 1.28;
   }
 
   .setup-options .editorial-option {
