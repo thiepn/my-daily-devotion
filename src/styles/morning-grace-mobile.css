@@ -1,0 +1,1075 @@
+/* Morning Grace — Mobile First App Layout
+   Phone-only composition layer. Desktop/tablet remain governed by the 1.1.0 Morning Grace system. */
+
+@media (max-width: 760px) {
+  :root {
+    --mobile-appbar-height: 48px;
+    --mobile-tabbar-height: 60px;
+    --mobile-gutter: 12px;
+    --mobile-section-gap: 18px;
+    --mobile-row-height: 54px;
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    background: var(--color-canvas);
+  }
+
+  body {
+    overscroll-behavior-y: none;
+  }
+
+  .app-shell {
+    padding-bottom: calc(var(--mobile-tabbar-height) + env(safe-area-inset-bottom));
+  }
+
+  /* Native-feeling compact app bar */
+  .utility-bar {
+    position: sticky;
+    z-index: 40;
+    top: 0;
+    min-height: var(--mobile-appbar-height);
+    height: var(--mobile-appbar-height);
+    padding: env(safe-area-inset-top) 10px 0 14px;
+    border-bottom: 1px solid var(--color-line);
+    background: color-mix(in srgb, var(--color-canvas) 97%, var(--color-surface));
+  }
+
+  .utility-context {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .utility-mobile-title {
+    max-width: 19ch;
+    font-family: var(--font-ui);
+    font-size: .91rem;
+    font-weight: 650;
+    letter-spacing: -.01em;
+  }
+
+  .utility-actions {
+    flex: 0 0 auto;
+    gap: 2px;
+  }
+
+  .utility-link {
+    min-width: 38px;
+    min-height: 38px;
+    border-radius: 10px;
+  }
+
+  .utility-link .icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Appearance belongs in Settings/Data on phone, not every app bar. */
+  .utility-bar .theme-switcher {
+    display: none;
+  }
+
+  .mobile-appearance-panel {
+    display: block;
+  }
+
+  .mobile-appearance-panel .theme-switcher {
+    display: inline-flex;
+    margin-top: 8px;
+  }
+
+  .mobile-appearance-panel .theme-option {
+    min-width: 46px;
+    min-height: 38px;
+  }
+
+  .mobile-appearance-panel .theme-option span {
+    position: static;
+    width: auto;
+    height: auto;
+    overflow: visible;
+    clip: auto;
+    white-space: normal;
+  }
+
+  /* Compact bottom tab bar */
+  .mobile-nav {
+    height: calc(var(--mobile-tabbar-height) + env(safe-area-inset-bottom));
+    padding: 4px 8px env(safe-area-inset-bottom);
+    border-top-color: var(--color-line);
+    background: var(--color-surface);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: 0 -1px 0 rgba(32, 36, 31, .035);
+  }
+
+  .mobile-nav .nav-link {
+    min-height: 52px;
+    gap: 2px;
+    border-radius: 12px;
+    color: var(--color-muted);
+    font-size: .62rem;
+    font-weight: 550;
+  }
+
+  .mobile-nav .nav-link .icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .mobile-nav .nav-link.active {
+    color: var(--color-accent-strong);
+    background: color-mix(in srgb, var(--color-accent-soft) 40%, transparent);
+  }
+
+  /* Shared phone page geometry */
+  .workspace-content {
+    min-width: 0;
+  }
+
+  .visual-screen,
+  .mg-canonical-screen,
+  .mg-secondary-screen {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 12px var(--mobile-gutter) 22px;
+  }
+
+  .screen-heading,
+  .mg-secondary-header {
+    margin: 0 0 18px;
+    padding: 4px 0 14px;
+    border-bottom-color: var(--color-line);
+  }
+
+  .screen-heading h1,
+  .mg-secondary-header h1 {
+    margin: 3px 0 5px;
+    font-size: 1.7rem;
+    line-height: 1.05;
+    letter-spacing: -.025em;
+  }
+
+  .screen-intro {
+    margin: 0;
+    font-size: .88rem;
+    line-height: 1.45;
+  }
+
+  .eyebrow,
+  .section-kicker {
+    font-size: .61rem;
+    letter-spacing: .095em;
+  }
+
+  .quiet-back-link {
+    margin-top: 10px !important;
+    font-size: .76rem;
+  }
+
+  /* Canonical heroes become compact mobile headers, not desktop hero stacks. */
+  .mg-canonical-hero {
+    min-height: 0;
+    display: block;
+    margin: 0 0 14px;
+    padding: 0;
+    border: 0;
+    overflow: visible;
+  }
+
+  .mg-hero-copy {
+    display: block;
+    padding: 4px 0 10px;
+  }
+
+  .mg-canonical-hero h1 {
+    margin: 2px 0 5px;
+    font-size: 1.9rem;
+    line-height: 1;
+    letter-spacing: -.03em;
+  }
+
+  .mg-hero-greeting {
+    margin: 4px 0 1px;
+    font-size: 1rem;
+  }
+
+  .mg-canonical-hero .screen-intro {
+    max-width: none;
+    font-size: .84rem;
+    line-height: 1.4;
+  }
+
+  .mg-hero-ornament,
+  .mg-hero-art,
+  .mg-history-hero-art,
+  .mg-prayer-hero-art,
+  .mg-history-closing,
+  .mg-bible-chapter-art {
+    display: none !important;
+  }
+
+  /* TODAY — compact daily agenda */
+  .mg-today-hero .eyebrow {
+    margin-bottom: 4px;
+  }
+
+  .mg-today-reading {
+    margin-top: 0;
+    padding: 12px 0 0;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .mg-today-reading .section-heading-line {
+    min-height: 48px;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .mg-today-reading .section-heading-line h2 {
+    margin: 1px 0 0;
+    font-size: 1.22rem;
+    line-height: 1.15;
+  }
+
+  .mg-reading-progress {
+    min-width: auto;
+    gap: 3px;
+  }
+
+  .mg-reading-progress strong {
+    font-size: 1.3rem;
+  }
+
+  .mg-reading-progress span {
+    font-size: .65rem;
+  }
+
+  /* Four desktop cards become one grouped mobile list. */
+  .mg-reading-cards {
+    display: block;
+    overflow: hidden;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    background: var(--color-surface);
+    box-shadow: none;
+  }
+
+  .mg-reading-card,
+  .mg-reading-card:first-child {
+    min-height: 58px;
+    display: grid;
+    grid-template-columns: 32px minmax(0, 1fr) 20px;
+    grid-template-rows: auto auto;
+    gap: 1px 8px;
+    align-items: center;
+    padding: 8px 10px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .mg-reading-card + .mg-reading-card {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .mg-reading-card.is-complete {
+    background: color-mix(in srgb, var(--color-accent-soft) 30%, transparent);
+  }
+
+  .mg-reading-card .reading-state {
+    grid-column: 1;
+    grid-row: 1 / 3;
+    width: 28px;
+    height: 28px;
+    align-self: center;
+  }
+
+  .mg-reading-card .reading-group {
+    grid-column: 2;
+    grid-row: 1;
+    font-size: .56rem;
+    letter-spacing: .065em;
+  }
+
+  .mg-reading-card .reading-passage {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+  }
+
+  .mg-reading-card .reading-passage strong {
+    font-family: var(--font-ui);
+    font-size: .91rem;
+    font-weight: 650;
+    line-height: 1.22;
+  }
+
+  .mg-reading-card .reading-arrow {
+    grid-column: 3;
+    grid-row: 1 / 3;
+    align-self: center;
+  }
+
+  .mg-continue-reading {
+    width: 100%;
+    min-height: 44px;
+    justify-content: center;
+    margin-top: 10px;
+    border-radius: 11px;
+  }
+
+  .plan-links-row {
+    gap: 8px;
+    margin-top: 9px;
+    font-size: .68rem;
+  }
+
+  .plan-links-row > span {
+    display: none;
+  }
+
+  .earlier-unread {
+    margin-top: 18px;
+    padding-top: 14px;
+  }
+
+  .earlier-unread h2 {
+    font-size: 1.15rem;
+  }
+
+  .earlier-unread > div:first-child p:last-child {
+    display: none;
+  }
+
+  .earlier-list a {
+    min-height: 46px;
+  }
+
+  .mg-response-section {
+    margin-top: 20px;
+    padding-top: 14px;
+  }
+
+  .mg-response-heading {
+    margin-bottom: 8px;
+  }
+
+  .mg-response-heading h2 {
+    font-size: 1.2rem;
+  }
+
+  .mg-response-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .mg-response-grid > .editorial-section {
+    min-height: 112px;
+    padding: 12px;
+    border-radius: 12px;
+    box-shadow: none;
+  }
+
+  .mg-response-grid h2 {
+    margin: 3px 0 5px;
+    font-size: 1rem;
+    line-height: 1.2;
+  }
+
+  .mg-response-grid p,
+  .mg-response-grid blockquote {
+    display: none;
+  }
+
+  .mg-response-grid .future-action,
+  .mg-response-grid .future-text-link {
+    margin-top: 8px;
+    font-size: .71rem;
+  }
+
+  /* BIBLE — reading first, controls second */
+  .bible-screen.mg-canonical-screen {
+    padding-top: 0;
+  }
+
+  .mg-bible-shell-header {
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 0;
+    padding: 4px 0 6px;
+    border: 0;
+  }
+
+  .mg-bible-shell-header > div:first-child {
+    display: none;
+  }
+
+  .mg-bible-shell-header .bible-secondary-links {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    gap: 14px;
+  }
+
+  .mg-bible-shell-header .bible-secondary-links a {
+    min-height: 34px;
+    gap: 5px;
+    font-size: .7rem;
+  }
+
+  .mg-plan-context {
+    margin: 0 0 8px;
+    padding: 8px 10px;
+    border-radius: 10px;
+  }
+
+  .mg-bible-toolbar {
+    position: sticky;
+    z-index: 25;
+    top: var(--mobile-appbar-height);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 92px;
+    gap: 6px;
+    margin: 0 calc(var(--mobile-gutter) * -1) 8px;
+    padding: 7px var(--mobile-gutter);
+    border: 0;
+    border-top: 1px solid var(--color-line);
+    border-bottom: 1px solid var(--color-line);
+    border-radius: 0;
+    background: var(--color-surface);
+    box-shadow: none;
+  }
+
+  .mg-bible-toolbar .bible-select-label {
+    min-width: 0;
+    gap: 2px;
+    font-size: .56rem;
+  }
+
+  .mg-bible-toolbar select {
+    min-height: 34px;
+    padding: 4px 28px 4px 8px;
+    border-radius: 9px;
+    font-size: .82rem;
+  }
+
+  .mg-bible-toolbar .bible-source-note {
+    display: none;
+  }
+
+  .mg-scripture-page {
+    width: calc(100% + 24px);
+    margin: 0 -12px;
+    padding: 0 16px 22px;
+    border: 0;
+    border-radius: 0;
+    background: var(--color-canvas);
+    box-shadow: none !important;
+  }
+
+  .mg-reader-heading {
+    min-height: 64px;
+    align-items: end;
+    padding: 10px 0 9px;
+    border-bottom: 1px solid var(--color-line);
+  }
+
+  .mg-reader-heading p {
+    display: none;
+  }
+
+  .mg-reader-heading h2 {
+    margin: 0;
+    font-size: 1.72rem;
+    line-height: 1;
+  }
+
+  .mg-reader-heading .reader-context {
+    font-size: .61rem;
+  }
+
+  .mg-scripture-page .scripture-copy {
+    margin-top: 16px;
+    font-size: 1.02rem;
+    line-height: 1.62;
+  }
+
+  .mg-scripture-page .scripture-block {
+    margin-bottom: 1em;
+  }
+
+  .mg-chapter-navigation {
+    margin-top: 28px;
+  }
+
+  .mg-chapter-navigation button {
+    min-height: 40px;
+  }
+
+  .mg-verse-action-dock {
+    inset: auto 8px calc(var(--mobile-tabbar-height) + env(safe-area-inset-bottom) + 6px);
+    width: auto;
+    max-height: min(48vh, 360px);
+    overflow: auto;
+    border-radius: 16px;
+    box-shadow: 0 10px 32px rgba(20, 24, 20, .16);
+  }
+
+  .mg-verse-action-dock .verse-actions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2px;
+  }
+
+  .mg-verse-action-dock .verse-actions button {
+    min-height: 50px;
+    flex-direction: column;
+    gap: 3px;
+    padding: 5px 2px;
+    border: 0;
+    font-size: .61rem;
+  }
+
+  .mg-verse-action-dock .verse-actions .icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* PRAYER — compact task + list hierarchy */
+  .mg-prayer-hero {
+    display: block;
+  }
+
+  .mg-prayer-hero .mg-hero-copy {
+    padding-bottom: 8px;
+  }
+
+  .mg-prayer-hero h1 {
+    display: inline-block;
+    margin-right: 10px;
+  }
+
+  .mg-prayer-hero .screen-intro {
+    max-width: 31ch;
+  }
+
+  .mg-prayer-hero .prayer-primary-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+  }
+
+  .mg-prayer-hero .primary-editorial-action {
+    min-height: 40px;
+    padding: 0 13px;
+    border-radius: 10px;
+    font-size: .76rem;
+  }
+
+  .mg-prayer-hero .prayer-now-link {
+    font-size: .72rem;
+  }
+
+  .mg-prayer-hero .prayer-management-links {
+    gap: 12px;
+    margin-top: 9px;
+    font-size: .7rem;
+  }
+
+  .mg-prayer-focus {
+    display: block;
+    margin: 10px 0 18px;
+    padding: 12px;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    background: var(--color-surface);
+  }
+
+  .mg-prayer-focus-copy h2 {
+    margin: 2px 0 3px;
+    font-size: 1rem;
+  }
+
+  .mg-prayer-focus-copy .muted-copy,
+  .mg-prayer-focus .session-resume-note,
+  .mg-prayer-focus .session-depth-note {
+    font-size: .68rem;
+    line-height: 1.4;
+  }
+
+  .mg-session-depths {
+    display: flex;
+    gap: 6px;
+    margin-top: 10px;
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+  }
+
+  .mg-session-depths a,
+  .mg-session-depths a + a {
+    min-height: 38px;
+    flex: 1 1 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 7px 8px;
+    border: 1px solid var(--color-line);
+    border-radius: 9px;
+    background: var(--color-canvas);
+  }
+
+  .mg-session-depths a span,
+  .mg-session-depths a .icon {
+    display: none;
+  }
+
+  .mg-session-depths strong {
+    font-family: var(--font-ui);
+    font-size: .7rem;
+    font-weight: 650;
+  }
+
+  .mg-prayer-library {
+    padding-top: 12px;
+    border-top-color: var(--color-line);
+  }
+
+  .mg-section-title-row {
+    margin-bottom: 8px;
+  }
+
+  .mg-section-title-row h2 {
+    font-size: 1.18rem;
+  }
+
+  .prayer-status-tabs {
+    display: flex;
+    gap: 4px;
+    margin: 0 -12px 6px !important;
+    padding: 0 12px 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .prayer-status-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .prayer-status-tabs a {
+    min-height: 34px;
+    flex: 0 0 auto;
+    padding: 0 10px;
+    border: 1px solid var(--color-line);
+    border-radius: 999px;
+    font-size: .67rem;
+    text-decoration: none;
+  }
+
+  .prayer-status-tabs a.is-active {
+    color: var(--color-action-on);
+    border-color: var(--color-prayer);
+    background: var(--color-prayer);
+  }
+
+  .mg-prayer-row {
+    min-height: 64px;
+    grid-template-columns: 32px minmax(0, 1fr) 16px;
+    gap: 9px;
+    padding: 9px 0;
+  }
+
+  .mg-prayer-row-icon {
+    width: 30px;
+    height: 30px;
+  }
+
+  .mg-prayer-row-icon .icon {
+    width: 15px;
+    height: 15px;
+  }
+
+  .mg-prayer-row p {
+    margin: 1px 0 2px;
+    font-size: .87rem;
+    line-height: 1.32;
+  }
+
+  .mg-prayer-row small,
+  .prayer-status-word {
+    font-size: .58rem;
+  }
+
+  /* HISTORY — compact summary + calendar app screen */
+  .mg-history-hero {
+    display: block;
+  }
+
+  .mg-history-hero .mg-hero-copy {
+    padding-bottom: 4px;
+  }
+
+  .mg-history-hero .history-tabs {
+    display: flex;
+    gap: 2px;
+    margin: 12px 0 0;
+    padding: 3px;
+    border: 1px solid var(--color-line);
+    border-radius: 10px;
+    background: var(--color-surface);
+  }
+
+  .mg-history-hero .history-tabs a {
+    min-height: 34px;
+    flex: 1;
+    display: grid;
+    place-items: center;
+    margin: 0;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 8px;
+    font-size: .67rem;
+    text-decoration: none;
+  }
+
+  .mg-history-hero .history-tabs a.is-active,
+  .mg-history-hero .history-tabs a[aria-current="page"] {
+    color: var(--color-accent-strong);
+    background: var(--color-accent-soft);
+  }
+
+  .mg-history-overview {
+    margin: 14px 0 18px;
+    padding-top: 12px;
+  }
+
+  .mg-history-overview .mg-section-title-row {
+    margin-bottom: 8px;
+  }
+
+  .mg-history-overview h2 {
+    font-size: 1.18rem;
+  }
+
+  .mg-history-stats {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 10px;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .mg-history-stats > div,
+  .mg-history-stats > div + div {
+    min-height: 66px;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-content: center;
+    gap: 2px;
+    padding: 8px 7px;
+    border: 0;
+  }
+
+  .mg-history-stats > div + div {
+    border-left: 1px solid var(--color-line);
+  }
+
+  .mg-history-stats strong {
+    font-size: 1.35rem;
+  }
+
+  .mg-history-stats span {
+    font-size: .56rem;
+    line-height: 1.18;
+  }
+
+  .mg-history-recent {
+    margin-top: 14px;
+  }
+
+  .mg-history-recent a {
+    min-height: 48px;
+    grid-template-columns: 52px minmax(0, 1fr) 14px;
+    gap: 7px;
+  }
+
+  .mg-history-recent time {
+    font-size: .63rem;
+  }
+
+  .mg-history-recent strong {
+    font-family: var(--font-ui);
+    font-size: .75rem;
+  }
+
+  .mg-history-calendar {
+    margin: 0 -12px;
+    padding: 10px 8px 14px;
+    border: 0;
+    border-top: 1px solid var(--color-line);
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .mg-history-calendar .history-month-heading {
+    min-height: 42px;
+    margin-bottom: 6px;
+  }
+
+  .history-month-heading h2 {
+    font-size: 1.05rem;
+  }
+
+  .history-month-heading button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .history-weekdays {
+    padding: 6px 0 4px;
+    font-size: .56rem;
+  }
+
+  .history-day {
+    min-height: 48px;
+    padding: 5px;
+  }
+
+  .history-day strong {
+    font-family: var(--font-ui);
+    font-size: .74rem;
+  }
+
+  .history-day.is-today strong {
+    width: 22px;
+    height: 22px;
+  }
+
+  .history-calendar-legend {
+    gap: 10px;
+    margin-top: 8px;
+    font-size: .58rem;
+  }
+
+  /* SECONDARY ROUTES — compact app screens, not desktop forms. */
+  .mg-secondary-screen {
+    padding-top: 10px;
+  }
+
+  .mg-secondary-header {
+    margin-bottom: 14px;
+    padding: 2px 0 10px;
+  }
+
+  .mg-secondary-header .screen-intro {
+    font-size: .82rem;
+  }
+
+  .mg-reflection-workspace .reflection-layout,
+  .mg-prayer-detail-workspace .prayer-detail-layout,
+  .mg-prayer-metadata-workspace .metadata-layout,
+  .mg-collections-workspace .collections-layout,
+  .mg-prayer-capture-workspace .prayer-capture-layout {
+    gap: 14px;
+  }
+
+  .mg-reflection-workspace .reflection-editor-panel,
+  .mg-prayer-settings-workspace .prayer-settings-panel,
+  .mg-prayer-metadata-workspace .metadata-editor,
+  .mg-prayer-capture-workspace .prayer-capture-editor,
+  .mg-data-workspace .import-panel {
+    margin-inline: -12px;
+    padding: 14px 12px;
+    border-inline: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .mg-reflection-workspace .reflection-textarea {
+    min-height: 52vh;
+    padding: 14px;
+    font-size: .98rem;
+    line-height: 1.58;
+  }
+
+  .mg-plan-workspace .plan-summary {
+    margin-bottom: 18px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .mg-plan-workspace .plan-summary > div {
+    min-height: 62px;
+    padding: 9px 10px;
+  }
+
+  .mg-plan-workspace .plan-summary strong {
+    font-size: 1.35rem;
+  }
+
+  .mg-plan-workspace .plan-day {
+    gap: 6px;
+    padding: 12px 0;
+  }
+
+  .mg-plan-workspace .plan-day-readings a {
+    min-height: 46px;
+  }
+
+  .mg-prayer-detail-workspace .prayer-detail-body {
+    min-height: 120px;
+    padding: 14px 0 16px;
+    font-size: 1.12rem;
+    line-height: 1.48;
+  }
+
+  .mg-focused-prayer-workspace {
+    width: 100%;
+    padding: 8px 12px 22px;
+  }
+
+  .mg-focused-prayer-workspace .focused-prayer-card {
+    margin: 14px 0 0;
+    padding: 18px 14px;
+    border-radius: 14px;
+    box-shadow: none;
+  }
+
+  .mg-focused-prayer-workspace .focused-prayer-card > h1 {
+    margin: 8px 0 18px;
+    font-size: 1.55rem;
+    line-height: 1.28;
+  }
+
+  .mg-focused-prayer-workspace .focused-next-button {
+    min-height: 46px;
+    margin-top: 18px;
+  }
+
+  .mg-collections-workspace .collection-sidebar {
+    margin-inline: -12px;
+    padding-inline: 12px;
+  }
+
+  .mg-search-workspace .global-search-form {
+    gap: 7px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+  }
+
+  .mg-search-workspace .global-search-form > input {
+    min-height: 44px;
+  }
+
+  .mg-search-workspace .search-hit {
+    padding: 13px 0;
+  }
+
+  .mg-data-workspace .data-panel {
+    padding: 18px 0;
+  }
+
+  .mg-data-workspace .data-panel h2 {
+    font-size: 1.18rem;
+  }
+
+  .mg-data-workspace .data-panel p {
+    font-size: .82rem;
+  }
+
+  .mg-route-loading {
+    min-height: 120px;
+  }
+
+  /* Keep data-density compatible with enlarged text without restoring desktop spacing. */
+  html[style*="font-size: 200%"] .mg-response-grid,
+  html[style*="font-size: 200%"] .mg-history-stats,
+  html[style*="font-size: 200%"] .mg-session-depths {
+    grid-template-columns: 1fr;
+  }
+
+  html[style*="font-size: 200%"] .mg-response-grid {
+    display: grid;
+  }
+
+  html[style*="font-size: 200%"] .mg-session-depths {
+    display: grid;
+  }
+
+  html[style*="font-size: 200%"] .mg-history-stats > div + div {
+    border-left: 0;
+    border-top: 1px solid var(--color-line);
+  }
+}
+
+@media (max-width: 430px) {
+  :root {
+    --mobile-gutter: 10px;
+  }
+
+  .visual-screen,
+  .mg-canonical-screen,
+  .mg-secondary-screen {
+    padding-inline: 10px;
+  }
+
+  .mg-canonical-hero h1 {
+    font-size: 1.75rem;
+  }
+
+  .mg-response-grid {
+    gap: 6px;
+  }
+
+  .mg-response-grid > .editorial-section {
+    min-height: 104px;
+    padding: 10px;
+  }
+
+  .mg-bible-toolbar {
+    margin-inline: -10px;
+    padding-inline: 10px;
+  }
+
+  .mg-scripture-page {
+    width: calc(100% + 20px);
+    margin-inline: -10px;
+    padding-inline: 14px;
+  }
+
+  .mg-prayer-focus {
+    padding: 10px;
+  }
+
+  .mg-history-calendar {
+    margin-inline: -10px;
+  }
+
+  .mg-reflection-workspace .reflection-editor-panel,
+  .mg-prayer-settings-workspace .prayer-settings-panel,
+  .mg-prayer-metadata-workspace .metadata-editor,
+  .mg-prayer-capture-workspace .prayer-capture-editor,
+  .mg-data-workspace .import-panel {
+    margin-inline: -10px;
+    padding-inline: 10px;
+  }
+}
+
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  .mobile-nav .nav-link,
+  .utility-link,
+  .mg-reading-card,
+  .mg-prayer-row {
+    transition: none;
+  }
+}
