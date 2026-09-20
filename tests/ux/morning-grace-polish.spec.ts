@@ -11,9 +11,15 @@ test.describe("Morning Grace final visual polish",()=>{
     await expect(data).toBeVisible();
     await expect(search.locator(".icon-search")).toBeVisible();
     await expect(data.locator(".icon-settings")).toBeVisible();
-    await expect(page.getByRole("button",{name:"Light theme"})).toBeVisible();
+    await expect(page.locator(".utility-bar .theme-switcher")).toBeHidden();
     await expectNoHorizontalOverflow(page);
     await expectNoAxeViolations(page);
+
+    await openRoute(page,"/data");
+    await expect(page.locator(".mobile-appearance-panel")).toBeVisible();
+    await expect(page.getByRole("button",{name:"Light theme"})).toBeVisible();
+    await expect(page.getByRole("button",{name:"System theme"})).toBeVisible();
+    await expect(page.getByRole("button",{name:"Dark theme"})).toBeVisible();
   });
 
   test("residual secondary routes use final Morning Grace workspaces",async({page})=>{
