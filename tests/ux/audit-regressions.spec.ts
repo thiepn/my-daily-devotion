@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { unzipSync, strFromU8 } from "fflate";
-import { openRoute, visibleNavLink, expectNoAxeViolations, expectNoHorizontalOverflow } from "./helpers";
+import { expectCanonicalTitle, openRoute, visibleNavLink, expectNoAxeViolations, expectNoHorizontalOverflow } from "./helpers";
 
 async function createPrayer(page: Page, body: string, schedule?: string) {
   await openRoute(page, "/prayer/new");
@@ -194,7 +194,7 @@ test("encrypted backup restores in a fresh profile and failed/cancelled restores
 test("invalid, deleted and failed lazy routes have recoverable states", async ({ page }, testInfo) => {
   await openRoute(page, "/history/day/2026-02-30"); await expect(page.getByRole("heading", { name: "Invalid date" })).toBeVisible();
   await openRoute(page, "/prayer/removed/settings"); await expect(page.getByRole("heading", { name: "Prayer unavailable" })).toBeVisible();
-  await page.getByRole("link", { name: "Return to Prayer" }).click(); await expect(page.getByRole("heading", { name: "Prayer", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Return to Prayer" }).click(); await expectCanonicalTitle(page, "Prayer");
   await page.route("**/assets/CollectionsScreen-*.js", (route) => route.abort());
   await openRoute(page, "/bible/collections");
   await expect(page.getByRole("button", { name: "Reload MDD" })).toBeVisible();
