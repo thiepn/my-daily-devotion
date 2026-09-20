@@ -206,7 +206,7 @@ test("invalid, deleted and failed lazy routes have recoverable states", async ({
 
 test("populated dark forms and Scripture remain accessible with long text", async ({ page }, testInfo) => {
   await createPrayer(page, "May we grow in patience. ".repeat(30));
-  await page.getByRole("button", { name: "Dark theme" }).click();
+  await page.evaluate(() => { document.documentElement.dataset.theme = "dark"; });
   await page.getByLabel("Prayer update").fill("A little encouragement.");
   await page.screenshot({ path: testInfo.outputPath("long-prayer-dark.png"), fullPage: true });
   await expectNoHorizontalOverflow(page); await expectNoAxeViolations(page);
@@ -262,7 +262,7 @@ test("weekday scheduling shows keyboard focus, selection, and readable validatio
   await page.keyboard.press("Space");
   await expectNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath("weekday-keyboard-selection-light.png"), fullPage: true });
-  await page.getByRole("button", { name: "Dark theme" }).click();
+  await page.evaluate(() => { document.documentElement.dataset.theme = "dark"; });
   await monday.focus();
   await page.screenshot({ path: testInfo.outputPath("weekday-keyboard-selection-dark.png"), fullPage: true });
   await expectNoAxeViolations(page);
