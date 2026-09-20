@@ -18,6 +18,7 @@ node(["scripts/verify-morning-grace-phase2.mjs"]);
 node(["scripts/verify-morning-grace-phase3.mjs"]);
 node(["scripts/verify-morning-grace-phase4.mjs"]);
 node(["scripts/verify-morning-grace-phase5.mjs"]);
+node(["scripts/verify-mobile-first-layout.mjs"]);
 // Package the exact dist tested above: never rebuild after browser acceptance.
 node(["scripts/package-release.mjs"]);
 node(["scripts/release-evidence.mjs"]);
