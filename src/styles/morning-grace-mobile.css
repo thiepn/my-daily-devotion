@@ -47,6 +47,24 @@
     flex: 1 1 auto;
   }
 
+  .utility-context-title,
+  .utility-context-note {
+    display: none;
+  }
+
+  .utility-mobile-title {
+    display: block;
+  }
+
+  .utility-link span {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
   .utility-mobile-title {
     max-width: 19ch;
     font-family: var(--font-ui);
@@ -1166,6 +1184,60 @@
     padding: 10px;
   }
 
+}
+
+@media (max-height: 500px) and (max-width: 900px) {
+  /* Landscape phones prioritize the task over vertical decoration. */
+  .mg-bible-shell-header {
+    min-height: 30px;
+    padding: 0 0 2px;
+  }
+
+  .mg-bible-shell-header .bible-secondary-links {
+    gap: 10px;
+  }
+
+  .mg-bible-shell-header .bible-secondary-links a {
+    min-height: 28px;
+    font-size: .62rem;
+  }
+
+  .mg-bible-toolbar {
+    padding-block: 4px;
+    margin-bottom: 2px;
+  }
+
+  .mg-bible-toolbar select {
+    min-height: 30px;
+    padding-block: 2px;
+  }
+
+  .mg-reader-heading {
+    min-height: 44px;
+    padding: 5px 0 6px;
+  }
+
+  .mg-reader-heading h2 {
+    font-size: 1.35rem;
+  }
+
+  .mg-scripture-page .scripture-copy {
+    margin-top: 7px;
+    font-size: .94rem;
+    line-height: 1.5;
+  }
+
+  .mg-scripture-page .scripture-heading {
+    margin: .45em 0 .3em;
+    font-size: .68rem;
+    line-height: 1.25;
+  }
+
+  .mg-scripture-page .scripture-superscription {
+    margin: .3em 0 .5em;
+    font-size: .68rem;
+    line-height: 1.3;
+  }
 }
 
 @media (max-width: 760px) and (prefers-reduced-motion: reduce), (max-height: 500px) and (max-width: 900px) and (prefers-reduced-motion: reduce) {
