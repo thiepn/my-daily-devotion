@@ -12,7 +12,8 @@
     "48px-class top app bar and 60px-class bottom tab bar",
     "touch targets remain at least 44px where primary interaction requires it",
     "desktop and tablet Morning Grace layouts remain unchanged",
-    "Morning Grace visual identity remains intact without oversized editorial hero treatment"
+    "Morning Grace visual identity remains intact without oversized editorial hero treatment",
+    "phone landscape remains in the mobile app composition"
   ],
   "chrome": {
     "topBar": "compact sticky app bar with route title, Search and Data",
@@ -43,5 +44,10 @@
     "settings": "src/data/DataScreen.tsx",
     "test": "tests/ux/mobile-first-layout.spec.ts",
     "verifier": "scripts/verify-mobile-first-layout.mjs"
+  },
+  "landscapePhoneRule": {
+    "maxHeightPx": 500,
+    "maxWidthPx": 900,
+    "behavior": "use mobile app composition"
   }
 }
