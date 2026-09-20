@@ -5,7 +5,7 @@
   display: none;
 }
 
-@media (max-width: 760px) {
+@media (max-width: 760px), (max-height: 500px) and (max-width: 900px) {
   :root {
     --mobile-appbar-height: 48px;
     --mobile-tabbar-height: 60px;
@@ -221,6 +221,89 @@
   .mg-history-closing,
   .mg-bible-chapter-art {
     display: none !important;
+  }
+
+  /* First-run Today is an app setup list, not two desktop feature cards. */
+  .mg-setup-section {
+    padding-top: 10px;
+  }
+
+  .mg-setup-section > .section-kicker {
+    margin-bottom: 3px;
+  }
+
+  .mg-setup-section > h2 {
+    margin: 0 0 10px;
+    font-size: 1.18rem;
+    line-height: 1.16;
+  }
+
+  .setup-options {
+    display: block;
+    overflow: hidden;
+    border: 1px solid var(--color-line);
+    border-radius: 12px;
+    background: var(--color-surface);
+  }
+
+  .setup-options .primary-editorial-action,
+  .setup-options .editorial-option {
+    width: 100%;
+    min-height: 70px;
+    padding: 11px 12px;
+    border: 0;
+    border-radius: 0;
+    text-align: left;
+    box-shadow: none;
+  }
+
+  .setup-options .primary-editorial-action {
+    color: var(--color-action-on);
+    background: var(--color-accent-strong);
+  }
+
+  .setup-options .primary-editorial-action strong,
+  .setup-options .editorial-option strong {
+    font-size: .9rem;
+    line-height: 1.2;
+  }
+
+  .setup-options .primary-editorial-action small,
+  .setup-options .editorial-option span {
+    margin-top: 3px;
+    font-size: .67rem;
+    line-height: 1.35;
+  }
+
+  .setup-options .editorial-option {
+    border-top: 1px solid var(--color-line);
+    background: var(--color-surface);
+  }
+
+  .existing-progress {
+    margin-top: 16px;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid var(--color-line);
+  }
+
+  .existing-progress h3 {
+    margin: 2px 0 4px;
+    font-size: 1rem;
+  }
+
+  .existing-progress p:not(.section-kicker) {
+    font-size: .75rem;
+    line-height: 1.4;
+  }
+
+  .import-controls {
+    gap: 6px;
+  }
+
+  .import-controls input,
+  .import-controls button {
+    min-height: 40px;
   }
 
   /* TODAY — compact daily agenda */
@@ -1085,7 +1168,7 @@
 
 }
 
-@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+@media (max-width: 760px) and (prefers-reduced-motion: reduce), (max-height: 500px) and (max-width: 900px) and (prefers-reduced-motion: reduce) {
   .mobile-nav .nav-link,
   .utility-link,
   .mg-reading-card,
