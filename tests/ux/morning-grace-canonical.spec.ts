@@ -11,7 +11,9 @@ test.describe("Morning Grace canonical screens", () => {
 
     await openRoute(page, "/bible/JHN/3");
     await expect(page.locator(".mg-bible-shell-header")).toBeVisible();
-    await expect(page.locator(".mg-bible-chapter-art")).toBeVisible();
+    const mobile = (page.viewportSize()?.width ?? 9999) <= 760;
+    if (mobile) await expect(page.locator(".mg-bible-chapter-art")).toBeHidden();
+    else await expect(page.locator(".mg-bible-chapter-art")).toBeVisible();
     await expect(page.locator(".mg-scripture-page .scripture-copy")).toBeVisible();
 
     await openRoute(page, "/prayer");
