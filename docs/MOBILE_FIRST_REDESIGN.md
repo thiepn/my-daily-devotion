@@ -15,6 +15,10 @@ The phone layout is now treated as its own app surface.
 - No glassmorphism or blurred navigation.
 - Screen gutters are approximately 10–12px rather than desktop editorial margins.
 
+## Phone landscape
+
+Phone landscape remains a phone layout. Devices up to 900px wide and 500px tall use the same compact app-bar, tab-bar, row density and artwork suppression as portrait phones rather than falling back to the tablet composition.
+
 ## Today
 
 The desktop hero and landscape are removed on phone.
