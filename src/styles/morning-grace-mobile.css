@@ -487,9 +487,9 @@
   }
 
   .mg-scripture-page {
-    width: calc(100% + 24px);
-    margin: 0 -12px;
-    padding: 0 16px 22px;
+    width: auto;
+    margin: 0 calc(var(--mobile-gutter) * -1);
+    padding: 0 calc(var(--mobile-gutter) + 4px) 22px;
     border: 0;
     border-radius: 0;
     background: var(--color-canvas);
@@ -855,7 +855,7 @@
   }
 
   .mg-history-calendar {
-    margin: 0 -12px;
+    margin: 0 calc(var(--mobile-gutter) * -1);
     padding: 10px 8px 14px;
     border: 0;
     border-top: 1px solid var(--color-line);
@@ -930,8 +930,8 @@
   .mg-prayer-metadata-workspace .metadata-editor,
   .mg-prayer-capture-workspace .prayer-capture-editor,
   .mg-data-workspace .import-panel {
-    margin-inline: -12px;
-    padding: 14px 12px;
+    margin-inline: calc(var(--mobile-gutter) * -1);
+    padding: 14px var(--mobile-gutter);
     border-inline: 0;
     border-radius: 0;
     box-shadow: none;
@@ -1083,28 +1083,10 @@
     padding-inline: 10px;
   }
 
-  .mg-scripture-page {
-    width: calc(100% + 20px);
-    margin-inline: -10px;
-    padding-inline: 14px;
-  }
-
   .mg-prayer-focus {
     padding: 10px;
   }
 
-  .mg-history-calendar {
-    margin-inline: -10px;
-  }
-
-  .mg-reflection-workspace .reflection-editor-panel,
-  .mg-prayer-settings-workspace .prayer-settings-panel,
-  .mg-prayer-metadata-workspace .metadata-editor,
-  .mg-prayer-capture-workspace .prayer-capture-editor,
-  .mg-data-workspace .import-panel {
-    margin-inline: -10px;
-    padding-inline: 10px;
-  }
 }
 
 @media (max-width: 760px) and (prefers-reduced-motion: reduce) {
