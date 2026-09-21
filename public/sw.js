@@ -1,4 +1,4 @@
-const CACHE_NAME = "mdd-app-v1.2.2";
+const CACHE_NAME = "mdd-app-v1.2.3";
 const CACHE_PREFIX = "mdd-app-v";
 const BUILD_ID = "development";
 const CACHE_KEY = `${CACHE_NAME}-${BUILD_ID}`;
