@@ -2,7 +2,7 @@
   "version": 1,
   "name": "Morning Grace Mobile-First Layout",
   "parentRelease": "1.1.0",
-  "status": "mobile-redesign-v1",
+  "status": "mobile-redesign-v1-native-navigation-refinement",
   "breakpointPx": 760,
   "principles": [
     "phone layout is composed independently from desktop",
@@ -13,12 +13,14 @@
     "touch targets remain at least 44px where primary interaction requires it",
     "desktop and tablet Morning Grace layouts remain unchanged",
     "Morning Grace visual identity remains intact without oversized editorial hero treatment",
-    "phone landscape remains in the mobile app composition"
+    "phone landscape remains in the mobile app composition",
+    "root tabs and pushed detail workflows use different mobile navigation chrome"
   ],
   "chrome": {
-    "topBar": "compact sticky app bar with route title, Search and Data",
+    "topBar": "root destinations use a compact sticky title bar with Search and Data; pushed routes use a native back control plus route title",
     "appearance": "moved from phone app bar to Data/Settings",
-    "bottomNavigation": "four compact fixed tabs with small active surface",
+    "bottomNavigation": "four compact fixed tabs on Today, Bible, Prayer and History only; hidden during pushed/detail workflows",
+    "immersiveTasks": "focused prayer removes outer app chrome and uses its own session controls",
     "decorativeChrome": "no blur/glass navigation"
   },
   "screens": {
@@ -26,7 +28,7 @@
     "bible": "reading-first; no chapter artwork on phone; compact sticky book/chapter controls; bottom verse actions",
     "prayer": "compact header, small primary action, inline session-depth choice, horizontal status tabs, dense request rows",
     "history": "compact header and segmented tabs, three-column factual summary, dense calendar",
-    "secondary": "compact full-width workspaces with reduced padding and edge-to-edge editors where useful"
+    "secondary": "stacked pushed workspaces with app-bar back navigation, no duplicate page-title chrome, no bottom tabs, and reduced padding"
   },
   "preserved": [
     "desktop and tablet compositions",
@@ -43,11 +45,33 @@
     "style": "src/styles/morning-grace-mobile.css",
     "settings": "src/data/DataScreen.tsx",
     "test": "tests/ux/mobile-first-layout.spec.ts",
-    "verifier": "scripts/verify-mobile-first-layout.mjs"
+    "verifier": "scripts/verify-mobile-first-layout.mjs",
+    "nativeRefinementStyle": "src/styles/morning-grace-mobile-native.css",
+    "nativeNavigationTest": "tests/ux/mobile-native-navigation.spec.ts"
   },
   "landscapePhoneRule": {
     "maxHeightPx": 500,
     "maxWidthPx": 900,
     "behavior": "use mobile app composition"
+  },
+  "secondaryNavigation": {
+    "roots": [
+      "/today",
+      "/bible",
+      "/prayer",
+      "/history"
+    ],
+    "pushed": [
+      "reading plan",
+      "reflection",
+      "collections",
+      "prayer capture/detail/settings/metadata",
+      "history detail",
+      "search",
+      "data"
+    ],
+    "behavior": "hide root bottom tabs and utility actions; expose contextual back navigation",
+    "directOpenFallback": "return to the nearest root destination instead of leaving the application",
+    "safeAreas": "top app bar, sticky actions, and immersive prayer account for device insets"
   }
 }
