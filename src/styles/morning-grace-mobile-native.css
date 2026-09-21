@@ -132,11 +132,11 @@
   }
 
   /* Focused prayer already owns its own in-session header. Remove all outer chrome. */
-  .mobile-immersive-route .utility-bar {
+  .mobile-immersive-route:has(.mg-focused-prayer-workspace) .utility-bar {
     display: none;
   }
 
-  .mobile-immersive-route .workspace-content {
+  .mobile-immersive-route:has(.mg-focused-prayer-workspace) .workspace-content {
     min-height: 100svh;
     min-height: 100dvh;
   }
