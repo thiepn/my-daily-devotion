@@ -1016,6 +1016,243 @@
     font-size: .58rem;
   }
 
+  /* Secondary phone headers collapse to app-style context rows. */
+  .mg-plan-workspace .mg-secondary-header,
+  .mg-search-workspace .mg-secondary-header,
+  .mg-data-workspace .mg-secondary-header,
+  .mg-collections-workspace .mg-secondary-header,
+  .mg-prayer-capture-workspace .mg-secondary-header,
+  .mg-reflection-workspace .mg-secondary-header {
+    margin-bottom: 10px;
+    padding: 0 0 8px;
+  }
+
+  .mg-plan-workspace .mg-secondary-header h1,
+  .mg-search-workspace .mg-secondary-header h1,
+  .mg-data-workspace .mg-secondary-header h1,
+  .mg-collections-workspace .mg-secondary-header h1,
+  .mg-prayer-capture-workspace .mg-secondary-header h1,
+  .mg-reflection-workspace .mg-secondary-header h1 {
+    margin: 2px 0 3px;
+    font-family: var(--font-ui);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -.015em;
+  }
+
+  .mg-plan-workspace .mg-secondary-header .screen-intro,
+  .mg-plan-workspace .mg-secondary-header .muted-copy,
+  .mg-search-workspace .mg-secondary-header .screen-intro,
+  .mg-data-workspace .mg-secondary-header .screen-intro,
+  .mg-collections-workspace .mg-secondary-header .screen-intro,
+  .mg-prayer-capture-workspace .mg-secondary-header .screen-intro,
+  .mg-reflection-workspace .mg-secondary-header .screen-intro {
+    display: none;
+  }
+
+  .mg-prayer-capture-workspace .mg-secondary-header .eyebrow,
+  .mg-search-workspace .mg-secondary-header .eyebrow,
+  .mg-data-workspace .mg-secondary-header .eyebrow,
+  .mg-collections-workspace .mg-secondary-header .eyebrow {
+    display: none;
+  }
+
+  .mg-prayer-capture-workspace .mg-secondary-header .quiet-back-link,
+  .mg-collections-workspace .mg-secondary-header .quiet-link-row,
+  .mg-reflection-workspace .mg-secondary-header .quiet-back-link {
+    margin-top: 5px !important;
+  }
+
+  /* Reading plan: stats become a slim status strip instead of a large summary card. */
+  .mg-plan-workspace .plan-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    margin: 0 0 14px;
+    border: 1px solid var(--color-line);
+    border-radius: 11px;
+    background: var(--color-surface);
+  }
+
+  .mg-plan-workspace .plan-summary > div {
+    min-height: 54px;
+    padding: 8px 10px;
+  }
+
+  .mg-plan-workspace .plan-summary > div + div {
+    border-left: 1px solid var(--color-line);
+    border-top: 0;
+  }
+
+  .mg-plan-workspace .plan-summary strong {
+    font-size: 1.2rem;
+  }
+
+  .mg-plan-workspace .plan-summary span {
+    font-size: .58rem;
+    line-height: 1.2;
+  }
+
+  .mg-plan-workspace .plan-summary > a {
+    display: none;
+  }
+
+  .mg-plan-workspace .plan-calendar {
+    padding-top: 10px;
+  }
+
+  .mg-plan-workspace .plan-month-heading {
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  .mg-plan-workspace .plan-month-heading h2 {
+    font-size: 1.35rem;
+  }
+
+  .mg-plan-workspace .plan-month-heading select {
+    min-height: 38px;
+    max-width: 132px;
+    padding-block: 4px;
+  }
+
+  /* Search: input + action share one row; filters become two compact controls. */
+  .mg-search-workspace .global-search-form {
+    grid-template-columns: minmax(0, 1fr) 74px;
+    gap: 6px;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+  }
+
+  .mg-search-workspace .global-search-form > input {
+    min-height: 42px;
+    padding-inline: 12px;
+  }
+
+  .mg-search-workspace .global-search-form > button {
+    min-width: 0;
+    width: auto;
+    min-height: 42px;
+    padding-inline: 9px;
+    border-radius: 10px;
+    font-size: .72rem;
+  }
+
+  .mg-search-workspace .search-filters {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-top: 2px;
+  }
+
+  .mg-search-workspace .search-filters label {
+    display: grid;
+    gap: 3px;
+    font-size: .56rem;
+  }
+
+  .mg-search-workspace .search-filters select {
+    width: 100%;
+    min-height: 36px;
+    padding: 4px 26px 4px 8px;
+    font-size: .72rem;
+  }
+
+  .mg-search-workspace .search-group {
+    padding-top: 12px;
+  }
+
+  .mg-search-workspace .search-group h2 {
+    font-size: 1.22rem;
+  }
+
+  /* Add Prayer: the keyboard task comes first; empty source context disappears. */
+  .mg-prayer-capture-workspace .prayer-capture-editor textarea {
+    min-height: 34vh;
+    max-height: 46vh;
+    padding: 14px;
+    font-size: .98rem;
+  }
+
+  .mg-prayer-capture-workspace .prayer-capture-editor > label {
+    margin-bottom: 6px;
+    font-size: .61rem;
+  }
+
+  .mg-prayer-capture-workspace .prayer-details-toggle {
+    min-height: 38px;
+    margin-top: 7px;
+    padding-inline: 0;
+    border: 0;
+    font-size: .74rem;
+  }
+
+  .mg-prayer-capture-workspace .prayer-capture-actions {
+    margin-top: 12px;
+    padding-top: 10px;
+  }
+
+  .mg-prayer-capture-workspace .prayer-source-context.is-empty-source {
+    display: none;
+  }
+
+  /* Collections becomes a compact library list on phone. */
+  .mg-collections-workspace .collection-sidebar form {
+    padding: 10px 0 12px;
+  }
+
+  .mg-collections-workspace .collection-sidebar form label {
+    font-size: .61rem;
+  }
+
+  .mg-collections-workspace .collection-sidebar form input,
+  .mg-collections-workspace .collection-sidebar form button {
+    min-height: 40px;
+  }
+
+  .mg-collections-workspace .collection-sidebar nav > .collection-nav-row > button:first-child {
+    min-height: 46px;
+  }
+
+  .mg-collections-workspace .collection-content {
+    padding-top: 12px;
+  }
+
+  .mg-collections-workspace .collection-content h2 {
+    font-size: 1.35rem;
+  }
+
+  .mg-collections-workspace .collection-manage {
+    gap: 5px;
+  }
+
+  .mg-collections-workspace .collection-manage button {
+    min-height: 38px;
+    padding: 0 10px;
+    font-size: .68rem;
+  }
+
+  /* Data keeps warnings intact but removes desktop-scale spacing. */
+  .mg-data-workspace .data-status:empty {
+    display: none;
+  }
+
+  .mg-data-workspace > .data-panel {
+    padding: 14px 0;
+  }
+
+  .mg-data-workspace > .data-panel h2 {
+    margin-bottom: 7px;
+    font-size: 1.05rem;
+  }
+
+  .mg-data-workspace > .data-panel p {
+    margin-bottom: 8px;
+    font-size: .76rem;
+    line-height: 1.45;
+  }
+
   /* SECONDARY ROUTES — compact app screens, not desktop forms. */
   .mg-secondary-screen {
     padding-top: 10px;
