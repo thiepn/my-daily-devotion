@@ -14,11 +14,21 @@ export async function enrollCalendarPlan(page: Page): Promise<void> {
   await expect(readingHeading).toBeVisible();
 }
 
-export async function expectCanonicalTitle(page: Page, name: "Today" | "Bible" | "Prayer" | "History"): Promise<void> {
-  if ((page.viewportSize()?.width ?? 9999) <= 760) {
-    await expect(page.locator(".utility-mobile-title")).toHaveText(name);
-    await expect(page.locator("h1").filter({ hasText: name })).toHaveCount(1);
+export function usesMobileAppLayout(page: Page): boolean {
+  const viewport = page.viewportSize();
+  if (!viewport) return false;
+  return viewport.width <= 760 || (viewport.height <= 500 && viewport.width <= 900);
+}
+
+export async function expectRouteTitle(page: Page, heading: string, mobileTitle = heading): Promise<void> {
+  if (usesMobileAppLayout(page)) {
+    await expect(page.locator(".utility-mobile-title")).toHaveText(mobileTitle);
+    await expect(page.locator("h1").filter({ hasText: heading })).toHaveCount(1);
   } else {
-    await expect(page.getByRole("heading", { level: 1, name, exact: true })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: heading, exact: true })).toBeVisible();
   }
+}
+
+export async function expectCanonicalTitle(page: Page, name: "Today" | "Bible" | "Prayer" | "History"): Promise<void> {
+  await expectRouteTitle(page, name);
 }
