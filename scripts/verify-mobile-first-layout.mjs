@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 const root=new URL("../",import.meta.url);
 const read=(path)=>readFile(new URL(path,root),"utf8");
 
-const [contractRaw,css,stackedCss,main,app,search,data,polishTest,navigationTest,denseSecondaryTest,pkgRaw]=await Promise.all([
+const [contractRaw,css,stackedCss,main,app,search,data,polishTest,navigationTest,denseSecondaryTest,nativeStateTest,pkgRaw]=await Promise.all([
   read("canonical/mobile-first-layout.v1.json"),
   read("src/styles/morning-grace-mobile.css"),
   read("src/styles/morning-grace-mobile-stacked.css"),
@@ -15,6 +15,7 @@ const [contractRaw,css,stackedCss,main,app,search,data,polishTest,navigationTest
   read("tests/ux/morning-grace-polish.spec.ts"),
   read("tests/ux/mobile-native-navigation.spec.ts"),
   read("tests/ux/mobile-dense-secondary.spec.ts"),
+  read("tests/ux/mobile-native-states.spec.ts"),
   read("package.json")
 ]);
 
@@ -90,6 +91,13 @@ assert.match(denseSecondaryTest,/People and Categories put the editor before the
 assert.match(denseSecondaryTest,/Prayer detail is a compact mobile story with visible status context/);
 assert.match(denseSecondaryTest,/History Day keeps its date visible/);
 assert.match(denseSecondaryTest,/dense management screens remain usable at 320px and 200 percent text/);
+assert.match(stackedCss,/Draft confirmation becomes a true mobile bottom sheet/);
+assert.match(stackedCss,/Conflict review becomes an edge-to-edge comparison block/);
+assert.match(stackedCss,/Offline\/update notification is a slim system strip/);
+assert.match(nativeStateTest,/unsaved-change confirmation is a bottom sheet with reachable actions/);
+assert.match(nativeStateTest,/conflict review is an edge-to-edge mobile comparison state/);
+assert.match(nativeStateTest,/lazy-route failure becomes a compact recoverable mobile app state/);
+assert.match(nativeStateTest,/draft bottom sheet and state surfaces reflow at 320px and 200 percent text/);
 assert.equal(contract.secondaryNavigation.behavior,"hide root bottom tabs and Search/Data utility actions; expose contextual Back navigation");
 assert.equal(contract.secondaryNavigation.touchTargetPx,44);
 assert.equal(pkg.scripts["verify:mobile-layout"],"node scripts/verify-mobile-first-layout.mjs");
@@ -103,5 +111,6 @@ console.log("  secondary routes use stacked navigation and 44px contextual Back"
 console.log("  active Focused Prayer can remove outer shell chrome without trapping empty states");
 console.log("  Search/Data preserve exact mobile source context through utility workflows");
 console.log("  Prayer management and History detail routes use dense mobile-native compositions");
+console.log("  loading, recovery, empty, conflict and draft states use native mobile patterns");
 console.log("  320px, 200% text and phone-landscape detail states are covered");
 console.log("  desktop/tablet Morning Grace layers remain upstream and unchanged");
