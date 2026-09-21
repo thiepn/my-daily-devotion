@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.2 — 2026-09-21
+
+### Stacked mobile app flows
+
+- Keep Today, Bible, Prayer and History as the four persistent root tabs while removing the root tab bar from pushed/detail workflows.
+- Hide unrelated Search/Data app-bar actions on secondary screens and use the route title plus a 44×44 Back control instead.
+- Remove duplicate visual secondary H1 chrome on phone while retaining semantic H1 structure for accessibility.
+- Preserve explicit return context across Bible → Reflection, Reflection → Prayer and Prayer detail/settings flows instead of depending on browser history.
+- Make active Focused Prayer immersive while keeping native Back navigation on empty, unavailable and finished session states.
+- Add safe-area-aware app-bar/Bible-toolbar geometry and safe-area-aware sticky actions for Reflection and Add Prayer.
+- Tighten keyboard-first editor sizing and keep primary save actions reachable near the bottom edge.
+- Extend 320px, 200% text-resize, phone-landscape, accessibility and visual certification coverage for pushed mobile screens.
+- Preserve desktop/tablet Morning Grace layouts, database schema 1, backup format 1 and devotional domain semantics.
+
 ## 1.2.1 — 2026-09-21
 
 ### Mobile-native secondary navigation
