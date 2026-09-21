@@ -46,9 +46,10 @@
     background: color-mix(in srgb, var(--color-canvas) 97%, var(--color-surface));
   }
 
-  .utility-context {
+  .utility-bar > .utility-context {
     min-width: 0;
     flex: 1 1 auto;
+    align-items: center;
   }
 
   .utility-context:has(.mobile-appbar-back) {
