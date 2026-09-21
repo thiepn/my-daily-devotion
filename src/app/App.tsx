@@ -44,13 +44,25 @@ function routeDomain(pathname: string): "today" | "bible" | "reflection" | "pray
   return "utility";
 }
 
-function mobileBackTarget(pathname: string): string | null {
-  if (pathname === "/today/plan" || pathname.startsWith("/today/reflection/")) return "/today";
-  if (pathname === "/bible/collections") return "/bible";
-  if (pathname === "/prayer/new" || pathname === "/prayer/people" || pathname === "/prayer/categories" || pathname === "/prayer/session") return "/prayer";
+function safeReturnTarget(search: string): string | null {
+  const target = new URLSearchParams(search).get("return");
+  return target?.startsWith("/") && !target.startsWith("//") ? target : null;
+}
+
+function mobileBackTarget(pathname: string, search: string): string | null {
+  const returnTo = safeReturnTarget(search);
+  if (pathname === "/today/plan") return "/today";
+  if (pathname.startsWith("/today/reflection/")) return returnTo ?? "/today";
+  if (pathname === "/bible/collections") return returnTo ?? "/bible";
+  if (pathname === "/prayer/new") {
+    if (returnTo) return returnTo;
+    const sourceDate = new URLSearchParams(search).get("sourceDevotionDate");
+    return sourceDate && /^\d{4}-\d{2}-\d{2}$/.test(sourceDate) ? `/today/reflection/${sourceDate}` : "/prayer";
+  }
+  if (pathname === "/prayer/people" || pathname === "/prayer/categories" || pathname === "/prayer/session") return "/prayer";
   const prayerSettings = pathname.match(/^\/prayer\/([^/]+)\/settings$/);
-  if (prayerSettings) return `/prayer/${prayerSettings[1]}`;
-  if (/^\/prayer\/[^/]+$/.test(pathname)) return "/prayer";
+  if (prayerSettings) return `/prayer/${prayerSettings[1]}${search}`;
+  if (/^\/prayer\/[^/]+$/.test(pathname)) return returnTo ?? "/prayer";
   if (pathname === "/history/moments" || pathname.startsWith("/history/day/")) return "/history";
   if (pathname === "/search" || pathname === "/data") return "/today";
   return null;
@@ -94,7 +106,7 @@ export function App() {
   const location = useLocation();
   const navigate = useNavigate();
   const currentLabel = routeLabel(location.pathname);
-  const mobileBack = mobileBackTarget(location.pathname);
+  const mobileBack = mobileBackTarget(location.pathname, location.search);
   const shellClass = [
     "app-shell",
     "morning-grace-shell",
@@ -103,9 +115,7 @@ export function App() {
   ].filter(Boolean).join(" ");
 
   const goBack = () => {
-    if (!mobileBack) return;
-    if (location.key !== "default") navigate(-1);
-    else navigate(mobileBack);
+    if (mobileBack) navigate(mobileBack);
   };
 
   return <div className={shellClass}><a className="skip-link" href="#main-content" onClick={(event) => { event.preventDefault(); document.getElementById("main-content")?.focus(); }}>Skip to main content</a><aside className="side-rail"><NavLink className="brand" to="/today" aria-label="My Daily Devotion home"><BrandMark className="brand-mark" /><span className="brand-copy"><strong>My Daily Devotion</strong><small>Scripture · Prayer · Reflection</small></span></NavLink><PrimaryNavigation /><div className="rail-note"><span className="rail-rule" aria-hidden="true" /><p>A quieter life. A stronger faith.</p></div></aside><div className="workspace" data-domain={routeDomain(location.pathname)}><header className="utility-bar"><div className="utility-context" aria-label="Application context">{mobileBack ? <button className="mobile-appbar-back" type="button" onClick={goBack} aria-label="Back"><span aria-hidden="true">←</span></button> : null}<span className="utility-context-title">{currentLabel}</span><span className="utility-mobile-title">{currentLabel}</span><span className="utility-context-note">Private on this device</span></div><div className="utility-actions"><Link className="utility-link" to="/search" aria-label="Search"><Icon name="search" aria-hidden="true" /><span>Search</span></Link><Link className="utility-link" to="/data" aria-label="Data"><Icon name="settings" aria-hidden="true" /><span>Data</span></Link><ThemeSwitcher /></div></header><PlatformStatus /><div className="workspace-content" id="main-content" tabIndex={-1}><RouteAnnouncer /><RouteErrorBoundary key={location.pathname}><Suspense fallback={<RouteLoading />}><Routes><Route path="/" element={<Navigate to="/today" replace />} /><Route path="/today" element={<TodayScreen />} /><Route path="/today/plan" element={<PlanScreen />} /><Route path="/today/reflection/:localDate" element={<ReflectionScreen />} /><Route path="/bible" element={<BibleScreen />} /><Route path="/bible/collections" element={<CollectionsScreen />} /><Route path="/bible/:bookId/:chapter" element={<BibleScreen />} /><Route path="/prayer" element={<PrayerScreen />} /><Route path="/prayer/new" element={<NewPrayerScreen />} /><Route path="/prayer/people" element={<PeopleScreen />} /><Route path="/prayer/categories" element={<CategoriesScreen />} /><Route path="/prayer/session" element={<PrayerSessionScreen />} /><Route path="/prayer/:prayerId/settings" element={<PrayerSettingsScreen />} /><Route path="/prayer/:prayerId" element={<PrayerDetailScreen />} /><Route path="/history" element={<HistoryScreen />} /><Route path="/history/moments" element={<HistoryMomentsScreen />} /><Route path="/history/day/:localDate" element={<HistoryDayScreen />} /><Route path="/search" element={<SearchScreen />} /><Route path="/data" element={<DataScreen />} /><Route path="*" element={<Navigate to="/today" replace />} /></Routes></Suspense></RouteErrorBoundary></div></div><PrimaryNavigation mobile /></div>;
