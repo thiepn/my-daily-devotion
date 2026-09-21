@@ -1,0 +1,193 @@
+/* Morning Grace — native mobile navigation refinement
+   Loaded after morning-grace-mobile.css. Keeps desktop/tablet unchanged. */
+
+.utility-mobile-back {
+  display: none;
+}
+
+@media (max-width: 760px), (max-height: 500px) and (max-width: 900px) {
+  /* Respect notches/status bars without shrinking the 48px app-bar content area. */
+  .utility-bar {
+    min-height: calc(var(--mobile-appbar-height) + env(safe-area-inset-top));
+    height: calc(var(--mobile-appbar-height) + env(safe-area-inset-top));
+    padding-top: env(safe-area-inset-top);
+    box-sizing: border-box;
+  }
+
+  .mg-bible-toolbar {
+    top: calc(var(--mobile-appbar-height) + env(safe-area-inset-top));
+  }
+
+  .utility-link {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Secondary routes behave like a pushed mobile screen, not another bottom-tab page. */
+  .mobile-detail-route {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .mobile-detail-route .mobile-nav {
+    display: none;
+  }
+
+  .mobile-detail-route .utility-bar .utility-actions {
+    display: none;
+  }
+
+  .mobile-detail-route .utility-mobile-back {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    display: inline-grid;
+    place-items: center;
+    margin: 0 2px 0 -8px;
+    padding: 0;
+    border: 0;
+    border-radius: 11px;
+    color: var(--color-accent-strong);
+    background: transparent;
+    font: inherit;
+    cursor: pointer;
+  }
+
+  .mobile-detail-route .utility-mobile-back > span {
+    display: block;
+    transform: translateY(-1px);
+    font-family: var(--font-ui);
+    font-size: 1.45rem;
+    font-weight: 430;
+    line-height: 1;
+  }
+
+  .mobile-detail-route .utility-mobile-back:focus-visible {
+    outline: 2px solid var(--color-accent-strong);
+    outline-offset: -2px;
+  }
+
+  .mobile-detail-route .utility-context {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .mobile-detail-route .utility-mobile-title {
+    max-width: min(24ch, calc(100vw - 78px));
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: .94rem;
+  }
+
+  /* The app bar owns the visual title on pushed screens. Keep the document H1
+     for semantics while removing desktop-style duplicate heading chrome. */
+  .mobile-detail-route .mg-secondary-header {
+    margin: 0 0 9px;
+    padding: 0 0 7px;
+    border-bottom: 0;
+  }
+
+  .mobile-detail-route .mg-secondary-header .eyebrow {
+    display: none;
+  }
+
+  .mobile-detail-route .mg-secondary-header h1 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .mobile-detail-route .mg-secondary-header .screen-intro {
+    margin: 1px 0 0;
+    font-size: .78rem;
+    line-height: 1.4;
+  }
+
+  .mobile-detail-route .quiet-back-link {
+    display: none !important;
+  }
+
+  .mobile-detail-route .mg-secondary-screen {
+    padding-top: 8px;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom));
+  }
+
+  /* Global utility screens should open like app-level sheets/pages, not root tabs. */
+  .mobile-detail-route .mg-search-workspace,
+  .mobile-detail-route .mg-data-workspace {
+    padding-top: 8px;
+  }
+
+  /* Focused prayer already owns its own in-session header. Remove all outer chrome. */
+  .mobile-immersive-route .utility-bar {
+    display: none;
+  }
+
+  .mobile-immersive-route .workspace-content {
+    min-height: 100dvh;
+  }
+
+  .mobile-immersive-route .mg-focused-prayer-workspace {
+    min-height: 100dvh;
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
+  .mobile-immersive-route .focused-prayer-header {
+    min-height: 44px;
+  }
+
+  /* Keyboard-heavy capture/editor routes keep their primary actions reachable. */
+  .mobile-detail-route .mg-prayer-capture-workspace .prayer-capture-actions,
+  .mobile-detail-route .mg-reflection-workspace .reflection-editor-actions {
+    position: sticky;
+    z-index: 15;
+    bottom: 0;
+    margin-inline: calc(var(--mobile-gutter) * -1);
+    padding: 8px var(--mobile-gutter) calc(8px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--color-line);
+    background: color-mix(in srgb, var(--color-canvas) 96%, var(--color-surface));
+  }
+
+  .mobile-detail-route .mg-prayer-capture-workspace .prayer-capture-actions {
+    gap: 10px;
+  }
+
+  .mobile-detail-route .mg-prayer-capture-workspace .prayer-capture-actions .primary-editorial-action,
+  .mobile-detail-route .mg-reflection-workspace .reflection-editor-actions .primary-editorial-action {
+    min-height: 42px;
+  }
+
+  .mobile-detail-route .mg-prayer-capture-workspace .prayer-capture-editor textarea {
+    min-height: min(31dvh, 260px);
+    max-height: 42dvh;
+  }
+
+  .mobile-detail-route .mg-reflection-workspace .reflection-textarea {
+    min-height: min(46dvh, 420px);
+  }
+}
+
+@media (max-width: 360px) {
+  .mobile-detail-route .utility-mobile-title {
+    max-width: min(20ch, calc(100vw - 70px));
+    font-size: .89rem;
+  }
+
+  .mobile-detail-route .utility-mobile-back {
+    margin-left: -9px;
+  }
+}
+
+@media (max-width: 760px) and (prefers-reduced-motion: reduce),
+       (max-height: 500px) and (max-width: 900px) and (prefers-reduced-motion: reduce) {
+  .mobile-detail-route .utility-mobile-back {
+    transition: none;
+  }
+}
