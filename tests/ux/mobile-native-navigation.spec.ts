@@ -40,7 +40,7 @@ test.describe("native mobile stacked navigation", () => {
 
   test("direct-open back navigation has a safe parent fallback", async ({ page }) => {
     await openRoute(page, "/prayer/new");
-    await page.getByRole("button", { name: "Back to Prayer" }).click();
+    await page.getByRole("button", { name: "Back" }).click();
     await expect(page).toHaveURL(/#\/prayer$/);
     await expect(page.locator(".mobile-nav")).toBeVisible();
   });
@@ -49,7 +49,7 @@ test.describe("native mobile stacked navigation", () => {
     await openRoute(page, "/prayer/session?depth=quick");
     await expect(page.locator(".app-shell")).toHaveClass(/mobile-immersive-route/);
     await expect(page.locator(".utility-bar")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Back to Prayer" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Back" })).toBeVisible();
     await expect(page.locator(".mobile-nav")).toBeHidden();
     await expectNoHorizontalOverflow(page);
   });
@@ -69,7 +69,7 @@ test.describe("native mobile stacked navigation", () => {
 
   test("stacked mobile navigation remains accessible", async ({ page }) => {
     await openRoute(page, "/prayer/new");
-    await expect(page.getByRole("button", { name: "Back to Prayer" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Back" })).toBeVisible();
     await expectNoAxeViolations(page);
   });
 
@@ -80,7 +80,7 @@ test.describe("native mobile stacked navigation", () => {
     }));
     await openRoute(page, "/data");
     await expect(page.locator("html")).toHaveCSS("font-size", "32px");
-    const back = page.getByRole("button", { name: "Back to Today" });
+    const back = page.getByRole("button", { name: "Back" });
     await expect(back).toBeVisible();
     const box = await back.boundingBox();
     expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
@@ -92,7 +92,7 @@ test.describe("native mobile stacked navigation", () => {
     await page.setViewportSize({ width: 844, height: 390 });
     await openRoute(page, "/prayer/new");
     await expect(page.locator(".app-shell")).toHaveClass(/mobile-detail-route/);
-    await expect(page.getByRole("button", { name: "Back to Prayer" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Back" })).toBeVisible();
     await expect(page.locator(".mobile-nav")).toBeHidden();
     await expect(page.locator(".utility-actions")).toBeHidden();
     await expectNoHorizontalOverflow(page);
