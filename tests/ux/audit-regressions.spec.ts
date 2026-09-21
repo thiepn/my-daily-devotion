@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { unzipSync, strFromU8 } from "fflate";
-import { expectCanonicalTitle, openRoute, visibleNavLink, expectNoAxeViolations, expectNoHorizontalOverflow } from "./helpers";
+import { expectCanonicalTitle, expectRouteTitle, openRoute, usesMobileAppLayout, visibleNavLink, expectNoAxeViolations, expectNoHorizontalOverflow } from "./helpers";
 
 async function createPrayer(page: Page, body: string, schedule?: string) {
   await openRoute(page, "/prayer/new");
@@ -28,9 +28,12 @@ test("reflection drafts survive cancelled navigation, reload and stale saves", a
   await openRoute(page, "/today/reflection/2026-09-17");
   const editor = page.getByLabel("Daily reflection");
   await editor.fill("A reflection worth keeping.\nA second line.");
+  const leaveReflection = () => usesMobileAppLayout(page)
+    ? page.getByRole("button", { name: "Back", exact: true }).click()
+    : visibleNavLink(page, "Today").click();
   await Promise.all([
     page.waitForEvent("dialog").then(async (dialog) => { expect(dialog.type()).toBe("confirm"); await dialog.dismiss(); }),
-    visibleNavLink(page, "Today").click(),
+    leaveReflection(),
   ]);
   await expect(editor).toHaveValue("A reflection worth keeping.\nA second line.");
   // Reload is tested via the native beforeunload event, with a real user gesture above.
@@ -201,7 +204,7 @@ test("invalid, deleted and failed lazy routes have recoverable states", async ({
   await page.screenshot({ path: testInfo.outputPath("lazy-route-recovery.png") });
   await page.unroute("**/assets/CollectionsScreen-*.js");
   await page.getByRole("button", { name: "Reload MDD" }).click();
-  await expect(page.getByRole("heading", { name: "Collections", exact: true })).toBeVisible();
+  await expectRouteTitle(page, "Collections", "Scripture collections");
 });
 
 test("populated dark forms and Scripture remain accessible with long text", async ({ page }, testInfo) => {
