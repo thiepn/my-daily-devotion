@@ -5,6 +5,10 @@
   display: none;
 }
 
+.mobile-appbar-back {
+  display: none;
+}
+
 @media (max-width: 760px), (max-height: 500px) and (max-width: 900px) {
   :root {
     --mobile-appbar-height: 48px;
@@ -45,6 +49,32 @@
   .utility-context {
     min-width: 0;
     flex: 1 1 auto;
+  }
+
+  .utility-context:has(.mobile-appbar-back) {
+    gap: 5px;
+  }
+
+  .mobile-appbar-back {
+    width: 34px;
+    height: 34px;
+    display: grid;
+    flex: 0 0 34px;
+    place-items: center;
+    margin-left: -7px;
+    border-radius: 10px;
+    color: var(--color-ink);
+    font-size: 1.15rem;
+    line-height: 1;
+    text-decoration: none;
+  }
+
+  .mobile-appbar-back:active {
+    background: color-mix(in srgb, var(--color-surface-muted) 72%, transparent);
+  }
+
+  .mobile-appbar-back + .utility-mobile-title {
+    max-width: 14ch;
   }
 
   .utility-context-title,
@@ -184,8 +214,7 @@
   }
 
   .quiet-back-link {
-    margin-top: 10px !important;
-    font-size: .76rem;
+    display: none;
   }
 
   /* Canonical heroes become compact mobile headers, not desktop hero stacks. */
