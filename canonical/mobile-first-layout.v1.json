@@ -2,7 +2,7 @@
   "version": 1,
   "name": "Morning Grace Mobile-First Layout",
   "parentRelease": "1.1.0",
-  "status": "mobile-redesign-v1-stacked-navigation",
+  "status": "mobile-redesign-v1-contextual-utilities",
   "breakpointPx": 760,
   "principles": [
     "phone layout is composed independently from desktop",
@@ -71,8 +71,13 @@
       "data"
     ],
     "behavior": "hide root bottom tabs and Search/Data utility actions; expose contextual Back navigation",
-    "returnContext": "prefer validated explicit return targets and devotional source context; otherwise use the nearest logical root",
+    "returnContext": "preserve validated explicit return targets and the exact root utility source, including route query state; otherwise use the nearest logical root",
     "touchTargetPx": 44,
     "safeAreas": "app bars, sticky editor actions and immersive prayer account for device insets"
+  },
+  "utilityNavigation": {
+    "search": "Search opened from a root or contextual entry point carries an explicit return target and preserves it through query/filter changes",
+    "data": "Data opened from a root app bar carries the exact root route and query as its return target",
+    "directOpenFallback": "direct Search and Data routes without a return target fall back to Today"
   }
 }
