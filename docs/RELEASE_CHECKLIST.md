@@ -1,11 +1,11 @@
-# MDD 1.2.0 Release Checklist
+# MDD 1.2.1 Release Checklist
 
 This checklist is operational. Automated gates remain authoritative where they exist.
 
 ## Source and version
 
-- [x] Product version is `1.2.0` in `package.json` and `src/app/version.ts`.
-- [x] Service-worker cache generation is `mdd-app-v1.2.0`.
+- [x] Product version is `1.2.1` in `package.json` and `src/app/version.ts`.
+- [x] Service-worker cache generation is `mdd-app-v1.2.1`.
 - [x] Database schema remains version 1.
 - [x] Direct dependency versions are exact and `package-lock.json` is committed.
 - [x] Morning Grace changes presentation only; schema 1 and existing domain semantics remain unchanged.
@@ -57,3 +57,5 @@ This checklist is operational. Automated gates remain authoritative where they e
 Ship only from a commit where the independent Phase 0 contract and cumulative Phase 12 Release Certification workflow both conclude successfully. Do not waive a failed gate by checking this document manually.
 
 - [x] Mobile-first layout contract passes, including 320px, phone landscape and desktop-preservation checks.
+
+- [x] Mobile-native Back navigation remains phone-only and desktop in-content navigation remains available.
