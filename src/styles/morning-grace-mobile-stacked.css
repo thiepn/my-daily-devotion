@@ -193,6 +193,59 @@
   html[style*="font-size: 200%"] .mobile-detail-route .mobile-appbar-back > span {
     font-size: 1.05rem;
   }
+
+  /* Native file inputs have a large intrinsic min-content width in Chromium.
+     At 200% text this can force the entire Data screen wider than a 320px phone. */
+  .mobile-detail-route .mg-data-workspace,
+  .mobile-detail-route .mg-data-workspace .data-sections,
+  .mobile-detail-route .mg-data-workspace .data-panel,
+  .mobile-detail-route .mg-data-workspace .import-panel,
+  .mobile-detail-route .mg-data-workspace .data-password,
+  .mobile-detail-route .mg-data-workspace .import-mode,
+  .mobile-detail-route .mg-data-workspace .backup-preview,
+  .mobile-detail-route .mg-data-workspace .storage-resilience,
+  .mobile-detail-route .mg-data-workspace .storage-facts {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .mobile-detail-route .mg-data-workspace input[type="file"] {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    font-size: .75rem;
+  }
+
+  .mobile-detail-route .mg-data-workspace input[type="file"]::file-selector-button {
+    max-width: 52%;
+    margin-inline-end: 6px;
+    padding-inline: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace input[type="file"] {
+    font-size: .5rem;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .mobile-appearance-panel .theme-switcher {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .mobile-appearance-panel .theme-option {
+    min-width: 0;
+    padding-inline: 4px;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace button,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace label,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace dd,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace span {
+    overflow-wrap: anywhere;
+  }
 }
 
 @media (max-width: 360px) {
