@@ -41,6 +41,28 @@ test.describe("native mobile stacked navigation", () => {
     }
   });
 
+  test("Search and Data return to the root context that opened them", async ({ page }) => {
+    await openRoute(page, "/bible/JHN/3?verse=16");
+    await page.getByRole("link", { name: "Search", exact: true }).click();
+    await expect(page.locator(".utility-mobile-title")).toHaveText("Search");
+    await expect(page).toHaveURL(/return=%2Fbible%2FJHN%2F3%3Fverse%3D16/);
+
+    await page.getByLabel("Search MDD").fill("faith");
+    await page.getByRole("button", { name: "Search", exact: true }).click();
+    await expect(page).toHaveURL(/q=faith/);
+    await expect(page).toHaveURL(/return=%2Fbible%2FJHN%2F3%3Fverse%3D16/);
+    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await expect(page).toHaveURL(/#\/bible\/JHN\/3\?verse=16$/);
+    await expect(page.getByRole("button", { name: "Select John 3:16", exact: true })).toHaveAttribute("aria-pressed", "true");
+
+    await openRoute(page, "/prayer?status=WAITING");
+    await page.getByRole("link", { name: "Data", exact: true }).click();
+    await expect(page.locator(".utility-mobile-title")).toHaveText("Data and privacy");
+    await expect(page).toHaveURL(/return=%2Fprayer%3Fstatus%3DWAITING/);
+    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await expect(page).toHaveURL(/#\/prayer\?status=WAITING$/);
+  });
+
   test("direct-open Back has a safe parent fallback", async ({ page }) => {
     await openRoute(page, "/prayer/new");
     await page.getByRole("button", { name: "Back", exact: true }).click();
