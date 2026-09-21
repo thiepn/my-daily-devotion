@@ -4,8 +4,8 @@ This checklist is operational. Automated gates remain authoritative where they e
 
 ## Source and version
 
-- [x] Product version is `1.1.0` in `package.json` and `src/app/version.ts`.
-- [x] Service-worker cache generation is `mdd-app-v1.1.0`.
+- [x] Product version is `1.2.0` in `package.json` and `src/app/version.ts`.
+- [x] Service-worker cache generation is `mdd-app-v1.2.0`.
 - [x] Database schema remains version 1.
 - [x] Direct dependency versions are exact and `package-lock.json` is committed.
 - [x] Morning Grace changes presentation only; schema 1 and existing domain semantics remain unchanged.
