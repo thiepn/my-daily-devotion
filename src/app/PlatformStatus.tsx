@@ -26,7 +26,7 @@ export function PlatformStatus() {
   if (online && !registration) return null;
 
   return (
-    <div className="platform-status" role="status" aria-live="polite" aria-atomic="true">
+    <div className={`platform-status${!online ? " is-offline" : ""}${registration ? " has-update" : ""}`} role="status" aria-live="polite" aria-atomic="true">
       {!online ? <span><strong>Offline.</strong> Cached Scripture and local devotional data remain available.</span> : null}
       {registration ? (
         <span>
