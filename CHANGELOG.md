@@ -1,5 +1,20 @@
 # Changelog
 
+## 1.2.4 — 2026-09-21
+
+### Dense secondary mobile workflows
+
+- Recompose Prayer Detail as a compact single-stream mobile story with denser lifecycle actions, updates and context rows.
+- Keep Prayer status visibly present after the desktop secondary heading collapses.
+- Rebuild Prayer Settings as a flat mobile settings page with tighter fields, compact weekday selection and a sticky save bar.
+- Put the People/Categories editor before the saved list on phone so add/edit work does not require scrolling past the collection.
+- Convert People/Categories rows into compact native-style management rows with 44px actions.
+- Recompose History Moments with a compact local segmented switcher and denser timeline rows.
+- Keep the full History Day date visible after the desktop H1/eyebrow collapse.
+- Tighten History Day/Moments entry typography and vertical rhythm without changing stored history semantics.
+- Add 320px, 200% text, accessibility and desktop-preservation coverage for these secondary workflows.
+- Preserve the 1.2.3 contextual utility navigation, root mobile screens, desktop/tablet Morning Grace composition, database schema 1 and backup format 1.
+
 ## 1.2.3 — 2026-09-21
 
 ### Contextual mobile utilities
