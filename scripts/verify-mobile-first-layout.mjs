@@ -52,7 +52,7 @@ assert.ok(polishIndex>=0&&mobileIndex>polishIndex,"Mobile layout must load after
 assert.ok(nativeMobileIndex>mobileIndex,"Native mobile refinement must load after the base mobile layout");
 assert.match(nativeCss,/\.mobile-detail-route \.mobile-nav\s*\{[\s\S]*display:\s*none/);
 assert.match(nativeCss,/\.mobile-detail-route \.utility-mobile-back\s*\{/);
-assert.match(nativeCss,/\.mobile-immersive-route \.utility-bar\s*\{[\s\S]*display:\s*none/);
+assert.match(nativeCss,/\.mobile-immersive-route:has\(\.mg-focused-prayer-workspace\) \.utility-bar\s*\{[\s\S]*display:\s*none/);
 assert.match(nativeCss,/safe-area-inset-top/);
 assert.match(nativeCss,/safe-area-inset-bottom/);
 assert.doesNotMatch(nativeCss,/(?:linear|radial|conic)-gradient\s*\(/i);
