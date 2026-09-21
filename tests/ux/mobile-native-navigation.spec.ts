@@ -63,6 +63,29 @@ test.describe("native mobile stacked navigation", () => {
     await expect(page).toHaveURL(/#\/prayer\?status=WAITING$/);
   });
 
+  test("in-content Search entry points preserve their source screen", async ({ page }) => {
+    await openRoute(page, "/bible/JHN/3?verse=16");
+    await page.getByRole("link", { name: "Search Bible", exact: true }).click();
+    await expect(page).toHaveURL(/return=%2Fbible%2FJHN%2F3%3Fverse%3D16/);
+    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await expect(page).toHaveURL(/#\/bible\/JHN\/3\?verse=16$/);
+
+    await openRoute(page, "/history/moments");
+    await page.locator(".history-tabs").getByRole("link", { name: "Search", exact: true }).click();
+    await expect(page).toHaveURL(/return=%2Fhistory%2Fmoments/);
+    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await expect(page).toHaveURL(/#\/history\/moments$/);
+
+    const collectionsRoute = "/bible/collections?translation=BSB&start=JHN.3.16&end=JHN.3.16&return=%2Fbible%2FJHN%2F3%3Fverse%3D16";
+    await openRoute(page, collectionsRoute);
+    await page.locator(".quiet-link-row").getByRole("link", { name: "Search", exact: true }).click();
+    await expect(page).toHaveURL(/return=%2Fbible%2Fcollections/);
+    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await expect(page).toHaveURL(/#\/bible\/collections\?/);
+    await expect(page).toHaveURL(/start=JHN\.3\.16/);
+    await expect(page).toHaveURL(/return=%2Fbible%2FJHN%2F3%3Fverse%3D16/);
+  });
+
   test("direct-open Back has a safe parent fallback", async ({ page }) => {
     await openRoute(page, "/prayer/new");
     await page.getByRole("button", { name: "Back", exact: true }).click();
