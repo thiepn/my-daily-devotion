@@ -36,8 +36,8 @@ export function PrayerDetailScreen() {
   };
   const requestGuard = useDraftGuard(wordingDirty || Boolean(updateBody), saveRequestDrafts, discardRequestDrafts);
   const allGuard = useDraftGuard(wordingDirty || Boolean(updateBody) || Boolean(answerBody), answerBody ? undefined : saveRequestDrafts, () => { discardRequestDrafts(); setAnswerBody(""); setAnswerOpen(false); });
-  if (loading) return <main className="visual-screen prayer-detail-screen"><p className="eyebrow">Prayer</p><p>Opening prayer…</p></main>;
-  if (!prayer) return <main className="visual-screen prayer-detail-screen"><p className="eyebrow">Prayer</p><h1>Prayer unavailable</h1><p role="status">{status || "This prayer may have been removed."}</p><Link to="/prayer">Return to Prayer</Link></main>;
+  if (loading) return <main className="visual-screen prayer-detail-screen mg-secondary-screen mg-prayer-detail-workspace mg-route-state mg-loading-state"><p className="eyebrow">Prayer</p><p className="mg-inline-state">Opening prayer…</p></main>;
+  if (!prayer) return <main className="visual-screen prayer-detail-screen mg-secondary-screen mg-prayer-detail-workspace mg-route-state mg-error-state"><p className="eyebrow">Prayer</p><h1>Prayer unavailable</h1><p className="mg-inline-state" role="status">{status || "This prayer may have been removed."}</p><Link className="quiet-back-link" to="/prayer">Return to Prayer</Link></main>;
   const saveBody = async () => { const saved = await repository.updateBody(prayer.id, body, baseline.current?.revision); baseline.current = { body: saved.body, revision: saved.revision }; bodyRef.current = saved.body; setBody(saved.body); setConflict(false); setStatus("Prayer saved locally."); await refresh(); };
   const changeStatus = async (next: "ACTIVE" | "WAITING" | "ARCHIVED") => { if (next === "ARCHIVED" && !await allGuard.confirmDrafts()) return; await repository.transition(prayer.id, next); await refresh(); };
   const addUpdate = async () => { await repository.addUpdate(prayer.id, updateBody, updateType); setUpdateBody(""); setStatus(updateType === "encouragement" ? "Encouragement recorded." : "Update recorded."); await refresh(); };
