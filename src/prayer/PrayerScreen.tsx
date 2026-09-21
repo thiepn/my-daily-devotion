@@ -112,8 +112,8 @@ export function PrayerScreen() {
         </nav>
 
         <section className="prayer-live-list" aria-live="polite">
-          {error ? <p role="alert">{error}</p> : loading ? <p className="muted-copy">Opening prayers…</p> : items.length === 0 ? (
-            <div className="prayer-empty mg-prayer-empty">
+          {error ? <p className="mg-inline-state mg-error-state" role="alert">{error}</p> : loading ? <p className="muted-copy mg-inline-state mg-loading-state">Opening prayers…</p> : items.length === 0 ? (
+            <div className="prayer-empty mg-prayer-empty mg-empty-state">
               <BotanicalSprig aria-hidden="true" />
               <h2>No {labels[selected].toLowerCase()} prayers.</h2>
               <p>{selected === "ACTIVE" ? "Add a request when there is something you genuinely want to carry into prayer." : "Nothing needs to be here."}</p>
