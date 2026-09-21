@@ -2,6 +2,7 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { inspectStorage, type StorageSnapshot } from "../app/platform";
 import { APP_VERSION } from "../app/version";
+import { ThemeSwitcher } from "../app/visual/ThemeSwitcher";
 import { db } from "./database";
 import { createMarkdownArchive, createMddBackup, importMddBackup, previewMddBackup, type BackupPreview, type ImportMode } from "./portability";
 
@@ -33,7 +34,7 @@ export function DataScreen() {
       <p className="data-status" role="status" aria-live="polite">{busy ? "Working with your local data…" : status}</p>
       <section className="data-panel" aria-label="Privacy boundaries"><h2>Local does not mean encrypted.</h2><p>Your live records are stored in this browser profile without application-level encryption. The encrypted backup option protects the exported file, not the live database.</p><p>Removed entries are hidden with deletion markers; their retained text may remain in backups. Remove is not secure erasure. Other apps hosted on this exact origin share the browser-storage trust boundary.</p><p>The 1.0.1 corrective release repaired duplicate reading records without erasing originals or history. The March 1 reading now includes Exodus 12:51; existing completion choices are preserved.</p></section>
       <div className="data-sections">
-
+        <section className="data-panel mobile-appearance-panel"><p className="section-kicker">Appearance</p><h2>Theme</h2><p>Choose how My Daily Devotion appears on this device.</p><ThemeSwitcher /></section>
 
         <section className="data-panel"><p className="section-kicker">Backup</p><h2>Portable MDD backup</h2><p>Save everything in a <code>.mddbackup</code> file. Choose an encrypted backup to protect its contents with a password.</p><div className="data-actions"><button type="button" disabled={busy} onClick={() => void run(async () => download(await createMddBackup(db, APP_VERSION), `mdd-${stamp()}.mddbackup`))}>Download plain backup</button></div><label className="data-password">Encrypted backup password<input type="password" autoComplete="new-password" value={exportPassword} onChange={(e) => setExportPassword(e.target.value)} placeholder="At least 8 characters" /></label><button type="button" disabled={busy || exportPassword.length < 8} onClick={() => void run(async () => download(await createMddBackup(db, APP_VERSION, exportPassword), `mdd-${stamp()}-encrypted.mddbackup`))}>Download encrypted backup</button><p className="data-warning">There is no password recovery. Losing this password makes the encrypted backup unreadable.</p></section>
 

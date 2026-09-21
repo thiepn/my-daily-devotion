@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "name": "Morning Grace Mobile-First Layout",
+  "parentRelease": "1.1.0",
+  "status": "mobile-redesign-v1",
+  "breakpointPx": 760,
+  "principles": [
+    "phone layout is composed independently from desktop",
+    "primary task appears before decorative artwork",
+    "compact grouped rows replace large desktop cards",
+    "12px-class gutters and 12-20px section rhythm",
+    "48px-class top app bar and 60px-class bottom tab bar",
+    "touch targets remain at least 44px where primary interaction requires it",
+    "desktop and tablet Morning Grace layouts remain unchanged",
+    "Morning Grace visual identity remains intact without oversized editorial hero treatment",
+    "phone landscape remains in the mobile app composition"
+  ],
+  "chrome": {
+    "topBar": "compact sticky app bar with route title, Search and Data",
+    "appearance": "moved from phone app bar to Data/Settings",
+    "bottomNavigation": "four compact fixed tabs with small active surface",
+    "decorativeChrome": "no blur/glass navigation"
+  },
+  "screens": {
+    "today": "compact morning header + grouped four-reading list + two small response cards",
+    "bible": "reading-first; no chapter artwork on phone; compact sticky book/chapter controls; bottom verse actions",
+    "prayer": "compact header, small primary action, inline session-depth choice, horizontal status tabs, dense request rows",
+    "history": "compact header and segmented tabs, three-column factual summary, dense calendar",
+    "secondary": "compact full-width workspaces with reduced padding and edge-to-edge editors where useful"
+  },
+  "preserved": [
+    "desktop and tablet compositions",
+    "database schema 1",
+    "backup format 1",
+    "M'Cheyne behavior",
+    "Bible annotation behavior",
+    "prayer queue and scheduling semantics",
+    "History derivation",
+    "light/dark/system themes",
+    "WCAG and reflow requirements"
+  ],
+  "files": {
+    "style": "src/styles/morning-grace-mobile.css",
+    "settings": "src/data/DataScreen.tsx",
+    "test": "tests/ux/mobile-first-layout.spec.ts",
+    "verifier": "scripts/verify-mobile-first-layout.mjs"
+  },
+  "landscapePhoneRule": {
+    "maxHeightPx": 500,
+    "maxWidthPx": 900,
+    "behavior": "use mobile app composition"
+  }
+}

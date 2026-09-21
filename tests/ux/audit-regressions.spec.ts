@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { unzipSync, strFromU8 } from "fflate";
-import { openRoute, visibleNavLink, expectNoAxeViolations, expectNoHorizontalOverflow } from "./helpers";
+import { expectCanonicalTitle, openRoute, visibleNavLink, expectNoAxeViolations, expectNoHorizontalOverflow } from "./helpers";
 
 async function createPrayer(page: Page, body: string, schedule?: string) {
   await openRoute(page, "/prayer/new");
@@ -194,7 +194,7 @@ test("encrypted backup restores in a fresh profile and failed/cancelled restores
 test("invalid, deleted and failed lazy routes have recoverable states", async ({ page }, testInfo) => {
   await openRoute(page, "/history/day/2026-02-30"); await expect(page.getByRole("heading", { name: "Invalid date" })).toBeVisible();
   await openRoute(page, "/prayer/removed/settings"); await expect(page.getByRole("heading", { name: "Prayer unavailable" })).toBeVisible();
-  await page.getByRole("link", { name: "Return to Prayer" }).click(); await expect(page.getByRole("heading", { name: "Prayer", exact: true })).toBeVisible();
+  await page.getByRole("link", { name: "Return to Prayer" }).click(); await expectCanonicalTitle(page, "Prayer");
   await page.route("**/assets/CollectionsScreen-*.js", (route) => route.abort());
   await openRoute(page, "/bible/collections");
   await expect(page.getByRole("button", { name: "Reload MDD" })).toBeVisible();
@@ -206,7 +206,7 @@ test("invalid, deleted and failed lazy routes have recoverable states", async ({
 
 test("populated dark forms and Scripture remain accessible with long text", async ({ page }, testInfo) => {
   await createPrayer(page, "May we grow in patience. ".repeat(30));
-  await page.getByRole("button", { name: "Dark theme" }).click();
+  await page.evaluate(() => { document.documentElement.dataset.theme = "dark"; });
   await page.getByLabel("Prayer update").fill("A little encouragement.");
   await page.screenshot({ path: testInfo.outputPath("long-prayer-dark.png"), fullPage: true });
   await expectNoHorizontalOverflow(page); await expectNoAxeViolations(page);
@@ -262,7 +262,7 @@ test("weekday scheduling shows keyboard focus, selection, and readable validatio
   await page.keyboard.press("Space");
   await expectNoHorizontalOverflow(page);
   await page.screenshot({ path: testInfo.outputPath("weekday-keyboard-selection-light.png"), fullPage: true });
-  await page.getByRole("button", { name: "Dark theme" }).click();
+  await page.evaluate(() => { document.documentElement.dataset.theme = "dark"; });
   await monday.focus();
   await page.screenshot({ path: testInfo.outputPath("weekday-keyboard-selection-dark.png"), fullPage: true });
   await expectNoAxeViolations(page);
