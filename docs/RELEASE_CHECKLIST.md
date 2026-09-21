@@ -1,11 +1,11 @@
-# MDD 1.2.3 Release Checklist
+# MDD 1.2.4 Release Checklist
 
 This checklist is operational. Automated gates remain authoritative where they exist.
 
 ## Source and version
 
-- [x] Product version is `1.2.3` in `package.json` and `src/app/version.ts`.
-- [x] Service-worker cache generation is `mdd-app-v1.2.3`.
+- [x] Product version is `1.2.4` in `package.json` and `src/app/version.ts`.
+- [x] Service-worker cache generation is `mdd-app-v1.2.4`.
 - [x] Database schema remains version 1.
 - [x] Direct dependency versions are exact and `package-lock.json` is committed.
 - [x] Morning Grace changes presentation only; schema 1 and existing domain semantics remain unchanged.
@@ -65,3 +65,7 @@ Ship only from a commit where the independent Phase 0 contract and cumulative Ph
 
 - [x] Search and Data preserve their mobile source route and query state through Back navigation.
 - [x] Search query/filter mutations retain the validated return target.
+
+- [x] Prayer Detail/Settings and People/Categories use dense phone compositions without changing desktop layout.
+- [x] History Day/Moments preserve visible context and compact timeline navigation on phone.
+- [x] Dense secondary workflows pass 320px and 200% text reflow coverage.
