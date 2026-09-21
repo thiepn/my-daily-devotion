@@ -59,6 +59,31 @@ test.describe("native mobile stacked navigation", () => {
     await expectNoAxeViolations(page);
   });
 
+  test("pushed screens survive 320px width with 200 percent text", async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 568 });
+    await page.addInitScript(() => document.addEventListener("DOMContentLoaded", () => {
+      document.documentElement.style.fontSize = "200%";
+    }));
+    await openRoute(page, "/data");
+    await expect(page.locator("html")).toHaveCSS("font-size", "32px");
+    const back = page.getByRole("button", { name: "Back to Today" });
+    await expect(back).toBeVisible();
+    const box = await back.boundingBox();
+    expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);
+    expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test("phone landscape keeps secondary routes in stacked-app mode", async ({ page }) => {
+    await page.setViewportSize({ width: 844, height: 390 });
+    await openRoute(page, "/prayer/new");
+    await expect(page.locator(".app-shell")).toHaveClass(/mobile-detail-route/);
+    await expect(page.getByRole("button", { name: "Back to Prayer" })).toBeVisible();
+    await expect(page.locator(".mobile-nav")).toBeHidden();
+    await expect(page.locator(".utility-actions")).toBeHidden();
+    await expectNoHorizontalOverflow(page);
+  });
+
   test("desktop detail routes keep the Morning Grace desktop shell", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await openRoute(page, "/prayer/new");
