@@ -39,12 +39,13 @@ function referenceLabel(reference: ScriptureReference, manifest: BibleManifest |
     : `${name} ${start.chapter}:${start.verse}–${end.chapter}:${end.verse}`;
 }
 
-function HistoryTabs({ active }: { active: "calendar" | "moments" }) {
+function HistoryTabs({ active, returnTo }: { active: "calendar" | "moments"; returnTo: string }) {
+  const searchUrl = `/search?${new URLSearchParams({ return: returnTo }).toString()}`;
   return (
     <nav className="history-tabs" aria-label="History views">
       <Link aria-current={active === "calendar" ? "page" : undefined} className={active === "calendar" ? "is-active" : ""} to="/history">Overview</Link>
       <Link aria-current={active === "moments" ? "page" : undefined} className={active === "moments" ? "is-active" : ""} to="/history/moments">Moments</Link>
-      <Link to="/search">Search</Link>
+      <Link to={searchUrl}>Search</Link>
     </nav>
   );
 }
@@ -97,7 +98,7 @@ export function HistoryScreen() {
           <p className="eyebrow">Look back and see</p>
           <h1>History</h1>
           <p className="screen-intro">A quiet record of Scripture, reflection, prayer, and God’s faithfulness over time.</p>
-          <HistoryTabs active="calendar" />
+          <HistoryTabs active="calendar" returnTo="/history" />
         </div>
         <div className="mg-history-hero-art" aria-hidden="true"><MorningLandscape /></div>
       </header>
@@ -249,7 +250,7 @@ export function HistoryMomentsScreen() {
         <h1>Moments</h1>
         <p className="screen-intro">Reflections, meaningful passages and answers to return to.</p>
       </header>
-      <HistoryTabs active="moments" />
+      <HistoryTabs active="moments" returnTo="/history/moments" />
       <section className="moments-list">
         {error ? <p role="alert">{error}</p> : loading ? <p role="status">Opening moments…</p> : entries.length ? entries.map((entry) => <div className="moment-row" key={entry.id}><time>{entry.localDate}</time><EntryView entry={entry} manifest={manifest} /></div>) : <p className="muted-copy">Meaningful moments will appear here as your devotional history grows.</p>}
       </section>

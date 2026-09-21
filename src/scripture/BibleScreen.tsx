@@ -60,7 +60,7 @@ export function BibleScreen() {
           <h1>Bible</h1>
           <p className="screen-intro">Read slowly. Select a verse when you want to reflect, pray, highlight, or remember it.</p>
         </div>
-        <div className="bible-secondary-links"><Link to="/search"><Icon name="search" /> Search Bible</Link><Link to="/bible/collections"><Icon name="bookmark" /> Collections</Link></div>
+        <div className="bible-secondary-links"><Link to={`/search?${new URLSearchParams({ return: `${location.pathname}${location.search}` }).toString()}`}><Icon name="search" /> Search Bible</Link><Link to="/bible/collections"><Icon name="bookmark" /> Collections</Link></div>
       </header>
 
       {planContext && currentSegment ? (

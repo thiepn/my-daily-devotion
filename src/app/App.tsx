@@ -49,6 +49,17 @@ function safeReturnTarget(search: string): string | null {
   return target?.startsWith("/") && !target.startsWith("//") ? target : null;
 }
 
+function utilityReturnTarget(pathname: string, search: string): string {
+  if (pathname === "/today" || pathname === "/prayer" || pathname === "/history" || pathname === "/bible" || /^\/bible\/[^/]+\/\d+$/.test(pathname)) {
+    return `${pathname}${search}`;
+  }
+  return "/today";
+}
+
+function withReturn(pathname: string, returnTo: string): string {
+  return `${pathname}?${new URLSearchParams({ return: returnTo }).toString()}`;
+}
+
 function mobileBackTarget(pathname: string, search: string): string | null {
   const returnTo = safeReturnTarget(search);
   if (pathname === "/today/plan") return "/today";
@@ -64,7 +75,7 @@ function mobileBackTarget(pathname: string, search: string): string | null {
   if (prayerSettings) return `/prayer/${prayerSettings[1]}${search}`;
   if (/^\/prayer\/[^/]+$/.test(pathname)) return returnTo ?? "/prayer";
   if (pathname === "/history/moments" || pathname.startsWith("/history/day/")) return "/history";
-  if (pathname === "/search" || pathname === "/data") return "/today";
+  if (pathname === "/search" || pathname === "/data") return returnTo ?? "/today";
   return null;
 }
 
@@ -107,6 +118,9 @@ export function App() {
   const navigate = useNavigate();
   const currentLabel = routeLabel(location.pathname);
   const mobileBack = mobileBackTarget(location.pathname, location.search);
+  const utilityReturn = utilityReturnTarget(location.pathname, location.search);
+  const searchHref = withReturn("/search", utilityReturn);
+  const dataHref = withReturn("/data", utilityReturn);
   const shellClass = [
     "app-shell",
     "morning-grace-shell",
@@ -118,5 +132,5 @@ export function App() {
     if (mobileBack) navigate(mobileBack);
   };
 
-  return <div className={shellClass}><a className="skip-link" href="#main-content" onClick={(event) => { event.preventDefault(); document.getElementById("main-content")?.focus(); }}>Skip to main content</a><aside className="side-rail"><NavLink className="brand" to="/today" aria-label="My Daily Devotion home"><BrandMark className="brand-mark" /><span className="brand-copy"><strong>My Daily Devotion</strong><small>Scripture · Prayer · Reflection</small></span></NavLink><PrimaryNavigation /><div className="rail-note"><span className="rail-rule" aria-hidden="true" /><p>A quieter life. A stronger faith.</p></div></aside><div className="workspace" data-domain={routeDomain(location.pathname)}><header className="utility-bar"><div className="utility-context" aria-label="Application context">{mobileBack ? <button className="mobile-appbar-back" type="button" onClick={goBack} aria-label="Back"><span aria-hidden="true">←</span></button> : null}<span className="utility-context-title">{currentLabel}</span><span className="utility-mobile-title">{currentLabel}</span><span className="utility-context-note">Private on this device</span></div><div className="utility-actions"><Link className="utility-link" to="/search" aria-label="Search"><Icon name="search" aria-hidden="true" /><span>Search</span></Link><Link className="utility-link" to="/data" aria-label="Data"><Icon name="settings" aria-hidden="true" /><span>Data</span></Link><ThemeSwitcher /></div></header><PlatformStatus /><div className="workspace-content" id="main-content" tabIndex={-1}><RouteAnnouncer /><RouteErrorBoundary key={location.pathname}><Suspense fallback={<RouteLoading />}><Routes><Route path="/" element={<Navigate to="/today" replace />} /><Route path="/today" element={<TodayScreen />} /><Route path="/today/plan" element={<PlanScreen />} /><Route path="/today/reflection/:localDate" element={<ReflectionScreen />} /><Route path="/bible" element={<BibleScreen />} /><Route path="/bible/collections" element={<CollectionsScreen />} /><Route path="/bible/:bookId/:chapter" element={<BibleScreen />} /><Route path="/prayer" element={<PrayerScreen />} /><Route path="/prayer/new" element={<NewPrayerScreen />} /><Route path="/prayer/people" element={<PeopleScreen />} /><Route path="/prayer/categories" element={<CategoriesScreen />} /><Route path="/prayer/session" element={<PrayerSessionScreen />} /><Route path="/prayer/:prayerId/settings" element={<PrayerSettingsScreen />} /><Route path="/prayer/:prayerId" element={<PrayerDetailScreen />} /><Route path="/history" element={<HistoryScreen />} /><Route path="/history/moments" element={<HistoryMomentsScreen />} /><Route path="/history/day/:localDate" element={<HistoryDayScreen />} /><Route path="/search" element={<SearchScreen />} /><Route path="/data" element={<DataScreen />} /><Route path="*" element={<Navigate to="/today" replace />} /></Routes></Suspense></RouteErrorBoundary></div></div><PrimaryNavigation mobile /></div>;
+  return <div className={shellClass}><a className="skip-link" href="#main-content" onClick={(event) => { event.preventDefault(); document.getElementById("main-content")?.focus(); }}>Skip to main content</a><aside className="side-rail"><NavLink className="brand" to="/today" aria-label="My Daily Devotion home"><BrandMark className="brand-mark" /><span className="brand-copy"><strong>My Daily Devotion</strong><small>Scripture · Prayer · Reflection</small></span></NavLink><PrimaryNavigation /><div className="rail-note"><span className="rail-rule" aria-hidden="true" /><p>A quieter life. A stronger faith.</p></div></aside><div className="workspace" data-domain={routeDomain(location.pathname)}><header className="utility-bar"><div className="utility-context" aria-label="Application context">{mobileBack ? <button className="mobile-appbar-back" type="button" onClick={goBack} aria-label="Back"><span aria-hidden="true">←</span></button> : null}<span className="utility-context-title">{currentLabel}</span><span className="utility-mobile-title">{currentLabel}</span><span className="utility-context-note">Private on this device</span></div><div className="utility-actions"><Link className="utility-link" to={searchHref} aria-label="Search"><Icon name="search" aria-hidden="true" /><span>Search</span></Link><Link className="utility-link" to={dataHref} aria-label="Data"><Icon name="settings" aria-hidden="true" /><span>Data</span></Link><ThemeSwitcher /></div></header><PlatformStatus /><div className="workspace-content" id="main-content" tabIndex={-1}><RouteAnnouncer /><RouteErrorBoundary key={location.pathname}><Suspense fallback={<RouteLoading />}><Routes><Route path="/" element={<Navigate to="/today" replace />} /><Route path="/today" element={<TodayScreen />} /><Route path="/today/plan" element={<PlanScreen />} /><Route path="/today/reflection/:localDate" element={<ReflectionScreen />} /><Route path="/bible" element={<BibleScreen />} /><Route path="/bible/collections" element={<CollectionsScreen />} /><Route path="/bible/:bookId/:chapter" element={<BibleScreen />} /><Route path="/prayer" element={<PrayerScreen />} /><Route path="/prayer/new" element={<NewPrayerScreen />} /><Route path="/prayer/people" element={<PeopleScreen />} /><Route path="/prayer/categories" element={<CategoriesScreen />} /><Route path="/prayer/session" element={<PrayerSessionScreen />} /><Route path="/prayer/:prayerId/settings" element={<PrayerSettingsScreen />} /><Route path="/prayer/:prayerId" element={<PrayerDetailScreen />} /><Route path="/history" element={<HistoryScreen />} /><Route path="/history/moments" element={<HistoryMomentsScreen />} /><Route path="/history/day/:localDate" element={<HistoryDayScreen />} /><Route path="/search" element={<SearchScreen />} /><Route path="/data" element={<DataScreen />} /><Route path="*" element={<Navigate to="/today" replace />} /></Routes></Suspense></RouteErrorBoundary></div></div><PrimaryNavigation mobile /></div>;
 }
