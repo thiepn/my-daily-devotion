@@ -1,13 +1,13 @@
 import { expect, test } from "@playwright/test";
 import { expectCanonicalTitle, openRoute } from "./helpers";
 
-const primaryRoutes: Array<[string, string]> = [
-  ["/today", "Today"],
-  ["/bible/JHN/3", "Bible"],
-  ["/prayer", "Prayer"],
-  ["/history", "History"],
-  ["/search", "Search"],
-  ["/data", "Your data"],
+const primaryRoutes: Array<[string, string, string]> = [
+  ["/today", "Today", "Today"],
+  ["/bible/JHN/3", "Bible", "Bible"],
+  ["/prayer", "Prayer", "Prayer"],
+  ["/history", "History", "History"],
+  ["/search", "Search", "Search"],
+  ["/data", "Your data", "Data and privacy"],
 ];
 
 test.describe("release smoke", () => {
@@ -18,10 +18,13 @@ test.describe("release smoke", () => {
       if (message.type() === "error") failures.push(`console: ${message.text()}`);
     });
 
-    for (const [route, heading] of primaryRoutes) {
+    for (const [route, heading, mobileTitle] of primaryRoutes) {
       await openRoute(page, route);
       if (heading === "Today" || heading === "Bible" || heading === "Prayer" || heading === "History") {
         await expectCanonicalTitle(page, heading);
+      } else if ((page.viewportSize()?.width ?? 9999) <= 760) {
+        await expect(page.locator(".utility-mobile-title")).toHaveText(mobileTitle);
+        await expect(page.locator("h1").filter({ hasText: heading })).toHaveCount(1);
       } else {
         await expect(page.getByRole("heading", { level: 1, name: heading, exact: true })).toBeVisible();
       }
