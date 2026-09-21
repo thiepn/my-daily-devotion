@@ -1,0 +1,307 @@
+/* Morning Grace — stacked mobile navigation refinement
+   Loaded after the certified 1.2.1 mobile layer. Desktop/tablet remain unchanged. */
+
+@media (max-width: 760px), (max-height: 500px) and (max-width: 900px) {
+  /* Make the existing app bar safe-area aware while preserving a 48px content row. */
+  .utility-bar {
+    min-height: calc(var(--mobile-appbar-height) + env(safe-area-inset-top));
+    height: calc(var(--mobile-appbar-height) + env(safe-area-inset-top));
+    box-sizing: border-box;
+  }
+
+  .mg-bible-toolbar {
+    top: calc(var(--mobile-appbar-height) + env(safe-area-inset-top));
+  }
+
+  .utility-link {
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  /* Root tabs are root navigation. A pushed/detail screen gets its own back affordance
+     and should not keep the root tab bar or unrelated Search/Data actions visible. */
+  .mobile-detail-route {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .mobile-detail-route .mobile-nav,
+  .mobile-detail-route .utility-bar .utility-actions {
+    display: none;
+  }
+
+  .mobile-detail-route .utility-context {
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  .mobile-detail-route .mobile-appbar-back {
+    width: 44px;
+    min-width: 44px;
+    height: 44px;
+    display: inline-grid;
+    flex: 0 0 44px;
+    place-items: center;
+    margin: 0 1px 0 -9px;
+    padding: 0;
+    border: 0;
+    border-radius: 11px;
+    color: var(--color-accent-strong);
+    background: transparent;
+    font: inherit;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  .mobile-detail-route .mobile-appbar-back > span {
+    display: block;
+    transform: translateY(-1px);
+    font-family: var(--font-ui);
+    font-size: 1.4rem;
+    font-weight: 430;
+    line-height: 1;
+  }
+
+  .mobile-detail-route .mobile-appbar-back:active {
+    background: color-mix(in srgb, var(--color-surface-muted) 72%, transparent);
+  }
+
+  .mobile-detail-route .mobile-appbar-back:focus-visible {
+    outline: 2px solid var(--color-accent-strong);
+    outline-offset: -2px;
+  }
+
+  .mobile-detail-route .utility-mobile-title,
+  .mobile-detail-route .mobile-appbar-back + .utility-mobile-title {
+    min-width: 0;
+    max-width: calc(100vw - 78px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: .94rem;
+  }
+
+  /* The app bar is the visual screen title on pushed routes. Retain the H1 in
+     the accessibility tree instead of rendering a second desktop-style title. */
+  .mobile-detail-route .mg-secondary-header {
+    margin: 0 0 9px;
+    padding: 0 0 7px;
+    border-bottom: 0;
+  }
+
+  .mobile-detail-route .mg-secondary-header .eyebrow {
+    display: none;
+  }
+
+  .mobile-detail-route .mg-secondary-header h1 {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  .mobile-detail-route .mg-secondary-header .screen-intro {
+    margin: 1px 0 0;
+    font-size: .78rem;
+    line-height: 1.4;
+  }
+
+  .mobile-detail-route .quiet-back-link {
+    display: none !important;
+  }
+
+  /* Parent-navigation links are redundant once the app-bar Back control owns
+     that job. Contextual links such as Search and Back to passage remain. */
+  .mobile-detail-route .mg-collections-workspace .quiet-link-row > a:first-child,
+  .mobile-detail-route .mg-plan-workspace .plan-summary > a[href="/today"] {
+    display: none;
+  }
+
+  .mobile-detail-route .mg-secondary-screen {
+    padding-top: 8px;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-detail-route .mg-search-workspace,
+  .mobile-detail-route .mg-data-workspace {
+    padding-top: 8px;
+  }
+
+  /* Focused Prayer owns its own session header. Remove outer shell chrome only
+     when an actual session workspace exists; empty/finished states keep Back. */
+  .mobile-immersive-route:has(.mg-focused-prayer-workspace) .utility-bar {
+    display: none;
+  }
+
+  .mobile-immersive-route:has(.mg-focused-prayer-workspace) .workspace-content {
+    min-height: 100svh;
+    min-height: 100dvh;
+  }
+
+  .mobile-immersive-route .mg-focused-prayer-workspace {
+    min-height: 100svh;
+    min-height: 100dvh;
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-bottom: max(14px, env(safe-area-inset-bottom));
+  }
+
+  .mobile-immersive-route .focused-prayer-header {
+    min-height: 44px;
+  }
+
+  /* Keyboard-first editors retain their primary action at the bottom edge
+     instead of making the user scroll past the editor after typing. */
+  .mobile-detail-route .mg-prayer-capture-workspace .prayer-capture-actions,
+  .mobile-detail-route .mg-reflection-workspace .reflection-editor-actions {
+    position: sticky;
+    z-index: 15;
+    bottom: 0;
+    margin-inline: calc(var(--mobile-gutter) * -1);
+    padding: 8px var(--mobile-gutter) calc(8px + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--color-line);
+    background: color-mix(in srgb, var(--color-canvas) 96%, var(--color-surface));
+  }
+
+  .mobile-detail-route .mg-prayer-capture-workspace .prayer-capture-actions {
+    gap: 10px;
+  }
+
+  .mobile-detail-route .mg-prayer-capture-workspace .prayer-capture-actions .primary-editorial-action,
+  .mobile-detail-route .mg-reflection-workspace .reflection-editor-actions .primary-editorial-action {
+    min-height: 42px;
+  }
+
+  .mobile-detail-route .mg-prayer-capture-workspace .prayer-capture-editor textarea {
+    min-height: min(31dvh, 260px);
+    max-height: 42dvh;
+  }
+
+  .mobile-detail-route .mg-reflection-workspace .reflection-textarea {
+    min-height: min(46dvh, 420px);
+  }
+
+  /* Keep pushed app-bar geometry usable during the project's 200% text test. */
+  html[style*="font-size: 200%"] .mobile-detail-route .utility-mobile-title {
+    max-width: calc(100vw - 76px);
+    font-size: .7rem;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mobile-appbar-back > span {
+    font-size: 1.05rem;
+  }
+
+  /* Native file inputs have a large intrinsic min-content width in Chromium.
+     At 200% text this can force the entire Data screen wider than a 320px phone. */
+  .mobile-detail-route .mg-data-workspace,
+  .mobile-detail-route .mg-data-workspace .data-sections,
+  .mobile-detail-route .mg-data-workspace .data-panel,
+  .mobile-detail-route .mg-data-workspace .import-panel,
+  .mobile-detail-route .mg-data-workspace .data-password,
+  .mobile-detail-route .mg-data-workspace .import-mode,
+  .mobile-detail-route .mg-data-workspace .backup-preview,
+  .mobile-detail-route .mg-data-workspace .storage-resilience,
+  .mobile-detail-route .mg-data-workspace .storage-facts {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .mobile-detail-route .mg-data-workspace input[type="file"] {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    font-size: .75rem;
+  }
+
+  .mobile-detail-route .mg-data-workspace input[type="file"]::file-selector-button {
+    max-width: 52%;
+    margin-inline-end: 6px;
+    padding-inline: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace * {
+    min-inline-size: 0;
+    box-sizing: border-box;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace input[type="file"] {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    font-size: 0;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace input[type="file"]::file-selector-button {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    font-size: .5rem;
+    white-space: normal;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .mobile-appearance-panel .theme-switcher {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .mobile-appearance-panel .theme-option,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .data-panel > button,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .data-actions button,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .backup-preview button,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .data-password input {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    white-space: normal;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .import-mode,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .backup-counts,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .storage-facts {
+    grid-template-columns: 1fr;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .backup-counts div,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .storage-facts div {
+    min-width: 0;
+    padding-inline: 0;
+    border-right: 0;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace button,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace label,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace dd,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace dt,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace span,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace code {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+}
+
+@media (max-width: 360px) {
+  .mobile-detail-route .utility-mobile-title,
+  .mobile-detail-route .mobile-appbar-back + .utility-mobile-title {
+    max-width: calc(100vw - 72px);
+    font-size: .89rem;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .utility-mobile-title {
+    font-size: .66rem;
+  }
+}
+
+@media (max-width: 760px) and (prefers-reduced-motion: reduce),
+       (max-height: 500px) and (max-width: 900px) and (prefers-reduced-motion: reduce) {
+  .mobile-detail-route .mobile-appbar-back {
+    transition: none;
+  }
+}

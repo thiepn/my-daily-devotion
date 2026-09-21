@@ -1,8 +1,8 @@
 import { expect, test, type Page, type TestInfo } from "@playwright/test";
-import { enrollCalendarPlan, expectCanonicalTitle, expectNoAxeViolations, expectNoHorizontalOverflow, openRoute } from "./helpers";
+import { enrollCalendarPlan, expectNoAxeViolations, expectNoHorizontalOverflow, expectRouteTitle, openRoute } from "./helpers";
 
-type Surface = [string, string, string];
-const emptySurfaces: Surface[] = [["today", "/today", "Today"], ["bible", "/bible/JHN/3", "Bible"], ["reflection", "/today/reflection/2026-09-17", "Reflect"], ["prayer", "/prayer", "Prayer"], ["history", "/history", "History"], ["search", "/search", "Search"], ["collections", "/bible/collections", "Collections"], ["data", "/data", "Your data"]];
+type Surface = [string, string, string, string?];
+const emptySurfaces: Surface[] = [["today", "/today", "Today"], ["bible", "/bible/JHN/3", "Bible"], ["reflection", "/today/reflection/2026-09-17", "Reflect", "Reflection"], ["prayer", "/prayer", "Prayer"], ["history", "/history", "History"], ["search", "/search", "Search"], ["collections", "/bible/collections", "Collections", "Scripture collections"], ["data", "/data", "Your data", "Data and privacy"]];
 async function setVisualTheme(page: Page, mode: "light" | "dark" | "system") {
   await page.evaluate((next) => {
     if (next === "system") document.documentElement.removeAttribute("data-theme");
@@ -12,9 +12,7 @@ async function setVisualTheme(page: Page, mode: "light" | "dark" | "system") {
 
 async function capture(page: Page, testInfo: TestInfo, name: string, surface: Surface) {
   await openRoute(page, surface[1]);
-  const canonical = surface[0] === "today" || surface[0] === "bible" || surface[0] === "prayer" || surface[0] === "history";
-  if (canonical && (page.viewportSize()?.width ?? 9999) <= 760) await expectCanonicalTitle(page, surface[2] as "Today" | "Bible" | "Prayer" | "History");
-  else await expect(page.getByRole("heading", { level: 1, name: surface[2], exact: true })).toBeVisible();
+  await expectRouteTitle(page, surface[2], surface[3] ?? surface[2]);
   if (surface[0] === "bible") await expect(page.locator(".scripture-copy")).toBeVisible();
   if (surface[0] === "search-results") await expect(page.locator(".search-hit").first()).toBeVisible();
   await expectNoHorizontalOverflow(page);
@@ -48,6 +46,7 @@ test("visual record of populated devotional journeys and management screens", as
   await page.getByRole("combobox", { name: "Category optional", exact: true }).selectOption({ label: "Family" }); await page.getByRole("combobox", { name: "Schedule", exact: true }).selectOption("DAILY");
   await page.getByRole("button", { name: "Save prayer" }).click(); await expect(page.getByLabel("Request", { exact: true })).toHaveValue("Give Anna wisdom and peace for the week ahead.");
   const prayer = page.url().split("#")[1]!;
+  const prayerSettings = prayer.includes("?") ? prayer.replace("?", "/settings?") : `${prayer}/settings`;
   await page.getByLabel("Prayer update").fill("We had a good conversation today. Keep helping me listen."); await page.getByRole("button", { name: "Add update", exact: true }).click();
   await expect(page.getByText("Update recorded.")).toBeVisible(); await page.getByRole("button", { name: "Prayed now" }).click();
   await expect(page.getByText("Prayed now recorded.")).toBeVisible();
@@ -62,8 +61,8 @@ test("visual record of populated devotional journeys and management screens", as
   const surfaces: Surface[] = [
     ...emptySurfaces.filter((item) => item[0] !== "search"),
     ["plan", "/today/plan", "Reading plan"], ["prayer-new", "/prayer/new", "Add prayer"], ["prayer-detail", prayer, "Prayer"],
-    ["prayer-settings", `${prayer}/settings`, "Prayer details"], ["people", "/prayer/people", "People"], ["categories", "/prayer/categories", "Categories"],
-    ["moments", "/history/moments", "Moments"], ["search-results", "/search?q=love", "Search"],
+    ["prayer-settings", prayerSettings, "Prayer details", "Prayer settings"], ["people", "/prayer/people", "People", "Prayer people"], ["categories", "/prayer/categories", "Categories", "Prayer categories"],
+    ["moments", "/history/moments", "Moments", "History moments"], ["search-results", "/search?q=love", "Search"],
   ];
   for (const mode of ["light", "dark", "mobile", "mobile-dark", "small-mobile", "tablet-portrait", "tablet-landscape"] as const) {
     await page.setViewportSize(mode.includes("mobile") ? { width: mode === "small-mobile" ? 320 : 390, height: mode === "small-mobile" ? 568 : 844 } : mode === "tablet-portrait" ? { width: 768, height: 1024 } : mode === "tablet-landscape" ? { width: 1024, height: 768 } : { width: 1440, height: 900 });
