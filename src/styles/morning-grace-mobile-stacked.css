@@ -908,6 +908,7 @@
 
   /* Draft confirmation becomes a true mobile bottom sheet. */
   .draft-dialog {
+    position: fixed;
     inset: auto 0 0;
     width: 100%;
     max-width: none;
