@@ -84,7 +84,7 @@ assert.match(navigationTest,/phone landscape keeps secondary routes in stacked-a
 assert.match(navigationTest,/Search and Data return to the root context that opened them/);
 assert.match(navigationTest,/in-content Search entry points preserve their source screen/);
 assert.match(stackedCss,/People\/Categories: editor first/);
-assert.match(stackedCss,/Prayer Detail becomes one dense story stream/);
+assert.match(stackedCss,/Prayer detail becomes one dense story stream/);
 assert.match(stackedCss,/History detail views use compact timeline rows/);
 assert.match(denseSecondaryTest,/People and Categories put the editor before the saved list/);
 assert.match(denseSecondaryTest,/Prayer detail is a compact mobile story with visible status context/);
