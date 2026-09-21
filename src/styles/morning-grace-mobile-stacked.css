@@ -225,26 +225,65 @@
     white-space: nowrap;
   }
 
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace * {
+    min-inline-size: 0;
+    box-sizing: border-box;
+  }
+
   html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace input[type="file"] {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    font-size: 0;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace input[type="file"]::file-selector-button {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
     font-size: .5rem;
+    white-space: normal;
   }
 
   html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .mobile-appearance-panel .theme-switcher {
     width: 100%;
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 
-  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .mobile-appearance-panel .theme-option {
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .mobile-appearance-panel .theme-option,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .data-panel > button,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .data-actions button,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .backup-preview button,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .data-password input {
+    width: 100%;
+    max-width: 100%;
     min-width: 0;
-    padding-inline: 4px;
+    white-space: normal;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .import-mode,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .backup-counts,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .storage-facts {
+    grid-template-columns: 1fr;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .backup-counts div,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace .storage-facts div {
+    min-width: 0;
+    padding-inline: 0;
+    border-right: 0;
   }
 
   html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace button,
   html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace label,
   html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace dd,
-  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace span {
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace dt,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace span,
+  html[style*="font-size: 200%"] .mobile-detail-route .mg-data-workspace code {
     overflow-wrap: anywhere;
+    word-break: break-word;
   }
 }
 
