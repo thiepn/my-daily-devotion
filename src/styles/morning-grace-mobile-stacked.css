@@ -705,3 +705,392 @@
     transition: none;
   }
 }
+
+
+/* 1.2.5 — native mobile loading, empty, error, conflict and draft states. */
+@media (max-width: 760px), (max-height: 500px) and (max-width: 900px) {
+  /* Route/loading states stay small enough that the surrounding app chrome still
+     feels like the primary navigation surface. */
+  .mg-route-loading {
+    width: 100%;
+    min-height: 96px;
+    gap: 10px;
+    padding: 16px 0;
+  }
+
+  .mg-route-loading .route-loading-mark {
+    width: 28px;
+    height: 28px;
+  }
+
+  .mg-route-loading strong {
+    font-family: var(--font-ui);
+    font-size: .84rem;
+    font-weight: 680;
+  }
+
+  .mg-route-loading span {
+    margin-top: 2px;
+    font-size: .64rem;
+    line-height: 1.35;
+  }
+
+  .mg-route-state {
+    width: 100%;
+    min-height: 0;
+    padding-top: 14px;
+    padding-bottom: 24px;
+  }
+
+  .mg-route-state > .eyebrow {
+    margin: 0 0 5px;
+    font-size: .58rem;
+  }
+
+  .mg-route-state > h1,
+  .mg-state-screen h1,
+  .startup-error h1 {
+    max-width: 24ch;
+    margin: 2px 0 9px;
+    font-family: var(--font-ui);
+    font-size: 1.18rem;
+    font-weight: 720;
+    line-height: 1.2;
+    letter-spacing: -.015em;
+  }
+
+  .mg-inline-state {
+    width: 100%;
+    margin: 0;
+    padding: 11px 0;
+    color: var(--color-ink-soft);
+    border-top: 1px solid var(--color-line);
+    border-bottom: 1px solid var(--color-line);
+    font-size: .73rem;
+    line-height: 1.42;
+    overflow-wrap: anywhere;
+  }
+
+  .mg-route-state.mg-loading-state .mg-inline-state,
+  .mg-inline-state.mg-loading-state {
+    color: var(--color-muted);
+  }
+
+  .mg-route-state.mg-error-state .mg-inline-state,
+  .mg-inline-state.mg-error-state {
+    color: var(--color-warning-text);
+    border-top-color: color-mix(in srgb, var(--color-warning-text) 32%, var(--color-line));
+  }
+
+  .mg-route-state > .quiet-button,
+  .mg-route-state > .quiet-back-link {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    margin-top: 10px;
+    padding-inline: 10px;
+  }
+
+  /* Global route/startup failures become compact app states instead of large
+     centered editorial pages. */
+  .mg-state-screen,
+  .startup-error {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 24px var(--mobile-gutter) calc(24px + env(safe-area-inset-bottom));
+  }
+
+  .mg-state-mark {
+    width: 34px;
+    height: 34px;
+    margin-bottom: 12px;
+  }
+
+  .mg-state-screen > p:not(.eyebrow),
+  .startup-error > p:not(.eyebrow) {
+    max-width: 42ch;
+    margin-block: 6px;
+    font-size: .73rem;
+    line-height: 1.45;
+  }
+
+  .recovery-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 5px;
+    margin-top: 14px;
+  }
+
+  .recovery-actions > * {
+    width: 100%;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+
+  .startup-error details {
+    margin-top: 14px;
+    font-size: .68rem;
+  }
+
+  /* Empty results are quiet inline app states, not decorative empty cards. */
+  .mg-empty-state,
+  .mg-prayer-empty,
+  .search-empty {
+    margin: 0;
+    padding: 14px 0;
+    border-top: 1px solid var(--color-line);
+    border-bottom: 1px solid var(--color-line);
+    background: transparent;
+  }
+
+  .mg-prayer-empty > svg,
+  .mg-empty-state > svg {
+    display: none;
+  }
+
+  .mg-prayer-empty h2,
+  .mg-empty-state h2 {
+    margin: 0 0 4px;
+    font-family: var(--font-ui);
+    font-size: .92rem;
+    font-weight: 680;
+    line-height: 1.25;
+  }
+
+  .mg-prayer-empty p,
+  .mg-empty-state,
+  .mg-empty-state p,
+  .search-empty {
+    font-family: var(--font-ui);
+    font-size: .71rem;
+    line-height: 1.42;
+  }
+
+  .mg-prayer-empty a {
+    min-height: 42px;
+    display: inline-flex;
+    align-items: center;
+    margin-top: 3px;
+    font-size: .7rem;
+  }
+
+  /* Offline/update notification is a slim system strip beneath the app bar. */
+  .platform-status {
+    min-height: 32px;
+    padding: 5px 10px;
+    border-bottom: 1px solid var(--color-line);
+    font-size: .61rem;
+    line-height: 1.3;
+  }
+
+  .platform-status > span {
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .platform-status strong {
+    flex: 0 0 auto;
+  }
+
+  .platform-status button {
+    min-height: 36px;
+    flex: 0 0 auto;
+    margin-left: auto;
+    padding-inline: 8px;
+    font-size: .61rem;
+  }
+
+  /* Draft confirmation becomes a true mobile bottom sheet. */
+  .draft-dialog {
+    inset: auto 0 0;
+    width: 100%;
+    max-width: none;
+    max-height: min(84dvh, 720px);
+    margin: 0;
+    padding: 8px var(--mobile-gutter) calc(12px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border: 1px solid var(--color-line-strong);
+    border-inline: 0;
+    border-bottom: 0;
+    border-top-width: 1px;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -12px 40px rgba(18, 22, 18, .18);
+  }
+
+  .draft-dialog::before {
+    content: "";
+    width: 36px;
+    height: 4px;
+    display: block;
+    margin: 0 auto 10px;
+    border-radius: 999px;
+    background: var(--color-line-strong);
+  }
+
+  .draft-dialog::backdrop {
+    background: rgba(20, 23, 20, .42);
+    backdrop-filter: none;
+  }
+
+  .draft-dialog h2 {
+    margin: 0 0 5px;
+    font-family: var(--font-ui);
+    font-size: 1.02rem;
+    font-weight: 720;
+    line-height: 1.25;
+  }
+
+  .draft-dialog p {
+    margin: 0;
+    font-size: .72rem;
+    line-height: 1.42;
+  }
+
+  .draft-dialog [role="alert"] {
+    margin-top: 8px;
+    color: var(--color-warning-text);
+  }
+
+  .draft-dialog-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+    margin-top: 12px;
+    padding-top: 10px;
+  }
+
+  .draft-dialog-actions button {
+    width: 100%;
+    min-height: 48px;
+    padding: 7px 10px;
+    border-radius: 10px;
+    font-size: .72rem;
+    white-space: normal;
+  }
+
+  .draft-dialog-save {
+    order: 1;
+  }
+
+  .draft-dialog-keep {
+    order: 2;
+    margin-left: 0;
+  }
+
+  .draft-dialog-discard {
+    order: 3;
+    border-color: transparent !important;
+    background: transparent !important;
+  }
+
+  /* Conflict review becomes an edge-to-edge comparison block with explicit
+     mobile actions rather than an inset desktop card. */
+  .conflict-review {
+    display: grid;
+    gap: 9px;
+    margin: 14px calc(var(--mobile-gutter) * -1);
+    padding: 12px var(--mobile-gutter);
+    border-inline: 0;
+    border-left: 0;
+    border-radius: 0;
+    background: color-mix(in srgb, var(--color-morning-soft) 18%, var(--color-surface));
+    box-shadow: none;
+  }
+
+  .conflict-review > p:first-child {
+    margin: 0;
+    font-size: .72rem;
+    line-height: 1.42;
+  }
+
+  .conflict-review label {
+    display: grid;
+    gap: 4px;
+    font-size: .62rem;
+    letter-spacing: .025em;
+  }
+
+  .conflict-review textarea {
+    min-height: 88px;
+    max-height: 24dvh;
+    margin: 0;
+    padding: 9px 10px;
+    font-size: .76rem;
+    line-height: 1.42;
+    resize: vertical;
+  }
+
+  .conflict-review-open,
+  .conflict-review-actions button {
+    width: 100%;
+    min-height: 44px;
+    padding: 7px 10px;
+    border: 1px solid var(--color-line-strong);
+    border-radius: 9px;
+    font-size: .69rem;
+    white-space: normal;
+  }
+
+  .conflict-review-open,
+  .conflict-review-use {
+    color: var(--color-action-on);
+    border-color: var(--color-accent-strong);
+    background: var(--color-accent-strong);
+  }
+
+  .conflict-review-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .conflict-review-keep {
+    background: transparent;
+  }
+
+  html[style*="font-size: 200%"] .conflict-review-actions {
+    grid-template-columns: 1fr;
+  }
+
+  html[style*="font-size: 200%"] .draft-dialog {
+    max-height: 90dvh;
+  }
+
+  html[style*="font-size: 200%"] .platform-status > span {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  html[style*="font-size: 200%"] .platform-status button {
+    width: 100%;
+    margin-left: 0;
+  }
+}
+
+@media (max-height: 500px) and (max-width: 900px) {
+  .draft-dialog {
+    max-height: 94dvh;
+    padding-top: 6px;
+  }
+
+  .draft-dialog h2 {
+    font-size: .9rem;
+  }
+
+  .draft-dialog-actions button {
+    min-height: 44px;
+  }
+
+  .mg-state-screen,
+  .startup-error {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+}
