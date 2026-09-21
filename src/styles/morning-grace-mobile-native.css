@@ -113,6 +113,13 @@
     display: none !important;
   }
 
+  /* Remove legacy in-content parent links where the app-bar back button now
+     carries that responsibility. Contextual actions remain available. */
+  .mobile-detail-route .mg-collections-workspace .quiet-link-row > a:first-child,
+  .mobile-detail-route .mg-plan-workspace .plan-summary > a[href="/today"] {
+    display: none;
+  }
+
   .mobile-detail-route .mg-secondary-screen {
     padding-top: 8px;
     padding-bottom: calc(18px + env(safe-area-inset-bottom));
@@ -130,10 +137,12 @@
   }
 
   .mobile-immersive-route .workspace-content {
+    min-height: 100svh;
     min-height: 100dvh;
   }
 
   .mobile-immersive-route .mg-focused-prayer-workspace {
+    min-height: 100svh;
     min-height: 100dvh;
     padding-top: max(8px, env(safe-area-inset-top));
     padding-bottom: max(14px, env(safe-area-inset-bottom));
@@ -172,6 +181,16 @@
   .mobile-detail-route .mg-reflection-workspace .reflection-textarea {
     min-height: min(46dvh, 420px);
   }
+
+  /* The app bar must remain usable under the project's 200% text-resize test. */
+  html[style*="font-size: 200%"] .mobile-detail-route .utility-mobile-title {
+    max-width: calc(100vw - 76px);
+    font-size: .7rem;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .utility-mobile-back > span {
+    font-size: 1.1rem;
+  }
 }
 
 @media (max-width: 360px) {
@@ -182,6 +201,11 @@
 
   .mobile-detail-route .utility-mobile-back {
     margin-left: -9px;
+  }
+
+  html[style*="font-size: 200%"] .mobile-detail-route .utility-mobile-title {
+    max-width: calc(100vw - 72px);
+    font-size: .66rem;
   }
 }
 
