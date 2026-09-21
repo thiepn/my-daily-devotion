@@ -672,6 +672,8 @@
   }
 
   html[style*="font-size: 200%"] .mobile-detail-route .mg-prayer-metadata-workspace .metadata-row > div:last-child {
+    flex-direction: column;
+    align-items: stretch;
     justify-content: flex-start;
   }
 
