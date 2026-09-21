@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.1 — 2026-09-21
+
+### Mobile-native secondary navigation
+
+- Move phone Back navigation for secondary routes into the compact mobile app bar.
+- Hide duplicate in-content Back links on phone while retaining them on desktop.
+- Route Reading Plan/Reflection to Today, Collections to Bible, Prayer subroutes to their Prayer parent, History detail/moments to History, and Search/Data to Today.
+- Preserve all 1.2.0 mobile-first layouts, desktop/tablet layouts, schema 1, backup format 1 and existing domain semantics.
+
 ## 1.2.0 — 2026-09-21
 
 ### Mobile-first application redesign
