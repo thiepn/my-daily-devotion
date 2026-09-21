@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.2.3 — 2026-09-21
+
+### Contextual mobile utilities
+
+- Make Search and Data remember the exact root screen that opened them instead of always returning to Today.
+- Preserve Bible chapter/verse context, Prayer status filters and History route context through mobile utility navigation.
+- Keep the return target when Search submits a query or changes its filters.
+- Add contextual return behavior to Search Bible, Collections → Search and History → Search entry points.
+- Keep direct-open Search/Data routes safely falling back to Today.
+- Preserve the 1.2.2 stacked-screen shell, desktop/tablet Morning Grace composition, database schema 1 and backup format 1.
+
 ## 1.2.2 — 2026-09-21
 
 ### Stacked mobile app flows
