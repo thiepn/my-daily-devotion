@@ -227,6 +227,19 @@
     line-height: 1.4;
   }
 
+  /* Phone app bars already identify the destination; keep the content header task-first. */
+  .mg-today-hero .screen-intro,
+  .mg-prayer-hero .screen-intro,
+  .mg-history-hero .screen-intro {
+    display: none;
+  }
+
+  .mg-today-hero .mg-hero-copy,
+  .mg-prayer-hero .mg-hero-copy,
+  .mg-history-hero .mg-hero-copy {
+    padding-bottom: 4px;
+  }
+
   .mg-hero-ornament,
   .mg-hero-art,
   .mg-history-hero-art,
@@ -704,8 +717,8 @@
 
   .mg-prayer-focus {
     display: block;
-    margin: 10px 0 18px;
-    padding: 12px;
+    margin: 8px 0 14px;
+    padding: 10px;
     border: 1px solid var(--color-line);
     border-radius: 12px;
     background: var(--color-surface);
@@ -717,29 +730,33 @@
   }
 
   .mg-prayer-focus-copy .muted-copy,
-  .mg-prayer-focus .session-resume-note,
-  .mg-prayer-focus .session-depth-note {
-    font-size: .68rem;
-    line-height: 1.4;
+  .mg-prayer-focus .session-resume-note {
+    display: none;
   }
 
-  .mg-session-depths {
-    display: flex;
-    gap: 6px;
-    margin-top: 10px;
+  .mg-prayer-focus .session-depth-note {
+    display: none;
+  }
+
+  .mg-prayer-focus .mg-session-depths {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    margin-top: 8px;
     border: 0;
     border-radius: 0;
     overflow: visible;
   }
 
-  .mg-session-depths a,
-  .mg-session-depths a + a {
-    min-height: 38px;
-    flex: 1 1 0;
+  .mg-prayer-focus .mg-session-depths > a,
+  .mg-prayer-focus .mg-session-depths > a + a {
+    min-width: 0;
+    min-height: 34px;
+    width: auto;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 7px 8px;
+    padding: 5px 4px;
     border: 1px solid var(--color-line);
     border-radius: 9px;
     background: var(--color-canvas);
@@ -752,8 +769,8 @@
 
   .mg-session-depths strong {
     font-family: var(--font-ui);
-    font-size: .7rem;
-    font-weight: 650;
+    font-size: .64rem;
+    font-weight: 700;
   }
 
   .mg-prayer-library {
@@ -887,8 +904,8 @@
   }
 
   .mg-history-overview {
-    margin: 14px 0 18px;
-    padding-top: 12px;
+    margin: 10px 0 12px;
+    padding-top: 10px;
   }
 
   .mg-history-overview .mg-section-title-row {
@@ -932,7 +949,7 @@
   }
 
   .mg-history-recent {
-    margin-top: 14px;
+    margin-top: 10px;
   }
 
   .mg-history-recent a {
