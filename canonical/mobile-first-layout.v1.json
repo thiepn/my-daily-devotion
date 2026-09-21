@@ -2,7 +2,7 @@
   "version": 1,
   "name": "Morning Grace Mobile-First Layout",
   "parentRelease": "1.1.0",
-  "status": "mobile-redesign-v1-contextual-utilities",
+  "status": "mobile-redesign-v1-dense-secondary-workflows",
   "breakpointPx": 760,
   "principles": [
     "phone layout is composed independently from desktop",
@@ -14,7 +14,8 @@
     "desktop and tablet Morning Grace layouts remain unchanged",
     "Morning Grace visual identity remains intact without oversized editorial hero treatment",
     "phone landscape remains in the mobile app composition",
-    "root tabs and pushed detail workflows use different mobile navigation chrome"
+    "root tabs and pushed detail workflows use different mobile navigation chrome",
+    "secondary management and history workflows use dense mobile-native compositions"
   ],
   "chrome": {
     "topBar": "root destinations use a compact sticky title bar with Search and Data; pushed routes use a 44px contextual Back control plus route title",
@@ -28,7 +29,7 @@
     "bible": "reading-first; no chapter artwork on phone; compact sticky book/chapter controls; bottom verse actions",
     "prayer": "compact header, small primary action, inline session-depth choice, horizontal status tabs, dense request rows",
     "history": "compact header and segmented tabs, three-column factual summary, dense calendar",
-    "secondary": "stacked pushed workspaces with app-bar Back navigation, no duplicate visual H1, no root bottom tabs, and compact task-first spacing"
+    "secondary": "stacked pushed workspaces with app-bar Back navigation, no duplicate visual H1, no root bottom tabs, and dense task-first mobile composition"
   },
   "preserved": [
     "desktop and tablet compositions",
@@ -47,7 +48,8 @@
     "test": "tests/ux/mobile-first-layout.spec.ts",
     "verifier": "scripts/verify-mobile-first-layout.mjs",
     "stackedStyle": "src/styles/morning-grace-mobile-stacked.css",
-    "nativeNavigationTest": "tests/ux/mobile-native-navigation.spec.ts"
+    "nativeNavigationTest": "tests/ux/mobile-native-navigation.spec.ts",
+    "denseSecondaryTest": "tests/ux/mobile-dense-secondary.spec.ts"
   },
   "landscapePhoneRule": {
     "maxHeightPx": 500,
@@ -79,5 +81,12 @@
     "search": "Search opened from a root or contextual entry point carries an explicit return target and preserves it through query/filter changes",
     "data": "Data opened from a root app bar carries the exact root route and query as its return target",
     "directOpenFallback": "direct Search and Data routes without a return target fall back to Today"
+  },
+  "denseSecondary": {
+    "prayerDetail": "single-stream request, lifecycle, timeline and context composition with visible status",
+    "prayerSettings": "flat settings page with compact controls and sticky save actions",
+    "prayerMetadata": "People/Categories editor precedes a dense saved-item list on phone",
+    "historyDetail": "History Day retains date context; Moments/Day use compact timeline rows and a local segmented switcher",
+    "enlargedText": "two-column mobile action layouts collapse to one column at 200% text"
   }
 }
