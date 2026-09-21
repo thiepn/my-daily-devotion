@@ -10,6 +10,7 @@ test.describe("responsive and reflow UX", () => {
       await openRoute(page, route);
       await expectNoHorizontalOverflow(page);
     }
+    await openRoute(page, "/today");
     const mobileNav = page.locator(".mobile-nav");
     await expect(mobileNav).toBeVisible();
     const targets = mobileNav.locator(".nav-link");
