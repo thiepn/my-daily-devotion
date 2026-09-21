@@ -129,11 +129,11 @@ export function TodayScreen() {
   };
 
   if (loading) {
-    return <main className="visual-screen today-screen mg-canonical-screen"><p className="eyebrow">Today</p><p className="mcheyne-loading">Opening today’s devotion…</p></main>;
+    return <main className="visual-screen today-screen mg-canonical-screen mg-route-state mg-loading-state"><p className="eyebrow">Today</p><p className="mcheyne-loading mg-inline-state">Opening today’s devotion…</p></main>;
   }
 
   if (error) {
-    return <main className="visual-screen today-screen mg-canonical-screen"><p className="eyebrow">Today</p><h1>Today</h1><p role="alert">{error}</p><button type="button" onClick={() => void refresh()}>Try again</button></main>;
+    return <main className="visual-screen today-screen mg-canonical-screen mg-route-state mg-error-state"><p className="eyebrow">Today</p><h1>Today</h1><p className="mg-inline-state" role="alert">{error}</p><button className="quiet-button" type="button" onClick={() => void refresh()}>Try again</button></main>;
   }
 
   if (!plan || !enrollment) {
