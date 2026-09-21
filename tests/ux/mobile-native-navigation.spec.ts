@@ -45,9 +45,23 @@ test.describe("native mobile stacked navigation", () => {
     await expect(page.locator(".mobile-nav")).toBeVisible();
   });
 
-  test("focused prayer is an immersive mobile task", async ({ page }) => {
+  test("empty focused-prayer states retain native pushed navigation", async ({ page }) => {
     await openRoute(page, "/prayer/session?depth=quick");
     await expect(page.locator(".app-shell")).toHaveClass(/mobile-immersive-route/);
+    await expect(page.locator(".utility-bar")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Back to Prayer" })).toBeVisible();
+    await expect(page.locator(".mobile-nav")).toBeHidden();
+    await expectNoHorizontalOverflow(page);
+  });
+
+  test("an active focused-prayer session becomes immersive", async ({ page }) => {
+    await openRoute(page, "/prayer/new");
+    await page.getByLabel("What do you want to pray about?").fill("Give wisdom and patience today.");
+    await page.getByRole("button", { name: "Add details", exact: true }).click();
+    await page.getByRole("combobox", { name: "Schedule", exact: true }).selectOption("DAILY");
+    await page.getByRole("button", { name: "Save prayer", exact: true }).click();
+    await openRoute(page, "/prayer/session?depth=quick");
+    await expect(page.locator(".mg-focused-prayer-workspace")).toBeVisible();
     await expect(page.locator(".utility-bar")).toBeHidden();
     await expect(page.locator(".mobile-nav")).toBeHidden();
     await expectNoHorizontalOverflow(page);
