@@ -29,7 +29,7 @@ test("reflection drafts survive cancelled navigation, reload and stale saves", a
   const editor = page.getByLabel("Daily reflection");
   await editor.fill("A reflection worth keeping.\nA second line.");
   const leaveReflection = () => usesMobileAppLayout(page)
-    ? page.getByRole("button", { name: "Back to Today" }).click()
+    ? page.getByRole("button", { name: "Back" }).click()
     : visibleNavLink(page, "Today").click();
   await Promise.all([
     page.waitForEvent("dialog").then(async (dialog) => { expect(dialog.type()).toBe("confirm"); await dialog.dismiss(); }),
