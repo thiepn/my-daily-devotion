@@ -129,4 +129,4 @@ jobs:
             echo "A release for this version already exists; refusing to overwrite its assets or tag."
             exit 0
           fi
-          gh release create "v$VERSION" release/* --target "$GITHUB_SHA" --title "My Daily Devotion $VERSION" --notes-file docs/RELEASE_1.2.0_MOBILE_FIRST.md
+          gh release create "v$VERSION" release/* --target "$GITHUB_SHA" --title "My Daily Devotion $VERSION" --notes-file docs/RELEASE_1.2.1_MOBILE_NAV.md
