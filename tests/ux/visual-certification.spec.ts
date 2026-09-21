@@ -46,6 +46,7 @@ test("visual record of populated devotional journeys and management screens", as
   await page.getByRole("combobox", { name: "Category optional", exact: true }).selectOption({ label: "Family" }); await page.getByRole("combobox", { name: "Schedule", exact: true }).selectOption("DAILY");
   await page.getByRole("button", { name: "Save prayer" }).click(); await expect(page.getByLabel("Request", { exact: true })).toHaveValue("Give Anna wisdom and peace for the week ahead.");
   const prayer = page.url().split("#")[1]!;
+  const prayerSettings = prayer.includes("?") ? prayer.replace("?", "/settings?") : `${prayer}/settings`;
   await page.getByLabel("Prayer update").fill("We had a good conversation today. Keep helping me listen."); await page.getByRole("button", { name: "Add update", exact: true }).click();
   await expect(page.getByText("Update recorded.")).toBeVisible(); await page.getByRole("button", { name: "Prayed now" }).click();
   await expect(page.getByText("Prayed now recorded.")).toBeVisible();
@@ -60,7 +61,7 @@ test("visual record of populated devotional journeys and management screens", as
   const surfaces: Surface[] = [
     ...emptySurfaces.filter((item) => item[0] !== "search"),
     ["plan", "/today/plan", "Reading plan"], ["prayer-new", "/prayer/new", "Add prayer"], ["prayer-detail", prayer, "Prayer"],
-    ["prayer-settings", `${prayer}/settings`, "Prayer details", "Prayer settings"], ["people", "/prayer/people", "People", "Prayer people"], ["categories", "/prayer/categories", "Categories", "Prayer categories"],
+    ["prayer-settings", prayerSettings, "Prayer details", "Prayer settings"], ["people", "/prayer/people", "People", "Prayer people"], ["categories", "/prayer/categories", "Categories", "Prayer categories"],
     ["moments", "/history/moments", "Moments", "History moments"], ["search-results", "/search?q=love", "Search"],
   ];
   for (const mode of ["light", "dark", "mobile", "mobile-dark", "small-mobile", "tablet-portrait", "tablet-landscape"] as const) {
