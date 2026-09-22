@@ -103,7 +103,7 @@
     "enlargedText": "bottom sheet, conflict actions and platform status reflow without horizontal scrolling at 200% text"
   },
   "nativeInteractions": {
-    "backNavigation": "consume real in-app history when available; use the logical parent only as a direct-open fallback",
+    "backNavigation": "honor validated explicit return context first; otherwise consume real in-app history when available; use the logical parent as the direct-open fallback",
     "routeHandoff": "non-reader route changes reset stale document scroll while Bible reader restoration remains authoritative",
     "confirmations": "SPA draft guards and destructive actions use the shared in-app confirmation sheet instead of browser confirm dialogs",
     "touchFeedback": "mobile navigation and primary interactive surfaces use manipulation touch behavior and restrained pressed feedback",
