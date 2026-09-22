@@ -984,6 +984,19 @@
     white-space: normal;
   }
 
+  .confirm-dialog-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .confirm-dialog-confirm {
+    order: 1;
+  }
+
+  .confirm-dialog-cancel {
+    order: 2;
+    margin-left: 0;
+  }
+
   .draft-dialog-save {
     order: 1;
   }
@@ -1101,5 +1114,41 @@
   .startup-error {
     padding-top: 14px;
     padding-bottom: 14px;
+  }
+}
+
+
+/* 1.2.6 — native mobile interaction polish. */
+@media (max-width: 760px), (max-height: 500px) and (max-width: 900px) {
+  a,
+  button,
+  select,
+  input,
+  textarea,
+  [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  a,
+  button,
+  select,
+  [role="button"] {
+    touch-action: manipulation;
+  }
+
+  .mobile-nav .nav-link:active,
+  .utility-link:active,
+  .mobile-detail-route .mobile-appbar-back:active,
+  .prayer-status-tabs a:active,
+  .history-tabs a:active,
+  .mg-session-depths a:active,
+  .mg-reading-card .reading-passage:active,
+  .mg-prayer-row:active {
+    opacity: .72;
+  }
+
+  .draft-dialog,
+  .confirm-dialog {
+    overscroll-behavior: contain;
   }
 }
