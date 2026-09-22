@@ -1,5 +1,18 @@
 # Changelog
 
+## 1.2.6 — 2026-09-22
+
+### Mobile interaction polish
+
+- Replace SPA route-level unsaved-change browser confirms with the in-app draft bottom sheet while preserving native beforeunload protection for real reload/close events.
+- Centralize dirty-editor navigation blocking so Reflection, Prayer, Collections, People/Categories and Bible note workflows share one route guard.
+- Add in-session per-route/query scroll memory so revisiting a tab/detail screen returns to its previous vertical position while unseen routes begin at the top.
+- Keep Bible verse/reader restoration authoritative after the generic route reset.
+- Add mobile scroll padding/margins so focused editors are less likely to sit beneath the sticky app bar or bottom navigation.
+- Opt mobile chrome and controls into direct-manipulation touch behavior with restrained pressed feedback.
+- Add dedicated coverage for native route draft confirmation, scroll restoration, keyboard-safe focus margins, 320px/200% text, landscape phones and desktop preservation.
+- Preserve database schema 1, backup format 1, all devotional domain behavior and the certified 1.2.5 mobile state system.
+
 ## 1.2.5 — 2026-09-22
 
 ### Native mobile application states

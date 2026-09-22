@@ -31,10 +31,12 @@ test("reflection drafts survive cancelled navigation, reload and stale saves", a
   const leaveReflection = () => usesMobileAppLayout(page)
     ? page.getByRole("button", { name: "Back", exact: true }).click()
     : visibleNavLink(page, "Today").click();
-  await Promise.all([
-    page.waitForEvent("dialog").then(async (dialog) => { expect(dialog.type()).toBe("confirm"); await dialog.dismiss(); }),
-    leaveReflection(),
-  ]);
+  await leaveReflection();
+  const navigationDialog = page.locator("dialog.navigation-draft-dialog");
+  await expect(navigationDialog).toBeVisible();
+  await expect(navigationDialog.getByRole("heading", { name: "Leave without saving?" })).toBeVisible();
+  await navigationDialog.getByRole("button", { name: "Keep editing", exact: true }).click();
+  await expect(navigationDialog).toBeHidden();
   await expect(editor).toHaveValue("A reflection worth keeping.\nA second line.");
   // Reload is tested via the native beforeunload event, with a real user gesture above.
   await Promise.all([

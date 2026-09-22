@@ -1103,3 +1103,79 @@
     padding-bottom: 14px;
   }
 }
+
+
+/* 1.2.6 — mobile interaction polish: focus visibility, tap response and keyboard-safe scrolling. */
+@media (max-width: 760px), (max-height: 500px) and (max-width: 900px) {
+  html {
+    scroll-padding-top: calc(var(--mobile-appbar-height) + env(safe-area-inset-top) + 10px);
+    scroll-padding-bottom: calc(var(--mobile-tabbar-height) + env(safe-area-inset-bottom) + 12px);
+  }
+
+  .utility-bar,
+  .mobile-nav {
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  .mobile-nav .nav-link,
+  .utility-link,
+  .mobile-appbar-back,
+  button,
+  select,
+  input[type="checkbox"],
+  input[type="radio"] {
+    touch-action: manipulation;
+  }
+
+  input:not([type="checkbox"]):not([type="radio"]),
+  select,
+  textarea,
+  [contenteditable="true"] {
+    scroll-margin-top: calc(var(--mobile-appbar-height) + env(safe-area-inset-top) + 14px);
+    scroll-margin-bottom: calc(var(--mobile-tabbar-height) + env(safe-area-inset-bottom) + 20px);
+  }
+
+  .mobile-detail-route input:not([type="checkbox"]):not([type="radio"]),
+  .mobile-detail-route select,
+  .mobile-detail-route textarea,
+  .mobile-detail-route [contenteditable="true"] {
+    scroll-margin-bottom: calc(72px + env(safe-area-inset-bottom));
+  }
+
+  .mobile-nav .nav-link:active,
+  .utility-link:active,
+  .mobile-appbar-back:active {
+    transform: scale(.96);
+  }
+
+  .mg-reading-card a:active,
+  .mg-prayer-row:active,
+  .search-hit:active,
+  .history-tabs a:active,
+  .prayer-status-tabs a:active,
+  .mg-session-depths a:active {
+    opacity: .72;
+  }
+
+  .navigation-draft-dialog .navigation-draft-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .navigation-draft-dialog .draft-dialog-keep {
+    order: 1;
+  }
+
+  .navigation-draft-dialog .draft-dialog-discard {
+    order: 2;
+  }
+}
+
+@media (max-width: 760px) and (prefers-reduced-motion: reduce),
+       (max-height: 500px) and (max-width: 900px) and (prefers-reduced-motion: reduce) {
+  .mobile-nav .nav-link:active,
+  .utility-link:active,
+  .mobile-appbar-back:active {
+    transform: none;
+  }
+}
