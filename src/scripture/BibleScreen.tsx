@@ -139,7 +139,7 @@ export function BibleScreen() {
             <button type="button" onClick={openReflection}><Icon name="reflection" /> Reflect</button>
             <button type="button" onClick={openPrayer}><Icon name="prayer" /> Pray</button>
             <button type="button" onClick={() => void runMutation(() => toggleBookmark())}><Icon name="bookmark" /> {exactBookmark ? "Remove bookmark" : "Bookmark"}</button>
-            <button type="button" aria-expanded={moreOpen} onClick={() => { if (!discardNote()) return; setMoreOpen((value) => !value); setNoteEditorOpen(false); }}><Icon name="more" /> More</button>
+            <button type="button" aria-expanded={moreOpen} onClick={() => void discardNote().then((discard) => { if (!discard) return; setMoreOpen((value) => !value); setNoteEditorOpen(false); })}><Icon name="more" /> More</button>
           </div>
           {moreOpen ? (
             <div className="verse-action-menu">
