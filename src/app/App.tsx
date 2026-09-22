@@ -138,6 +138,12 @@ export function App() {
 
   const goBack = () => {
     if (!mobileBack) return;
+    const explicitReturn = safeReturnTarget(location.search);
+    const semanticBackOwnsRoute = Boolean(explicitReturn) || location.pathname.startsWith("/today/reflection/");
+    if (semanticBackOwnsRoute) {
+      navigate(mobileBack, { replace: true });
+      return;
+    }
     const historyIndex = window.history.state?.idx;
     if (typeof historyIndex === "number" && historyIndex > 0) navigate(-1);
     else navigate(mobileBack, { replace: true });
