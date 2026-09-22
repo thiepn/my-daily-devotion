@@ -2,7 +2,7 @@
   "version": 1,
   "name": "Morning Grace Mobile-First Layout",
   "parentRelease": "1.1.0",
-  "status": "mobile-redesign-v1-native-state-system",
+  "status": "mobile-redesign-v1-interaction-polish",
   "breakpointPx": 760,
   "principles": [
     "phone layout is composed independently from desktop",
@@ -16,7 +16,8 @@
     "phone landscape remains in the mobile app composition",
     "root tabs and pushed detail workflows use different mobile navigation chrome",
     "secondary management and history workflows use dense mobile-native compositions",
-    "loading, error, empty, conflict and draft states use native mobile patterns"
+    "loading, error, empty, conflict and draft states use native mobile patterns",
+    "navigation, focus, tap and scroll behavior follow mobile app interaction conventions"
   ],
   "chrome": {
     "topBar": "root destinations use a compact sticky title bar with Search and Data; pushed routes use a 44px contextual Back control plus route title",
@@ -51,7 +52,8 @@
     "stackedStyle": "src/styles/morning-grace-mobile-stacked.css",
     "nativeNavigationTest": "tests/ux/mobile-native-navigation.spec.ts",
     "denseSecondaryTest": "tests/ux/mobile-dense-secondary.spec.ts",
-    "nativeStateTest": "tests/ux/mobile-native-states.spec.ts"
+    "nativeStateTest": "tests/ux/mobile-native-states.spec.ts",
+    "interactionPolishTest": "tests/ux/mobile-interaction-polish.spec.ts"
   },
   "landscapePhoneRule": {
     "maxHeightPx": 500,
@@ -99,5 +101,12 @@
     "empty": "quiet inline states without decorative desktop-card spacing",
     "platformStatus": "slim offline/update system strip below the app bar",
     "enlargedText": "bottom sheet, conflict actions and platform status reflow without horizontal scrolling at 200% text"
+  },
+  "interactionPolish": {
+    "unsavedNavigation": "SPA route changes use the in-app bottom-sheet guard; browser-native confirmation remains only for actual document unload",
+    "scrollMemory": "each route/query state remembers its own in-session vertical position; unseen destinations begin at the top",
+    "focusSafety": "editable controls expose app-bar and bottom-bar-aware scroll margins on phone layouts",
+    "tapBehavior": "primary mobile chrome opts into direct manipulation and restrained pressed feedback",
+    "accessibility": "draft navigation remains keyboard-dismissible, focus-managed and covered at 320px, 200% text and phone landscape"
   }
 }
