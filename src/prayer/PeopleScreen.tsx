@@ -31,7 +31,7 @@ export function PeopleScreen() {
     } catch (reason) { setConflict(isEditConflict(reason)); throw reason; }
   };
   const { confirmDrafts, draftDialog } = useDraftGuard(dirty, save, clear);
-  const { confirm, confirmationDialog } = useConfirmDialog();
+  const confirm = useConfirmDialog();
   const edit = async (item: Person) => { if (await confirmDrafts()) { const latest = await repository.get(item.id); if (!latest) throw new Error("This person was removed in another tab."); applyPerson(latest); } };
   const remove = async (item: Person) => { if (!await confirmDrafts() || !await confirm({ title: "Remove person?", message: `Remove ${item.name} from the active people list? Existing prayer history is preserved.`, confirmLabel: "Remove person", tone: "danger" })) return; await repository.removePerson(item.id); if (editing?.id === item.id) clear(); await refresh(); };
   return <main className="visual-screen metadata-screen mg-secondary-screen mg-prayer-metadata-workspace">
