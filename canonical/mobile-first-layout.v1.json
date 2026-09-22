@@ -2,7 +2,7 @@
   "version": 1,
   "name": "Morning Grace Mobile-First Layout",
   "parentRelease": "1.1.0",
-  "status": "mobile-redesign-v1-native-state-system",
+  "status": "mobile-redesign-v1-interaction-polish",
   "breakpointPx": 760,
   "principles": [
     "phone layout is composed independently from desktop",
@@ -16,7 +16,8 @@
     "phone landscape remains in the mobile app composition",
     "root tabs and pushed detail workflows use different mobile navigation chrome",
     "secondary management and history workflows use dense mobile-native compositions",
-    "loading, error, empty, conflict and draft states use native mobile patterns"
+    "loading, error, empty, conflict and draft states use native mobile patterns",
+    "mobile navigation, destructive confirmation, touch feedback and keyboard interaction use native-feeling app patterns"
   ],
   "chrome": {
     "topBar": "root destinations use a compact sticky title bar with Search and Data; pushed routes use a 44px contextual Back control plus route title",
@@ -51,7 +52,8 @@
     "stackedStyle": "src/styles/morning-grace-mobile-stacked.css",
     "nativeNavigationTest": "tests/ux/mobile-native-navigation.spec.ts",
     "denseSecondaryTest": "tests/ux/mobile-dense-secondary.spec.ts",
-    "nativeStateTest": "tests/ux/mobile-native-states.spec.ts"
+    "nativeStateTest": "tests/ux/mobile-native-states.spec.ts",
+    "interactionPolishTest": "tests/ux/mobile-interaction-polish.spec.ts"
   },
   "landscapePhoneRule": {
     "maxHeightPx": 500,
@@ -99,5 +101,14 @@
     "empty": "quiet inline states without decorative desktop-card spacing",
     "platformStatus": "slim offline/update system strip below the app bar",
     "enlargedText": "bottom sheet, conflict actions and platform status reflow without horizontal scrolling at 200% text"
+  },
+  "interactionPolish": {
+    "routeEntry": "new pushed/root destinations start at the top instead of inheriting stale scroll",
+    "backStack": "app-bar Back restores the previously recorded scroll position of its source route",
+    "destructiveConfirmation": "People, Categories, Collections, Reflection and Prayer removal use accessible in-app confirmation dialogs",
+    "touchFeedback": "coarse-pointer navigation and dense rows expose deliberate active feedback without disabling browser zoom",
+    "focusClearance": "mobile form controls use scroll margins to stay clear of sticky app/editor chrome",
+    "prayerCapture": "loading uses the shared route-state system; Ctrl/Cmd+Enter saves non-empty prayer text while Enter still inserts a newline",
+    "touchTargetPx": 44
   }
 }

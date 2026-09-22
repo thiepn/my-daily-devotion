@@ -1103,3 +1103,90 @@
     padding-bottom: 14px;
   }
 }
+
+
+/* 1.2.6 — mobile interaction polish: touch feedback, focus clearance and
+   native confirmation actions without disabling browser zoom. */
+@media (max-width: 760px), (max-height: 500px) and (max-width: 900px) {
+  .workspace-content {
+    scroll-padding-top: calc(var(--mobile-appbar-height) + env(safe-area-inset-top) + 10px);
+  }
+
+  input,
+  select,
+  textarea,
+  [contenteditable="true"] {
+    scroll-margin-top: calc(var(--mobile-appbar-height) + env(safe-area-inset-top) + 12px);
+    scroll-margin-bottom: 96px;
+  }
+
+  .mobile-detail-route .mg-prayer-capture-workspace .prayer-capture-actions .primary-editorial-action,
+  .mobile-detail-route .mg-reflection-workspace .reflection-editor-actions .primary-editorial-action,
+  .mobile-detail-route .mg-prayer-settings-workspace .prayer-settings-actions .primary-editorial-action,
+  .mg-prayer-empty a {
+    min-height: 44px;
+  }
+
+  .confirm-dialog-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .confirm-dialog-actions .confirm-dialog-cancel,
+  .confirm-dialog-actions .confirm-dialog-confirm {
+    width: 100%;
+    min-height: 48px;
+    margin: 0;
+  }
+
+  .confirm-dialog-actions .confirm-dialog-cancel {
+    order: 1;
+  }
+
+  .confirm-dialog-actions .confirm-dialog-confirm {
+    order: 2;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .mobile-nav .nav-link,
+  .utility-link,
+  .mobile-appbar-back,
+  .mg-reading-card,
+  .mg-prayer-row,
+  .history-tabs a,
+  .prayer-status-tabs a,
+  button,
+  a {
+    touch-action: manipulation;
+  }
+
+  .mobile-nav .nav-link,
+  .utility-link,
+  .mobile-appbar-back,
+  .history-tabs a,
+  .prayer-status-tabs a {
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  .mobile-nav .nav-link:active,
+  .utility-link:active,
+  .mobile-appbar-back:active,
+  .history-tabs a:active,
+  .prayer-status-tabs a:active {
+    background: color-mix(in srgb, var(--color-accent-soft) 48%, transparent);
+  }
+
+  .mg-reading-card:active,
+  .mg-prayer-row:active {
+    background: color-mix(in srgb, var(--color-surface-muted) 58%, var(--color-surface));
+  }
+}
+
+@media (hover: none) and (pointer: coarse) and (prefers-reduced-motion: no-preference) {
+  .mobile-nav .nav-link:active,
+  .utility-link:active,
+  .mobile-appbar-back:active {
+    transform: scale(.97);
+  }
+}

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useUnsavedChanges } from "../app/useUnsavedChanges";
+import { useConfirmDialog } from "../app/useConfirmDialog";
 import { BotanicalSprig } from "../app/visual/MorningGraceMotifs";
 import { db } from "../data/database";
 import { ReflectionRepository } from "../data/repositories/reflections";
@@ -56,6 +57,7 @@ export function ReflectionScreen() {
   const [showPrompts, setShowPrompts] = useState(false);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
+  const { confirm, confirmDialog } = useConfirmDialog();
 
   const refresh = useCallback(async () => {
     if (!localDate) return;
@@ -102,7 +104,7 @@ export function ReflectionScreen() {
   };
 
   const remove = async () => {
-    if (!window.confirm("Remove this reflection and its linked passages?")) return;
+    if (!await confirm({ title: "Remove this reflection?", message: "The reflection and its linked passages will be removed from current views. Backups are unchanged.", confirmLabel: "Remove reflection", danger: true })) return;
     try { await repository.removeDaily(localDate!);
     setReflection(null);
     setLinks([]);
@@ -207,6 +209,7 @@ export function ReflectionScreen() {
           </section>
         </aside>
       </div>
+      {confirmDialog}
     </main>
   );
 }

@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.2.6 — 2026-09-22
+
+### Mobile interaction polish
+
+- Make pushed mobile routes start at the top while app-bar Back restores the source route's previous scroll position.
+- Preserve root-tab behavior as a fresh navigation instead of carrying stale scroll into another destination.
+- Replace browser-native destructive confirmations for Prayer people/categories, collections, reflections and prayer removal with an accessible in-app confirmation dialog.
+- Reuse the mobile bottom-sheet language for destructive confirmations with stacked 48px actions and a safer Cancel-first focus default.
+- Add coarse-pointer touch feedback and manipulation hints without disabling browser zoom.
+- Add mobile focus scroll margins so text fields stay clear of sticky app/editor chrome.
+- Raise remaining sticky primary actions and compact empty-state actions to 44px minimum touch targets.
+- Normalize Add Prayer loading into the shared mobile route-state system.
+- Add Ctrl/Cmd+Enter Prayer capture saving while preserving normal Enter/newline behavior and preventing empty keyboard submissions.
+- Add dedicated browser coverage for scroll restoration, confirmation sheets, keyboard save, touch targets, accessibility and desktop preservation.
+- Preserve database schema 1, backup format 1 and all devotional domain behavior.
+
 ## 1.2.5 — 2026-09-22
 
 ### Native mobile application states

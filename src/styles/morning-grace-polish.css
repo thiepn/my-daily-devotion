@@ -351,6 +351,42 @@ textarea:focus-visible {
   margin-left: auto;
 }
 
+.confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.confirm-dialog-confirm,
+.confirm-dialog-cancel {
+  min-height: 44px;
+  padding: 8px 14px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: var(--radius-sm);
+  font: inherit;
+}
+
+.confirm-dialog-confirm {
+  color: var(--color-action-on);
+  border-color: var(--color-accent-strong);
+  background: var(--color-accent-strong);
+}
+
+.confirm-dialog.is-danger {
+  border-top-color: var(--color-prayer);
+}
+
+.confirm-dialog.is-danger .confirm-dialog-confirm {
+  color: var(--color-action-on);
+  border-color: var(--color-prayer);
+  background: var(--color-prayer);
+}
+
+.confirm-dialog-cancel {
+  color: var(--color-ink);
+  background: transparent;
+}
+
 .conflict-review {
   margin: 26px 0;
   padding: 24px;
