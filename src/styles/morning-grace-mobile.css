@@ -21,8 +21,21 @@
   html,
   body,
   #root {
-    min-height: 100%;
+    min-height: 100svh;
+    min-height: 100dvh;
     background: var(--color-canvas);
+  }
+
+  .app-shell {
+    min-height: 100svh;
+    min-height: 100dvh;
+  }
+
+  input,
+  select,
+  textarea {
+    scroll-margin-top: calc(var(--mobile-appbar-height) + 12px);
+    scroll-margin-bottom: calc(84px + env(safe-area-inset-bottom));
   }
 
   body {
