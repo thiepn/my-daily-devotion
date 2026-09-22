@@ -209,7 +209,6 @@ export function ReflectionScreen() {
           </section>
         </aside>
       </div>
-      {confirmationDialog}
     </main>
   );
 }
