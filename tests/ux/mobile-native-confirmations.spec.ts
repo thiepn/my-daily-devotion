@@ -25,6 +25,7 @@ test.describe("native in-app confirmations", () => {
   });
 
   test("unsaved internal navigation uses an app bottom sheet, not browser confirm", async ({ page }) => {
+    await expect(page.locator('meta[name="viewport"]')).toHaveAttribute("content", /interactive-widget=resizes-content/);
     const browserDialogs: string[] = [];
     page.on("dialog", async (dialog) => {
       browserDialogs.push(dialog.type());
