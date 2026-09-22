@@ -1,11 +1,11 @@
-# MDD 1.2.5 Release Checklist
+# MDD 1.2.6 Release Checklist
 
 This checklist is operational. Automated gates remain authoritative where they exist.
 
 ## Source and version
 
-- [x] Product version is `1.2.5` in `package.json` and `src/app/version.ts`.
-- [x] Service-worker cache generation is `mdd-app-v1.2.5`.
+- [x] Product version is `1.2.6` in `package.json` and `src/app/version.ts`.
+- [x] Service-worker cache generation is `mdd-app-v1.2.6`.
 - [x] Database schema remains version 1.
 - [x] Direct dependency versions are exact and `package-lock.json` is committed.
 - [x] Morning Grace changes presentation only; schema 1 and existing domain semantics remain unchanged.
@@ -73,3 +73,9 @@ Ship only from a commit where the independent Phase 0 contract and cumulative Ph
 - [x] Unsaved-change confirmation is a safe-area-aware mobile bottom sheet with 44px+ actions.
 - [x] Conflict review, recovery/error and empty states use compact mobile-native compositions.
 - [x] Offline/update status uses a slim mobile system strip and reflows at 200% text.
+
+- [x] Internal SPA navigation uses the app confirmation sheet instead of browser confirm dialogs.
+- [x] Core destructive actions use the shared app confirmation provider with the safe action focused by default.
+- [x] Native beforeunload protection remains limited to real reload/tab/window exit.
+- [x] Confirmation sheets pass phone bottom-sheet, 320px, 200% text, accessibility and desktop-preservation coverage.
+- [x] Supported Android browsers resize content for the virtual keyboard and the mobile shell uses dynamic viewport units.
