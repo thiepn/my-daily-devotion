@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { App } from "./app/App";
+import { ConfirmationProvider } from "./app/ConfirmationProvider";
 import { BrandMark } from "./app/visual/BrandMark";
 import { inspectStorage, registerMddServiceWorker } from "./app/platform";
 import { prepareDatabase } from "./data/database";
@@ -35,7 +36,7 @@ async function start(): Promise<void> {
   try {
     await prepareDatabase();
     const router = createHashRouter([{ path: "*", element: <App /> }]);
-    root.render(<StrictMode><RouterProvider router={router} /></StrictMode>);
+    root.render(<StrictMode><ConfirmationProvider><RouterProvider router={router} /></ConfirmationProvider></StrictMode>);
     void inspectStorage(true).catch(() => undefined);
     void registerMddServiceWorker().catch((error: unknown) => {
       console.warn("MDD service worker registration failed; the app remains usable online.", error);

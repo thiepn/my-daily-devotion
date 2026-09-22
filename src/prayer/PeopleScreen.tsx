@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useUnsavedChanges } from "../app/useUnsavedChanges";
 import { useDraftGuard } from "../app/useDraftGuard";
+import { useConfirmation } from "../app/ConfirmationProvider";
 import { useMutation } from "../app/useMutation";
 import { ConflictReview } from "../app/ConflictReview";
 import { isEditConflict } from "../data/conflicts";
@@ -15,6 +16,7 @@ export function PeopleScreen() {
   const [name, setName] = useState(""); const [relationship, setRelationship] = useState(""); const [notes, setNotes] = useState("");
   const [editing, setEditing] = useState<Person | null>(null); const [conflict, setConflict] = useState(false);
   const { busy, status, setStatus, run } = useMutation();
+  const confirm = useConfirmation();
   const refresh = useCallback(async () => setItems(await repository.list()), []);
   useEffect(() => { void refresh().catch(() => setStatus("Could not open this list. Reload to try again.")); }, [refresh]);
   const clear = () => { setName(""); setRelationship(""); setNotes(""); setEditing(null); setConflict(false); };
@@ -31,7 +33,7 @@ export function PeopleScreen() {
   };
   const { confirmDrafts, draftDialog } = useDraftGuard(dirty, save, clear);
   const edit = async (item: Person) => { if (await confirmDrafts()) { const latest = await repository.get(item.id); if (!latest) throw new Error("This person was removed in another tab."); applyPerson(latest); } };
-  const remove = async (item: Person) => { if (!await confirmDrafts() || !window.confirm(`Remove ${item.name}?`)) return; await repository.removePerson(item.id); if (editing?.id === item.id) clear(); await refresh(); };
+  const remove = async (item: Person) => { if (!await confirmDrafts()) return; if (!await confirm({ title: "Remove person?", description: `Remove ${item.name} from your Prayer people list?`, confirmLabel: "Remove person", cancelLabel: "Keep person", tone: "danger" })) return; await repository.removePerson(item.id); if (editing?.id === item.id) clear(); await refresh(); };
   return <main className="visual-screen metadata-screen mg-secondary-screen mg-prayer-metadata-workspace">
     <header className="screen-heading compact-heading mg-secondary-header"><p className="eyebrow">Prayer · People</p><h1>People</h1><p className="screen-intro">A person is optional, but useful when several requests belong to the same relationship and history.</p><Link className="quiet-back-link" to="/prayer">← Prayer</Link></header>
     <div className="metadata-layout"><section className="metadata-list"><p className="section-kicker">Saved people</p>{items.length ? items.map((item) => <div className="metadata-row" key={item.id}><div><strong>{item.name}</strong><span>{item.relationship ?? "No relationship label"}</span></div><div><button type="button" disabled={busy} onClick={() => void run(() => edit(item))}>Edit</button><button type="button" disabled={busy} onClick={() => void run(() => remove(item))}>Remove</button></div></div>) : <p className="muted-copy">No people yet.</p>}</section>

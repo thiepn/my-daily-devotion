@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 const root=new URL("../",import.meta.url);
 const read=(path)=>readFile(new URL(path,root),"utf8");
 
-const [contractRaw,css,stackedCss,main,app,search,data,polishTest,navigationTest,denseSecondaryTest,nativeStateTest,pkgRaw]=await Promise.all([
+const [contractRaw,css,stackedCss,main,app,search,data,polishTest,navigationTest,denseSecondaryTest,nativeStateTest,confirmationProvider,unsaved,bible,collections,prayerDetail,prayerSession,people,categories,reflection,nativeConfirmationTest,indexHtml,pkgRaw]=await Promise.all([
   read("canonical/mobile-first-layout.v1.json"),
   read("src/styles/morning-grace-mobile.css"),
   read("src/styles/morning-grace-mobile-stacked.css"),
@@ -16,6 +16,17 @@ const [contractRaw,css,stackedCss,main,app,search,data,polishTest,navigationTest
   read("tests/ux/mobile-native-navigation.spec.ts"),
   read("tests/ux/mobile-dense-secondary.spec.ts"),
   read("tests/ux/mobile-native-states.spec.ts"),
+  read("src/app/ConfirmationProvider.tsx"),
+  read("src/app/useUnsavedChanges.ts"),
+  read("src/scripture/BibleScreen.tsx"),
+  read("src/scripture/CollectionsScreen.tsx"),
+  read("src/prayer/PrayerDetailScreen.tsx"),
+  read("src/prayer/PrayerSessionScreen.tsx"),
+  read("src/prayer/PeopleScreen.tsx"),
+  read("src/prayer/CategoriesScreen.tsx"),
+  read("src/reflection/ReflectionScreen.tsx"),
+  read("tests/ux/mobile-native-confirmations.spec.ts"),
+  read("index.html"),
   read("package.json")
 ]);
 
@@ -98,6 +109,19 @@ assert.match(nativeStateTest,/unsaved-change confirmation is a bottom sheet with
 assert.match(nativeStateTest,/conflict review is an edge-to-edge mobile comparison state/);
 assert.match(nativeStateTest,/lazy-route failure becomes a compact recoverable mobile app state/);
 assert.match(nativeStateTest,/draft bottom sheet and state surfaces reflow at 320px and 200 percent text/);
+assert.match(main,/ConfirmationProvider/);
+assert.match(confirmationProvider,/showModal/);
+assert.match(confirmationProvider,/document\.body\.style\.overflow = "hidden"/);
+assert.match(unsaved,/useConfirmation/);
+assert.match(unsaved,/beforeunload/);
+assert.doesNotMatch([unsaved,bible,collections,prayerDetail,prayerSession,people,categories,reflection].join("\n"),/window\.confirm/);
+assert.match(stackedCss,/Internal confirmations use the same native bottom-sheet language/);
+assert.match(nativeConfirmationTest,/unsaved internal navigation uses an app bottom sheet, not browser confirm/);
+assert.match(nativeConfirmationTest,/destructive confirmation defaults to the safe action and respects cancel/);
+assert.match(nativeConfirmationTest,/Focused Prayer protects an answer draft with the same app confirmation/);
+assert.match(nativeConfirmationTest,/confirmation sheet reflows at 320px and 200 percent text/);
+assert.match(indexHtml,/interactive-widget=resizes-content/);
+assert.match(css,/min-height:\s*100dvh/);
 assert.equal(contract.secondaryNavigation.behavior,"hide root bottom tabs and Search/Data utility actions; expose contextual Back navigation");
 assert.equal(contract.secondaryNavigation.touchTargetPx,44);
 assert.equal(pkg.scripts["verify:mobile-layout"],"node scripts/verify-mobile-first-layout.mjs");
@@ -112,5 +136,7 @@ console.log("  active Focused Prayer can remove outer shell chrome without trapp
 console.log("  Search/Data preserve exact mobile source context through utility workflows");
 console.log("  Prayer management and History detail routes use dense mobile-native compositions");
 console.log("  loading, recovery, empty, conflict and draft states use native mobile patterns");
+console.log("  internal confirmations use app-owned sheets with safe defaults and native unload fallback");
+console.log("  Android keyboard viewport resizing and dynamic mobile height are enforced");
 console.log("  320px, 200% text and phone-landscape detail states are covered");
 console.log("  desktop/tablet Morning Grace layers remain upstream and unchanged");

@@ -116,8 +116,10 @@ test("compact verse-note editing and storage recovery visual states", async ({ p
     await expectNoHorizontalOverflow(page);
     await page.screenshot({ path: testInfo.outputPath(`note-editor-${width}.png`) });
     // Remove the test note so each viewport exercises the same capture state.
-    page.once("dialog", dialog => dialog.accept());
     await page.getByRole("button", { name: "Remove note", exact: true }).click();
+    const removeNoteDialog = page.getByRole("dialog", { name: "Remove verse note?" });
+    await expect(removeNoteDialog).toBeVisible();
+    await removeNoteDialog.getByRole("button", { name: "Remove note", exact: true }).click();
     await expect(page.getByText("Verse note removed from current views.")).toBeVisible();
   }
   await page.addInitScript(() => {

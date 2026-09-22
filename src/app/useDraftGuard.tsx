@@ -7,8 +7,13 @@ function DraftDialog({ save, discard, finish }: { save: (() => Promise<void>) | 
   const [error, setError] = useState("");
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
-    ref.current?.showModal();
-    return () => { previous?.focus(); };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    if (ref.current && !ref.current.open) ref.current.showModal();
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      previous?.focus();
+    };
   }, []);
   const saveAndContinue = async () => {
     if (!save || locked.current) return;
