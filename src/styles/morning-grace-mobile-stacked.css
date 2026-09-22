@@ -114,6 +114,14 @@
     display: none !important;
   }
 
+  /* Recovery states keep an explicit destination action in addition to the
+     app-bar Back control. During an error, redundant escape routes are useful
+     rather than duplicate chrome. */
+  .mobile-detail-route .mg-route-state .quiet-back-link,
+  .mobile-detail-route .mg-state-screen .quiet-back-link {
+    display: inline-flex !important;
+  }
+
   /* Parent-navigation links are redundant once the app-bar Back control owns
      that job. Contextual links such as Search and Back to passage remain. */
   .mobile-detail-route .mg-collections-workspace .quiet-link-row > a:first-child,
