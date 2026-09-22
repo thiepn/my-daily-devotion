@@ -2,7 +2,7 @@
   "version": 1,
   "name": "Morning Grace Mobile-First Layout",
   "parentRelease": "1.1.0",
-  "status": "mobile-redesign-v1-native-state-system",
+  "status": "mobile-redesign-v1-native-confirmations-keyboard",
   "breakpointPx": 760,
   "principles": [
     "phone layout is composed independently from desktop",
@@ -16,7 +16,8 @@
     "phone landscape remains in the mobile app composition",
     "root tabs and pushed detail workflows use different mobile navigation chrome",
     "secondary management and history workflows use dense mobile-native compositions",
-    "loading, error, empty, conflict and draft states use native mobile patterns"
+    "loading, error, empty, conflict and draft states use native mobile patterns",
+    "internal confirmations use app-owned dialogs while true browser unload remains native"
   ],
   "chrome": {
     "topBar": "root destinations use a compact sticky title bar with Search and Data; pushed routes use a 44px contextual Back control plus route title",
@@ -51,7 +52,8 @@
     "stackedStyle": "src/styles/morning-grace-mobile-stacked.css",
     "nativeNavigationTest": "tests/ux/mobile-native-navigation.spec.ts",
     "denseSecondaryTest": "tests/ux/mobile-dense-secondary.spec.ts",
-    "nativeStateTest": "tests/ux/mobile-native-states.spec.ts"
+    "nativeStateTest": "tests/ux/mobile-native-states.spec.ts",
+    "nativeConfirmationTest": "tests/ux/mobile-native-confirmations.spec.ts"
   },
   "landscapePhoneRule": {
     "maxHeightPx": 500,
@@ -99,5 +101,13 @@
     "empty": "quiet inline states without decorative desktop-card spacing",
     "platformStatus": "slim offline/update system strip below the app bar",
     "enlargedText": "bottom sheet, conflict actions and platform status reflow without horizontal scrolling at 200% text"
+  },
+  "nativeConfirmations": {
+    "routeGuard": "internal SPA navigation with unsaved data uses the app confirmation sheet instead of browser confirm",
+    "destructiveActions": "Bible, Reflection, Prayer, Focused Prayer, People, Categories and Collections use the shared app confirmation provider",
+    "safeDefault": "cancel/keep is focused by default; destructive confirmation requires an explicit second action",
+    "mobilePresentation": "confirmation is a safe-area-aware bottom sheet with 44px+ actions and 200% text reflow",
+    "browserUnload": "real reload/tab/window unload retains native beforeunload protection",
+    "keyboardViewport": "viewport uses interactive-widget=resizes-content and mobile shell uses dynamic viewport units"
   }
 }
