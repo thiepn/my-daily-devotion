@@ -914,6 +914,83 @@
     font-size: .61rem;
   }
 
+  /* Internal confirmations use the same native bottom-sheet language as draft
+     protection, while keeping their simpler confirm/cancel decision model. */
+  .app-confirm-dialog {
+    position: fixed;
+    inset: auto 0 0;
+    width: 100%;
+    max-width: none;
+    max-height: min(82dvh, 680px);
+    margin: 0;
+    padding: 8px var(--mobile-gutter) calc(12px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    border-inline: 0;
+    border-bottom: 0;
+    border-top-width: 1px;
+    border-radius: 18px 18px 0 0;
+    box-shadow: 0 -12px 40px rgba(18, 22, 18, .18);
+  }
+
+  .app-confirm-dialog::before {
+    content: "";
+    width: 36px;
+    height: 4px;
+    display: block;
+    margin: 0 auto 10px;
+    border-radius: 999px;
+    background: var(--color-line-strong);
+  }
+
+  .app-confirm-dialog::backdrop {
+    background: rgba(20, 23, 20, .42);
+    backdrop-filter: none;
+  }
+
+  .app-confirm-copy h2 {
+    margin: 0 0 5px;
+    font-family: var(--font-ui);
+    font-size: 1.02rem;
+    font-weight: 720;
+    line-height: 1.25;
+  }
+
+  .app-confirm-copy p {
+    margin: 0;
+    font-size: .72rem;
+    line-height: 1.42;
+  }
+
+  .app-confirm-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 4px;
+    margin-top: 12px;
+    padding-top: 10px;
+  }
+
+  .app-confirm-actions button {
+    width: 100%;
+    min-height: 48px;
+    padding: 7px 10px;
+    border-radius: 10px;
+    font-size: .72rem;
+    white-space: normal;
+  }
+
+  .app-confirm-cancel {
+    order: 1;
+  }
+
+  .app-confirm-accept {
+    order: 2;
+  }
+
+  html[style*="font-size: 200%"] .app-confirm-dialog {
+    max-height: 90dvh;
+  }
+
   /* Draft confirmation becomes a true mobile bottom sheet. */
   .draft-dialog {
     position: fixed;
