@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.6 — 2026-09-22
+
+### Native mobile interaction polish
+
+- Replace migrated SPA and destructive-action browser confirm popups with one shared in-app confirmation sheet.
+- Route unsaved-change protection through the shared confirmation system while retaining browser-owned beforeunload protection for actual reload/tab-close events.
+- Make app-bar Back consume real in-app history when available, with a safe logical-parent fallback for direct-open/deep-linked screens.
+- Reset stale document scroll on non-reader route changes while leaving Bible reader verse/resume restoration authoritative.
+- Add manipulation touch behavior and restrained pressed feedback to mobile navigation and key interactive surfaces.
+- Give Search explicit mobile search keyboard and enter-key semantics.
+- Update Bible note, prayer, reflection, collection, people/category and focused-prayer flows to the shared confirmation model.
+- Add dedicated regression coverage for Back history, route scroll, shared confirmations, search keyboard semantics and touch behavior.
+- Preserve database schema 1, backup format 1, offline Bible behavior and the certified v1.2.5 mobile state system.
+
 ## 1.2.5 — 2026-09-22
 
 ### Native mobile application states
