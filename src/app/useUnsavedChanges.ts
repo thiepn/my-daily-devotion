@@ -5,14 +5,19 @@ import { useConfirmDialog } from "./useConfirmDialog";
 /** Guard both SPA history and browser reloads without creating saved records. */
 export function useUnsavedChanges(dirty: boolean): () => void {
   const allow = useRef(false);
+  const confirming = useRef(false);
   const confirm = useConfirmDialog();
   const blocker = useBlocker(({ currentLocation, nextLocation }) => dirty && !allow.current && (currentLocation.pathname !== nextLocation.pathname || currentLocation.search !== nextLocation.search));
 
   useEffect(() => { allow.current = false; }, [dirty]);
 
   useEffect(() => {
-    if (blocker.state !== "blocked") return;
-    let active = true;
+    if (blocker.state !== "blocked") {
+      confirming.current = false;
+      return;
+    }
+    if (confirming.current) return;
+    confirming.current = true;
     void confirm({
       title: "Leave without saving?",
       message: "Your unsaved changes will be discarded if you leave this screen.",
@@ -20,11 +25,11 @@ export function useUnsavedChanges(dirty: boolean): () => void {
       cancelLabel: "Keep editing",
       tone: "danger",
     }).then((leave) => {
-      if (!active || blocker.state !== "blocked") return;
+      confirming.current = false;
+      if (blocker.state !== "blocked") return;
       if (leave) blocker.proceed();
       else blocker.reset();
     });
-    return () => { active = false; };
   }, [blocker, confirm]);
 
   useEffect(() => {
