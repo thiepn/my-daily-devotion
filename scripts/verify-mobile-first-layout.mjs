@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 const root=new URL("../",import.meta.url);
 const read=(path)=>readFile(new URL(path,root),"utf8");
 
-const [contractRaw,css,stackedCss,main,app,search,data,polishTest,navigationTest,denseSecondaryTest,nativeStateTest,pkgRaw]=await Promise.all([
+const [contractRaw,css,stackedCss,main,app,search,data,polishTest,navigationTest,denseSecondaryTest,nativeStateTest,interactionPolishTest,confirmDialog,pkgRaw]=await Promise.all([
   read("canonical/mobile-first-layout.v1.json"),
   read("src/styles/morning-grace-mobile.css"),
   read("src/styles/morning-grace-mobile-stacked.css"),
@@ -16,6 +16,8 @@ const [contractRaw,css,stackedCss,main,app,search,data,polishTest,navigationTest
   read("tests/ux/mobile-native-navigation.spec.ts"),
   read("tests/ux/mobile-dense-secondary.spec.ts"),
   read("tests/ux/mobile-native-states.spec.ts"),
+  read("tests/ux/mobile-interaction-polish.spec.ts"),
+  read("src/app/useConfirmDialog.tsx"),
   read("package.json")
 ]);
 
@@ -98,6 +100,17 @@ assert.match(nativeStateTest,/unsaved-change confirmation is a bottom sheet with
 assert.match(nativeStateTest,/conflict review is an edge-to-edge mobile comparison state/);
 assert.match(nativeStateTest,/lazy-route failure becomes a compact recoverable mobile app state/);
 assert.match(nativeStateTest,/draft bottom sheet and state surfaces reflow at 320px and 200 percent text/);
+assert.match(app,/RouteViewportManager/);
+assert.match(app,/restoreScroll:\s*true/);
+assert.match(stackedCss,/mobile interaction polish: touch feedback, focus clearance/);
+assert.match(stackedCss,/touch-action:\s*manipulation/);
+assert.match(stackedCss,/scroll-margin-bottom:\s*96px/);
+assert.match(confirmDialog,/className=\{\`draft-dialog confirm-dialog/);
+assert.match(confirmDialog,/autoFocus/);
+assert.match(interactionPolishTest,/pushed routes start at the top and app-bar Back restores source scroll/);
+assert.match(interactionPolishTest,/destructive metadata actions use the in-app confirmation sheet/);
+assert.match(interactionPolishTest,/Prayer capture has keyboard save and focus clearance without changing Enter behavior/);
+assert.equal(contract.interactionPolish.touchTargetPx,44);
 assert.equal(contract.secondaryNavigation.behavior,"hide root bottom tabs and Search/Data utility actions; expose contextual Back navigation");
 assert.equal(contract.secondaryNavigation.touchTargetPx,44);
 assert.equal(pkg.scripts["verify:mobile-layout"],"node scripts/verify-mobile-first-layout.mjs");
@@ -112,5 +125,7 @@ console.log("  active Focused Prayer can remove outer shell chrome without trapp
 console.log("  Search/Data preserve exact mobile source context through utility workflows");
 console.log("  Prayer management and History detail routes use dense mobile-native compositions");
 console.log("  loading, recovery, empty, conflict and draft states use native mobile patterns");
+console.log("  mobile navigation restores source scroll and destructive confirms stay in-app");
+console.log("  coarse-pointer feedback, focus clearance and Prayer keyboard save are certified");
 console.log("  320px, 200% text and phone-landscape detail states are covered");
 console.log("  desktop/tablet Morning Grace layers remain upstream and unchanged");
