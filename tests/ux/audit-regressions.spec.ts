@@ -72,7 +72,6 @@ test("verse notes protect drafts and saved annotations survive reload", async ({
   await page.getByRole("button", { name: "More", exact: true }).click();
   await expect(page.getByRole("dialog").getByRole("heading", { name: "Discard verse note?" })).toBeVisible();
   await page.getByRole("dialog").getByRole("button", { name: "Keep editing", exact: true }).click();
-  await page.getByRole("button", { name: "More", exact: true }).click();
   await expect(page.getByLabel("Verse note", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Save note", exact: true }).click();
   await expect(page.getByText("Verse note saved locally.")).toBeVisible();
