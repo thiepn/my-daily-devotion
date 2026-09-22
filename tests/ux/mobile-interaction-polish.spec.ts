@@ -47,8 +47,10 @@ test.describe("mobile interaction polish", () => {
     await openRoute(page, "/today");
     await page.getByRole("link", { name: "Data", exact: true }).click();
     await expect(page.locator(".utility-mobile-title")).toHaveText("Data and privacy");
+    await expect(page.locator(".mg-data-workspace")).toBeVisible();
 
     await page.addStyleTag({ content: ".mg-data-workspace { min-height: 2400px !important; }" });
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollHeight - window.innerHeight)).toBeGreaterThan(1000);
     await page.evaluate(() => window.scrollTo(0, 720));
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(680);
     const saved = await page.evaluate(() => window.scrollY);
