@@ -2,7 +2,7 @@
   "version": 1,
   "name": "Morning Grace Mobile-First Layout",
   "parentRelease": "1.1.0",
-  "status": "mobile-redesign-v1-native-state-system",
+  "status": "mobile-redesign-v1-native-interactions",
   "breakpointPx": 760,
   "principles": [
     "phone layout is composed independently from desktop",
@@ -16,7 +16,8 @@
     "phone landscape remains in the mobile app composition",
     "root tabs and pushed detail workflows use different mobile navigation chrome",
     "secondary management and history workflows use dense mobile-native compositions",
-    "loading, error, empty, conflict and draft states use native mobile patterns"
+    "loading, error, empty, conflict and draft states use native mobile patterns",
+    "navigation, confirmation, scrolling and touch feedback follow native mobile interaction expectations"
   ],
   "chrome": {
     "topBar": "root destinations use a compact sticky title bar with Search and Data; pushed routes use a 44px contextual Back control plus route title",
@@ -51,7 +52,8 @@
     "stackedStyle": "src/styles/morning-grace-mobile-stacked.css",
     "nativeNavigationTest": "tests/ux/mobile-native-navigation.spec.ts",
     "denseSecondaryTest": "tests/ux/mobile-dense-secondary.spec.ts",
-    "nativeStateTest": "tests/ux/mobile-native-states.spec.ts"
+    "nativeStateTest": "tests/ux/mobile-native-states.spec.ts",
+    "nativeInteractionTest": "tests/ux/mobile-native-interactions.spec.ts"
   },
   "landscapePhoneRule": {
     "maxHeightPx": 500,
@@ -99,5 +101,13 @@
     "empty": "quiet inline states without decorative desktop-card spacing",
     "platformStatus": "slim offline/update system strip below the app bar",
     "enlargedText": "bottom sheet, conflict actions and platform status reflow without horizontal scrolling at 200% text"
+  },
+  "nativeInteractions": {
+    "backNavigation": "consume real in-app history when available; use the logical parent only as a direct-open fallback",
+    "routeHandoff": "non-reader route changes reset stale document scroll while Bible reader restoration remains authoritative",
+    "confirmations": "SPA draft guards and destructive actions use the shared in-app confirmation sheet instead of browser confirm dialogs",
+    "touchFeedback": "mobile navigation and primary interactive surfaces use manipulation touch behavior and restrained pressed feedback",
+    "searchKeyboard": "Search exposes search input, inputMode and enter-key semantics for mobile keyboards",
+    "reloadGuard": "browser beforeunload protection remains for actual reload/tab-close events because the browser owns that surface"
   }
 }
