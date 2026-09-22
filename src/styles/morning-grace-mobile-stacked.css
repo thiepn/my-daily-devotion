@@ -1161,15 +1161,18 @@
 }
 
 @media (max-height: 500px) and (max-width: 900px) {
+  .app-confirm-dialog,
   .draft-dialog {
     max-height: 94dvh;
     padding-top: 6px;
   }
 
+  .app-confirm-copy h2,
   .draft-dialog h2 {
     font-size: .9rem;
   }
 
+  .app-confirm-actions button,
   .draft-dialog-actions button {
     min-height: 44px;
   }
