@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode } from "react";
 
 export interface ConfirmDialogOptions {
   title: string;
@@ -7,6 +7,9 @@ export interface ConfirmDialogOptions {
   cancelLabel?: string;
   tone?: "default" | "danger";
 }
+
+type ConfirmRequest = (options: ConfirmDialogOptions) => Promise<boolean>;
+const ConfirmContext = createContext<ConfirmRequest | null>(null);
 
 function ConfirmDialog({ options, finish }: { options: ConfirmDialogOptions; finish: (confirmed: boolean) => void }) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -45,8 +48,7 @@ function ConfirmDialog({ options, finish }: { options: ConfirmDialogOptions; fin
   );
 }
 
-/** Native in-app confirmation flow used instead of browser confirm() chrome. */
-export function useConfirmDialog() {
+export function ConfirmationProvider({ children }: { children: ReactNode }) {
   const pending = useRef<((confirmed: boolean) => void) | null>(null);
   const [options, setOptions] = useState<ConfirmDialogOptions | null>(null);
 
@@ -55,13 +57,13 @@ export function useConfirmDialog() {
     pending.current = null;
   }, []);
 
-  const confirm = (next: ConfirmDialogOptions): Promise<boolean> => {
+  const confirm = useCallback<ConfirmRequest>((next) => {
     if (pending.current) return Promise.resolve(false);
     return new Promise((resolve) => {
       pending.current = resolve;
       setOptions(next);
     });
-  };
+  }, []);
 
   const finish = (confirmed: boolean) => {
     const resolve = pending.current;
@@ -70,8 +72,17 @@ export function useConfirmDialog() {
     resolve?.(confirmed);
   };
 
-  return {
-    confirm,
-    confirmationDialog: options ? <ConfirmDialog options={options} finish={finish} /> : null,
-  };
+  return (
+    <ConfirmContext.Provider value={confirm}>
+      {children}
+      {options ? <ConfirmDialog options={options} finish={finish} /> : null}
+    </ConfirmContext.Provider>
+  );
+}
+
+/** Request the shared in-app confirmation sheet. */
+export function useConfirmDialog(): ConfirmRequest {
+  const confirm = useContext(ConfirmContext);
+  if (!confirm) throw new Error("useConfirmDialog must be used inside ConfirmationProvider.");
+  return confirm;
 }
