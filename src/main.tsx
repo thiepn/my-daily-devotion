@@ -2,6 +2,7 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createHashRouter, RouterProvider } from "react-router-dom";
 import { App } from "./app/App";
+import { UnsavedChangesProvider } from "./app/UnsavedChangesProvider";
 import { BrandMark } from "./app/visual/BrandMark";
 import { inspectStorage, registerMddServiceWorker } from "./app/platform";
 import { prepareDatabase } from "./data/database";
@@ -34,7 +35,7 @@ const root = createRoot(rootElement);
 async function start(): Promise<void> {
   try {
     await prepareDatabase();
-    const router = createHashRouter([{ path: "*", element: <App /> }]);
+    const router = createHashRouter([{ path: "*", element: <UnsavedChangesProvider><App /></UnsavedChangesProvider> }]);
     root.render(<StrictMode><RouterProvider router={router} /></StrictMode>);
     void inspectStorage(true).catch(() => undefined);
     void registerMddServiceWorker().catch((error: unknown) => {
