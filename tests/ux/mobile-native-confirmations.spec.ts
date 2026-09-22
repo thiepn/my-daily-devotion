@@ -25,6 +25,7 @@ test.describe("native in-app confirmations", () => {
   });
 
   test("unsaved internal navigation uses an app bottom sheet, not browser confirm", async ({ page }) => {
+    await openRoute(page, "/today/reflection/2026-09-22");
     await expect(page.locator('meta[name="viewport"]')).toHaveAttribute("content", /interactive-widget=resizes-content/);
     const browserDialogs: string[] = [];
     page.on("dialog", async (dialog) => {
@@ -32,7 +33,6 @@ test.describe("native in-app confirmations", () => {
       await dialog.dismiss();
     });
 
-    await openRoute(page, "/today/reflection/2026-09-22");
     await page.getByLabel("Daily reflection").fill("Keep this local draft.");
     await page.getByRole("button", { name: "Back", exact: true }).click();
 
