@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useUnsavedChanges } from "../app/useUnsavedChanges";
+import { useConfirmation } from "../app/ConfirmationProvider";
 import { BotanicalSprig } from "../app/visual/MorningGraceMotifs";
 import { db } from "../data/database";
 import { ReflectionRepository } from "../data/repositories/reflections";
@@ -39,6 +40,7 @@ function bibleHref(reference: ScriptureReference): string {
 }
 
 export function ReflectionScreen() {
+  const confirm = useConfirmation();
   const params = useParams();
   const [searchParams] = useSearchParams();
   const rawDate = params.localDate ?? "";
@@ -102,7 +104,7 @@ export function ReflectionScreen() {
   };
 
   const remove = async () => {
-    if (!window.confirm("Remove this reflection and its linked passages?")) return;
+    if (!await confirm({ title: "Remove reflection?", description: "Remove this reflection and its linked passages from MDD?", confirmLabel: "Remove reflection", cancelLabel: "Keep reflection", tone: "danger" })) return;
     try { await repository.removeDaily(localDate!);
     setReflection(null);
     setLinks([]);
