@@ -19,11 +19,9 @@ The browser's own beforeunload warning remains only for genuine reload/tab-close
 
 ## Back navigation
 
-The phone app-bar Back button now consumes real in-app history when an internal source exists.
+The phone app-bar Back button first honors a validated explicit return target when a workflow declares one. This keeps Search, devotional handoffs and other contextual flows tied to the screen that opened them even when the current route has created its own query-state history.
 
-A direct-open or deep-linked pushed route still has a deterministic logical-parent fallback, so users are never trapped when there is no useful history entry.
-
-This prevents the previous detail → parent → detail bounce caused by pushing another parent entry onto browser history.
+For ordinary pushed routes without explicit return context, Back consumes real in-app history when an internal source exists. A direct-open or deep-linked pushed route still has a deterministic logical-parent fallback, so users are never trapped.
 
 ## Route handoff and scrolling
 
