@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.6 — 2026-09-22
+
+### Native confirmations & keyboard polish
+
+- Replace internal browser `window.confirm` prompts with one app-owned confirmation system.
+- Use the app confirmation sheet for unsaved internal route navigation while preserving native `beforeunload` protection for actual reload/tab/window exit.
+- Convert Bible verse-note discard/removal, Reflection removal, Prayer removal/answer-note discard, Focused Prayer draft/session actions, People removal, Categories removal and Collection deletion to consistent app confirmations.
+- Default confirmation focus to the safe keep/cancel action and require an explicit destructive second action.
+- Present confirmations as safe-area-aware mobile bottom sheets with 44px+ actions, 320px/200% text reflow and desktop-centered preservation.
+- Lock background scrolling and harden modal lifecycle behavior under React Strict Mode.
+- Let supported Android browsers resize the app viewport around the virtual keyboard with `interactive-widget=resizes-content`.
+- Use dynamic viewport height for the mobile shell and keyboard-safe field scroll margins.
+- Preserve v1.2.5 native state handling, v1.2.4 dense workflows, local-first data semantics, database schema 1 and backup format 1.
+
 ## 1.2.5 — 2026-09-22
 
 ### Native mobile application states
