@@ -2,7 +2,7 @@
   "version": 1,
   "name": "Morning Grace Mobile-First Layout",
   "parentRelease": "1.1.0",
-  "status": "mobile-redesign-v1-dense-secondary-workflows",
+  "status": "mobile-redesign-v1-native-state-system",
   "breakpointPx": 760,
   "principles": [
     "phone layout is composed independently from desktop",
@@ -15,7 +15,8 @@
     "Morning Grace visual identity remains intact without oversized editorial hero treatment",
     "phone landscape remains in the mobile app composition",
     "root tabs and pushed detail workflows use different mobile navigation chrome",
-    "secondary management and history workflows use dense mobile-native compositions"
+    "secondary management and history workflows use dense mobile-native compositions",
+    "loading, error, empty, conflict and draft states use native mobile patterns"
   ],
   "chrome": {
     "topBar": "root destinations use a compact sticky title bar with Search and Data; pushed routes use a 44px contextual Back control plus route title",
@@ -49,7 +50,8 @@
     "verifier": "scripts/verify-mobile-first-layout.mjs",
     "stackedStyle": "src/styles/morning-grace-mobile-stacked.css",
     "nativeNavigationTest": "tests/ux/mobile-native-navigation.spec.ts",
-    "denseSecondaryTest": "tests/ux/mobile-dense-secondary.spec.ts"
+    "denseSecondaryTest": "tests/ux/mobile-dense-secondary.spec.ts",
+    "nativeStateTest": "tests/ux/mobile-native-states.spec.ts"
   },
   "landscapePhoneRule": {
     "maxHeightPx": 500,
@@ -88,5 +90,14 @@
     "prayerMetadata": "People/Categories editor precedes a dense saved-item list on phone",
     "historyDetail": "History Day retains date context; Moments/Day use compact timeline rows and a local segmented switcher",
     "enlargedText": "two-column mobile action layouts collapse to one column at 200% text"
+  },
+  "mobileStates": {
+    "loading": "compact inline/route loading treatment that keeps app chrome visually primary",
+    "recovery": "compact in-shell recovery and startup states with 44px actions",
+    "draftDialog": "bottom-sheet confirmation with safe-area padding and stacked 44px+ actions",
+    "conflictReview": "edge-to-edge comparison block with explicit keep/use actions",
+    "empty": "quiet inline states without decorative desktop-card spacing",
+    "platformStatus": "slim offline/update system strip below the app bar",
+    "enlargedText": "bottom sheet, conflict actions and platform status reflow without horizontal scrolling at 200% text"
   }
 }

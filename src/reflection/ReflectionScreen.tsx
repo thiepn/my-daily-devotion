@@ -81,8 +81,8 @@ export function ReflectionScreen() {
   const saving = useRef(false);
   const [busy, setBusy] = useState(false);
 
-  if (!localDate) return <main className="visual-screen reflection-screen mg-secondary-screen mg-reflection-workspace"><p className="eyebrow">Reflection</p><h1>Invalid date</h1><Link to="/today">Return to Today</Link></main>;
-  if (loading) return <main className="visual-screen reflection-screen"><p className="eyebrow">Reflection</p><p>Opening your local reflection…</p></main>;
+  if (!localDate) return <main className="visual-screen reflection-screen mg-secondary-screen mg-reflection-workspace mg-route-state mg-error-state"><p className="eyebrow">Reflection</p><h1>Invalid date</h1><p className="mg-inline-state">This reflection date is not valid.</p><Link className="quiet-back-link" to="/today">Return to Today</Link></main>;
+  if (loading) return <main className="visual-screen reflection-screen mg-secondary-screen mg-reflection-workspace mg-route-state mg-loading-state"><p className="eyebrow">Reflection</p><p className="mg-inline-state">Opening your local reflection…</p></main>;
 
   const save = async () => {
     if (saving.current || !body.trim()) return;

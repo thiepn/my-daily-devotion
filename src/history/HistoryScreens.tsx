@@ -207,7 +207,7 @@ export function HistoryDayScreen() {
     return () => { cancelled = true; };
   }, [localDate]);
 
-  if (!localDate) return <main className="visual-screen"><h1>Invalid date</h1><Link to="/history">Return to History</Link></main>;
+  if (!localDate) return <main className="visual-screen mg-secondary-screen mg-history-detail-workspace mg-route-state mg-error-state"><h1>Invalid date</h1><p className="mg-inline-state">This history date is not valid.</p><Link className="quiet-back-link" to="/history">Return to History</Link></main>;
 
   const prayed = entries.filter((item) => item.eventType === "PRAYER_PRAYED");
   const visible = entries.filter((item) => item.eventType !== "PRAYER_PRAYED");
@@ -220,7 +220,7 @@ export function HistoryDayScreen() {
         <p className="screen-intro">Scripture, reflections and prayers from this day.</p>
         <Link className="quiet-back-link" to="/history">← Calendar</Link>
       </header>
-      {error ? <p role="alert">{error}</p> : loading ? <p className="history-loading" role="status">Opening history…</p> : (
+      {error ? <p role="alert">{error}</p> : loading ? <p className="history-loading mg-inline-state mg-loading-state" role="status">Opening history…</p> : (
         <>
           {prayed.length ? <section className="history-prayer-summary"><p className="section-kicker">Prayer</p><strong>{prayed.length}</strong><span>{prayed.length === 1 ? "prayer prayed" : "prayers prayed"}</span></section> : null}
           <section className="history-entry-list">{visible.length ? visible.map((entry) => <EntryView key={entry.id} entry={entry} manifest={manifest} />) : <p className="muted-copy">No further history is recorded for this date.</p>}</section>
@@ -252,7 +252,7 @@ export function HistoryMomentsScreen() {
       </header>
       <HistoryTabs active="moments" returnTo="/history/moments" />
       <section className="moments-list">
-        {error ? <p role="alert">{error}</p> : loading ? <p role="status">Opening moments…</p> : entries.length ? entries.map((entry) => <div className="moment-row" key={entry.id}><time>{entry.localDate}</time><EntryView entry={entry} manifest={manifest} /></div>) : <p className="muted-copy">Meaningful moments will appear here as your devotional history grows.</p>}
+        {error ? <p role="alert">{error}</p> : loading ? <p className="mg-inline-state mg-loading-state" role="status">Opening moments…</p> : entries.length ? entries.map((entry) => <div className="moment-row" key={entry.id}><time>{entry.localDate}</time><EntryView entry={entry} manifest={manifest} /></div>) : <p className="muted-copy">Meaningful moments will appear here as your devotional history grows.</p>}
       </section>
     </main>
   );

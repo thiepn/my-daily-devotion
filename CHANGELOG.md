@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.2.5 — 2026-09-22
+
+### Native mobile application states
+
+- Convert unsaved-change confirmation into a true bottom-sheet dialog on phone with 44px+ stacked actions and safe-area padding.
+- Recompose edit-conflict review as an edge-to-edge mobile comparison surface with explicit keep/use actions.
+- Make lazy-route recovery and startup failures compact app states instead of large centered editorial pages.
+- Tighten route-loading treatment so navigation chrome remains visually primary while content loads.
+- Normalize Today, Bible, Reflection, Prayer detail/settings and History invalid/loading/error routes onto the shared mobile state system.
+- Convert Prayer, Collections and Search empty states into compact inline app states without decorative empty-card spacing.
+- Reduce Offline/Update status to a slim system strip beneath the app bar.
+- Add 320px, 200% text, accessibility, offline, conflict, recovery and desktop-preservation coverage for mobile states.
+- Preserve the 1.2.4 dense secondary workflows, 1.2.3 contextual utility navigation, root mobile screens, desktop/tablet Morning Grace composition, database schema 1 and backup format 1.
+
 ## 1.2.4 — 2026-09-21
 
 ### Dense secondary mobile workflows
