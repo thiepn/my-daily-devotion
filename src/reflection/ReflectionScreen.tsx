@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useConfirmDialog } from "../app/useConfirmDialog";
 import { useUnsavedChanges } from "../app/useUnsavedChanges";
 import { BotanicalSprig } from "../app/visual/MorningGraceMotifs";
 import { db } from "../data/database";
@@ -80,6 +81,7 @@ export function ReflectionScreen() {
   useUnsavedChanges(!loading && body !== savedBody);
   const saving = useRef(false);
   const [busy, setBusy] = useState(false);
+  const { confirm, confirmationDialog } = useConfirmDialog();
 
   if (!localDate) return <main className="visual-screen reflection-screen mg-secondary-screen mg-reflection-workspace mg-route-state mg-error-state"><p className="eyebrow">Reflection</p><h1>Invalid date</h1><p className="mg-inline-state">This reflection date is not valid.</p><Link className="quiet-back-link" to="/today">Return to Today</Link></main>;
   if (loading) return <main className="visual-screen reflection-screen mg-secondary-screen mg-reflection-workspace mg-route-state mg-loading-state"><p className="eyebrow">Reflection</p><p className="mg-inline-state">Opening your local reflection…</p></main>;
@@ -102,7 +104,7 @@ export function ReflectionScreen() {
   };
 
   const remove = async () => {
-    if (!window.confirm("Remove this reflection and its linked passages?")) return;
+    if (!await confirm({ title: "Remove reflection?", message: "This removes the reflection and its linked passages from this device.", confirmLabel: "Remove reflection", tone: "danger" })) return;
     try { await repository.removeDaily(localDate!);
     setReflection(null);
     setLinks([]);
@@ -207,6 +209,7 @@ export function ReflectionScreen() {
           </section>
         </aside>
       </div>
+      {confirmationDialog}
     </main>
   );
 }
