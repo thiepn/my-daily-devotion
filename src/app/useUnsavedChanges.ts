@@ -1,21 +1,18 @@
-import { useEffect, useRef } from "react";
-import { useBlocker } from "react-router-dom";
+import { useContext, useEffect, useRef } from "react";
+import { UnsavedChangesContext } from "./UnsavedChangesProvider";
 
-/** Guard both SPA history and browser reloads without creating saved records. */
+/** Register editor dirtiness with the app-level navigation guard. */
 export function useUnsavedChanges(dirty: boolean): () => void {
-  const allow = useRef(false);
-  const blocker = useBlocker(({ currentLocation, nextLocation }) => dirty && !allow.current && (currentLocation.pathname !== nextLocation.pathname || currentLocation.search !== nextLocation.search));
-  useEffect(() => { allow.current = false; }, [dirty]);
+  const controller = useContext(UnsavedChangesContext);
+  const token = useRef(Symbol("unsaved-editor"));
+
+  if (!controller) throw new Error("useUnsavedChanges must be used inside UnsavedChangesProvider.");
+
   useEffect(() => {
-    if (blocker.state !== "blocked") return;
-    if (window.confirm("Leave without saving your changes?")) blocker.proceed();
-    else blocker.reset();
-  }, [blocker]);
-  useEffect(() => {
-    if (!dirty) return;
-    const beforeUnload = (event: BeforeUnloadEvent) => { if (!allow.current) { event.preventDefault(); event.returnValue = ""; } };
-    window.addEventListener("beforeunload", beforeUnload);
-    return () => window.removeEventListener("beforeunload", beforeUnload);
-  }, [dirty]);
-  return () => { allow.current = true; };
+    const id = token.current;
+    controller.setDirty(id, dirty);
+    return () => controller.remove(id);
+  }, [controller, dirty]);
+
+  return controller.allowNextNavigation;
 }
