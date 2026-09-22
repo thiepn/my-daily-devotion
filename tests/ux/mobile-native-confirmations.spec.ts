@@ -90,6 +90,9 @@ test.describe("native in-app confirmations", () => {
     await openRoute(page, "/prayer/session?depth=quick");
     await page.getByRole("button", { name: "Answered", exact: true }).click();
     const answer = page.getByLabel("What happened?");
+    await page.getByRole("button", { name: "Cancel", exact: true }).click();
+    await expect(answer).toBeHidden();
+    await page.getByRole("button", { name: "Answered", exact: true }).click();
     await answer.fill("An answer I have not saved yet.");
 
     await page.getByRole("button", { name: "Skip", exact: true }).click();
