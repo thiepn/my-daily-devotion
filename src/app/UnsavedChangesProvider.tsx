@@ -43,6 +43,7 @@ function NavigationDraftDialog({ leave, stay }: { leave: () => void; stay: () =>
 export function UnsavedChangesProvider({ children }: { children: ReactNode }) {
   const [dirtyTokens, setDirtyTokens] = useState<Set<symbol>>(() => new Set());
   const allow = useRef(false);
+  const allowResetTimer = useRef<number | null>(null);
   const location = useLocation();
   const dirty = dirtyTokens.size > 0;
 
@@ -74,11 +75,24 @@ export function UnsavedChangesProvider({ children }: { children: ReactNode }) {
 
   const allowNextNavigation = useCallback(() => {
     allow.current = true;
+    if (allowResetTimer.current !== null) window.clearTimeout(allowResetTimer.current);
+    allowResetTimer.current = window.setTimeout(() => {
+      allow.current = false;
+      allowResetTimer.current = null;
+    }, 0);
   }, []);
 
   useEffect(() => {
     allow.current = false;
+    if (allowResetTimer.current !== null) {
+      window.clearTimeout(allowResetTimer.current);
+      allowResetTimer.current = null;
+    }
   }, [location.key]);
+
+  useEffect(() => () => {
+    if (allowResetTimer.current !== null) window.clearTimeout(allowResetTimer.current);
+  }, []);
 
   useEffect(() => {
     if (!dirty) return;
