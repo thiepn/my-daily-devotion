@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 const root=new URL("../",import.meta.url);
 const read=(path)=>readFile(new URL(path,root),"utf8");
 
-const [contractRaw,css,stackedCss,main,app,search,data,polishTest,navigationTest,denseSecondaryTest,nativeStateTest,pkgRaw]=await Promise.all([
+const [contractRaw,css,stackedCss,main,app,search,data,polishTest,navigationTest,denseSecondaryTest,nativeStateTest,nativeInteractionTest,pkgRaw]=await Promise.all([
   read("canonical/mobile-first-layout.v1.json"),
   read("src/styles/morning-grace-mobile.css"),
   read("src/styles/morning-grace-mobile-stacked.css"),
@@ -16,7 +16,20 @@ const [contractRaw,css,stackedCss,main,app,search,data,polishTest,navigationTest
   read("tests/ux/mobile-native-navigation.spec.ts"),
   read("tests/ux/mobile-dense-secondary.spec.ts"),
   read("tests/ux/mobile-native-states.spec.ts"),
+  read("tests/ux/mobile-native-interactions.spec.ts"),
   read("package.json")
+]);
+
+const [confirmProvider,unsavedGuard,bible,reflection,prayerDetail,prayerSession,people,categories,collections]=await Promise.all([
+  read("src/app/useConfirmDialog.tsx"),
+  read("src/app/useUnsavedChanges.ts"),
+  read("src/scripture/BibleScreen.tsx"),
+  read("src/reflection/ReflectionScreen.tsx"),
+  read("src/prayer/PrayerDetailScreen.tsx"),
+  read("src/prayer/PrayerSessionScreen.tsx"),
+  read("src/prayer/PeopleScreen.tsx"),
+  read("src/prayer/CategoriesScreen.tsx"),
+  read("src/scripture/CollectionsScreen.tsx")
 ]);
 
 const contract=JSON.parse(contractRaw);
@@ -98,6 +111,24 @@ assert.match(nativeStateTest,/unsaved-change confirmation is a bottom sheet with
 assert.match(nativeStateTest,/conflict review is an edge-to-edge mobile comparison state/);
 assert.match(nativeStateTest,/lazy-route failure becomes a compact recoverable mobile app state/);
 assert.match(nativeStateTest,/draft bottom sheet and state surfaces reflow at 320px and 200 percent text/);
+assert.match(app,/window\.history\.state\?\.idx/);
+assert.match(app,/navigate\(-1\)/);
+assert.match(app,/window\.scrollTo\(\{ top: 0, left: 0, behavior: "auto" \}\)/);
+assert.match(confirmProvider,/ConfirmationProvider/);
+assert.match(confirmProvider,/ConfirmContext/);
+assert.match(unsavedGuard,/Leave without saving\?/);
+assert.match(search,/type="search"/);
+assert.match(search,/inputMode="search"/);
+assert.match(search,/enterKeyHint="search"/);
+assert.match(stackedCss,/touch-action:\s*manipulation/);
+assert.match(nativeInteractionTest,/app-bar Back consumes in-app history without reopening the pushed screen/);
+assert.match(nativeInteractionTest,/pushed non-reader routes reset stale document scroll/);
+assert.match(nativeInteractionTest,/dirty navigation uses the in-app bottom sheet instead of browser confirm chrome/);
+assert.match(nativeInteractionTest,/destructive actions use the shared in-app confirmation sheet/);
+assert.match(nativeInteractionTest,/Search requests the native search keyboard contract/);
+for(const source of [unsavedGuard,bible,reflection,prayerDetail,prayerSession,people,categories,collections]) {
+  assert.doesNotMatch(source,/window\.confirm\(/,"Migrated production flow regressed to browser confirm chrome");
+}
 assert.equal(contract.secondaryNavigation.behavior,"hide root bottom tabs and Search/Data utility actions; expose contextual Back navigation");
 assert.equal(contract.secondaryNavigation.touchTargetPx,44);
 assert.equal(pkg.scripts["verify:mobile-layout"],"node scripts/verify-mobile-first-layout.mjs");
@@ -112,5 +143,7 @@ console.log("  active Focused Prayer can remove outer shell chrome without trapp
 console.log("  Search/Data preserve exact mobile source context through utility workflows");
 console.log("  Prayer management and History detail routes use dense mobile-native compositions");
 console.log("  loading, recovery, empty, conflict and draft states use native mobile patterns");
+console.log("  Back history, route handoff, shared confirmations, touch feedback and Search keyboard semantics are native-hardened");
+console.log("  migrated app flows contain no browser window.confirm() dialogs");
 console.log("  320px, 200% text and phone-landscape detail states are covered");
 console.log("  desktop/tablet Morning Grace layers remain upstream and unchanged");
