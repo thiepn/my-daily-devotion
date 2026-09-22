@@ -74,7 +74,7 @@ Ship only from a commit where the independent Phase 0 contract and cumulative Ph
 - [x] Conflict review, recovery/error and empty states use compact mobile-native compositions.
 - [x] Offline/update status uses a slim mobile system strip and reflows at 200% text.
 
-- [x] App-bar Back consumes real in-app history and retains a safe direct-open parent fallback.
+- [x] App-bar Back honors validated explicit return context, otherwise consumes real in-app history, with a safe direct-open parent fallback.
 - [x] Non-reader route transitions reset stale document scroll while Bible reader restoration remains authoritative.
 - [x] SPA draft guards and destructive actions use the shared in-app confirmation sheet; migrated production flows contain no `window.confirm()`.
 - [x] Mobile navigation exposes manipulation touch behavior and restrained pressed feedback.
