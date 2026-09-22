@@ -101,29 +101,31 @@ function routeLabel(pathname: string): string {
 
 function RouteViewportManager() {
   const location = useLocation();
-  const positions = useRef(new Map<string, number>());
   const routeKey = `${location.pathname}${location.search}`;
+  const positions = useRef(new Map<string, number>());
+  const activeRoute = useRef(routeKey);
+  const lastScrollY = useRef(typeof window === "undefined" ? 0 : window.scrollY);
 
   useEffect(() => {
     const previous = window.history.scrollRestoration;
     window.history.scrollRestoration = "manual";
+    const remember = () => {
+      lastScrollY.current = window.scrollY;
+      positions.current.set(activeRoute.current, lastScrollY.current);
+    };
+    window.addEventListener("scroll", remember, { passive: true });
     return () => {
+      window.removeEventListener("scroll", remember);
       window.history.scrollRestoration = previous;
     };
   }, []);
 
-  useEffect(() => {
-    const remember = () => positions.current.set(routeKey, window.scrollY);
-    remember();
-    window.addEventListener("scroll", remember, { passive: true });
-    return () => {
-      remember();
-      window.removeEventListener("scroll", remember);
-    };
-  }, [routeKey]);
-
   useLayoutEffect(() => {
+    if (activeRoute.current === routeKey) return;
+    positions.current.set(activeRoute.current, lastScrollY.current);
+    activeRoute.current = routeKey;
     const top = positions.current.get(routeKey) ?? 0;
+    lastScrollY.current = top;
     window.scrollTo({ top, left: 0, behavior: "auto" });
   }, [routeKey]);
 
