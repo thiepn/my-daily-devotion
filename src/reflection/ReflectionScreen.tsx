@@ -81,7 +81,7 @@ export function ReflectionScreen() {
   useUnsavedChanges(!loading && body !== savedBody);
   const saving = useRef(false);
   const [busy, setBusy] = useState(false);
-  const { confirm, confirmationDialog } = useConfirmDialog();
+  const confirm = useConfirmDialog();
 
   if (!localDate) return <main className="visual-screen reflection-screen mg-secondary-screen mg-reflection-workspace mg-route-state mg-error-state"><p className="eyebrow">Reflection</p><h1>Invalid date</h1><p className="mg-inline-state">This reflection date is not valid.</p><Link className="quiet-back-link" to="/today">Return to Today</Link></main>;
   if (loading) return <main className="visual-screen reflection-screen mg-secondary-screen mg-reflection-workspace mg-route-state mg-loading-state"><p className="eyebrow">Reflection</p><p className="mg-inline-state">Opening your local reflection…</p></main>;
