@@ -31,10 +31,10 @@ test("reflection drafts survive cancelled navigation, reload and stale saves", a
   const leaveReflection = () => usesMobileAppLayout(page)
     ? page.getByRole("button", { name: "Back", exact: true }).click()
     : visibleNavLink(page, "Today").click();
-  await Promise.all([
-    page.waitForEvent("dialog").then(async (dialog) => { expect(dialog.type()).toBe("confirm"); await dialog.dismiss(); }),
-    leaveReflection(),
-  ]);
+  await leaveReflection();
+  const leaveDialog = page.getByRole("dialog");
+  await expect(leaveDialog.getByRole("heading", { name: "Leave without saving?" })).toBeVisible();
+  await leaveDialog.getByRole("button", { name: "Keep editing", exact: true }).click();
   await expect(editor).toHaveValue("A reflection worth keeping.\nA second line.");
   // Reload is tested via the native beforeunload event, with a real user gesture above.
   await Promise.all([
@@ -65,10 +65,13 @@ test("verse notes protect drafts and saved annotations survive reload", async ({
   await page.getByRole("button", { name: "More", exact: true }).click();
   await page.getByRole("button", { name: "Add verse note" }).click();
   await page.getByLabel("Verse note", { exact: true }).fill("Remember this promise of love.");
-  page.once("dialog", (dialog) => dialog.dismiss());
   await page.getByRole("button", { name: "Clear verse selection" }).click();
+  await expect(page.getByRole("dialog").getByRole("heading", { name: "Discard verse note?" })).toBeVisible();
+  await page.getByRole("dialog").getByRole("button", { name: "Keep editing", exact: true }).click();
   await expect(page.getByLabel("Verse note", { exact: true })).toHaveValue("Remember this promise of love.");
-  page.once("dialog", (dialog) => dialog.dismiss());
+  await page.getByRole("button", { name: "More", exact: true }).click();
+  await expect(page.getByRole("dialog").getByRole("heading", { name: "Discard verse note?" })).toBeVisible();
+  await page.getByRole("dialog").getByRole("button", { name: "Keep editing", exact: true }).click();
   await page.getByRole("button", { name: "More", exact: true }).click();
   await expect(page.getByLabel("Verse note", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Save note", exact: true }).click();
@@ -135,7 +138,10 @@ test("collections can be renamed, reject collisions, and remove passages", async
   await expect(page.getByRole("button", { name: "Select John 3:16", exact: true })).toHaveAttribute("aria-pressed", "true");
   await page.goBack(); await page.getByRole("button", { name: "Remove John 3:16" }).click();
   await expect(page.getByText(/No passages saved here yet/)).toBeVisible();
-  page.once("dialog", (dialog) => dialog.accept()); await page.getByRole("button", { name: "Delete collection" }).click();
+  await page.getByRole("button", { name: "Delete collection" }).click();
+  const deleteDialog = page.getByRole("dialog");
+  await expect(deleteDialog.getByRole("heading", { name: "Delete collection?" })).toBeVisible();
+  await deleteDialog.getByRole("button", { name: "Delete collection", exact: true }).click();
   await expect(page.getByRole("heading", { name: "No collections yet." })).toBeVisible();
 });
 
