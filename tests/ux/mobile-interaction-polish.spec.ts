@@ -127,7 +127,7 @@ test.describe("mobile interaction polish", () => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await openRoute(page, "/today/reflection/2026-09-22");
     await page.getByLabel("Daily reflection").fill("Desktop draft.");
-    await page.getByRole("link", { name: "Return to Today", exact: true }).click();
+    await page.locator(".side-nav").getByRole("link", { name: "Today", exact: true }).click();
 
     const dialog = page.locator("dialog.navigation-draft-dialog");
     await expect(dialog).toBeVisible();
