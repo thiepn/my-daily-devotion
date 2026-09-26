@@ -24,7 +24,7 @@ test('Moments excludes ordinary requests and discovers more than 200 reflective 
 });
 test('History retains mobile artwork, 44px controls and enlarged-text reflow',async({page})=>{
   await seedHistoryJournal(page);
-  for(const width of [320,360,390,430,768,1440]){await page.setViewportSize({width,height:844});await expectNoHorizontalOverflow(page);await expect(page.locator('.history-reflection-band img')).toBeVisible();const heights=await page.locator('.history-search,.history-journal-tabs a,.history-period select,.history-activity-heading a').evaluateAll(items=>items.map(i=>i.getBoundingClientRect().height));heights.forEach(h=>expect(h).toBeGreaterThanOrEqual(43.999));}
+  for(const width of [320,360,390,430,768,1440]){await page.setViewportSize({width,height:844});await expectNoHorizontalOverflow(page);await expect(page.locator('.history-reflection-band img')).toBeVisible();const sizes=await page.locator('.history-search,.history-journal-tabs a,.history-period select,.history-activity-heading a').evaluateAll(items=>items.map(i=>({width:i.getBoundingClientRect().width,height:i.getBoundingClientRect().height})));sizes.forEach(size=>{expect(size.height).toBeGreaterThanOrEqual(43.999);expect(size.width).toBeGreaterThanOrEqual(43.999);});}
   await page.setViewportSize({width:390,height:844});expect((await page.locator('.history-reflection-band').boundingBox())!.y).toBeLessThan(710);await expectNoAxeViolations(page);
   await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{document.documentElement.style.fontSize='200%';});await expectNoHorizontalOverflow(page);await expectNoAxeViolations(page);
   await page.getByRole('link',{name:'Browse dates',exact:true}).click();await expect(page.locator('.history-calendar-grid')).toBeHidden();await expectNoHorizontalOverflow(page);await expectNoAxeViolations(page);
@@ -61,5 +61,26 @@ test('All secondary History views retain keyboard access and reflow at each requ
     await openRoute(page,route);await expect(page.getByRole('status').filter({hasText:/Opening/})).toHaveCount(0);
     for(const width of [320,360,390,430,768,1440]){await page.setViewportSize({width,height:844});await expectNoHorizontalOverflow(page);}
     await page.setViewportSize({width:390,height:844});await page.locator('.history-back').focus();await expect(page.locator('.history-back')).toBeFocused();await page.locator('.history-search').focus();await expect(page.locator('.history-search')).toBeFocused();await expectNoAxeViolations(page);await page.keyboard.press('Enter');await expect(page).toHaveURL(/search\?return=/);await page.goBack();await expect(page.locator('.history-search')).toBeVisible();
+  }
+});
+
+test('A delayed old reading model cannot replace a newer activity view',async({page})=>{
+  await seedHistoryJournal(page);const before=await historySnapshot(page);
+  let release!:()=>void,started!:()=>void;
+  const hold=new Promise<void>(resolve=>{release=resolve;}), intercepted=new Promise<void>(resolve=>{started=resolve;});
+  await page.route('**/plans/mcheyne-classic.v1.json',async route=>{started();await hold;await route.continue();});
+  await page.reload();await intercepted;
+  await page.getByRole('navigation',{name:'History views'}).getByRole('link',{name:'Reflections',exact:true}).click();await expect(page.locator('.history-journal-row')).toHaveCount(1);
+  const response=page.waitForResponse('**/plans/mcheyne-classic.v1.json');release();await (await response).finished();
+  await page.evaluate(()=>new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve()))));
+  await expect(page.locator('.history-journal-row')).toHaveCount(1);await expect(page.locator('.history-journal-row')).toContainText('Reflection written');expect(await historySnapshot(page)).toEqual(before);
+});
+
+test('Changing browser time zones preserves recorded days and source destinations',async({page,context,browser})=>{
+  await seedHistoryJournal(page);const before=await historySnapshot(page), state=await context.storageState({indexedDB:true});
+  const destinations=await page.locator('.history-journal-row').evaluateAll(links=>links.map(link=>link.getAttribute('href')));
+  for(const timezoneId of ['Pacific/Honolulu','Asia/Tokyo']){
+    const shifted=await browser.newContext({baseURL:'http://127.0.0.1:4173',storageState:state,timezoneId,locale:'en-US',serviceWorkers:'block'});
+    try{const tab=await shifted.newPage();await tab.clock.setFixedTime(new Date('2026-04-24T00:30:00Z'));await openRoute(tab,'/history');await expect(tab.locator('.history-journal-row')).toHaveCount(5);expect(await tab.locator('.history-journal-row').evaluateAll(links=>links.map(link=>link.getAttribute('href')))).toEqual(destinations);await tab.locator('#history-row-history-reflection-event').click();await expect(tab.getByRole('heading',{level:1})).toHaveText('Wednesday, April 22, 2026');expect(await historySnapshot(tab)).toEqual(before);}finally{await shifted.close();}
   }
 });

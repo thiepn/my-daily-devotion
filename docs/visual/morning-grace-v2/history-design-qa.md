@@ -48,4 +48,6 @@ The shared artwork component now exposes the dedicated reflection asset. Provena
 
 The initial full browser run passed 291/294. It exposed a Safari focus-return defect, a Safari-specific keyboard-test assumption, and a legacy calendar test still targeting the overview. These were corrected before final certification. Exact commit, final counts and evidence are recorded in the PR and delivery report, rather than referring to this exploratory run as a clean release.
 
+The final measured target review found the Moments link was 42.9px wide despite its 44px height. A minimum width now protects both dimensions, and the browser assertion checks width as well as height. Dedicated delayed-reading-load and Honolulu/Tokyo browser-context tests verify stale-result cancellation and stored-date invariance explicitly.
+
 Schema remains v1. Persistence formats, UUIDs, revisions, tombstones, prayer/session queues, Scripture identity, M’Cheyne semantics, backup formats and explicit completion actions are preserved.
