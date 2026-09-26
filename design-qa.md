@@ -18,6 +18,7 @@ Visual review: **passed for the scoped light Bible composition after iteration**
 5. [P2, fixed] Initial header/translation metadata pushed Scripture too far down. A 54px header retains 44px controls; art/title rhythm now aligns with the reference. Real corpus headings remain. Translation attribution lives in reader help and the passage panel.
 6. [P2, fixed] Bundled Inter exposed 2px of enlarged-text Search overflow. Replaced the fixed action column with intrinsic sizing and restored 44px Search controls. Secondary controls are checked in both themes at narrow/enlarged sizes.
 7. [Content, separately fixed] The old parser omitted a word boundary in Luke 9:1. An isolated parser commit and 112 whitespace-only fixtures correct the source-note case; this is not a display-text patch.
+8. [Test determinism, fixed] Two CI runners captured different selection scroll offsets as local fonts and the status dock settled. Selection baselines now explicitly center the verse after that layout. The two updated candidates were inspected; comparison thresholds were not relaxed. Secondary target measurements disable entrance animation and still require 44px computed and rendered height.
 
 ## Close matches
 

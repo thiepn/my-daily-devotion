@@ -36,6 +36,13 @@ for (const theme of ['light', 'dark'] as const) test(`Bible highlighted passage 
   await openRoute(page, '/bible/LUK/9?verse=23');
   await page.getByRole('button', { name: 'Highlight', exact: true }).click();
   await expect(page.getByRole('status')).toHaveText('Highlighted locally.');
+  // Anchor this comparison after fonts and the status-bearing dock finish layout.
+  // The initial route scroll may precede either; behavioral tests cover that handoff.
+  await page.evaluate(() => document.fonts.ready);
+  await page.getByRole('button', { name: 'Select Luke 9:23', exact: true }).evaluate(async element => {
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())));
+    element.scrollIntoView({ block: 'center', behavior: 'instant' });
+  });
   await expect(page).toHaveScreenshot(`bible-${theme}-highlight.png`);
 });
 
