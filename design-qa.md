@@ -47,3 +47,7 @@ Validation: TypeScript, 130 unit tests, production build, brand/PWA verifiers, 2
 ## Prayer journal follow-up
 
 The primary Prayer screen now follows the third phone's composition, with real BSB text, person initials, four status segments, existing-metadata filters and a read-only next-request/session preview. See `docs/visual/morning-grace-v2/prayer-design-qa.md` for normalized reference measurements, all five fidelity surfaces, corrections, deliberate differences and verification scope. History and secondary workflow redesigns remain deferred. The Prayer inspection does not supersede the earlier Bible or brand evidence above.
+
+## History journal follow-up
+
+The complete History journey now follows the fourth phone's journal direction. The overview, separate calendar, selected Day entries and reflective Moments share a read-only presentation model and one screen stylesheet. See `docs/visual/morning-grace-v2/history-design-qa.md` and `history-comparison.png` for the reference comparison, factual metric definitions, privacy handling, artwork provenance, enlarged-text corrections and honest visual differences. This supersedes the earlier statements that History remained deferred; other secondary workflows remain outside this release. Exact-commit verification belongs in the History PR and delivery report.
