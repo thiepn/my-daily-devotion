@@ -182,8 +182,6 @@ test("both writing screens reflow and remain accessible in light and dark",async
     for(const width of [320,360,390,430,768,1440]){await page.setViewportSize({width,height:844});await expectNoHorizontalOverflow(page);await expect(page.locator(".journal-heading .grace-art img")).toBeVisible();}
     for(const colorScheme of ["light","dark"] as const){
       await page.emulateMedia({colorScheme});
-      // Audit the settled theme, not an intermediate sidebar color transition.
-      await page.evaluate(()=>Promise.all(document.getAnimations().map(animation=>animation.finished.catch(()=>{}))));
       await expectNoAxeViolations(page);
     }
     await page.setViewportSize({width:320,height:568});await page.evaluate(()=>{document.documentElement.style.fontSize="200%";});await expectNoHorizontalOverflow(page);
