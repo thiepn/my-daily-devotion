@@ -56,8 +56,6 @@ for (const selector of [
   '.workspace[data-domain="prayer"]',
   '.workspace[data-domain="history"]',
   ".mobile-nav",
-  ".reader-page",
-  ".scripture-copy",
   ".primary-editorial-action",
 ]) assert.ok(morning.includes(selector), `Morning Grace foundation missing ${selector}`);
 
@@ -92,3 +90,8 @@ console.log("  historical contract retained; V2 tokens and owned cascade verifie
 console.log("  warm paper + natural domain accents + three semantic type roles installed");
 console.log("  solid navigation surfaces, restrained elevation and anti-generic guardrails enforced");
 console.log("  product data/domain behavior unchanged; canonical screen redesigns deferred");
+
+const bibleCss = await read("src/styles/bible.css");
+const scriptureCss = await read("src/styles/scripture.css");
+assert.match(bibleCss, /\.reader-page/);
+assert.match(scriptureCss, /\.scripture-content/);

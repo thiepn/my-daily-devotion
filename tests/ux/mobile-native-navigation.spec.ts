@@ -12,6 +12,7 @@ test.describe("native mobile stacked navigation", () => {
       await expect(page.locator(".mobile-nav")).toBeVisible();
       await expect(page.locator(".mobile-appbar-back")).toHaveCount(0);
       if (route === "/today") await expect(page.locator(".today-profile")).toBeVisible();
+      else if (route.startsWith("/bible/")) await expect(page.locator(".bible-reader-header")).toBeVisible();
       else await expect(page.locator(".utility-actions")).toBeVisible();
       await expectNoHorizontalOverflow(page);
     }
@@ -44,7 +45,8 @@ test.describe("native mobile stacked navigation", () => {
 
   test("Search and Data return to the root context that opened them", async ({ page }) => {
     await openRoute(page, "/bible/JHN/3?verse=16");
-    await page.getByRole("link", { name: "Search", exact: true }).click();
+    await page.getByRole("button", { name: "Choose book and chapter" }).click();
+    await page.getByRole("dialog").getByRole("link", { name: "Search Bible", exact: true }).click();
     await expect(page.locator(".utility-mobile-title")).toHaveText("Search");
     await expect(page).toHaveURL(/return=%2Fbible%2FJHN%2F3%3Fverse%3D16/);
 

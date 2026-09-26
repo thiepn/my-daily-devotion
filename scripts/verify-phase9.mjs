@@ -31,7 +31,6 @@ for (const selector of [
   ".utility-context",
   ".visual-screen",
   ".setup-options",
-  ".verse-action-dock",
   ".reflection-prompts button",
   ".prayer-status-tabs",
   ".metadata-layout",
@@ -40,6 +39,8 @@ for (const selector of [
   ".collections-layout",
   ".data-panel",
 ]) assert.ok(css.includes(selector), `Missing Phase 9 refinement for ${selector}`);
+// Bible chrome now has one owner instead of an override in Phase 9.
+assert.match(await read("src/styles/bible.css"), /\.verse-action-dock/);
 
 assert.match(css, /--control-height:\s*44px/);
 assert.match(css, /min-height:\s*44px/);

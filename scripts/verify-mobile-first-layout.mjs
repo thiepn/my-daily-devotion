@@ -34,8 +34,6 @@ for(const selector of [
   ".utility-bar",
   ".mobile-nav",
   ".mg-canonical-hero",
-  ".mg-bible-toolbar",
-  ".mg-bible-chapter-art",
   ".mg-prayer-focus",
   ".prayer-status-tabs",
   ".mg-history-stats",
@@ -113,7 +111,7 @@ assert.equal(pkg.scripts["verify:mobile-layout"],"node scripts/verify-mobile-fir
 console.log("✓ Mobile-first layout contract verified");
 console.log("  compact app bar + bottom root-tab bar installed");
 console.log("  Today keeps raster art and a compact plan disclosure on mobile");
-console.log("  Bible art composition remains a deferred V2 phase");
+console.log("  Bible retains dedicated raster artwork and compact reader controls");
 console.log("  Prayer and History use dense mobile-native compositions");
 console.log("  secondary routes use stacked navigation and 44px contextual Back");
 console.log("  active Focused Prayer can remove outer shell chrome without trapping empty states");
@@ -121,4 +119,4 @@ console.log("  Search/Data preserve exact mobile source context through utility 
 console.log("  Prayer management and History detail routes use dense mobile-native compositions");
 console.log("  loading, recovery, empty, conflict and draft states use native mobile patterns");
 console.log("  320px, 200% text and phone-landscape detail states are covered");
-console.log("  non-Today legacy compositions retain their relative import order");
+console.log("  remaining legacy compositions retain their relative import order");

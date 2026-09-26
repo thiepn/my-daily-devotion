@@ -14,7 +14,6 @@ h1,
 h2,
 h3,
 .screen-intro,
-.reader-heading,
 .mg-hero-copy {
   text-wrap: balance;
 }
@@ -46,7 +45,6 @@ h3,
 .quiet-back-link,
 .future-text-link,
 .prayer-now-link,
-.bible-secondary-links a,
 .prayer-management-links a,
 .metadata-manage-links a,
 .plan-links-row a,
@@ -60,7 +58,6 @@ h3,
 .quiet-back-link,
 .future-text-link,
 .prayer-now-link,
-.bible-secondary-links a,
 .prayer-management-links a,
 .metadata-manage-links a {
   transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
@@ -78,10 +75,7 @@ h3,
 .collection-items button,
 .data-panel button,
 .backup-preview button,
-.history-month-heading button,
-.chapter-navigation button,
-.verse-actions button,
-.verse-action-menu button {
+.history-month-heading button {
   border-color: var(--color-line-strong);
   border-radius: var(--radius-sm);
   transition:
@@ -103,10 +97,7 @@ h3,
 .collection-items button:hover:not(:disabled),
 .data-panel button:hover:not(:disabled),
 .backup-preview button:hover:not(:disabled),
-.history-month-heading button:hover:not(:disabled),
-.chapter-navigation button:hover:not(:disabled),
-.verse-actions button:hover:not(:disabled),
-.verse-action-menu button:hover:not(:disabled) {
+.history-month-heading button:hover:not(:disabled) {
   color: var(--color-ink);
   border-color: var(--color-accent);
   background: var(--mg-hover);
@@ -246,7 +237,6 @@ textarea:focus-visible {
 }
 
 .mcheyne-loading,
-.bible-loading,
 .history-loading,
 .recovery-screen > p:not(.eyebrow),
 .startup-error > p:not(.eyebrow) {
@@ -518,14 +508,6 @@ textarea:focus-visible {
   background: var(--mg-paper-hover);
 }
 
-.mg-scripture-page {
-  box-shadow: 0 1px 2px rgba(48, 43, 35, .025), 0 14px 42px rgba(48, 43, 35, .045);
-}
-
-.mg-bible-chapter-art {
-  border-bottom-color: var(--color-line-strong);
-}
-
 .mg-prayer-hero-art p,
 .mg-history-closing p {
   text-wrap: balance;
@@ -582,7 +564,6 @@ textarea:focus-visible {
   fill: color-mix(in srgb, var(--color-accent) 45%, var(--color-canvas));
 }
 
-:root[data-theme="dark"] .mg-scripture-page,
 :root[data-theme="dark"] .mg-reflection-workspace .reflection-editor-panel,
 :root[data-theme="dark"] .mg-focused-prayer-workspace .focused-prayer-card,
 :root[data-theme="dark"] .mg-prayer-capture-workspace .prayer-capture-editor {

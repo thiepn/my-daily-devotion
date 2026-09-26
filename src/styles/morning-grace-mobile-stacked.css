@@ -9,10 +9,6 @@
     box-sizing: border-box;
   }
 
-  .mg-bible-toolbar {
-    top: calc(var(--mobile-appbar-height) + env(safe-area-inset-top));
-  }
-
   .utility-link {
     min-width: 44px;
     min-height: 44px;

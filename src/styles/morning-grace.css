@@ -13,14 +13,10 @@ h3,
 .display-type,
 .screen-heading h1,
 .section-heading-line h2,
-.reader-heading h2,
 .focus-preview h2 {
   font-family: var(--font-display);
 }
 
-.scripture-copy,
-.scripture-content,
-.scripture-text,
 .journal-page p,
 .focus-preview blockquote,
 .reflection-body,
@@ -302,41 +298,6 @@ textarea:focus {
 }
 
 /* Book-like reading surface. */
-.reader-page {
-  border-color: var(--color-line-strong);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-paper);
-}
-
-.reader-heading {
-  border-bottom-color: var(--color-line);
-}
-
-.reader-heading h2 {
-  font-weight: 500;
-}
-
-.scripture-copy,
-.scripture-content {
-  max-width: var(--reading-max);
-  color: var(--color-ink);
-  font-size: clamp(1.13rem, 1.9vw, 1.3rem);
-  line-height: 1.68;
-}
-
-.verse-number {
-  color: var(--color-muted);
-  font-family: var(--font-ui);
-}
-
-.scripture-run.is-red-letter .scripture-text {
-  color: var(--color-red-letter);
-}
-
-.scripture-run.is-highlighted,
-.scripture-run.is-selected {
-  background-color: var(--color-highlight);
-}
 
 /* Journal and prayer cues stay material-light. */
 .journal-page {
@@ -373,16 +334,6 @@ textarea:focus {
   box-shadow: none;
 }
 
-:root[data-theme="dark"] .reader-page {
-  box-shadow: var(--shadow-paper-dark);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .reader-page {
-    box-shadow: var(--shadow-paper-dark);
-  }
-}
-
 @media (max-width: 620px) {
   .visual-screen {
     width: min(calc(100% - 32px), var(--content-max));
@@ -395,11 +346,5 @@ textarea:focus {
 
   .screen-heading h1 {
     font-size: clamp(2.55rem, 14vw, 4rem);
-  }
-
-  .reader-page {
-    width: calc(100% + 32px);
-    margin-left: -16px;
-    box-shadow: none;
   }
 }

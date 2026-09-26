@@ -15,6 +15,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ux": "playwright test",
+    "test:visual": "playwright test --config=playwright.visual.config.ts",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "release:package": "npm run build && node scripts/package-release.mjs",
     "verify:phase0": "node scripts/verify-phase0.mjs",
@@ -41,6 +42,7 @@
     "verify:mobile-layout": "node scripts/verify-mobile-first-layout.mjs"
   },
   "dependencies": {
+    "@fontsource/inter": "5.3.0",
     "@fontsource/libre-caslon-text": "5.3.0",
     "@phosphor-icons/react": "2.1.10",
     "dexie": "4.4.6",

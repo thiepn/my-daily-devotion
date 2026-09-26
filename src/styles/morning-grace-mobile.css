@@ -233,8 +233,7 @@
     padding: 4px 0 10px;
   }
 
-  .mg-canonical-hero h1,
-  .mg-bible-shell-header > div:first-child h1 {
+  .mg-canonical-hero h1 {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -270,8 +269,7 @@
 
   .mg-history-hero-art,
   .mg-prayer-hero-art,
-  .mg-history-closing,
-  .mg-bible-chapter-art {
+  .mg-history-closing {
     display: none !important;
   }
 
@@ -387,163 +385,6 @@
 
   .earlier-list a {
     min-height: 46px;
-  }
-
-  /* BIBLE — reading first, controls second */
-  .bible-screen.mg-canonical-screen {
-    padding-top: 0;
-  }
-
-  .mg-bible-shell-header {
-    min-height: 42px;
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    margin: 0;
-    padding: 4px 0 6px;
-    border: 0;
-  }
-
-  .mg-bible-shell-header > div:first-child {
-    display: block;
-    min-width: 0;
-    margin-right: auto;
-  }
-
-  .mg-bible-shell-header > div:first-child .eyebrow,
-  .mg-bible-shell-header > div:first-child .screen-intro {
-    display: none;
-  }
-
-  .mg-bible-shell-header .bible-secondary-links {
-    width: 100%;
-    display: flex;
-    justify-content: flex-end;
-    gap: 14px;
-  }
-
-  .mg-bible-shell-header .bible-secondary-links a {
-    min-height: 34px;
-    gap: 5px;
-    font-size: .7rem;
-  }
-
-  .mg-plan-context {
-    margin: 0 0 8px;
-    padding: 8px 10px;
-    border-radius: 10px;
-  }
-
-  .mg-bible-toolbar {
-    position: sticky;
-    z-index: 25;
-    top: var(--mobile-appbar-height);
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 92px;
-    gap: 6px;
-    margin: 0 calc(var(--mobile-gutter) * -1) 8px;
-    padding: 7px var(--mobile-gutter);
-    border: 0;
-    border-top: 1px solid var(--color-line);
-    border-bottom: 1px solid var(--color-line);
-    border-radius: 0;
-    background: var(--color-surface);
-    box-shadow: none;
-  }
-
-  .mg-bible-toolbar .bible-select-label {
-    min-width: 0;
-    gap: 2px;
-    font-size: .56rem;
-  }
-
-  .mg-bible-toolbar select {
-    min-height: 34px;
-    padding: 4px 28px 4px 8px;
-    border-radius: 9px;
-    font-size: .82rem;
-  }
-
-  .mg-bible-toolbar .bible-source-note {
-    display: none;
-  }
-
-  .mg-scripture-page {
-    width: auto;
-    margin: 0 calc(var(--mobile-gutter) * -1);
-    padding: 0 calc(var(--mobile-gutter) + 4px) 22px;
-    border: 0;
-    border-radius: 0;
-    background: var(--color-canvas);
-    box-shadow: none !important;
-  }
-
-  .mg-reader-heading {
-    min-height: 64px;
-    align-items: end;
-    padding: 10px 0 9px;
-    border-bottom: 1px solid var(--color-line);
-  }
-
-  .mg-reader-heading p {
-    display: none;
-  }
-
-  .mg-reader-heading h2 {
-    margin: 0;
-    font-size: 1.72rem;
-    line-height: 1;
-  }
-
-  .mg-reader-heading .reader-context {
-    font-size: .61rem;
-  }
-
-  .mg-scripture-page .scripture-copy {
-    margin-top: 16px;
-    font-size: 1.02rem;
-    line-height: 1.62;
-  }
-
-  .mg-scripture-page .scripture-block {
-    margin-bottom: 1em;
-  }
-
-  .mg-chapter-navigation {
-    margin-top: 28px;
-  }
-
-  .mg-chapter-navigation button {
-    min-height: 40px;
-  }
-
-  .mg-verse-action-dock {
-    inset: auto 8px calc(var(--mobile-tabbar-height) + env(safe-area-inset-bottom) + 6px);
-    width: auto;
-    max-height: min(48vh, 360px);
-    overflow: auto;
-    border-radius: 16px;
-    box-shadow: 0 10px 32px rgba(20, 24, 20, .16);
-  }
-
-  .mg-verse-action-dock .verse-actions {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 2px;
-  }
-
-  .mg-verse-action-dock .verse-actions button {
-    min-height: 50px;
-    flex-direction: column;
-    gap: 3px;
-    padding: 5px 2px;
-    border: 0;
-    font-size: .61rem;
-  }
-
-  .mg-verse-action-dock .verse-actions .icon {
-    width: 18px;
-    height: 18px;
   }
 
   /* PRAYER — compact task + list hierarchy */
@@ -993,21 +834,21 @@
 
   /* Search: input + action share one row; filters become two compact controls. */
   .mg-search-workspace .global-search-form {
-    grid-template-columns: minmax(0, 1fr) 74px;
+    grid-template-columns: minmax(0, 1fr) max-content;
     gap: 6px;
     margin-bottom: 14px;
     padding-bottom: 12px;
   }
 
   .mg-search-workspace .global-search-form > input {
-    min-height: 42px;
+    min-height: 44px;
     padding-inline: 12px;
   }
 
   .mg-search-workspace .global-search-form > button {
     min-width: 0;
     width: auto;
-    min-height: 42px;
+    min-height: 44px;
     padding-inline: 9px;
     border-radius: 10px;
     font-size: .72rem;
@@ -1029,7 +870,7 @@
 
   .mg-search-workspace .search-filters select {
     width: 100%;
-    min-height: 36px;
+    min-height: 44px;
     padding: 4px 26px 4px 8px;
     font-size: .72rem;
   }
@@ -1285,69 +1126,10 @@
     padding-inline: 10px;
   }
 
-  .mg-bible-toolbar {
-    margin-inline: -10px;
-    padding-inline: 10px;
-  }
-
   .mg-prayer-focus {
     padding: 10px;
   }
 
-}
-
-@media (max-height: 500px) and (max-width: 900px) {
-  /* Landscape phones prioritize the task over vertical decoration. */
-  .mg-bible-shell-header {
-    min-height: 30px;
-    padding: 0 0 2px;
-  }
-
-  .mg-bible-shell-header .bible-secondary-links {
-    gap: 10px;
-  }
-
-  .mg-bible-shell-header .bible-secondary-links a {
-    min-height: 28px;
-    font-size: .62rem;
-  }
-
-  .mg-bible-toolbar {
-    padding-block: 4px;
-    margin-bottom: 2px;
-  }
-
-  .mg-bible-toolbar select {
-    min-height: 30px;
-    padding-block: 2px;
-  }
-
-  .mg-reader-heading {
-    min-height: 44px;
-    padding: 5px 0 6px;
-  }
-
-  .mg-reader-heading h2 {
-    font-size: 1.35rem;
-  }
-
-  .mg-scripture-page .scripture-copy {
-    margin-top: 7px;
-    font-size: .94rem;
-    line-height: 1.5;
-  }
-
-  .mg-scripture-page .scripture-heading {
-    margin: .45em 0 .3em;
-    font-size: .68rem;
-    line-height: 1.25;
-  }
-
-  .mg-scripture-page .scripture-superscription {
-    margin: .3em 0 .5em;
-    font-size: .68rem;
-    line-height: 1.3;
-  }
 }
 
 @media (max-width: 760px) and (prefers-reduced-motion: reduce), (max-height: 500px) and (max-width: 900px) and (prefers-reduced-motion: reduce) {

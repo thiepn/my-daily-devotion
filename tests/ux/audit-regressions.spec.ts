@@ -61,6 +61,7 @@ test("verse notes protect drafts and saved annotations survive reload", async ({
   await expect(verse).toHaveAttribute("aria-pressed", "true");
   await page.getByRole("button", { name: "Highlight", exact: true }).click();
   await expect(page.getByRole("button", { name: "Remove highlight" })).toBeVisible();
+  await page.getByRole("button", { name: "More", exact: true }).click();
   await page.getByRole("button", { name: "Bookmark", exact: true }).click();
   await page.getByRole("button", { name: "More", exact: true }).click();
   await page.getByRole("button", { name: "Add verse note" }).click();

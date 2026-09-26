@@ -31,11 +31,6 @@
 .linked-scripture-row a { font-family: var(--font-editorial); text-decoration: none; }
 .linked-scripture-row button { width: 32px; height: 32px; border: 0; background: transparent; color: var(--color-ink-faint); cursor: pointer; }
 .disabled-handoff { color: var(--color-ink-faint); font-size: .76rem; }
-.verse-number.is-noted::after { content: ""; position: absolute; right: -2px; top: 2px; width: 4px; height: 4px; border-radius: 50%; background: var(--color-answer); }
-.verse-note-editor { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--color-line); }
-.verse-note-editor textarea { width: 100%; min-height: 92px; resize: vertical; padding: 10px 12px; border: 1px solid var(--color-line); border-radius: var(--radius-small); color: var(--color-ink); background: var(--color-surface); font-family: var(--font-editorial); line-height: 1.55; }
-.verse-note-editor-actions { display: flex; gap: 8px; margin-top: 8px; }
-.verse-note-editor-actions button { min-height: 34px; padding: 0 10px; border: 1px solid var(--color-line); border-radius: var(--radius-small); background: transparent; cursor: pointer; }
 .prayer-handoff-source { max-width: 720px; padding-top: 22px; border-top: 1px solid var(--color-line-strong); }
 .prayer-handoff-source blockquote { margin: 28px 0; padding-left: 18px; border-left: 2px solid var(--color-accent); font-family: var(--font-editorial); font-size: 1.18rem; line-height: 1.7; white-space: pre-wrap; }
 .prayer-handoff-source > p:last-child { color: var(--color-ink-soft); }
