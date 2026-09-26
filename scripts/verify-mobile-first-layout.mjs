@@ -34,8 +34,6 @@ for(const selector of [
   ".utility-bar",
   ".mobile-nav",
   ".mg-canonical-hero",
-  ".mg-prayer-focus",
-  ".prayer-status-tabs",
   ".mg-history-stats",
   ".mg-history-calendar",
   ".mg-secondary-screen"
@@ -48,6 +46,9 @@ assert.match(css,/\.mg-history-stats\s*\{[\s\S]*grid-template-columns:\s*repeat\
 assert.doesNotMatch(css,/(?:linear|radial|conic)-gradient\s*\(/i);
 assert.doesNotMatch(css,/url\(\s*["']?https?:\/\//i);
 
+const prayerCss = await read("src/styles/prayer.css");
+assert.match(prayerCss, /\.prayer-journal-tabs/);
+assert.match(prayerCss, /\.prayer-focus-caption \.grace-art/);
 const todayCss = await read("src/styles/today.css");
 const todayVisualTest = await read("tests/ux/morning-grace-v2.spec.ts");
 assert.match(todayCss, /today-opening \.grace-art/);
@@ -112,7 +113,7 @@ console.log("✓ Mobile-first layout contract verified");
 console.log("  compact app bar + bottom root-tab bar installed");
 console.log("  Today keeps raster art and a compact plan disclosure on mobile");
 console.log("  Bible retains dedicated raster artwork and compact reader controls");
-console.log("  Prayer and History use dense mobile-native compositions");
+console.log("  Prayer retains journal artwork and request-first rows; History remains legacy");
 console.log("  secondary routes use stacked navigation and 44px contextual Back");
 console.log("  active Focused Prayer can remove outer shell chrome without trapping empty states");
 console.log("  Search/Data preserve exact mobile source context through utility workflows");

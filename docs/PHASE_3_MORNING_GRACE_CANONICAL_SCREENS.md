@@ -1,3 +1,5 @@
+> Prayer V2 supersedes this document's Prayer composition. See `docs/visual/morning-grace-v2/prayer-design-qa.md`; the attached phone mockup and current V2 styles are authoritative.
+
 # My Daily Devotion — Morning Grace Editorial
 
 ## Phase 3 — Canonical Screens

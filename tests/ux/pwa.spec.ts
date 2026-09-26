@@ -70,6 +70,11 @@ test.describe("offline PWA UX", () => {
           expect(await coldPage.locator(".grace-art img").evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
           await expect(coldPage.locator(".today-verse blockquote")).toBeVisible();
         }
+        if (name === "prayer") {
+          await expect(coldPage.locator(".prayer-quotation blockquote")).toBeVisible();
+          await expect(coldPage.locator(".prayer-journal-row")).toHaveCount(1);
+          expect(await coldPage.locator(".prayer-focus-caption img").evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+        }
         if (name === "search") await expect(coldPage.locator(".search-hit").first()).toBeVisible();
         await coldPage.screenshot({ path: testInfo.outputPath(`offline-${theme}-${name}.png`) });
       }

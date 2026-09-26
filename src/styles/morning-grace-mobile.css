@@ -257,18 +257,15 @@
   }
 
   /* Phone app bars already identify the destination; keep the content header task-first. */
-  .mg-prayer-hero .screen-intro,
   .mg-history-hero .screen-intro {
     display: none;
   }
 
-  .mg-prayer-hero .mg-hero-copy,
   .mg-history-hero .mg-hero-copy {
     padding-bottom: 4px;
   }
 
   .mg-history-hero-art,
-  .mg-prayer-hero-art,
   .mg-history-closing {
     display: none !important;
   }
@@ -388,111 +385,6 @@
   }
 
   /* PRAYER — compact task + list hierarchy */
-  .mg-prayer-hero {
-    display: block;
-  }
-
-  .mg-prayer-hero .mg-hero-copy {
-    padding-bottom: 8px;
-  }
-
-  .mg-prayer-hero h1 {
-    display: inline-block;
-    margin-right: 10px;
-  }
-
-  .mg-prayer-hero .screen-intro {
-    max-width: 31ch;
-  }
-
-  .mg-prayer-hero .prayer-primary-actions {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 10px;
-    margin-top: 12px;
-  }
-
-  .mg-prayer-hero .primary-editorial-action {
-    min-height: 40px;
-    padding: 0 13px;
-    border-radius: 10px;
-    font-size: .76rem;
-  }
-
-  .mg-prayer-hero .prayer-now-link {
-    font-size: .72rem;
-  }
-
-  .mg-prayer-hero .prayer-management-links {
-    gap: 12px;
-    margin-top: 9px;
-    font-size: .7rem;
-  }
-
-  .mg-prayer-focus {
-    display: block;
-    margin: 8px 0 14px;
-    padding: 10px;
-    border: 1px solid var(--color-line);
-    border-radius: 12px;
-    background: var(--color-surface);
-  }
-
-  .mg-prayer-focus-copy h2 {
-    margin: 2px 0 3px;
-    font-size: 1rem;
-  }
-
-  .mg-prayer-focus-copy .muted-copy,
-  .mg-prayer-focus .session-resume-note {
-    display: none;
-  }
-
-  .mg-prayer-focus .session-depth-note {
-    display: none;
-  }
-
-  .mg-prayer-focus .mg-session-depths {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 4px;
-    margin-top: 8px;
-    border: 0;
-    border-radius: 0;
-    overflow: visible;
-  }
-
-  .mg-prayer-focus .mg-session-depths > a,
-  .mg-prayer-focus .mg-session-depths > a + a {
-    min-width: 0;
-    min-height: 34px;
-    width: auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 5px 4px;
-    border: 1px solid var(--color-line);
-    border-radius: 9px;
-    background: var(--color-canvas);
-  }
-
-  .mg-session-depths a span,
-  .mg-session-depths a .icon {
-    display: none;
-  }
-
-  .mg-session-depths strong {
-    font-family: var(--font-ui);
-    font-size: .64rem;
-    font-weight: 700;
-  }
-
-  .mg-prayer-library {
-    padding-top: 12px;
-    border-top-color: var(--color-line);
-  }
 
   .mg-section-title-row {
     margin-bottom: 8px;
@@ -500,85 +392,6 @@
 
   .mg-section-title-row h2 {
     font-size: 1.18rem;
-  }
-
-  .prayer-status-tabs {
-    display: flex;
-    gap: 4px;
-    margin: 0 calc(var(--mobile-gutter) * -1) 6px !important;
-    padding: 0 var(--mobile-gutter) 8px;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .prayer-status-tabs::-webkit-scrollbar {
-    display: none;
-  }
-
-  .prayer-status-tabs a {
-    min-height: 34px;
-    flex: 0 0 auto;
-    padding: 0 10px;
-    border: 1px solid var(--color-line);
-    border-radius: 999px;
-    font-size: .67rem;
-    text-decoration: none;
-  }
-
-  .prayer-status-tabs a.is-active {
-    color: var(--color-action-on);
-    border-color: var(--color-prayer);
-    background: var(--color-prayer);
-  }
-
-  .mg-prayer-row {
-    min-height: 64px;
-    grid-template-columns: 32px minmax(0, 1fr) 16px;
-    gap: 9px;
-    padding: 9px 0;
-  }
-
-  .mg-prayer-row-icon {
-    width: 30px;
-    height: 30px;
-  }
-
-  .mg-prayer-row-icon .icon {
-    width: 15px;
-    height: 15px;
-  }
-
-  .mg-prayer-row p {
-    margin: 1px 0 2px;
-    font-size: .87rem;
-    line-height: 1.32;
-  }
-
-  .mg-prayer-row small,
-  .prayer-status-word {
-    font-size: .58rem;
-  }
-
-  .mg-prayer-empty {
-    min-height: 150px;
-    padding: 18px 0;
-  }
-
-  .mg-prayer-empty .mg-sprig {
-    width: 42px;
-    margin-bottom: 8px;
-  }
-
-  .mg-prayer-empty h2 {
-    margin-bottom: 4px;
-    font-size: 1.08rem;
-  }
-
-  .mg-prayer-empty p {
-    max-width: 30ch;
-    margin-bottom: 8px;
-    font-size: .76rem;
-    line-height: 1.4;
   }
 
   /* HISTORY — compact summary + calendar app screen */
@@ -1100,13 +913,8 @@
   }
 
   /* Keep data-density compatible with enlarged text without restoring desktop spacing. */
-  html[style*="font-size: 200%"] .mg-history-stats,
-  html[style*="font-size: 200%"] .mg-session-depths {
+  html[style*="font-size: 200%"] .mg-history-stats {
     grid-template-columns: 1fr;
-  }
-
-  html[style*="font-size: 200%"] .mg-session-depths {
-    display: grid;
   }
 
   html[style*="font-size: 200%"] .mg-history-stats > div + div {
@@ -1126,16 +934,11 @@
     padding-inline: 10px;
   }
 
-  .mg-prayer-focus {
-    padding: 10px;
-  }
-
 }
 
 @media (max-width: 760px) and (prefers-reduced-motion: reduce), (max-height: 500px) and (max-width: 900px) and (prefers-reduced-motion: reduce) {
   .mobile-nav .nav-link,
-  .utility-link,
-  .mg-prayer-row {
+  .utility-link {
     transition: none;
   }
 }

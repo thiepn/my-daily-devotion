@@ -14,8 +14,8 @@
 .weekday-picker input:focus-visible + span { outline: 2px solid var(--color-focus-ring); outline-offset: 3px; }
 .weekday-picker input:checked + span { border-color: var(--color-accent); color: var(--color-accent-strong); background: var(--color-accent-soft); }
 .field-help { margin: -6px 0 0; line-height: 1.55; }
-.metadata-manage-links, .prayer-management-links { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; }
-.metadata-manage-links a, .prayer-management-links a { color: var(--color-ink-faint); font-size: .7rem; }
+.metadata-manage-links { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; }
+.metadata-manage-links a { color: var(--color-ink-faint); font-size: .7rem; }
 .prayer-settings-panel { max-width: 720px; border-top: 1px solid var(--color-line-strong); padding-top: 8px; }
 .prayer-settings-actions { display: flex; align-items: center; gap: 16px; margin-top: 22px; }
 .prayer-settings-actions a { color: var(--color-ink-soft); font-size: .75rem; }
@@ -33,7 +33,6 @@
 .metadata-editor input, .metadata-editor textarea { width: 100%; padding: 9px 10px; border: 1px solid var(--color-line); border-radius: var(--radius-small); color: var(--color-ink); background: var(--color-surface); }
 .metadata-editor textarea { min-height: 100px; resize: vertical; }
 .metadata-editor > div { display: flex; gap: 8px; }
-.session-resume-note, .session-depth-note { display: block; margin: 8px 0 0; color: var(--color-ink-faint); font-size: .7rem; line-height: 1.5; }
 .end-session-button { justify-self: end; padding: 0; border: 0; background: transparent; color: var(--color-ink-faint); cursor: pointer; font-size: .7rem; }
 .focused-person { margin: 0; color: var(--color-ink-faint); font-size: .72rem; letter-spacing: .04em; }
 .prayer-admin-section .section-heading-line { margin-bottom: 12px; }

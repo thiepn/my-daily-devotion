@@ -115,7 +115,7 @@ test("scheduled prayer session resumes after exit and reload", async ({ page }) 
   await expect(page.locator(".focused-prayer-header")).toContainText("2 / 2");
   const remaining = await page.getByRole("heading", { level: 1 }).innerText();
   await page.getByRole("link", { name: "Exit & resume later" }).click(); await page.reload();
-  await page.getByRole("link", { name: "Resume session", exact: true }).click();
+  await page.getByRole("link", { name: "Resume prayer", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(remaining);
   await page.getByRole("button", { name: "Skip", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Session finished." })).toBeVisible();
@@ -189,8 +189,8 @@ test("encrypted backup restores in a fresh profile and failed/cancelled restores
     await fresh.getByRole("button", { name: "Preview & validate" }).click();
     await fresh.getByRole("button", { name: "Merge validated backup" }).click();
     await expect(fresh.locator(".data-status")).toContainText("merged successfully");
-    await openRoute(fresh, "/prayer"); await expect(fresh.locator(".prayer-live-row")).toHaveCount(1);
-    await fresh.locator(".prayer-live-row").click(); await expect(fresh.locator(".prayer-admin-list")).toContainText("Daily");
+    await openRoute(fresh, "/prayer"); await expect(fresh.locator(".prayer-journal-row")).toHaveCount(1);
+    await fresh.locator(".prayer-journal-row").click(); await expect(fresh.locator(".prayer-admin-list")).toContainText("Daily");
     await openRoute(fresh, "/history/moments"); await expect(fresh.getByText("Backup recovery preserves this prayer.")).toBeVisible();
   } finally { await clean.close(); }
 });
@@ -235,7 +235,7 @@ test("large local history and prayer lists remain searchable and responsive", as
       transaction.oncomplete = () => done(); transaction.onerror = () => reject(transaction.error);
     }); database.close();
   });
-  const start = Date.now(); await openRoute(page, "/prayer"); await expect(page.locator(".prayer-live-row")).toHaveCount(1000); const listMs = Date.now()-start;
+  const start = Date.now(); await openRoute(page, "/prayer"); await expect(page.locator(".prayer-journal-row")).toHaveCount(5); await expect(page.getByText("Showing 5 of 1000 requests", { exact: true })).toBeVisible(); await page.getByRole("button", { name: "Show more", exact: true }).click(); await expect(page.locator(".prayer-journal-row")).toHaveCount(15); const listMs = Date.now()-start;
   await page.screenshot({ path: testInfo.outputPath("large-prayer-list.png") });
   await expectNoHorizontalOverflow(page);
   const searchStart = Date.now(); await openRoute(page, "/search?q=Searchable-needle"); await expect(page.locator(".search-hit")).toHaveCount(1); const searchMs = Date.now()-searchStart;

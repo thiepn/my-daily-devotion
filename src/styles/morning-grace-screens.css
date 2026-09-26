@@ -76,8 +76,6 @@
 
 /* Today */
 
-.mg-prayer-focus h2,
-.mg-prayer-library h2,
 .mg-history-overview h2 {
   margin: 6px 0 0;
   font-family: var(--font-display);
@@ -90,142 +88,6 @@
 /* Bible — chapter first, controls secondary. */
 
 /* Prayer */
-.mg-prayer-hero {
-  grid-template-columns: minmax(0, 1.1fr) minmax(290px, .9fr);
-}
-
-.mg-prayer-hero .prayer-primary-actions {
-  margin-top: 28px;
-}
-
-.mg-prayer-hero .primary-editorial-action {
-  display: inline-flex;
-  gap: 8px;
-  background: var(--color-prayer);
-  border-color: var(--color-prayer);
-}
-
-.mg-prayer-hero .prayer-now-link {
-  color: var(--color-prayer);
-}
-
-.mg-prayer-hero .prayer-management-links a {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.mg-prayer-hero-art {
-  position: relative;
-  display: grid;
-  place-content: center;
-  justify-items: center;
-  min-height: 100%;
-  padding: 34px;
-  border-left: 1px solid var(--color-line);
-  background: var(--color-surface-muted);
-  text-align: center;
-  overflow: hidden;
-}
-
-.mg-prayer-hero-art .mg-sprig {
-  position: absolute;
-  right: -4px;
-  bottom: -10px;
-  width: 120px;
-  opacity: .48;
-}
-
-.mg-prayer-hero-art p {
-  position: relative;
-  max-width: 18ch;
-  margin: 0;
-  color: var(--color-ink);
-  font-family: var(--font-display);
-  font-size: clamp(1.45rem, 2.5vw, 2rem);
-  font-style: italic;
-  line-height: 1.25;
-}
-
-.mg-prayer-hero-art span {
-  margin-top: 12px;
-  color: var(--color-muted);
-  font-size: .66rem;
-  font-weight: 650;
-  letter-spacing: .11em;
-  text-transform: uppercase;
-}
-
-.mg-prayer-focus {
-  display: grid;
-  grid-template-columns: minmax(0, .85fr) minmax(420px, 1.15fr);
-  gap: clamp(34px, 6vw, 76px);
-  margin-bottom: clamp(56px, 7vw, 86px);
-  padding: 28px 0;
-  border-top: 1px solid var(--color-line-strong);
-  border-bottom: 1px solid var(--color-line-strong);
-}
-
-.mg-prayer-focus-copy {
-  align-self: center;
-}
-
-.mg-prayer-focus > .mg-prayer-focus-copy {
-  display: block;
-  margin-top: 0;
-}
-
-.mg-prayer-focus > .mg-session-depths {
-  margin-top: 0;
-}
-
-.mg-session-depths {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
-  overflow: hidden;
-}
-
-.mg-session-depths a {
-  min-height: 112px;
-  display: grid;
-  align-content: center;
-  gap: 5px;
-  padding: 18px;
-  color: var(--color-ink);
-  text-decoration: none;
-  background: var(--color-surface);
-}
-
-.mg-session-depths a + a {
-  border-left: 1px solid var(--color-line);
-}
-
-.mg-session-depths strong {
-  font-family: var(--font-display);
-  font-size: 1.08rem;
-}
-
-.mg-session-depths span {
-  color: var(--color-muted);
-  font-size: .72rem;
-}
-
-.mg-session-depths .icon {
-  margin-top: 8px;
-  color: var(--color-prayer);
-}
-
-.mg-prayer-focus .session-depth-note {
-  grid-column: 2;
-  color: var(--color-muted);
-}
-
-.mg-prayer-library {
-  border-top: 1px solid var(--color-line-strong);
-  padding-top: 22px;
-}
 
 .mg-section-title-row {
   display: flex;
@@ -237,49 +99,6 @@
 
 .mg-section-title-row .mg-flourish {
   width: 150px;
-}
-
-.mg-prayer-library .prayer-status-tabs {
-  margin-bottom: 8px;
-}
-
-.mg-prayer-row {
-  min-height: 94px;
-  grid-template-columns: 42px minmax(0, 1fr) 20px;
-  gap: 15px;
-  padding: 14px 0;
-}
-
-.mg-prayer-row-icon {
-  width: 38px;
-  height: 38px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  color: var(--color-prayer);
-  background: var(--color-prayer-soft);
-}
-
-.mg-prayer-row-icon .icon {
-  width: 19px;
-  height: 19px;
-}
-
-.mg-prayer-row p {
-  margin-top: 4px;
-}
-
-.mg-prayer-empty {
-  min-height: 300px;
-  display: grid;
-  place-items: center;
-  align-content: center;
-  text-align: center;
-}
-
-.mg-prayer-empty .mg-sprig {
-  width: 58px;
-  margin-bottom: 12px;
 }
 
 /* History */
@@ -417,14 +236,6 @@
   .mg-canonical-hero {
     grid-template-columns: minmax(0, 1fr) minmax(250px, .72fr);
   }
-
-  .mg-prayer-focus {
-    grid-template-columns: 1fr;
-  }
-
-  .mg-prayer-focus .session-depth-note {
-    grid-column: 1;
-  }
 }
 
 /* Mobile */
@@ -455,40 +266,6 @@
 
   .mg-history-hero-art::before {
     display: none;
-  }
-
-  .mg-prayer-hero-art {
-    min-height: 178px;
-    border-left: 0;
-    border-top: 1px solid var(--color-line);
-  }
-
-  .mg-prayer-hero-art .mg-sprig {
-    width: 90px;
-  }
-
-  .mg-session-depths {
-    grid-template-columns: 1fr;
-  }
-
-  .mg-session-depths a {
-    min-height: 72px;
-    grid-template-columns: minmax(0, 1fr) auto;
-  }
-
-  .mg-session-depths a + a {
-    border-left: 0;
-    border-top: 1px solid var(--color-line);
-  }
-
-  .mg-session-depths span {
-    grid-column: 1;
-  }
-
-  .mg-session-depths .icon {
-    grid-column: 2;
-    grid-row: 1 / 3;
-    margin: 0;
   }
 
   .mg-section-title-row .mg-flourish {
@@ -532,16 +309,6 @@
 
 @media (max-width: 430px) {
 
-  .mg-prayer-row {
-    grid-template-columns: 36px minmax(0, 1fr) 18px;
-    gap: 10px;
-  }
-
-  .mg-prayer-row-icon {
-    width: 34px;
-    height: 34px;
-  }
-
   .mg-history-recent a {
     min-height: 66px;
   }
@@ -549,8 +316,7 @@
 
 /* 200% text/reflow: preserve the editorial hierarchy without fixed-height clipping. */
 @media (max-width: 1280px) {
-  html[style*="font-size: 200%"] .mg-canonical-hero,
-  html[style*="font-size: 200%"] .mg-prayer-focus {
+  html[style*="font-size: 200%"] .mg-canonical-hero {
     grid-template-columns: 1fr;
   }
 
@@ -558,7 +324,6 @@
     min-height: 180px;
   }
 
-  html[style*="font-size: 200%"] .mg-session-depths,
   html[style*="font-size: 200%"] .mg-history-stats {
     grid-template-columns: 1fr;
   }

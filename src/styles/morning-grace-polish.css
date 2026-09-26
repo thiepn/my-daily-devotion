@@ -21,8 +21,7 @@ h3,
 .screen-intro,
 .muted-copy,
 .history-entry blockquote,
-.search-hit p,
-.prayer-live-row p {
+.search-hit p {
   text-wrap: pretty;
 }
 
@@ -44,12 +43,9 @@ h3,
 .utility-link,
 .quiet-back-link,
 .future-text-link,
-.prayer-now-link,
-.prayer-management-links a,
 .metadata-manage-links a,
 .plan-links-row a,
-.history-tabs a,
-.prayer-status-tabs a {
+.history-tabs a {
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;
 }
@@ -57,8 +53,6 @@ h3,
 .utility-link,
 .quiet-back-link,
 .future-text-link,
-.prayer-now-link,
-.prayer-management-links a,
 .metadata-manage-links a {
   transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast);
 }
@@ -280,13 +274,11 @@ textarea:focus-visible {
   border-radius: var(--radius-sm);
 }
 
-.prayer-empty,
 .search-empty {
   border-top: 1px solid var(--color-line);
   border-bottom: 1px solid var(--color-line);
 }
 
-.prayer-empty h2,
 .search-empty {
   font-family: var(--font-display);
 }
@@ -382,15 +374,6 @@ textarea:focus-visible {
 }
 
 /* Release acceptance: small Prayer and Data text must remain readable on warm paper. */
-.workspace[data-domain="prayer"] .mg-prayer-hero .primary-editorial-action {
-  color: #fffaf1;
-  border-color: #7d3f2d;
-  background: #7d3f2d;
-}
-
-.mg-prayer-hero .prayer-management-links a {
-  color: var(--color-ink-soft);
-}
 
 .mg-data-workspace .data-password span,
 .mg-data-workspace .import-mode legend,
@@ -494,7 +477,6 @@ textarea:focus-visible {
 }
 
 /* Canonical screen micro-polish */
-.mg-prayer-row,
 .mg-history-recent a,
 .search-hit,
 .collection-items article,
@@ -502,13 +484,11 @@ textarea:focus-visible {
   transition: background-color var(--transition-fast), border-color var(--transition-fast);
 }
 
-.mg-prayer-row:hover,
 .mg-history-recent a:hover,
 .search-hit:hover {
   background: var(--mg-paper-hover);
 }
 
-.mg-prayer-hero-art p,
 .mg-history-closing p {
   text-wrap: balance;
 }

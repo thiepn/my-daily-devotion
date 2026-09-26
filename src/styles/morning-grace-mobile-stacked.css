@@ -842,7 +842,6 @@
 
   /* Empty results are quiet inline app states, not decorative empty cards. */
   .mg-empty-state,
-  .mg-prayer-empty,
   .search-empty {
     margin: 0;
     padding: 14px 0;
@@ -851,12 +850,10 @@
     background: transparent;
   }
 
-  .mg-prayer-empty > svg,
   .mg-empty-state > svg {
     display: none;
   }
 
-  .mg-prayer-empty h2,
   .mg-empty-state h2 {
     margin: 0 0 4px;
     font-family: var(--font-ui);
@@ -865,21 +862,12 @@
     line-height: 1.25;
   }
 
-  .mg-prayer-empty p,
   .mg-empty-state,
   .mg-empty-state p,
   .search-empty {
     font-family: var(--font-ui);
     font-size: .71rem;
     line-height: 1.42;
-  }
-
-  .mg-prayer-empty a {
-    min-height: 42px;
-    display: inline-flex;
-    align-items: center;
-    margin-top: 3px;
-    font-size: .7rem;
   }
 
   /* Offline/update notification is a slim system strip beneath the app bar. */
