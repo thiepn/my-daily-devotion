@@ -32,7 +32,7 @@ export function useWritingGuard(dirty: boolean, save: () => Promise<void>, canSa
           finally { lock.current = false; setBusy(false); }
         }}>{busy ? "Saving…" : "Save and continue"}</button>
         <button disabled={busy} onClick={() => blocker.proceed()}>Discard and continue</button>
-        <button disabled={busy} autoFocus onClick={close}>Keep editing</button>
+        <button disabled={busy} data-initial-focus onClick={close}>Keep editing</button>
       </div>
     </JournalDialog> : null,
   };

@@ -33,3 +33,4 @@
 @import "./bible.css" layer(screens);
 @import "./prayer.css" layer(screens);
 @import "./history.css" layer(screens);
+@import "./writing.css" layer(screens);

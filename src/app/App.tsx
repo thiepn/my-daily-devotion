@@ -72,7 +72,7 @@ function mobileBackTarget(pathname: string, search: string): string | null {
     const sourceDate = new URLSearchParams(search).get("sourceDevotionDate");
     return sourceDate && /^\d{4}-\d{2}-\d{2}$/.test(sourceDate) ? `/today/reflection/${sourceDate}` : "/prayer";
   }
-  if (pathname === "/prayer/people" || pathname === "/prayer/categories" || pathname === "/prayer/session") return "/prayer";
+  if (pathname === "/prayer/people" || pathname === "/prayer/categories" || pathname === "/prayer/session") return returnTo ?? "/prayer";
   const prayerSettings = pathname.match(/^\/prayer\/([^/]+)\/settings$/);
   if (prayerSettings) return `/prayer/${prayerSettings[1]}${search}`;
   if (/^\/prayer\/[^/]+$/.test(pathname)) return returnTo ?? "/prayer";
@@ -133,6 +133,7 @@ export function App() {
     location.pathname === "/prayer/session" ? "mobile-immersive-route" : "",
     location.pathname === "/prayer" ? "prayer-journal-route" : "",
     location.pathname.startsWith("/history") ? "history-journal-route" : "",
+    location.pathname.startsWith("/today/reflection/") || location.pathname === "/prayer/new" ? "writing-journal-route" : "",
   ].filter(Boolean).join(" ");
 
   const goBack = () => {

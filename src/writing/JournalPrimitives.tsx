@@ -23,6 +23,7 @@ export function JournalDialog({ title, children, close, busy = false }: { title:
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     ref.current?.showModal();
+    ref.current?.querySelector<HTMLElement>("[data-initial-focus]")?.focus();
     return () => { if (previous?.isConnected) previous.focus(); };
   }, []);
   return <dialog ref={ref} className="journal-dialog" aria-labelledby="journal-dialog-title" onCancel={event => { event.preventDefault(); if (!busy) close(); }}>

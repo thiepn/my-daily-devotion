@@ -316,8 +316,7 @@ textarea:focus {
 .data-panel,
 .backup-preview,
 .search-hit,
-.history-summary,
-.prayer-source-context {
+.history-summary {
   border-color: var(--color-line);
 }
 

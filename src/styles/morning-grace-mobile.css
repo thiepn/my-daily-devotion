@@ -388,9 +388,7 @@
   .mg-plan-workspace .mg-secondary-header,
   .mg-search-workspace .mg-secondary-header,
   .mg-data-workspace .mg-secondary-header,
-  .mg-collections-workspace .mg-secondary-header,
-  .mg-prayer-capture-workspace .mg-secondary-header,
-  .mg-reflection-workspace .mg-secondary-header {
+  .mg-collections-workspace .mg-secondary-header {
     margin-bottom: 10px;
     padding: 0 0 8px;
   }
@@ -398,9 +396,7 @@
   .mg-plan-workspace .mg-secondary-header h1,
   .mg-search-workspace .mg-secondary-header h1,
   .mg-data-workspace .mg-secondary-header h1,
-  .mg-collections-workspace .mg-secondary-header h1,
-  .mg-prayer-capture-workspace .mg-secondary-header h1,
-  .mg-reflection-workspace .mg-secondary-header h1 {
+  .mg-collections-workspace .mg-secondary-header h1 {
     margin: 2px 0 3px;
     font-family: var(--font-ui);
     font-size: 1.05rem;
@@ -412,22 +408,17 @@
   .mg-plan-workspace .mg-secondary-header .muted-copy,
   .mg-search-workspace .mg-secondary-header .screen-intro,
   .mg-data-workspace .mg-secondary-header .screen-intro,
-  .mg-collections-workspace .mg-secondary-header .screen-intro,
-  .mg-prayer-capture-workspace .mg-secondary-header .screen-intro,
-  .mg-reflection-workspace .mg-secondary-header .screen-intro {
+  .mg-collections-workspace .mg-secondary-header .screen-intro {
     display: none;
   }
 
-  .mg-prayer-capture-workspace .mg-secondary-header .eyebrow,
   .mg-search-workspace .mg-secondary-header .eyebrow,
   .mg-data-workspace .mg-secondary-header .eyebrow,
   .mg-collections-workspace .mg-secondary-header .eyebrow {
     display: none;
   }
 
-  .mg-prayer-capture-workspace .mg-secondary-header .quiet-back-link,
-  .mg-collections-workspace .mg-secondary-header .quiet-link-row,
-  .mg-reflection-workspace .mg-secondary-header .quiet-back-link {
+  .mg-collections-workspace .mg-secondary-header .quiet-link-row {
     margin-top: 5px !important;
   }
 
@@ -536,34 +527,6 @@
   }
 
   /* Add Prayer: the keyboard task comes first; empty source context disappears. */
-  .mg-prayer-capture-workspace .prayer-capture-editor textarea {
-    min-height: 34vh;
-    max-height: 46vh;
-    padding: 14px;
-    font-size: .98rem;
-  }
-
-  .mg-prayer-capture-workspace .prayer-capture-editor > label {
-    margin-bottom: 6px;
-    font-size: .61rem;
-  }
-
-  .mg-prayer-capture-workspace .prayer-details-toggle {
-    min-height: 38px;
-    margin-top: 7px;
-    padding-inline: 0;
-    border: 0;
-    font-size: .74rem;
-  }
-
-  .mg-prayer-capture-workspace .prayer-capture-actions {
-    margin-top: 12px;
-    padding-top: 10px;
-  }
-
-  .mg-prayer-capture-workspace .prayer-source-context.is-empty-source {
-    display: none;
-  }
 
   /* Collections becomes a compact library list on phone. */
   .mg-collections-workspace .collection-sidebar form {
@@ -635,31 +598,20 @@
     font-size: .82rem;
   }
 
-  .mg-reflection-workspace .reflection-layout,
   .mg-prayer-detail-workspace .prayer-detail-layout,
   .mg-prayer-metadata-workspace .metadata-layout,
-  .mg-collections-workspace .collections-layout,
-  .mg-prayer-capture-workspace .prayer-capture-layout {
+  .mg-collections-workspace .collections-layout {
     gap: 14px;
   }
 
-  .mg-reflection-workspace .reflection-editor-panel,
   .mg-prayer-settings-workspace .prayer-settings-panel,
   .mg-prayer-metadata-workspace .metadata-editor,
-  .mg-prayer-capture-workspace .prayer-capture-editor,
   .mg-data-workspace .import-panel {
     margin-inline: calc(var(--mobile-gutter) * -1);
     padding: 14px var(--mobile-gutter);
     border-inline: 0;
     border-radius: 0;
     box-shadow: none;
-  }
-
-  .mg-reflection-workspace .reflection-textarea {
-    min-height: 52vh;
-    padding: 14px;
-    font-size: .98rem;
-    line-height: 1.58;
   }
 
   .mg-plan-workspace .plan-summary {
