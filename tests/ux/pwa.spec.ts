@@ -57,8 +57,8 @@ test.describe("offline PWA UX", () => {
     await coldPage.getByRole("button", { name: "Save prayer", exact: true }).click();
     await coldPage.getByRole("button", { name: "Prayed now", exact: true }).click();
     await expect(coldPage.getByText("Prayed now recorded.")).toBeVisible();
-    await coldPage.goto("/#/history/moments");
-    await expect(coldPage.getByText("A request saved while completely offline.")).toBeVisible();
+    await coldPage.goto("/#/history?view=prayer");
+    await expect(coldPage.getByText("A request saved while completely offline.")).toBeVisible(); await expect(coldPage.locator(".history-reflection-band img")).toBeVisible(); await expect(coldPage.locator(".history-reflection-band blockquote")).toContainText("mercies");
     await coldPage.reload(); await expect(coldPage.getByText("A request saved while completely offline.")).toBeVisible();
     for (const theme of ["Light", "Dark"]) {
       await coldPage.getByRole("button", { name: `${theme} theme` }).click();

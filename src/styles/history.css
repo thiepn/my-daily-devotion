@@ -88,6 +88,16 @@
 .history-calendar-legend > span { display: inline-flex; align-items: center; gap: 5px; margin: 4px 6px; }
 @container (max-width: 20rem) { .history-calendar-grid { display: none; }.history-calendar-day-list { display: block; } }
 @container (max-width: 18rem) { .history-journal-tabs { grid-template-columns: repeat(2,minmax(0,1fr)); }.history-row-copy > span { display: block; }.history-journal-row { grid-template-columns: 2.45rem minmax(0,1fr); }.history-journal-row time { grid-column: 2; max-width: none; text-align: left; } }
+@container (max-width: 18rem) {
+  .history-journal-heading { display: grid; grid-template-columns: minmax(0,1fr) 44px; gap: 6px; }
+  .history-journal-heading > div { display: contents; }
+  .history-journal-heading .history-back { grid-column: 1; grid-row: 1; justify-self: start; }
+  .history-journal-heading .history-search { grid-column: 2; grid-row: 1; }
+  .history-journal-heading h1 { grid-column: 1 / -1; grid-row: 2; font-size: 1.7rem; }
+  .history-day-screen .history-journal-heading h1 { font-size: 1.35rem; }
+  .history-journal-row, .history-day-entry { grid-template-columns: 44px minmax(0,1fr); }
+  .history-symbol { width: 44px; height: 44px; }
+}
 @container (max-width: 13rem) { .history-journal-stats { grid-template-columns: 1fr; gap: 12px; }.history-journal-stats > div + div { border-left: 0; } }
 @media (max-width: 860px), (max-height: 500px) and (max-width: 900px) {
   .history-journal-route .utility-bar { display: none; }
@@ -96,7 +106,6 @@
   .history-reflection-band { margin-inline: -18px; }
 }
 @media (max-width: 350px) { .history-journal-route .workspace-content { padding-inline: 12px; }.history-reflection-band { margin-inline: -12px; padding-inline: 20px; }.history-activity-heading h2 { width: 100%; }.history-journal-row { gap: 8px; } }
-@media (max-width: 50rem) { html[style*="font-size: 200%"] .history-journal-tabs { grid-template-columns: repeat(2,minmax(0,1fr)); } html[style*="font-size: 200%"] .history-row-copy > span { display: block; } html[style*="font-size: 200%"] .history-journal-row { grid-template-columns: 2.45rem minmax(0,1fr); } html[style*="font-size: 200%"] .history-journal-row time { grid-column: 2; max-width: none; text-align: left; } html[style*="font-size: 200%"] .history-journal-stats { grid-template-columns: 1fr; gap: 12px; } html[style*="font-size: 200%"] .history-journal-stats > div + div { border-left: 0; } }
 :root[data-theme="dark"] .history-reflection-band .grace-art { opacity: .22; }
 :root[data-theme="dark"] .history-reflection-band :is(blockquote,p,a) { color: var(--color-ink); }
 @media (prefers-color-scheme: dark) { :root:not([data-theme]) .history-reflection-band .grace-art { opacity: .22; } :root:not([data-theme]) .history-reflection-band :is(blockquote,p,a) { color: var(--color-ink); } }

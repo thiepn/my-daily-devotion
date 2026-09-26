@@ -73,21 +73,21 @@ test.describe("dense secondary mobile workflows", () => {
 
   test("History Day keeps its date visible after the desktop title collapses", async ({ page }) => {
     await openRoute(page, "/history/day/2026-09-21");
-    const context = page.locator(".history-day-screen .mg-secondary-header .eyebrow");
+    const context = page.locator(".history-day-screen h1");
     await expect(context).toBeVisible();
     await expect(context).toContainText("2026");
     await expect(page.locator(".mobile-nav")).toBeHidden();
     await expectNoHorizontalOverflow(page);
   });
 
-  test("History Moments uses a compact local mobile switcher", async ({ page }) => {
+  test("History Moments keeps its period and search controls accessible", async ({ page }) => {
     await openRoute(page, "/history/moments");
-    const tabs = page.locator(".mg-history-detail-workspace .history-tabs");
+    const tabs = page.locator(".history-journal-heading");
     await expect(tabs).toBeVisible();
-    await expect(tabs).toHaveCSS("display", "flex");
+    await expect(page.getByLabel("History period")).toBeVisible();
     const links = tabs.getByRole("link");
     for (let index = 0; index < await links.count(); index += 1) {
-      await expect(links.nth(index)).toHaveCSS("min-height", "44px");
+      await expect(links.nth(index)).toBeVisible();
       const box = await links.nth(index).boundingBox();
       expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
     }

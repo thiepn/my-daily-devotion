@@ -34,15 +34,13 @@ for(const selector of [
   ".utility-bar",
   ".mobile-nav",
   ".mg-canonical-hero",
-  ".mg-history-stats",
-  ".mg-history-calendar",
   ".mg-secondary-screen"
 ]) assert.ok(css.includes(selector),"Mobile CSS missing "+selector);
 
 assert.match(css,/@media\s*\(max-width:\s*760px\)/);
 assert.match(css,/--mobile-appbar-height:\s*48px/);
 assert.match(css,/--mobile-tabbar-height:\s*60px/);
-assert.match(css,/\.mg-history-stats\s*\{[\s\S]*grid-template-columns:\s*repeat\(3/);
+assert.match(await read("src/styles/history.css"), /\.history-journal-stats/);
 assert.doesNotMatch(css,/(?:linear|radial|conic)-gradient\s*\(/i);
 assert.doesNotMatch(css,/url\(\s*["']?https?:\/\//i);
 
@@ -113,7 +111,7 @@ console.log("✓ Mobile-first layout contract verified");
 console.log("  compact app bar + bottom root-tab bar installed");
 console.log("  Today keeps raster art and a compact plan disclosure on mobile");
 console.log("  Bible retains dedicated raster artwork and compact reader controls");
-console.log("  Prayer retains journal artwork and request-first rows; History remains legacy");
+console.log("  Prayer retains journal artwork and request-first rows; History retains its scenic Scripture band");
 console.log("  secondary routes use stacked navigation and 44px contextual Back");
 console.log("  active Focused Prayer can remove outer shell chrome without trapping empty states");
 console.log("  Search/Data preserve exact mobile source context through utility workflows");

@@ -21,11 +21,12 @@ export function useHistoryPosition(url: string, ready: boolean, entry?: string) 
   const restored = useRef('');
   useEffect(() => {
     let position = positions.get(url) ?? { y: 0, focus: '' };
-    const remember = () => { position = { y: window.scrollY, focus: document.activeElement?.id || position.focus }; };
+    const rememberScroll = () => { position = { ...position, y: window.scrollY }; };
+    const rememberFocus = (event: FocusEvent) => { const target = event.target instanceof HTMLElement ? event.target : null; if (target?.id && target.closest('.grace-history')) position = { y: window.scrollY, focus: target.id }; };
     // Safari does not focus links on pointer activation, so remember that origin explicitly.
     const rememberPointer = (event: PointerEvent) => { const target = event.target instanceof Element ? event.target.closest<HTMLElement>('[id]') : null; if (target) position = { y: window.scrollY, focus: target.id }; };
-    window.addEventListener('scroll', remember); document.addEventListener('focusin', remember); document.addEventListener('pointerdown', rememberPointer);
-    return () => { positions.set(url, position); if (positions.size > 60) positions.delete(positions.keys().next().value!); window.removeEventListener('scroll', remember); document.removeEventListener('focusin', remember); document.removeEventListener('pointerdown', rememberPointer); restored.current = ''; };
+    window.addEventListener('scroll', rememberScroll); document.addEventListener('focusin', rememberFocus); document.addEventListener('pointerdown', rememberPointer);
+    return () => { positions.set(url, position); if (positions.size > 60) positions.delete(positions.keys().next().value!); window.removeEventListener('scroll', rememberScroll); document.removeEventListener('focusin', rememberFocus); document.removeEventListener('pointerdown', rememberPointer); restored.current = ''; };
   }, [url]);
   useEffect(() => {
     if (!ready || restored.current === url) return;

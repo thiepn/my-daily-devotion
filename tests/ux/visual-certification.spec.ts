@@ -71,7 +71,7 @@ test("visual record of populated devotional journeys and management screens", as
     await openRoute(page, "/prayer/session?depth=quick"); await expect(page.locator(".focused-prayer-card")).toBeVisible();
     await expectNoHorizontalOverflow(page); await page.screenshot({ path: testInfo.outputPath(`populated-${mode}-focused-prayer.png`) });
     await expectNoAxeViolations(page);
-    await openRoute(page, "/history"); await page.locator(".history-day[href]").first().click();
+    await openRoute(page, "/history"); await page.locator(".history-journal-row").first().click();
     await expect(page.locator(".history-entry").first()).toBeVisible(); await expectNoHorizontalOverflow(page);
     await page.screenshot({ path: testInfo.outputPath(`populated-${mode}-history-day.png`) });
   }

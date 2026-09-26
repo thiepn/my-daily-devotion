@@ -52,7 +52,7 @@ function safeReturnTarget(search: string): string | null {
 }
 
 function utilityReturnTarget(pathname: string, search: string): string {
-  if (pathname === "/today" || pathname === "/prayer" || pathname === "/history" || pathname === "/bible" || /^\/bible\/[^/]+\/\d+$/.test(pathname)) {
+  if (pathname === "/today" || pathname === "/prayer" || pathname.startsWith("/history") || pathname === "/bible" || /^\/bible\/[^/]+\/\d+$/.test(pathname)) {
     return `${pathname}${search}`;
   }
   return "/today";

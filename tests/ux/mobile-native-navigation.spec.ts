@@ -14,7 +14,7 @@ test.describe("native mobile stacked navigation", () => {
       if (route === "/today") await expect(page.locator(".today-profile")).toBeVisible();
       else if (route.startsWith("/bible/")) await expect(page.locator(".bible-reader-header")).toBeVisible();
       else if (route === "/prayer") await expect(page.locator(".prayer-add")).toBeVisible();
-      else await expect(page.locator(".utility-actions")).toBeVisible();
+      else await expect(page.locator(".history-search")).toBeVisible();
       await expectNoHorizontalOverflow(page);
     }
   });
@@ -37,7 +37,7 @@ test.describe("native mobile stacked navigation", () => {
       await openRoute(page, route);
       await expect(page.locator(".app-shell")).toHaveClass(/mobile-detail-route/);
       await expect(page.locator(".utility-mobile-title")).toHaveText(title);
-      await expect(page.getByRole("button", { name: "Back", exact: true })).toBeVisible();
+      if (route.startsWith("/history")) await expect(page.locator(".history-back")).toBeVisible(); else await expect(page.getByRole("button", { name: "Back", exact: true })).toBeVisible();
       await expect(page.locator(".mobile-nav")).toBeHidden();
       await expect(page.locator(".utility-actions")).toBeHidden();
       await expectNoHorizontalOverflow(page);
@@ -75,7 +75,7 @@ test.describe("native mobile stacked navigation", () => {
     await expect(page).toHaveURL(/#\/bible\/JHN\/3\?verse=16$/);
 
     await openRoute(page, "/history/moments");
-    await page.locator(".history-tabs").getByRole("link", { name: "Search", exact: true }).click();
+    await page.getByRole("link", { name: "Search history and Scripture", exact: true }).click();
     await expect(page).toHaveURL(/return=%2Fhistory%2Fmoments/);
     await page.getByRole("button", { name: "Back", exact: true }).click();
     await expect(page).toHaveURL(/#\/history\/moments$/);
