@@ -18,11 +18,11 @@ test.describe("mobile-first Morning Grace layout",()=>{
 
   test("Bible opens directly into reading content",async({page})=>{
     await openRoute(page,"/bible/JHN/3");
-    await expect(page.locator(".mg-bible-chapter-art")).toBeHidden();
-    await expect(page.locator(".mg-bible-shell-header > div:first-child")).toBeHidden();
+    await expect(page.locator(".mg-bible-chapter-art")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reading appearance", exact: true })).toBeVisible();
     await expect(page.locator(".mg-scripture-page .scripture-copy")).toBeVisible();
 
-    const toolbar=await page.locator(".mg-bible-toolbar").boundingBox();
+    const toolbar=await page.locator(".bible-reader-header").boundingBox();
     const reader=await page.locator(".mg-reader-heading").boundingBox();
     expect((toolbar?.height??999)).toBeLessThanOrEqual(92);
     expect((reader?.y??999)).toBeLessThan(260);
@@ -82,13 +82,13 @@ test.describe("mobile-first Morning Grace layout",()=>{
     expect(appbar).toBeNull();
 
     await openRoute(page,"/bible/JHN/3");
-    await expect(page.locator(".mg-bible-chapter-art")).toBeHidden();
+    await expect(page.locator(".mg-bible-chapter-art")).toBeVisible();
     await expect(page.locator(".mobile-nav")).toBeVisible();
     await expect(page.locator(".utility-link").filter({hasText:"Search"}).locator("span")).toBeHidden();
     const firstVerse=page.locator(".scripture-copy .verse-number").first();
     await expect(firstVerse).toBeVisible();
     const verseBox=await firstVerse.boundingBox();
-    expect(verseBox?.y??999).toBeLessThan(330);
+    expect(verseBox?.y??999).toBeLessThan(480);
 
     await openRoute(page,"/prayer");
     await expect(page.locator(".mg-prayer-hero-art")).toBeHidden();
@@ -111,7 +111,7 @@ test.describe("mobile-first Morning Grace layout",()=>{
     }
   });
 
-  test("desktop Today retains artwork and Bible remains in its prior phase",async({page})=>{
+  test("desktop Today and Bible retain their artwork",async({page})=>{
     await page.setViewportSize({width:1280,height:900});
     await openRoute(page,"/today");
     await expect(page.locator(".grace-art")).toBeVisible();

@@ -1,4 +1,14 @@
-import { spawnSync } from "node:child_process";
+import assert from "node:assert/strict";
+import { execFileSync, spawnSync } from "node:child_process";
+import { mkdirSync, rmSync } from "node:fs";
+
+const git = (...args) => execFileSync("git", args, { encoding: "utf8" }).trim();
+assert.equal(git("status", "--porcelain"), "", "Commit the reviewable change before certification; evidence must describe an exact clean commit.");
+process.env.MDD_CERTIFICATION_COMMIT = git("rev-parse", "HEAD");
+process.env.MDD_CERTIFICATION_STARTED_AT = String(Date.now());
+mkdirSync("verification", { recursive: true });
+// A missing new report must fail, never silently reuse evidence from an earlier run.
+for (const report of ["verification/unit.json", "verification/browser.json"]) rmSync(report, { force: true });
 
 // Run each gate once. Recursive npm scripts repeatedly prepend PATH entries and
 // exceed cmd.exe's environment limit on Windows in deeply nested checkouts.

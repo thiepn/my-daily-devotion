@@ -127,6 +127,7 @@ export function App() {
     "morning-grace-shell",
     location.pathname === "/today" || location.pathname === "/" ? "today-route" : "",
     mobileBack ? "mobile-detail-route" : "",
+    location.pathname === "/bible" || /^\/bible\/[^/]+\/\d+$/.test(location.pathname) ? "bible-reader-route" : "",
     location.pathname === "/prayer/session" ? "mobile-immersive-route" : "",
   ].filter(Boolean).join(" ");
 

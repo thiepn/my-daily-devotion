@@ -1,71 +1,37 @@
-# Morning Grace V2 — Today visual QA
+# Morning Grace V2 — Bible and shared-control visual QA
 
-Scope: the new shared foundation and Today light-mode composition. This is an implementation review against the supplied image, not user approval of the four-screen redesign. Bible, Prayer, History, secondary workflows and final dark art remain outside this acceptance gate.
+Visual review: **passed for the scoped light Bible composition after iteration**. User design approval remains pending. This is not certification of Prayer, History, the whole redesign, final dark artwork or native-device accessibility. The preceding Today review is archived at `docs/visual/morning-grace-v2/today-design-qa.md`; Today was recaptured after bundling Inter.
 
-## Source, rendered evidence and normalization
+## Evidence
 
-- Visual truth: user attachment `C:/Users/junso/AppData/Local/Temp/codex-clipboard-2deba43d-e2cc-4602-9e09-3d9c1ddf8c87.png`, a 1448 × 1086 concept board. Only the first phone's application is compared.
-- Source crop: x48–356, y198–892; 308 × 694 source pixels, uniformly resampled to 390 × 879. Saved in `docs/visual/morning-grace-v2/today-reference.png`. A few rounded bottom-corner bezel pixels remain in the crop and are excluded from evaluation. No status bar, phone bezel, board title or poster captions were implemented.
-- Implementation: `http://127.0.0.1:4173/#/today`, production build; `docs/visual/morning-grace-v2/today-390-desktop-chromium.png`.
-- CSS viewport 390 × 844, deviceScaleFactor 1. Full-page image is 390 × 855 because the page includes scroll padding beneath the fixed navigation. The original mockup has no specified CSS viewport/density, so the source was normalized by its application width; its taller aspect ratio is explicitly retained. This is structural visual comparison, not a pixel-diff score.
-- State: light, reduced motion, local date fixed to 2026-04-24 07:00 Europe/Berlin, real calendar enrollment, 0/4 readings complete, collapsed plan, no reflection or prayers. The day is 114 and the live BSB preview is Psalms 35:1. These deliberately differ from the mock's fictional Day 118/Psalm 119:105; no example content was hard-coded into production.
-- Full comparison: `docs/visual/morning-grace-v2/today-comparison.png` (800 × 879; source left, implementation right, 20px gap).
-- Focused comparisons: `comparison-opening.png` and `comparison-actions.png` in that directory. Both were viewed after the final refinement, in addition to the full comparison.
+- Source: user-supplied 1448 × 1086 Concept 11 board. Second phone application crop: x398–708, y198–892, excluding status bar/poster. Uniform normalization: 310 × 694 to 390 × 873. A narrow bezel edge is excluded from judgement.
+- Render: production preview `/#/bible/LUK/9`, light, 390 × 844 CSS pixels, scale factor 1, reduced motion, local fonts loaded. No invented subtitle or skipped verses. Separate screenshots show actual Luke 9:23 selection and dock.
+- Versioned evidence: `tests/visual/baselines`, plus `docs/visual/morning-grace-v2/bible-comparison.png` (source left, implementation right). The different source aspect ratio is retained; no pixel-perfect score is claimed against fictional sample content.
+- Additional sizes: 320 × 568, 360 × 800, 430 × 932, 768 × 1024, 1440 × 900, 200% text. Annotation, preliminary dark, offline and failed-load journeys are exercised. Reader settings were also inspected in the in-app browser, including Escape/focus behavior.
 
-## Findings and comparison history
+## Findings and corrections
 
-1. Baseline — blocked. [P1] Mobile removed all Today scenery and suppressed the personal opening; four reading rows dominated the page. [P1] Primitive geometry could not represent the supplied illustration. [P2] Cascading overrides made composition unpredictable. Fixed by raster artwork, the Today hierarchy and an owned screen layer. Baseline evidence is retained in this task's `outputs/baseline/today-390.png`.
-2. First rendered rebuild — blocked. [P1] The opening/verse/response heights pushed the CTA behind the fixed navigation at 390px. [P2] The initial art was too golden. Reduced structural spacing, kept the complete verse, and generated the softer ivory/peach/gray-sage variant. Evidence: task `outputs/iteration-1` and `outputs/iteration-2` captures.
-3. Second comparison — blocked. [P2] The button still extended about 14px into the navigation area. Reduced response-card and section spacing; strengthened the viewport assertion. [P2] Desktop rail metadata failed contrast after the palette change; changed the faint-ink token to #5e625a. Post-fix evidence: task `outputs/iteration-3` and final desktop capture.
-4. Enlarged-text refinement — passed after recapture. Replaced exact-inline-style text-size selectors with intrinsic auto-fit/minmax card reflow, fluid scenic height and wrapping headings. Preserved the plan identity icon. Kept the profile glyph within its target. Tested at 320px with 200% root text, without overflow or text clipping. The full-page image places the fixed nav at the first viewport's bottom; it is not an in-document separator.
-5. Final composition — passed after recapture. Added breathing room above navigation while retaining a scenic area greater than 230px. At 390 × 844 the complete CTA ends above the fixed bar; at 320/360 it remains reachable by scrolling. Final evidence is the versioned `docs/visual/morning-grace-v2` set, compared again side by side.
+1. [P1, fixed] Mobile hid the Bible illustration and promoted utility chrome. Replaced with back/passage/collections/Aa controls and a locally bundled landscape visible at every required width.
+2. [P1, fixed] Data's plain-backup label inherited the same color as its background. Its owning rule now sets ink explicitly. Direct contrast, keyboard and image checks cover both themes and disabled encrypted export.
+3. [P1, fixed] The first 320px/200% modal clipped its title horizontally. Bounded width, shrinkable heading and shorter title now reflow; internal scroll-width is asserted. Vertical scrolling remains available.
+4. [P2, fixed] Initial native/React autofocus timing was inconsistent. Dialogs now focus the first available selector after opening and restore the trigger on close. Keyboard and reload/persistence tests cover this.
+5. [P2, fixed] Initial header/translation metadata pushed Scripture too far down. A 54px header retains 44px controls; art/title rhythm now aligns with the reference. Real corpus headings remain. Translation attribution lives in reader help and the passage panel.
+6. [P2, fixed] Bundled Inter exposed 2px of enlarged-text Search overflow. Replaced the fixed action column with intrinsic sizing and restored 44px Search controls. Secondary controls are checked in both themes at narrow/enlarged sizes.
+7. [Content, separately fixed] The old parser omitted a word boundary in Luke 9:1. An isolated parser commit and 112 whitespace-only fixtures correct the source-note case; this is not a display-text patch.
+8. [Test determinism, fixed] Two CI runners captured different selection scroll offsets as local fonts and the status dock settled. Selection baselines now explicitly center the verse after that layout. The two updated candidates were inspected; comparison thresholds were not relaxed. Secondary target measurements disable entrance animation and still require 44px computed and rendered height.
+9. [User review, fixed] Numerals were centered in wide touch targets, separating them from their verses. They now align to the text-facing edge, and an inline group keeps each numeral with the first word when wrapping. Targets remain 44px; every Luke 9 verse start is checked for proximity and same-line placement across the six viewport sizes. Narrow and selected-passage screenshots were reviewed and the affected baselines deliberately refreshed. Corpus text, copy content and persisted data are unchanged.
 
-6. Final enlarged-text scroll check — passed after correction. [P2] At 200% text the automatically taller navigation could cover about 22px of the final CTA. Changed the reserved footer space and navigation minimum to `max(72px, 4rem)` and added mobile focus scroll margins. At 320px/200% the final button now clears the bar by about 28px. The new scroll-bound assertion passes in both Chromium projects; the updated 200% capture was inspected. Normal-size composition is unchanged.
+## Close matches
 
-No actionable P0/P1/P2 finding remains for the scoped Today light screen. The following differences remain explicit:
+Compact four-control header; wide ink-and-wash landscape; cream canvas; large literary chapter title; subdued metadata; small visible verse numerals; sage highlights; compact icon dock; refined four-tab navigation. The art is about 140px high at 390px and remains over 110px at 320px. Desktop has a bounded reading column. Today retains its illustrated opening, verse card, plan disclosure, Reflect/Pray cards and dominant CTA.
 
-- [P3, typography/icons] Libre Caslon Text has a somewhat heavier heading than the source; Phosphor line icons are slightly finer. Their family, hierarchy, semantic meaning and active/inactive navigation treatment are coherent. Optical weight tuning can follow user review.
-- [P3, art] The finished local illustration has different hills, trees and terrain, with more foreground detail. It reproduces the pale morning, layered mountains, botanical framing and paper-like image treatment, not the precise original drawing. No placeholder geometry is used on Today.
-- [Expected, real data] Four M’Cheyne readings can occupy two lines, and full BSB verses vary in length. No text is clipped to force the mock's fictional density. Narrow screens and long readings can require scrolling.
-- [Deferred, other screens/dark] Shared typography, tokens and navigation affect other screens, but their compositions remain legacy. Low-light opacity is a preliminary treatment, not final evening artwork or dark visual certification.
+## Remaining differences and limits
 
-## Required fidelity surfaces
+- [P3, artwork] Larger foreground olive tree, subtler village and slightly more taupe palette than the reference. The medium and natural depth match, not the exact drawing. No external light-mode asset is required for this slice.
+- [Expected, Scripture] BSB wording, headings, cross-references, paragraph grouping and red-letter styling differ from the mock's composite text. Actual chapter/saved/deep-linked positions are respected; verses 1–22 are not omitted to reproduce the poster.
+- [Expected, interaction] Copy maps the mock's Share position to the existing offline feature. Selection reference, clear action and mutation feedback make the dock taller. More retains devotional/collection actions; the dock appears only for a selection.
+- [P3, type/icons] Caslon headings are a little heavier and Phosphor strokes finer. Inter is bundled for consistent offline metadata/control rendering.
+- [Deferred] Dark mode uses warm tokens and illustration opacity without inversion. Dedicated evening art is pending. Loading/error surfaces remain the existing recoverable states, not a new secondary-screen certification. Prayer and History await their own rebuilds.
+- [Not claimed] Axe and keyboard checks do not constitute a manual screen-reader certification, usability study or physical iOS/Android test.
 
-| Surface | Rendered assessment |
-| --- | --- |
-| Fonts/typography | Locally bundled literary serif, bold two-line opening, italic Scripture, subordinate reference, restrained metadata. Complete text reflows. No remote font fallback dependency for display or reading. Small sans UI remains platform-native. |
-| Spacing/layout | Full-width scenic opening, overlapping verse card, compact plan, paired response cards, green CTA and four-tab footer match the source's order and visual emphasis. Modest 12px radii, 14–16px gutters and soft shadows. Desktop is an adaptation within the existing rail. |
-| Color/tokens | Warm #faf6ee canvas, #fffbf5 paper, forest/sage accents, warm charcoal text and terracotta prayer circle. The CTA uses a restrained natural green light transition. Contrast checks pass. |
-| Image quality | 1200 × 800 locally bundled WebP; soft sky, layered terrain and detailed natural foreground; visible at all widths. Decorative masking/cropping does not hide the artwork. No generated text, stock-watermark, transparency halo or primitive landscape substitute. |
-| Copy/content | Greeting and prompts follow the reference. Scripture/date/day/references/completion come from existing runtime data. “From today's reading” accurately identifies the live source. Profile routes to Data; no account or daily-verse subsystem. |
-
-## Verification and responsive evidence
-
-- TypeScript passes; 23 unit/integration files, 115 tests pass. Production build passes, verifying all 31,086 BSB verse identities, 365 M’Cheyne assignments and 28 quotation regressions.
-- Full `npm run verify:phase12` passed on `4759042`: 115 unit/integration tests and all 192 Playwright tests across the five projects, with zero failures/skips/flaky results, followed by package/security/contract verification. The final footer refinement was rebuilt and separately verified by 42 passing Today, navigation, responsive and accessibility tests. Its first run reported all passes but stalled during Windows preview-server teardown; a clean rerun against a persistent preview server exited successfully. Production dependency audit reported zero vulnerabilities.
-- Focused Chromium/offline suite: 48 passed (46 desktop Chromium + 2 offline PWA).
-- Mobile Chromium Today/core journeys: 8 passed. Final Today composition/reflow rerun: 10 passed across desktop/mobile Chromium.
-- Core devotional journeys: 3 Firefox + 3 WebKit passed. Firefox could not launch in the restricted execution environment; rerunning the same three tests with the permitted browser process environment passed. No application fix was needed.
-- Earlier concurrent browser commands shared an output directory and caused two trace-file cleanup errors; the affected seven tests passed when rerun separately. Subsequent runs use distinct output directories. These were not hidden product failures.
-- Captures: 390 × 844, 430 × 932, 360 × 800, 320 × 720, 1440 × 900; 320px at 200% text; a 320 × 568 short viewport; preliminary dark screenshot. Mobile DPR 2 captures are also in task outputs. Animations disabled; fonts and image decode awaited.
-- Interaction checks: enrollment/import, calendar/self-paced/leap behavior, explicit completion and reload persistence, primary CTA, reflection/prayer routes, keyboard disclosure, ≥44px primary targets, narrow-scroll reachability, focus, no horizontal overflow, axe checks and zero page errors during canonical capture.
-- Offline tests verify artwork and local Scripture after a controlled cold start, plus interrupted updates and old-tab lazy assets. Service-worker source is unchanged.
-
-Reproduce the visual gate after `npm run build`:
-
-```sh
-npx playwright test tests/ux/morning-grace-v2.spec.ts --project=desktop-chromium --project=mobile-chromium --output=verification/today-v2
-```
-
-## Implementation checklist
-
-- [x] Compare the source and rendered UI in one normalized image, including opening and action details.
-- [x] Keep substantial artwork on 320/360/390/430px mobile.
-- [x] Use live Scripture and all four assigned readings.
-- [x] Preserve explicit completion, prayer and reflection routes.
-- [x] Verify typography, surfaces, navigation, reflow, interaction and offline availability.
-- [x] Preserve database/domain version 1 without migrations or repository changes.
-- [ ] User review of Today before the Bible phase.
-- [ ] Bible, Prayer, History, secondary screens and separately art-directed dark artwork in later phases.
-
-final result: passed
+No unresolved P0/P1/P2 visual issue remains in the scoped light Bible composition. Baselines are review candidates, not user approval. Exact regression results and reviewed commit are recorded with the PR and task report.

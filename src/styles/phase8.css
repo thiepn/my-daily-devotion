@@ -1,7 +1,7 @@
 .utility-actions { display: flex; align-items: center; gap: 14px; }
 .utility-actions > a { color: var(--color-ink-soft); font-size: .74rem; text-decoration: none; }
-.bible-secondary-links, .quiet-link-row { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 22px; }
-.bible-secondary-links a, .quiet-link-row a { color: var(--color-accent-strong); font-size: .78rem; text-decoration: none; }
+.quiet-link-row { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 22px; }
+.quiet-link-row a { color: var(--color-accent-strong); font-size: .78rem; text-decoration: none; }
 .history-tabs { display: flex; gap: 24px; margin: -24px 0 42px; border-bottom: 1px solid var(--color-line-strong); }
 .history-tabs a { padding: 0 0 12px; color: var(--color-ink-soft); font-size: .78rem; text-decoration: none; }
 .history-tabs a.is-active { color: var(--color-ink); border-bottom: 2px solid var(--color-accent); }

@@ -118,11 +118,6 @@
 }
 
 /* Brand art must not compete with Scripture. */
-.scripture-content .mg-motif,
-.scripture-copy .mg-motif,
-.reader-body .mg-motif {
-  display: none;
-}
 
 @media (forced-colors: active) {
   .mg-motif {

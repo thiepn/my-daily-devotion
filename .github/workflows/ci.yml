@@ -69,9 +69,34 @@ jobs:
         with:
           path: dist/
 
+  visual:
+    name: Reviewed journal image comparisons
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install chromium
+      - run: npm run build
+      - run: npm run test:visual
+      - name: Upload image differences for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: journal-image-comparisons
+          path: |
+            visual-report/
+            test-results/
+          if-no-files-found: ignore
+          retention-days: 14
+
   deploy:
     name: Deploy certified app to GitHub Pages
-    needs: verify
+    needs: [verify, visual]
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:

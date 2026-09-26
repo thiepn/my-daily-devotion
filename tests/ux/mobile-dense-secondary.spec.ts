@@ -4,6 +4,8 @@ import { expectNoAxeViolations, expectNoHorizontalOverflow, openRoute } from "./
 test.describe("dense secondary mobile workflows", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
+    // Measure settled controls: entrance transforms can report 43.999992px for a 44px target.
+    await page.emulateMedia({ reducedMotion: "reduce" });
   });
 
   test("People and Categories put the editor before the saved list", async ({ page }) => {
@@ -85,6 +87,7 @@ test.describe("dense secondary mobile workflows", () => {
     await expect(tabs).toHaveCSS("display", "flex");
     const links = tabs.getByRole("link");
     for (let index = 0; index < await links.count(); index += 1) {
+      await expect(links.nth(index)).toHaveCSS("min-height", "44px");
       const box = await links.nth(index).boundingBox();
       expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
     }

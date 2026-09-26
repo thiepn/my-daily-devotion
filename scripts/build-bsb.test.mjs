@@ -29,6 +29,20 @@ describe("Scripture word boundaries", () => {
 });
 
 describe("corrective Scripture normalization", () => {
+  it("separates a word from an added word after an omitted footnote", () => {
+    const normalized = book([{ marker: "p", content: [verse, "Then Jesus called the Twelve",
+      { type: "note", marker: "f", content: ["TR His twelve disciples"] },
+      { type: "char", marker: "add", content: ["together"] },
+      { type: "char", marker: "add", content: ["and"] }, " gave them power.",
+    ] }]);
+    expect(searchDocumentsForBook(normalized)[0].text).toBe("Then Jesus called the Twelve together and gave them power.");
+    expect(normalized.chapters[0].notes).toHaveLength(1);
+  });
+  it("separates words across notes without detaching punctuation or duplicating existing spaces", () => {
+    const note = { type: "note", marker: "f", content: ["A source note"] };
+    const normalized = book([{ marker: "p", content: [verse, "one", note, "another", note, ", and ", note, "obey?", note, "Yes."] }]);
+    expect(searchDocumentsForBook(normalized)[0].text).toBe("one another, and obey? Yes.");
+  });
   it("separates red-letter quotation exits from added narration", () => {
     const normalized = book([{ marker: "p", content: [verse, { marker: "wj", content: ["“Come, follow Me,”"] }, { marker: "add", content: ["Jesus"] }, " said."] }]);
     expect(searchDocumentsForBook(normalized)[0].text).toBe("“Come, follow Me,” Jesus said.");

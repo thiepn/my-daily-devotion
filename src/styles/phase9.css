@@ -149,7 +149,6 @@
 }
 
 /* Common control language */
-.bible-select-label select,
 .import-controls input,
 .plan-month-heading select,
 .prayer-administration-fields input,
@@ -176,7 +175,6 @@ select {
 .primary-editorial-action.compact-action,
 .quiet-button,
 .markdown-toolbar button,
-.verse-note-editor-actions button,
 .prayer-lifecycle-actions button,
 .prayer-answer-form button,
 .prayer-update-form > button,
@@ -190,10 +188,7 @@ select {
 .data-actions button,
 .backup-preview button,
 .collection-sidebar form button,
-.history-month-heading button,
-.chapter-navigation button,
-.verse-actions button,
-.verse-action-menu button {
+.history-month-heading button {
   min-height: 44px;
 }
 
@@ -217,7 +212,6 @@ select {
 
 .quiet-button,
 .markdown-toolbar button,
-.verse-note-editor-actions button,
 .prayer-lifecycle-actions button,
 .prayer-answer-form button,
 .prayer-update-form > button,
@@ -248,12 +242,10 @@ button:disabled,
 .reflection-editor-actions,
 .prayer-capture-actions,
 .prayer-settings-actions,
-.verse-note-editor-actions,
 .prayer-handoff-actions,
 .prayer-primary-actions,
 .focused-prayer-secondary,
-.data-actions,
-.plan-context-actions {
+.data-actions {
   row-gap: 10px;
 }
 
@@ -262,7 +254,6 @@ button:disabled,
 .prayer-now-link,
 .metadata-manage-links a,
 .prayer-management-links a,
-.bible-secondary-links a,
 .quiet-link-row a {
   min-height: 40px;
   display: inline-flex;
@@ -322,48 +313,6 @@ button:disabled,
 }
 
 /* Bible reader */
-.bible-toolbar {
-  gap: 16px;
-  padding-block: 16px;
-}
-
-.bible-select-label select {
-  height: 44px;
-}
-
-.reader-page {
-  padding-bottom: 42px;
-}
-
-.scripture-copy {
-  line-height: 1.76;
-}
-
-.chapter-navigation button {
-  min-width: 44px;
-  padding-inline: 4px;
-}
-
-.verse-action-dock {
-  padding: 12px 14px;
-  border-radius: var(--radius-small);
-  background: color-mix(in srgb, var(--color-surface) 97%, var(--color-canvas));
-}
-
-.clear-selection {
-  width: 44px;
-  height: 44px;
-  margin: -8px -8px -8px 0;
-}
-
-.verse-actions {
-  gap: 3px;
-}
-
-.verse-actions button,
-.verse-action-menu button {
-  padding-inline: 12px;
-}
 
 /* Reflection */
 .reflection-editor-panel,
@@ -471,8 +420,7 @@ button:disabled,
 .prayer-answer-form textarea,
 .focused-answer-form textarea,
 .prayer-update-form textarea,
-.metadata-editor textarea,
-.verse-note-editor textarea {
+.metadata-editor textarea {
   padding: 12px 14px;
   line-height: 1.58;
 }
@@ -789,22 +737,6 @@ button:disabled,
     min-height: 64px;
   }
 
-  .reader-page {
-    width: calc(100% + (var(--screen-gutter) * 2));
-    margin-left: calc(var(--screen-gutter) * -1);
-    padding-inline: var(--screen-gutter);
-  }
-
-  .verse-action-dock {
-    margin-top: 22px;
-    padding-inline: 10px;
-  }
-
-  .verse-actions button,
-  .verse-action-menu button {
-    min-height: 46px;
-  }
-
   .reflection-textarea,
   .prayer-capture-editor textarea {
     min-height: 46vh;
@@ -976,22 +908,10 @@ button:disabled,
 .setup-options .editorial-option { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 8px; text-align: left; }
 .today-lower-grid { margin-top: var(--section-rhythm); }
 .screen-heading h1 { letter-spacing: -.035em; }
-.bible-screen-heading { margin-bottom: 24px; }
-.bible-screen-heading .screen-intro { max-width: 54ch; }
-.bible-screen-heading h1 { font-size: 2.5rem; margin-block: 6px 10px; }
-.bible-secondary-links { margin-top: 12px; }
-.reader-page { padding-top: 28px; }
-.reader-heading { padding-bottom: 16px; }
-.scripture-copy { margin-top: 26px; }
-.scripture-content > :first-child { margin-top: 0; }
 .reflection-textarea { min-height: clamp(260px, 34vh, 440px); }
 .reflection-context-panel h2 { font-size: 1.55rem; line-height: 1.25; }
-.quiet-button, .prayer-lifecycle-actions button, .prayer-update-form button,
-.prayer-answer-form button, .metadata-row button, .metadata-editor button,
-.prayer-settings-actions button, .verse-actions button, .verse-action-menu button,
-.markdown-toolbar button, .collection-sidebar form button { font-size: .85rem; }
-.prayer-management-links a, .metadata-manage-links a, .quiet-back-link,
-.field-help, .prayer-administration-fields label small { font-size: .8rem; }
+.quiet-button, .prayer-lifecycle-actions button, .prayer-update-form button, .prayer-answer-form button, .metadata-row button, .metadata-editor button, .prayer-settings-actions button, .markdown-toolbar button, .collection-sidebar form button { font-size: .85rem; }
+.prayer-management-links a, .metadata-manage-links a, .quiet-back-link, .field-help, .prayer-administration-fields label small { font-size: .8rem; }
 .prayer-administration-fields label, .metadata-editor label { font-size: .875rem; }
 .prayer-detail-body { font-size: clamp(1.3rem, 2.2vw, 1.75rem); line-height: 1.55; }
 .focused-prayer-card > h1 { max-width: 28ch; font-size: clamp(1.9rem, 4vw, 3.2rem); line-height: 1.2; overflow-wrap: anywhere; white-space: pre-wrap; }
@@ -1012,7 +932,7 @@ button:disabled,
 .collection-items a { flex: 1; }
 .collection-items p { flex-basis: 100%; }
 .collection-items button { font-size: .85rem; min-height: 44px; padding-inline: 12px; }
-.data-status:empty, .reader-status:empty, .prayer-form-status:empty { display: none; }
+.data-status:empty, .prayer-form-status:empty { display: none; }
 .data-status { max-width: 70ch; padding: 12px 0; overflow-wrap: anywhere; }
 .data-status:not(:empty) { position: sticky; top: 72px; z-index: 13; padding: 12px 16px; background: var(--color-surface); border: 1px solid var(--color-line-strong); font-size: .9rem; }
 .backup-counts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 20px; }
@@ -1024,11 +944,6 @@ input, select, textarea { max-width: 100%; }
 .utility-mobile-title { display: none; font-family: var(--font-editorial); font-weight: 600; }
 @media (max-width: 760px) { .collections-layout { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 620px) {
-  .bible-screen-heading .screen-intro { display: none; }
-  .bible-toolbar { margin-bottom: 16px; }
-  .reader-heading { flex-direction: row; align-items: end; gap: 12px; }
-  .reader-heading p { margin-top: 0; }
-  .reader-context { order: 0; max-width: 10ch; text-align: right; }
   .utility-bar { flex-wrap: wrap; gap: 4px 8px; }
   .utility-context-title { display: none; }
   .utility-mobile-title { display: block; }
