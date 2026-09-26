@@ -5,11 +5,16 @@ export function visibleNavLink(page: Page, name: string): Locator { return page.
 export async function openRoute(page: Page, route: string): Promise<void> { await page.goto(`/#${route}`); await expect(page.locator("main").first()).toBeVisible(); }
 export async function expectNoHorizontalOverflow(page: Page): Promise<void> { const overflow=await page.evaluate(()=>({root:document.documentElement.scrollWidth-document.documentElement.clientWidth,body:document.body.scrollWidth-document.body.clientWidth})); expect(overflow.root,`document overflowed horizontally by ${overflow.root}px`).toBeLessThanOrEqual(1); expect(overflow.body,`body overflowed horizontally by ${overflow.body}px`).toBeLessThanOrEqual(1); }
 export async function expectNoAxeViolations(page: Page): Promise<void> {
-  // Contrast must be measured after finite entrance/theme animations settle.
-  // Screenshot capture may restore an animation after temporarily disabling it.
-  await page.evaluate(()=>Promise.all(document.getAnimations()
-    .filter(animation=>animation.effect?.getComputedTiming().iterations!==Infinity)
-    .map(animation=>animation.finished.catch(()=>{}))));
+  // Measure the final rendered colors, including after a screenshot restores a
+  // paused animation. Waiting on its finished promise could otherwise hang.
+  await page.evaluate(() => {
+    for (const animation of document.getAnimations()) {
+      const end = animation.effect?.getComputedTiming().endTime;
+      if (typeof end === 'number' && Number.isFinite(end)) {
+        animation.currentTime = end;
+      }
+    }
+  });
   const results=await new AxeBuilder({page}).withTags(["wcag2a","wcag2aa","wcag21a","wcag21aa","wcag22aa"]).analyze(); const summary=results.violations.map((violation)=>({id:violation.id,impact:violation.impact,help:violation.help,targets:violation.nodes.flatMap((node)=>node.target)})); expect(summary,JSON.stringify(summary,null,2)).toEqual([]);
 }
 export async function enrollCalendarPlan(page: Page): Promise<void> {
