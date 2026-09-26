@@ -13,6 +13,10 @@ const [contractRaw, tokens, morning, app, main, doc] = await Promise.all([
   read("docs/PHASE_1_MORNING_GRACE_DESIGN_LANGUAGE.md"),
 ]);
 
+// V2 centralizes imports; the older JSON describes the retained legacy screens.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
+
 const contract = JSON.parse(contractRaw);
 
 assert.equal(contract.version, 1);
@@ -29,9 +33,9 @@ for (const token of [
   "--font-display:",
   "--font-reading:",
   "--font-ui:",
-  "--color-canvas: #f6f2e9",
-  "--color-surface: #fcf9f3",
-  "--color-ink: #20241f",
+  "--color-canvas: #faf6ee",
+  "--color-surface: #fffbf5",
+  "--color-ink: #252922",
   "--color-accent: #587060",
   "--color-reflection: #48706d",
   "--color-prayer: #9f563b",
@@ -63,9 +67,15 @@ assert.doesNotMatch(morning, /(?:linear|radial|conic)-gradient\s*\(/i);
 assert.doesNotMatch(morning, /url\(\s*["']?https?:\/\//i);
 assert.doesNotMatch(morning, /#[a-f0-9]{0,2}(?:7c3aed|8b5cf6|a855f7)/i);
 
-const correctiveIndex = main.indexOf('"./styles/corrective.css"');
-const morningIndex = main.indexOf('"./styles/morning-grace.css"');
-assert.ok(correctiveIndex >= 0 && morningIndex > correctiveIndex, "Morning Grace must be the final visual foundation layer");
+const correctiveIndex = styles.indexOf('"./corrective.css"');
+const morningIndex = styles.indexOf('"./morning-grace.css"');
+assert.ok(correctiveIndex >= 0 && morningIndex > correctiveIndex, "Retained legacy import order must remain stable");
+
+assert.match(styles, /@layer legacy, foundation, components, screens/);
+assert.match(styles, /tokens\.css" layer\(foundation\)/);
+assert.match(styles, /components\.css" layer\(components\)/);
+assert.match(styles, /today\.css" layer\(screens\)/);
+assert.match(styles, /@fontsource\/libre-caslon-text/);
 
 assert.match(app, /data-domain=\{routeDomain\(location\.pathname\)\}/);
 assert.match(app, /Scripture · Prayer · Reflection/);
@@ -78,7 +88,7 @@ assert.match(doc, /does \*\*not\*\* finalize/i);
 assert.match(doc, /database.*unchanged/is);
 
 console.log("✓ Morning Grace Editorial Phase 1 verification passed");
-console.log("  design language frozen as machine-readable contract");
+console.log("  historical contract retained; V2 tokens and owned cascade verified");
 console.log("  warm paper + natural domain accents + three semantic type roles installed");
 console.log("  solid navigation surfaces, restrained elevation and anti-generic guardrails enforced");
 console.log("  product data/domain behavior unchanged; canonical screen redesigns deferred");

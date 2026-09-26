@@ -1,0 +1,92 @@
+/* Today owns its composition and responsive art direction. */
+.today-route .utility-bar { border-bottom: 0; }
+.grace-today { --today-gutter: 16px; width: 100%; max-width: 540px; margin: 0 auto; padding: 0 0 28px; }
+.today-opening { position: relative; isolation: isolate; min-height: 260px; padding: 20px var(--today-gutter) clamp(117px, 6rem, 180px); }
+.today-opening .grace-art { position: absolute; z-index: -1; inset: 0; height: 100%; width: 100%; aspect-ratio: auto; mask-image: linear-gradient(to bottom, transparent 0%, #000 24%, #000 85%, transparent); }
+.today-opening .grace-art img { object-position: 53% 50%; }
+.today-opening h1 { max-width: calc(100% - 48px); margin: 0 0 8px; color: var(--color-ink); font-family: var(--font-display); font-size: 2rem; line-height: 1.13; font-weight: 700; letter-spacing: -.04em; }
+.today-opening p { max-width: 25ch; margin: 0; font-family: var(--font-reading); color: var(--color-ink-soft); font-size: .96rem; line-height: 1.45; }
+.today-profile { position: absolute; right: var(--today-gutter); top: 25px; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--color-accent-soft); color: var(--color-nav-active); }
+.today-profile .devotional-icon { width: 24px; height: 24px; }
+.today-journal { position: relative; margin: -53px var(--today-gutter) 0; }
+.today-verse { display: grid; grid-template-columns: 32px minmax(0, 1fr); gap: 12px; padding: 15px 16px 8px; background: color-mix(in srgb, var(--color-surface) 96%, transparent); }
+.today-verse-sun { width: 32px; height: 36px; color: #a6652c; }
+.today-verse-heading { display: flex; align-items: baseline; flex-wrap: wrap; justify-content: space-between; gap: 5px 10px; margin-bottom: 9px; }
+.today-verse-heading h2 { margin: 0; font-family: var(--font-reading); font-size: .83rem; font-weight: 700; letter-spacing: -.035em; }
+.today-verse-heading time { color: var(--color-ink-soft); font-family: var(--font-reading); font-size: .77rem; white-space: nowrap; }
+.today-verse blockquote { margin: 0; font-family: var(--font-reading); font-size: .98rem; font-style: italic; line-height: 1.5; }
+.today-verse-reference { display: inline-flex; flex-wrap: wrap; gap: .3rem; align-items: center; min-height: 44px; padding-top: 6px; font-size: .64rem; letter-spacing: .14em; line-height: 1.5; text-transform: uppercase; text-decoration: none; color: var(--color-ink-soft); }
+.today-verse-reference:hover { text-decoration: underline; }
+.today-verse-status { font-family: var(--font-reading); font-size: .95rem; margin: 0; }
+.today-plan { margin: 14px 0 14px; }
+.today-section-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: .75rem; margin: 0 4px 10px; }
+.today-section-heading h2 { margin: 0; font-family: var(--font-reading); font-size: 1rem; font-weight: 700; letter-spacing: -.035em; }
+.today-section-heading > span { font-family: var(--font-reading); font-size: .78rem; color: var(--color-ink-soft); white-space: nowrap; }
+.today-plan-card > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 44px minmax(0,1fr) 18px; align-items: center; gap: 12px; min-height: 80px; padding: 12px; }
+.today-plan-card > summary::-webkit-details-marker { display: none; }
+.today-plan-card > summary .grace-icon-circle { width: 44px; height: 44px; }
+.today-plan-card > summary .devotional-icon { width: 24px; height: 24px; }
+.today-plan-title { display: block; font-family: var(--font-reading); font-size: .9rem; font-weight: 700; }
+.today-plan-references { display: block; margin-top: 5px; color: var(--color-ink-soft); font-family: var(--font-reading); font-size: .76rem; line-height: 1.55; overflow-wrap: anywhere; }
+.today-plan-chevron { width: 18px; color: var(--color-nav-active); }
+.today-plan-card[open] .today-plan-chevron { transform: rotate(90deg); }
+.today-reading-list { padding: 0 12px 12px; }
+.today-reading-row { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 9px; padding: 5px 0; border-top: 1px solid var(--color-line); }
+.today-reading-check { width: 44px; height: 44px; display: grid; place-items: center; border: 1px solid var(--color-line-strong); border-radius: 50%; background: transparent; color: var(--color-accent-strong); cursor: pointer; }
+.today-reading-check[aria-pressed="true"] { background: var(--color-accent-soft); }
+.today-reading-row a { display: flex; flex-direction: column; justify-content: center; min-height: 44px; text-decoration: none; font-family: var(--font-reading); font-size: .94rem; }
+.today-reading-row small { font-family: var(--font-ui); font-size: .68rem; color: var(--color-ink-faint); }
+.today-reading-list > p { font-size: .8rem; margin: 8px 0; }
+.today-plan-link { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-accent-strong); font-size: .85rem; }
+.today-responses { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 8rem), 1fr)); gap: 12px; margin: 14px 0 15px; }
+.today-response { position: relative; display: block; padding: 12px 14px 12px; color: var(--color-ink); text-decoration: none; }
+.today-response .grace-icon-circle { width: 2.625rem; height: 2.625rem; }
+.today-response:hover { border-color: var(--color-line-strong); }
+.today-response h2 { margin: 5px 0 6px; font-family: var(--font-display); font-size: 1.12rem; line-height: 1.2; font-weight: 700; letter-spacing: -.035em; }
+.today-response p { margin: 0; padding-right: 5px; font-family: var(--font-reading); color: var(--color-ink-soft); font-size: .81rem; line-height: 1.5; }
+.today-response-arrow { position: absolute; right: 9px; bottom: 17px; width: 16px; height: 16px; color: var(--color-prayer); }
+.today-status:empty { display: none; }
+.today-status { margin: 12px 0; font-size: .85rem; }
+.today-note { margin: 0; padding: 16px; font-family: var(--font-reading); font-size: .9rem; }
+.today-setup { margin: 20px 0; }
+.today-setup h2 { font-size: 1.25rem; }
+.today-setup > p { font-size: .9rem; }
+.today-setup button { width: 100%; cursor: pointer; }
+.today-setup .grace-primary { margin: 12px 0; }
+.today-setup-choice { min-height: 52px; padding: 12px; border: 1px solid var(--color-line-strong); border-radius: var(--radius-md); background: var(--color-surface); font-size: .9rem; }
+.today-import { margin-top: 15px; font-size: .86rem; }
+.today-import summary { cursor: pointer; min-height: 44px; padding: 10px 0; }
+.today-import label { display: grid; gap: 6px; }
+.today-import input { max-width: 100%; min-height: 44px; }
+.today-import button { margin-top: 12px; }
+.today-recovery { padding: 32px 20px; }
+.today-recovery h1 { font-size: 2rem; }
+@media (max-width: 860px) {
+  .today-route .utility-bar { display: none; }
+  .grace-today :is(a, button, summary, input) { scroll-margin-block: 12px calc(max(72px, 4rem) + 12px + env(safe-area-inset-bottom)); }
+  .grace-today { max-width: 540px; }
+  .today-opening { padding-top: calc(20px + env(safe-area-inset-top)); }
+  .today-profile { top: calc(21px + env(safe-area-inset-top)); }
+}
+@media (min-width: 861px) {
+  .grace-today { max-width: 670px; padding-top: 12px; }
+  .today-opening { min-height: 340px; padding-top: 40px; }
+  .today-opening h1 { font-size: 2.35rem; }
+  .today-opening .grace-art img { object-position: center 56%; }
+  .today-journal { margin-top: -55px; }
+  .today-responses { gap: 16px; }
+  .today-response { padding: 18px; }
+}
+@media (max-width: 360px) {
+  .grace-today { --today-gutter: 14px; }
+  .today-opening h1 { font-size: 1.8rem; }
+  .today-verse { gap: 8px; padding: 14px 12px; grid-template-columns: 27px minmax(0,1fr); }
+  .today-verse-sun { width: 27px; }
+  .today-verse-heading h2 { font-size: .79rem; }
+  .today-responses { gap: 10px; }
+  .today-response { padding-inline: 12px; }
+}
+:root[data-theme="dark"] .today-opening .grace-art { opacity: .24; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) .today-opening .grace-art { opacity: .24; }
+}

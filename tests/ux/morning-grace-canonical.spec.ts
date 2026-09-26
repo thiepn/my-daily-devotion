@@ -5,9 +5,9 @@ test.describe("Morning Grace canonical screens", () => {
   test("canonical landmarks render after enrollment", async ({ page }) => {
     await enrollCalendarPlan(page);
     await openRoute(page, "/today");
-    await expect(page.locator(".mg-today-hero")).toBeVisible();
-    await expect(page.locator(".mg-reading-card")).toHaveCount(4);
-    await expect(page.locator(".mg-response-section")).toBeVisible();
+    await expect(page.locator(".today-opening")).toBeVisible();
+    await expect(page.locator(".today-reading-row")).toHaveCount(4);
+    await expect(page.locator(".today-responses")).toBeVisible();
 
     await openRoute(page, "/bible/JHN/3");
     await expect(page.locator(".mg-bible-shell-header")).toBeVisible();

@@ -4,7 +4,7 @@ import { enrollCalendarPlan, expectNoAxeViolations, openRoute, visibleNavLink } 
 test.describe("accessibility and keyboard UX", () => {
   test("major empty-state surfaces have no automated WCAG A/AA violations", async ({ page }) => {
     const routes: Array<[string, string]> = [
-      ["/today", "Today"],
+      ["/today", "Good morning, Friend."],
       ["/bible/JHN/3", "Bible"],
       ["/prayer", "Prayer"],
       ["/history", "History"],
@@ -36,8 +36,10 @@ test.describe("accessibility and keyboard UX", () => {
 
   test("date and calendar controls have meaningful accessible names", async ({ page }) => {
     await openRoute(page, "/today");
+    await page.locator(".today-import summary").click();
     await expect(page.getByLabel("Completed through date")).toBeVisible();
     await enrollCalendarPlan(page);
+    await page.locator(".today-plan-card summary").click();
     await page.getByRole("link", { name: "Open full plan" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Reading plan" })).toBeVisible();
     await expect(page.getByLabel("Completed through date")).toBeVisible();

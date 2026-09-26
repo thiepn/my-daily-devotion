@@ -16,6 +16,10 @@ const [planRaw, runtimeRaw, sourceRaw, app, reader, today, planScreen, repositor
   read("package.json"),
   read("src/main.tsx"),
 ]);
+// Visual imports moved to the single layered entrypoint; domain gates are unchanged.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
+
 
 const plan = JSON.parse(planRaw);
 const runtimePlan = JSON.parse(runtimeRaw);
@@ -81,7 +85,7 @@ assert.match(app, /PlanScreen/);
 assert.match(app, /\/today\/plan/);
 assert.match(today, /Follow today’s calendar/);
 assert.match(today, /Start self-paced at Day 1/);
-assert.match(today, /Earlier unread/);
+assert.match(today, /earlier unread/i);
 assert.match(planScreen, /1,460 readings marked complete/);
 assert.match(reader, /plan-reading-context/);
 assert.match(reader, /togglePlanCompletion/);
@@ -92,7 +96,7 @@ assert.match(repository, /bulkImportThrough/);
 assert.match(repository, /getCurrentSelfPacedSequence/);
 assert.ok(pkg.scripts["mcheyne:build"]);
 assert.ok(pkg.scripts["verify:phase4"]);
-assert.ok(main.includes("phase4.css"));
+assert.ok(styles.includes("phase4.css"));
 
 console.log("✓ Phase 4 M’Cheyne & Today verification passed");
 console.log(`  ${plan.assignments.length} assignments · 1,460 readings · ${rangeCount} structural ranges`);

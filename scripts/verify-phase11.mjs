@@ -6,6 +6,10 @@ const read = (path) => readFile(new URL(path, root), "utf8");
 const [pkgRaw, config, core, accessibility, responsive, pwa, app, today, plan, history, schema, tokens, vite, sw, main, phase11Css, phase11Doc] = await Promise.all([
   read("package.json"), read("playwright.config.ts"), read("tests/ux/core-flow.spec.ts"), read("tests/ux/accessibility.spec.ts"), read("tests/ux/responsive.spec.ts"), read("tests/ux/pwa.spec.ts"), read("src/app/App.tsx"), read("src/mcheyne/TodayScreen.tsx"), read("src/mcheyne/PlanScreen.tsx"), read("src/history/HistoryScreens.tsx"), read("src/data/schema.ts"), read("src/styles/tokens.css"), read("vite.config.ts"), read("public/sw.js"), read("src/main.tsx"), read("src/styles/phase11.css"), read("docs/PHASE_11_UX_VALIDATION.md"),
 ]);
+// Visual imports moved to the single layered entrypoint; domain gates are unchanged.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
+
 const pkg = JSON.parse(pkgRaw);
 const version = /^(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/.exec(pkg.version);
 assert.ok(version, `Expected semantic package version, got ${pkg.version}`);
@@ -21,13 +25,13 @@ assert.match(responsive, /320px mobile/); assert.match(responsive, /200% text re
 for (const token of ["setOffline(true)", "navigator.serviceWorker.controller", "missingBuildAssets", "caches.match(url, { ignoreVary: true })", "John 3:16"]) assert.ok(pwa.includes(token), `Offline UX suite missing ${token}`);
 
 assert.match(app, /main-content/); assert.match(app, /focus\(\{ preventScroll: true \}\)/);
-assert.match(today, /aria-label="Completed through date"/); assert.match(plan, /aria-label="Completed through date"/);
+assert.match(today, /<label>Completed through date<input/); assert.match(plan, /aria-label="Completed through date"/);
 assert.match(history, /aria-label="Previous month"/); assert.match(history, /aria-label="Next month"/); assert.match(history, /aria-label=\{`Open history for \$\{dateLabel\(date\)\}`\}/); assert.match(history, /aria-current=/); assert.match(history, /Opening history…/); assert.match(history, /const\s*\[\s*loading\s*,\s*setLoading\s*\]/);
 assert.match(schema, /DATABASE_SCHEMA_VERSION = 1/);
-assert.match(tokens, /--color-ink-faint:\s*#686d65/); assert.match(tokens, /--color-warning-text:\s*#7a4f2f/);
+assert.match(tokens, /--color-ink-faint:\s*#5e625a/); assert.match(tokens, /--color-warning-text:\s*#7a4f2f/);
 assert.match(vite, /manifest:\s*true/);
 assert.match(sw, /\.vite\/manifest\.json/); assert.match(sw, /Object\.values\(buildManifest\)/); assert.match(sw, /entry\.file/); assert.match(sw, /ignoreVary:\s*true/); assert.match(sw, /matchCached\(request\)/);
-const phase10Index=main.indexOf('"./styles/phase10.css"'); const phase11Index=main.indexOf('"./styles/phase11.css"'); assert.ok(phase10Index>=0&&phase11Index>phase10Index,"Phase 11 UX fixes must load after Phase 10 styles");
+const phase10Index=styles.indexOf('"./phase10.css"'); const phase11Index=styles.indexOf('"./phase11.css"'); assert.ok(phase10Index>=0&&phase11Index>phase10Index,"Phase 11 UX fixes must load after Phase 10 styles");
 assert.match(phase11Css, /\.data-warning/); assert.match(phase11Css, /var\(--color-warning-text\)/); assert.match(phase11Css, /\.history-loading/);
 
 assert.match(phase11Doc, /Status:\s*\*\*implemented\*\*/i); assert.match(phase11Doc, /Read.*Respond.*Pray.*Remember/is); assert.match(phase11Doc, /Playwright/i); assert.match(phase11Doc, /axe/i); assert.match(phase11Doc, /320/i); assert.match(phase11Doc, /200%/i); assert.match(phase11Doc, /offline/i); assert.match(phase11Doc, /Phase 12 — Release Hardening/i); assert.match(phase11Doc, /npm run verify:phase11/);

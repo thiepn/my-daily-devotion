@@ -258,20 +258,16 @@
   }
 
   /* Phone app bars already identify the destination; keep the content header task-first. */
-  .mg-today-hero .screen-intro,
   .mg-prayer-hero .screen-intro,
   .mg-history-hero .screen-intro {
     display: none;
   }
 
-  .mg-today-hero .mg-hero-copy,
   .mg-prayer-hero .mg-hero-copy,
   .mg-history-hero .mg-hero-copy {
     padding-bottom: 4px;
   }
 
-  .mg-hero-ornament,
-  .mg-hero-art,
   .mg-history-hero-art,
   .mg-prayer-hero-art,
   .mg-history-closing,
@@ -363,115 +359,8 @@
   }
 
   /* TODAY — compact daily agenda */
-  .mg-today-hero .eyebrow {
-    margin-bottom: 4px;
-  }
-
-  .mg-today-reading {
-    margin-top: 0;
-    padding: 12px 0 0;
-    border-top: 1px solid var(--color-line);
-  }
-
-  .mg-today-reading .section-heading-line {
-    min-height: 48px;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-
-  .mg-today-reading .section-heading-line h2 {
-    margin: 1px 0 0;
-    font-size: 1.22rem;
-    line-height: 1.15;
-  }
-
-  .mg-reading-progress {
-    min-width: auto;
-    gap: 3px;
-  }
-
-  .mg-reading-progress strong {
-    font-size: 1.3rem;
-  }
-
-  .mg-reading-progress span {
-    font-size: .65rem;
-  }
 
   /* Four desktop cards become one grouped mobile list. */
-  .mg-reading-cards {
-    display: block;
-    overflow: hidden;
-    border: 1px solid var(--color-line);
-    border-radius: 12px;
-    background: var(--color-surface);
-    box-shadow: none;
-  }
-
-  .mg-reading-card,
-  .mg-reading-card:first-child {
-    min-height: 58px;
-    display: grid;
-    grid-template-columns: 32px minmax(0, 1fr) 20px;
-    grid-template-rows: auto auto;
-    gap: 1px 8px;
-    align-items: center;
-    padding: 8px 10px;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
-  }
-
-  .mg-reading-card + .mg-reading-card {
-    border-top: 1px solid var(--color-line);
-  }
-
-  .mg-reading-card.is-complete {
-    background: color-mix(in srgb, var(--color-accent-soft) 30%, transparent);
-  }
-
-  .mg-reading-card .reading-state {
-    grid-column: 1;
-    grid-row: 1 / 3;
-    width: 28px;
-    height: 28px;
-    align-self: center;
-  }
-
-  .mg-reading-card .reading-group {
-    grid-column: 2;
-    grid-row: 1;
-    font-size: .56rem;
-    letter-spacing: .065em;
-  }
-
-  .mg-reading-card .reading-passage {
-    grid-column: 2;
-    grid-row: 2;
-    align-self: start;
-  }
-
-  .mg-reading-card .reading-passage strong {
-    font-family: var(--font-ui);
-    font-size: .91rem;
-    font-weight: 650;
-    line-height: 1.22;
-  }
-
-  .mg-reading-card .reading-arrow {
-    grid-column: 3;
-    grid-row: 1 / 3;
-    align-self: center;
-  }
-
-  .mg-continue-reading {
-    width: 100%;
-    min-height: 44px;
-    justify-content: center;
-    margin-top: 10px;
-    border-radius: 11px;
-  }
 
   .plan-links-row {
     gap: 8px;
@@ -498,50 +387,6 @@
 
   .earlier-list a {
     min-height: 46px;
-  }
-
-  .mg-response-section {
-    margin-top: 20px;
-    padding-top: 14px;
-  }
-
-  .mg-response-heading {
-    margin-bottom: 8px;
-  }
-
-  .mg-response-heading h2 {
-    font-size: 1.2rem;
-  }
-
-  .mg-response-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 10px;
-  }
-
-  .mg-response-grid > .editorial-section {
-    min-height: 112px;
-    padding: 12px;
-    border-radius: 12px;
-    box-shadow: none;
-  }
-
-  .mg-response-grid h2 {
-    margin: 3px 0 5px;
-    font-size: 1rem;
-    line-height: 1.2;
-  }
-
-  .mg-response-grid p,
-  .mg-response-grid blockquote {
-    display: none;
-  }
-
-  .mg-response-grid .future-action,
-  .mg-response-grid .future-text-link {
-    margin-top: 8px;
-    font-size: .71rem;
   }
 
   /* BIBLE — reading first, controls second */
@@ -1414,14 +1259,9 @@
   }
 
   /* Keep data-density compatible with enlarged text without restoring desktop spacing. */
-  html[style*="font-size: 200%"] .mg-response-grid,
   html[style*="font-size: 200%"] .mg-history-stats,
   html[style*="font-size: 200%"] .mg-session-depths {
     grid-template-columns: 1fr;
-  }
-
-  html[style*="font-size: 200%"] .mg-response-grid {
-    display: grid;
   }
 
   html[style*="font-size: 200%"] .mg-session-depths {
@@ -1443,15 +1283,6 @@
   .mg-canonical-screen,
   .mg-secondary-screen {
     padding-inline: 10px;
-  }
-
-  .mg-response-grid {
-    gap: 6px;
-  }
-
-  .mg-response-grid > .editorial-section {
-    min-height: 104px;
-    padding: 10px;
   }
 
   .mg-bible-toolbar {
@@ -1522,7 +1353,6 @@
 @media (max-width: 760px) and (prefers-reduced-motion: reduce), (max-height: 500px) and (max-width: 900px) and (prefers-reduced-motion: reduce) {
   .mobile-nav .nav-link,
   .utility-link,
-  .mg-reading-card,
   .mg-prayer-row {
     transition: none;
   }

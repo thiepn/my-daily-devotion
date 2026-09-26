@@ -8,7 +8,7 @@ export async function expectNoAxeViolations(page: Page): Promise<void> { const r
 export async function enrollCalendarPlan(page: Page): Promise<void> {
   await openRoute(page,"/today");
   const setup=page.getByRole("button",{name:/Follow today’s calendar/i});
-  const readingHeading=page.getByRole("heading",{level:2,name:/Day \d+ readings|Leap-day pause|Reading plan/});
+  const readingHeading=page.getByRole("heading",{level:2,name:/Today’s Reading Plan|Day \d+ readings|Leap-day pause|Reading plan/});
   await expect(setup.or(readingHeading).first()).toBeVisible();
   if(await setup.isVisible()) await setup.click();
   await expect(readingHeading).toBeVisible();
@@ -21,6 +21,10 @@ export function usesMobileAppLayout(page: Page): boolean {
 }
 
 export async function expectRouteTitle(page: Page, heading: string, mobileTitle = heading): Promise<void> {
+  if (heading === "Today") {
+    await expect(page.getByRole("heading", { level: 1, name: "Good morning, Friend." })).toBeVisible();
+    return;
+  }
   if (usesMobileAppLayout(page)) {
     await expect(page.locator(".utility-mobile-title")).toHaveText(mobileTitle);
     await expect(page.locator("h1").filter({ hasText: heading })).toHaveCount(1);

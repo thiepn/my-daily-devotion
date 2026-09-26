@@ -1,21 +1,24 @@
 :root {
   color-scheme: light;
 
-  /* Morning Grace semantic typography roles. Exact bundled brand fonts remain a later brand-assets decision. */
+  /* Single owner of semantic tokens. Fonts are bundled locally (OFL). */
   --font-ui: "Inter", "Segoe UI Variable", "Aptos", "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-display: "Iowan Old Style", "Baskerville", "Palatino Linotype", "Book Antiqua", Georgia, ui-serif, serif;
-  --font-reading: "Charter", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, ui-serif, serif;
+  --font-display: "Libre Caslon Text", Georgia, serif;
+  --font-reading: "Libre Caslon Text", Georgia, serif;
+  --color-nav-active: #174c4b;
+  --color-muted: var(--color-ink-faint);
+  --color-surface-muted: var(--color-surface-subtle);
   --font-editorial: var(--font-display);
 
   /* Warm paper + olive-charcoal foundation. */
-  --color-canvas: #f6f2e9;
+  --color-canvas: #faf6ee;
   --color-canvas-warm: #f1eadf;
-  --color-surface: #fcf9f3;
+  --color-surface: #fffbf5;
   --color-surface-subtle: #efe9de;
-  --color-ink: #20241f;
+  --color-ink: #252922;
   --color-ink-soft: #464b45;
-  --color-ink-faint: #686d65;
-  --color-line: #dcd4c7;
+  --color-ink-faint: #5e625a;
+  --color-line: #e8dfd1;
   --color-line-strong: #c7bfb2;
 
   /* Brand and domain accents. */
@@ -76,7 +79,8 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
-    --color-canvas: #171b18;
+    --color-nav-active: #b7d1c6;
+    --color-canvas: #20251f;
     --color-canvas-warm: #1c211d;
     --color-surface: #20251f;
     --color-surface-subtle: #282d27;
@@ -110,7 +114,8 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --color-canvas: #171b18;
+  --color-nav-active: #b7d1c6;
+    --color-canvas: #20251f;
   --color-canvas-warm: #1c211d;
   --color-surface: #20251f;
   --color-surface-subtle: #282d27;

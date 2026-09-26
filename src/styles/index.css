@@ -1,0 +1,28 @@
+/* Legacy screens stay stable while each composition migrates. No new rules belong in legacy. */
+@layer legacy, foundation, components, screens;
+@import "./base.css" layer(legacy);
+@import "./shell.css" layer(legacy);
+@import "./screens.css" layer(legacy);
+@import "./scripture.css" layer(legacy);
+@import "./phase4.css" layer(legacy);
+@import "./phase5.css" layer(legacy);
+@import "./phase6.css" layer(legacy);
+@import "./phase7.css" layer(legacy);
+@import "./phase8.css" layer(legacy);
+@import "./phase9.css" layer(legacy);
+@import "./phase10.css" layer(legacy);
+@import "./phase11.css" layer(legacy);
+@import "./corrective.css" layer(legacy);
+@import "./morning-grace.css" layer(legacy);
+@import "./morning-grace-brand.css" layer(legacy);
+@import "./morning-grace-screens.css" layer(legacy);
+@import "./morning-grace-secondary.css" layer(legacy);
+@import "./morning-grace-polish.css" layer(legacy);
+@import "./morning-grace-mobile.css" layer(legacy);
+@import "./morning-grace-mobile-stacked.css" layer(legacy);
+@import "@fontsource/libre-caslon-text/latin-400.css";
+@import "@fontsource/libre-caslon-text/latin-400-italic.css";
+@import "@fontsource/libre-caslon-text/latin-700.css";
+@import "./tokens.css" layer(foundation);
+@import "./components.css" layer(components);
+@import "./today.css" layer(screens);

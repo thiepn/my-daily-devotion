@@ -8,6 +8,10 @@ const read = (path) => readFile(join(ROOT, path), "utf8");
 const [manifestRaw, sw, indexHtml, app, platform, main, css, theme, dataScreen, collections, versionSource, pkgRaw, vite, phase10Doc] = await Promise.all([
   read("public/manifest.webmanifest"), read("public/sw.js"), read("index.html"), read("src/app/App.tsx"), read("src/app/platform.ts"), read("src/main.tsx"), read("src/styles/phase10.css"), read("src/app/visual/ThemeSwitcher.tsx"), read("src/data/DataScreen.tsx"), read("src/scripture/CollectionsScreen.tsx"), read("src/app/version.ts"), read("package.json"), read("vite.config.ts"), read("docs/PHASE_10_PWA_ACCESSIBILITY_PERFORMANCE_RESILIENCE.md"),
 ]);
+// Visual imports moved to the single layered entrypoint; domain gates are unchanged.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
+
 const manifest = JSON.parse(manifestRaw); const pkg = JSON.parse(pkgRaw);
 const version = /^(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/.exec(pkg.version);
 assert.ok(version, `Expected semantic package version, got ${pkg.version}`);
@@ -28,7 +32,7 @@ if (helperRootFallback) assert.match(sw, /function\s+matchCached\([^)]*\)\s*\{[^
 assert.doesNotMatch(sw, /skipWaiting\(\);\s*\}\s*\);\s*self\.addEventListener\("activate"/s, "Updates must not auto-activate during install");
 for (const token of ["navigator.storage", "storage.persisted", "storage.persist()", "storage.estimate()", "serviceWorker.register", 'updateViaCache: "none"', "PLATFORM_UPDATE_EVENT", 'waiting.postMessage({ type: "SKIP_WAITING" })']) assert.ok(platform.includes(token), `Platform layer missing ${token}`);
 assert.match(app, /lazy\(\(\) => import\(/); assert.ok((app.match(/lazy\(\(\) => import\(/g) ?? []).length >= 10); assert.match(app, /<Suspense fallback=\{<RouteLoading \/>\}>/); assert.match(app, /className="skip-link"/); assert.match(app, /id="main-content"/); assert.match(app, /<RouteAnnouncer \/>/); assert.match(app, /<PlatformStatus \/>/);
-assert.match(main, /inspectStorage\(true\)/); assert.match(main, /registerMddServiceWorker\(\)/); const phase9Index=main.indexOf('"./styles/phase9.css"'); const phase10Index=main.indexOf('"./styles/phase10.css"'); assert.ok(phase9Index>=0&&phase10Index>phase9Index);
+assert.match(main, /inspectStorage\(true\)/); assert.match(main, /registerMddServiceWorker\(\)/); const phase9Index=styles.indexOf('"./phase9.css"'); const phase10Index=styles.indexOf('"./phase10.css"'); assert.ok(phase9Index>=0&&phase10Index>phase9Index);
 assert.match(theme, /db\.preferences\.put/); assert.match(theme, /mdd-theme/); assert.match(theme, /aria-label="Theme"/); assert.match(dataScreen, /<fieldset className="import-mode">/); assert.match(dataScreen, /<legend>Restore mode<\/legend>/); assert.match(dataScreen, /id="backup-file"/); assert.match(dataScreen, /storage-resilience/); assert.match(collections, /collection-add-here/); assert.doesNotMatch(collections, /<em[^>]*onClick/);
 for (const token of [".skip-link", ".platform-status", ".storage-resilience", "prefers-contrast: more", "forced-colors: active"]) assert.ok(css.includes(token)); assert.doesNotMatch(css, /(?:linear|radial|conic)-gradient\s*\(/i); assert.doesNotMatch(css, /box-shadow\s*:/i);
 await access(join(ROOT,"dist/index.html")); const assetNames=await readdir(join(ROOT,"dist/assets")); const jsAssets=assetNames.filter((name)=>name.endsWith(".js")); assert.ok(jsAssets.length>=8); const builtHtml=await readFile(join(ROOT,"dist/index.html"),"utf8"); const entryMatch=/<script[^>]+src="\.\/assets\/([^"]+\.js)"/.exec(builtHtml); assert.ok(entryMatch); const entryStats=await stat(join(ROOT,"dist/assets",entryMatch[1])); assert.ok(entryStats.size<350*1024);

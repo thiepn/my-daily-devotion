@@ -1,0 +1,41 @@
+/* Shared Morning Grace primitives. This layer owns these components at every width. */
+.grace-paper {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-soft);
+}
+.devotional-icon { width: 1.5rem; height: 1.5rem; flex: 0 0 auto; }
+.grace-icon-circle { display: grid; place-items: center; width: 2.9rem; height: 2.9rem; border-radius: 50%; color: var(--color-accent-strong); background: var(--color-accent-soft); }
+.grace-icon-circle--prayer { color: var(--color-prayer); background: var(--color-prayer-soft); }
+.grace-art { display: block; overflow: hidden; pointer-events: none; }
+.grace-art img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; }
+.grace-art--morning { aspect-ratio: 3 / 2; }
+.grace-art--context { aspect-ratio: 3 / 1; }
+.grace-art--reflection { aspect-ratio: 3 / 1; }
+.grace-art--reflection img { object-position: center 75%; }
+.grace-art--botanical { width: 4rem; aspect-ratio: 480 / 505; }
+.grace-art--botanical img { object-fit: contain; }
+.grace-primary {
+  display: flex; align-items: center; justify-content: center; gap: 1rem;
+  min-height: 3.25rem; padding: .75rem 1rem; border: 1px solid #466358;
+  border-radius: var(--radius-pill); background: linear-gradient(160deg, #58776c, #385a4d);
+  box-shadow: 0 3px 7px #343b2b10; color: #fffaf1; text-decoration: none;
+  font-family: var(--font-reading); font-size: 1rem; line-height: 1.4;
+}
+.grace-primary:hover { background: #385a4d; }
+.side-nav .nav-link { font-size: .9rem; }
+.nav-link .devotional-icon { width: 1.6rem; height: 1.6rem; }
+@media (max-width: 860px) {
+  .app-shell { --mobile-nav-height: max(72px, 4rem); --mobile-tabbar-height: var(--mobile-nav-height); padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom)); }
+  .mobile-nav {
+    height: auto; min-height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
+    padding: .35rem .5rem calc(.35rem + env(safe-area-inset-bottom));
+    background: var(--color-surface); border-top: 1px solid var(--color-line);
+    box-shadow: none; backdrop-filter: none;
+  }
+  .mobile-nav .nav-link { min-height: 56px; gap: .15rem; border-radius: 0; padding: .15rem 0; color: var(--color-ink-soft); font-size: .68rem; font-weight: 400; line-height: 1.4; }
+  .mobile-nav .nav-link.active { background: transparent; color: var(--color-nav-active); font-weight: 650; }
+  .mobile-nav .nav-link .devotional-icon { width: 1.65rem; height: 1.65rem; }
+  .mobile-detail-route .mobile-nav { display: none; }
+}

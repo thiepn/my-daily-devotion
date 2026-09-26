@@ -18,6 +18,10 @@ const [legacyVisualRaw, morningRaw, tokens, base, shell, screens, scripture, pha
   read("src/app/App.tsx"),
   read("src/main.tsx"),
 ]);
+// Visual imports moved to the single layered entrypoint; domain gates are unchanged.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
+
 const legacyVisual = JSON.parse(legacyVisualRaw);
 const morningGrace = JSON.parse(morningRaw);
 
@@ -37,7 +41,7 @@ assert.match(tokens, /data-theme="dark"/);
 assert.match(tokens, /data-theme="light"/);
 assert.match(tokens, /--font-display:/);
 assert.match(tokens, /--font-reading:/);
-assert.match(tokens, /--color-canvas:\s*#f6f2e9/);
+assert.match(tokens, /--color-canvas:\s*#faf6ee/);
 assert.match(tokens, /--color-prayer:\s*#9f563b/);
 assert.match(base, /prefers-reduced-motion:\s*reduce/);
 assert.match(shell, /\.mobile-nav/);
@@ -49,12 +53,12 @@ assert.doesNotMatch(css, /url\(\s*["']?https?:\/\//i);
 
 for (const label of ["Today", "Bible", "Prayer", "History"]) assert.match(app, new RegExp(`label: \\"${label}\\"`));
 for (const importPath of ["tokens.css", "base.css", "shell.css", "screens.css", "scripture.css", "phase4.css", "phase5.css", "phase6.css", "phase7.css", "phase8.css", "morning-grace.css"]) {
-  assert.ok(main.includes(importPath), `main.tsx must import ${importPath}`);
+  assert.ok(styles.includes(importPath), `styles/index.css must import ${importPath}`);
 }
-assert.ok(!main.includes("foundation.css"));
+assert.ok(!styles.includes("foundation.css"));
 
 console.log("✓ Phase 2 visual-system verification passed");
 console.log("  legacy quiet-editorial artifacts retained for history");
-console.log("  Morning Grace Editorial is the active visual contract");
+console.log("  the supplied V2 mockup owns Today visual direction; historical documents remain");
 console.log("  authored light/dark/system theme support with no remote font dependency");
 console.log("  no decorative gradients or remote CSS assets; mobile glass removed");
