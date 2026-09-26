@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { useBlocker } from "react-router-dom";
+import { useBlocker, useNavigate } from "react-router-dom";
 import { JournalDialog } from "./JournalPrimitives";
 
 /** Route transitions and reload warnings only: this is not durable draft storage. */
-export function useWritingGuard(dirty: boolean, save: () => Promise<void>, canSave: boolean) {
+export function useWritingGuard(dirty: boolean, save: () => Promise<void>, canSave: boolean, savedDestination?: (target: string) => string) {
+  const navigate = useNavigate();
   const bypass = useRef(false);
   const lock = useRef(false);
   const [busy, setBusy] = useState(false);
@@ -27,7 +28,13 @@ export function useWritingGuard(dirty: boolean, save: () => Promise<void>, canSa
         <button className="grace-primary" disabled={busy || !canSave} onClick={async () => {
           if (lock.current) return;
           lock.current = true; setBusy(true); setError("");
-          try { await save(); blocker.proceed(); }
+          try {
+            await save();
+            const target = blocker.location.pathname + blocker.location.search;
+            const destination = savedDestination?.(target) ?? target;
+            if (destination === target) blocker.proceed();
+            else { blocker.reset(); bypass.current = true; navigate(destination); }
+          }
           catch (reason) { setError(reason instanceof Error ? reason.message : "Could not save. Your writing is still here."); }
           finally { lock.current = false; setBusy(false); }
         }}>{busy ? "Saving…" : "Save and continue"}</button>

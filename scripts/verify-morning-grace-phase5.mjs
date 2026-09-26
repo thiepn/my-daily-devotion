@@ -33,7 +33,6 @@ for(const token of [
   ".mg-state-screen",
   ".draft-dialog",
   ".conflict-review",
-  ".mg-prayer-capture-workspace",
   "@keyframes mg-screen-in",
   "@media (prefers-reduced-motion: reduce)"
 ]) assert.ok(css.includes(token),"Polish CSS missing "+token);
@@ -73,3 +72,5 @@ console.log("  final chrome, typography, controls, states, dark mode and motion 
 console.log("  Add Prayer + History detail residual routes now use Morning Grace");
 console.log("  mobile utility chrome is icon-first with accessible labels and contextual return routes preserved");
 console.log("  final polish remains presentation-only and release integration is still deferred");
+
+assert.match(await read("src/styles/writing.css"), /\.journal-capture/);

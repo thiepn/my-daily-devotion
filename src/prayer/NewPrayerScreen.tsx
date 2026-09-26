@@ -47,7 +47,9 @@ function PrayerCapture() {
 
   useEffect(() => {
     let cancelled = false; setMetadataError("");
-    void Promise.allSettled([peopleRepository.list(), categoriesRepository.list()]).then(([nextPeople, nextCategories]) => {
+    // Capture is read-only until Save. Categories.list() seeds defaults and is
+    // reserved for the existing category-management workflow.
+    void Promise.allSettled([peopleRepository.list(), categoriesRepository.listActive().then(items => items.sort((a,b) => a.sortOrder-b.sortOrder || a.name.localeCompare(b.name)))]).then(([nextPeople, nextCategories]) => {
       if (cancelled) return;
       if (nextPeople.status === "fulfilled") setPeople(nextPeople.value);
       if (nextCategories.status === "fulfilled") setCategories(nextCategories.value);
@@ -92,8 +94,15 @@ function PrayerCapture() {
     } catch (reason) { if (alive.current) { setStatus(reason instanceof Error ? reason.message : "Could not save. Your request is still here."); if (reason instanceof Error && reason.message.startsWith("The source reflection")) setSourceError(reason.message); } throw reason; }
     finally { saving.current = false; if (alive.current) setBusy(false); }
   };
-  const dirty = !savedFlag && (Boolean(body) || JSON.stringify(administration) !== initialAdministration.current);
-  const guard = useWritingGuard(dirty, async () => { await create(); }, canSave);
+  const dirty = !savedFlag && (Boolean(body) || references.length > 0 || JSON.stringify(administration) !== initialAdministration.current);
+  const guard = useWritingGuard(dirty, async () => { await create(); }, canSave, target => {
+    const url = new URL(target, "https://mdd.invalid");
+    if (saved.current && url.searchParams.get("return") === self) {
+      url.searchParams.set("return", `/prayer/${saved.current.id}?${new URLSearchParams({ return: back })}`);
+      return url.pathname + url.search;
+    }
+    return target;
+  });
   const saveAndOpen = async () => {
     try { const prayer = await create(); if (!alive.current) return; guard.allowNavigation(); navigate(`/prayer/${prayer.id}?${new URLSearchParams({ return: back })}`, { replace: true }); }
     catch { /* keep editor and show actionable status */ }
@@ -116,7 +125,7 @@ function PrayerCapture() {
     </section>
     <p className="journal-status prayer-form-status" aria-live="polite">{status}</p>
     <div className="journal-actions"><button className="grace-primary" disabled={busy || !canSave} onClick={() => void saveAndOpen()}>Save prayer</button><Link to={back}>Cancel</Link></div>
-    <p className="journal-help">Saved on this device. Unsaved writing will not survive closing the app.</p>
+    <p className="journal-help">Save to keep your writing on this device. Unsaved changes are lost when the app closes.</p>
     {guard.dialog}
   </main>;
 }

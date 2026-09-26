@@ -52,6 +52,16 @@ test.describe("offline PWA UX", () => {
     await coldPage.getByRole("button", { name: "Search", exact: true }).click();
     await expect(coldPage.getByText("John 3:16", { exact: true }).first()).toBeVisible();
     await expect(coldPage.locator(".platform-status")).toContainText(/Offline|offline/i);
+    await coldPage.goto("/#/today/reflection/2026-04-24?translation=BSB&start=JHN.3.16&end=JHN.3.18");
+    await coldPage.getByLabel("Daily reflection").fill("### Offline grace\n\nMy writing stays with me.");
+    await coldPage.getByRole("button", { name: "Preview", exact: true }).click();
+    await expect(coldPage.locator(".journal-preview")).toContainText("Offline grace");
+    await coldPage.locator(".journal-context summary").click();
+    await expect(coldPage.locator(".journal-scripture blockquote")).toContainText("For God so loved the world");
+    await coldPage.getByRole("button", { name: "Save reflection", exact: true }).click();
+    await expect(coldPage.locator(".journal-status")).toContainText("saved locally");
+    await coldPage.reload();
+    await expect(coldPage.getByLabel("Daily reflection")).toHaveValue("### Offline grace\n\nMy writing stays with me.");
     await coldPage.goto("/#/prayer/new");
     await coldPage.getByLabel("What do you want to pray about?").fill("A request saved while completely offline.");
     await coldPage.getByRole("button", { name: "Save prayer", exact: true }).click();

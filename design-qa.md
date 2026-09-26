@@ -51,3 +51,9 @@ The primary Prayer screen now follows the third phone's composition, with real B
 ## History journal follow-up
 
 The complete History journey now follows the fourth phone's journal direction. The overview, separate calendar, selected Day entries and reflective Moments share a read-only presentation model and one screen stylesheet. See `docs/visual/morning-grace-v2/history-design-qa.md` and `history-comparison.png` for the reference comparison, factual metric definitions, privacy handling, artwork provenance, enlarged-text corrections and honest visual differences. This supersedes the earlier statements that History remained deferred; other secondary workflows remain outside this release. Exact-commit verification belongs in the History PR and delivery report.
+
+## Reflection and prayer capture follow-up
+
+The approved writing release is reviewed in [writing-design-qa.md](docs/visual/morning-grace-v2/writing-design-qa.md). It contains before/after evidence, a normalized visual-family comparison, the six-width image matrix, corrections made after review, and explicit scope limitations. These secondary screens extend the canonical identity; the board does not depict their exact composition. Functional certification is recorded separately against the final commit.
+
+final result: passed

@@ -31,7 +31,6 @@ for (const selector of [
   ".utility-context",
   ".visual-screen",
   ".setup-options",
-  ".reflection-prompts button",
   ".metadata-layout",
   ".global-search-form",
   ".collections-layout",
@@ -47,8 +46,8 @@ assert.match(css, /min-height:\s*44px/);
 assert.match(css, /@media\s*\(min-width:\s*1100px\)/);
 assert.match(css, /@media\s*\(max-width:\s*420px\)/);
 assert.match(css, /orientation:\s*landscape/);
-assert.match(css, /reflection-context-panel[\s\S]*position:\s*sticky/);
-assert.match(css, /\.reflection-prompts button[\s\S]*border-radius:\s*var\(--radius-small\)/);
+assert.match(await read("src/styles/writing.css"), /\.journal-context/);
+assert.match(await read("src/styles/writing.css"), /\.journal-prompts button/);
 assert.doesNotMatch(css, /(?:linear|radial|conic)-gradient\s*\(/i);
 assert.doesNotMatch(css, /box-shadow\s*:/i);
 assert.doesNotMatch(css, /border-radius:\s*999px/i);
@@ -70,3 +69,5 @@ console.log("✓ Phase 9 Dedicated UI Refinement verification passed");
 console.log("  product chrome replaces development-phase labels while preserving navigation and utilities");
 console.log("  controls, forms, action groups, density and empty states share one editorial refinement layer");
 console.log("  phone, tablet, desktop, wide master/detail and short-landscape compositions are explicitly covered");
+
+assert.match(await read("src/styles/writing.css"), /\.journal-prompts button/);

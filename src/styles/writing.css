@@ -51,7 +51,7 @@
 .journal-help { color:var(--color-ink-faint); font:.65rem/1.65 var(--font-ui); }
 .journal-workspace .journal-remove { color:var(--color-prayer); font-size:.7rem; margin-top:12px; }
 .journal-capture > label { display:block; padding:20px 22px 0; color:var(--color-ink); font:1rem/1.6 var(--font-display); }
-.journal-capture .journal-textarea { min-height:240px; }
+.journal-capture .journal-textarea { min-height:max(240px,12rem); }
 .journal-prayer .journal-date { color:var(--color-prayer); letter-spacing:.15em; text-transform:uppercase; }
 .journal-details { padding:16px; border-top:1px solid var(--color-line); }
 .journal-details fieldset { border:0; margin:0; padding:0; min-width:0; }

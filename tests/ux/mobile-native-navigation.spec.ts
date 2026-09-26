@@ -37,7 +37,7 @@ test.describe("native mobile stacked navigation", () => {
       await openRoute(page, route);
       await expect(page.locator(".app-shell")).toHaveClass(/mobile-detail-route/);
       await expect(page.locator(".utility-mobile-title")).toHaveText(title);
-      if (route.startsWith("/history")) await expect(page.locator(".history-back")).toBeVisible(); else await expect(page.getByRole("button", { name: "Back", exact: true })).toBeVisible();
+      if (route.includes("reflection") || route === "/prayer/new") await expect(page.locator(".journal-heading .quiet-back-link")).toBeVisible(); else if (route.startsWith("/history")) await expect(page.locator(".history-back")).toBeVisible(); else await expect(page.getByRole("button", { name: "Back", exact: true })).toBeVisible();
       await expect(page.locator(".mobile-nav")).toBeHidden();
       await expect(page.locator(".utility-actions")).toBeHidden();
       await expectNoHorizontalOverflow(page);
@@ -92,7 +92,7 @@ test.describe("native mobile stacked navigation", () => {
 
   test("direct-open Back has a safe parent fallback", async ({ page }) => {
     await openRoute(page, "/prayer/new");
-    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await page.locator(".journal-heading .quiet-back-link").click();
     await expect(page).toHaveURL(/#\/prayer$/);
     await expect(page.locator(".mobile-nav")).toBeVisible();
   });
@@ -102,10 +102,10 @@ test.describe("native mobile stacked navigation", () => {
     await page.getByLabel("Daily reflection").fill("A saved reflection that becomes a prayer.");
     await page.getByRole("button", { name: "Save reflection" }).click();
     await expect(page.getByText(/Reflection (created and )?saved locally\./)).toBeVisible();
-    await page.getByRole("link", { name: /Create prayer/ }).click();
+    await page.getByRole("button", { name: /Bring into prayer/ }).click();
     await expect(page.locator(".utility-mobile-title")).toHaveText("Add prayer");
 
-    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await page.locator(".journal-heading .quiet-back-link").click();
     await expect(page).toHaveURL(/#\/today\/reflection\/2026-09-21/);
     await expect(page.locator(".utility-mobile-title")).toHaveText("Reflection");
   });
@@ -160,7 +160,7 @@ test.describe("native mobile stacked navigation", () => {
     await page.setViewportSize({ width: 844, height: 390 });
     await openRoute(page, "/prayer/new");
     await expect(page.locator(".app-shell")).toHaveClass(/mobile-detail-route/);
-    await expect(page.getByRole("button", { name: "Back", exact: true })).toBeVisible();
+    await expect(page.locator(".journal-heading .quiet-back-link")).toBeVisible();
     await expect(page.locator(".mobile-nav")).toBeHidden();
     await expect(page.locator(".utility-actions")).toBeHidden();
     await expectNoHorizontalOverflow(page);
