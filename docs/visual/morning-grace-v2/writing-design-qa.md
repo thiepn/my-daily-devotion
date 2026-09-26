@@ -16,6 +16,7 @@ The approved implementation scope is the two writing screens, explicit save-and-
 3. Keyboard review found initial dialog focus inconsistent. The dialog explicitly focuses Keep editing after becoming modal. Safari formatting review found the selection could be lost when toolbar focus moved; capturing it on blur preserves the selected words.
 4. Enlargement review retained native textarea scrolling and increased prayer textarea height in rems so 200% text receives additional writing space.
 5. The backup warning originally started with “Saved on this device” even in an unsaved editor. Final copy describes the explicit save requirement instead.
+6. Cross-platform navigation review found that a rapid return could race React's route unmount after Discard. Both editors now clear the discarded in-memory changes immediately. The journey test also waits for the destination screen to render before reopening the editor.
 
 ## Fidelity surfaces
 
@@ -44,6 +45,7 @@ final result: passed
 `writing.css` owns both screen compositions. 141 superseded Reflection/capture selectors were removed; shared legacy styling remains for unmigrated workflows.
 
 Shared writing primitives provide safe Markdown preview, modal navigation decisions and optional Scripture loading. HTML and remote images are excluded from preview. react-markdown is pinned; generated third-party notices include its dependency tree.
+License discovery resolves actual filenames case-insensitively so lowercase dependency license files are included on Linux as well as Windows.
 
 Capture reads existing people/categories without seeding metadata merely by opening the editor. Existing category management retains its default-category initialization. The initial capture defaults remain no person, no category and normal rotation.
 

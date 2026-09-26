@@ -45,8 +45,21 @@ test("navigation dialog keeps, saves and discards deliberately",async({page})=>{
   await expect(page.getByLabel("Daily reflection")).toHaveValue("Keep this writing.");
   await page.getByLabel("Daily reflection").fill("Discard this revision.");await page.locator(".journal-heading .quiet-back-link").click();await page.getByRole("button",{name:"Discard and continue"}).click();
   await expect(page).toHaveURL(/#\/today$/);
+  await expect(page.getByRole("link",{name:/Reflect —/})).toBeVisible();
   await openRoute(page,"/today/reflection/2026-04-24");await expect(page.getByLabel("Daily reflection")).toHaveValue("Keep this writing.");
 });
+test("capture navigation dialog discards request and details without writes",async({page})=>{
+  await openRoute(page,"/prayer/new");const before=await writingSnapshot(page);
+  await page.getByLabel("What do you want to pray about?").fill("A temporary request.");
+  await page.getByRole("button",{name:"Add details",exact:true}).click();await page.getByRole("combobox",{name:"Schedule",exact:true}).selectOption("MANUAL_ONLY");
+  await page.getByRole("link",{name:"Cancel",exact:true}).click();await page.getByRole("button",{name:"Keep editing"}).click();
+  await expect(page.getByLabel("What do you want to pray about?")).toHaveValue("A temporary request.");
+  await page.getByRole("link",{name:"Cancel",exact:true}).click();await page.getByRole("button",{name:"Discard and continue"}).click();
+  await expect(page.locator(".grace-prayer")).toBeVisible();await openRoute(page,"/prayer/new");
+  await expect(page.getByLabel("What do you want to pray about?")).toBeEmpty();await page.getByRole("button",{name:"Add details",exact:true}).click();
+  await expect(page.getByRole("combobox",{name:"Schedule",exact:true})).toHaveValue("ROTATION");expect(await writingSnapshot(page)).toEqual(before);
+});
+
 test("conflicting or removed reflections retain unsaved writing",async({page,context})=>{
   await seedWriting(page,"reflection");await page.getByLabel("Daily reflection").fill("My unsaved version.");
   const other=await context.newPage();await openRoute(other,reflectionRoute);await other.getByLabel("Daily reflection").fill("Changed elsewhere.");await other.getByRole("button",{name:"Save reflection",exact:true}).click();await expect(other.locator(".journal-status")).toContainText("saved locally");

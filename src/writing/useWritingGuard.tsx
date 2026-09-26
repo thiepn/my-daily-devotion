@@ -3,7 +3,7 @@ import { useBlocker, useNavigate } from "react-router-dom";
 import { JournalDialog } from "./JournalPrimitives";
 
 /** Route transitions and reload warnings only: this is not durable draft storage. */
-export function useWritingGuard(dirty: boolean, save: () => Promise<void>, canSave: boolean, savedDestination?: (target: string) => string) {
+export function useWritingGuard(dirty: boolean, save: () => Promise<void>, canSave: boolean, savedDestination?: (target: string) => string, discard?: () => void) {
   const navigate = useNavigate();
   const bypass = useRef(false);
   const lock = useRef(false);
@@ -38,7 +38,7 @@ export function useWritingGuard(dirty: boolean, save: () => Promise<void>, canSa
           catch (reason) { setError(reason instanceof Error ? reason.message : "Could not save. Your writing is still here."); }
           finally { lock.current = false; setBusy(false); }
         }}>{busy ? "Saving…" : "Save and continue"}</button>
-        <button disabled={busy} onClick={() => blocker.proceed()}>Discard and continue</button>
+        <button disabled={busy} onClick={() => { discard?.(); blocker.proceed(); }}>Discard and continue</button>
         <button disabled={busy} data-initial-focus onClick={close}>Keep editing</button>
       </div>
     </JournalDialog> : null,

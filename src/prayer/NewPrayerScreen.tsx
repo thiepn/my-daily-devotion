@@ -27,14 +27,15 @@ export function NewPrayerScreen() {
 function PrayerCapture() {
   const navigate = useNavigate(); const location = useLocation(); const [params] = useSearchParams();
   const sourceReflectionId = params.get("sourceReflectionId");
-  const pending = useMemo(() => parsePendingScripture(params), [params]);
+  const [pendingDismissed, setPendingDismissed] = useState(false);
+  const pending = useMemo(() => pendingDismissed ? null : parsePendingScripture(params), [params, pendingDismissed]);
   const self = location.pathname + location.search;
   const [sourceReflection, setSourceReflection] = useState<Reflection | null>(null);
   const [sourceLinks, setSourceLinks] = useState<ScriptureLink[]>([]);
   const [people, setPeople] = useState<Person[]>([]); const [categories, setCategories] = useState<Category[]>([]);
   const [body, setBody] = useState(""); const [detailsOpen, setDetailsOpen] = useState(false);
   const [administration, setAdministration] = useState<PrayerAdministrationValue>(() => blankPrayerAdministration());
-  const initialAdministration = useRef(JSON.stringify(administration));
+  const initialAdministration = useRef(administration);
   const [status, setStatus] = useState(""); const [sourceLoading, setSourceLoading] = useState(Boolean(sourceReflectionId));
   const [sourceError, setSourceError] = useState(""); const [metadataError, setMetadataError] = useState("");
   const [sourceAttempt, setSourceAttempt] = useState(0); const [metadataAttempt, setMetadataAttempt] = useState(0);
@@ -94,7 +95,7 @@ function PrayerCapture() {
     } catch (reason) { if (alive.current) { setStatus(reason instanceof Error ? reason.message : "Could not save. Your request is still here."); if (reason instanceof Error && reason.message.startsWith("The source reflection")) setSourceError(reason.message); } throw reason; }
     finally { saving.current = false; if (alive.current) setBusy(false); }
   };
-  const dirty = !savedFlag && (Boolean(body) || references.length > 0 || JSON.stringify(administration) !== initialAdministration.current);
+  const dirty = !savedFlag && (Boolean(body) || references.length > 0 || JSON.stringify(administration) !== JSON.stringify(initialAdministration.current));
   const guard = useWritingGuard(dirty, async () => { await create(); }, canSave, target => {
     const url = new URL(target, "https://mdd.invalid");
     if (saved.current && url.searchParams.get("return") === self) {
@@ -102,6 +103,9 @@ function PrayerCapture() {
       return url.pathname + url.search;
     }
     return target;
+  }, () => {
+    setBody(""); setAdministration(initialAdministration.current); setPendingDismissed(true);
+    setOmitSource(true); setSourceReflection(null); setSourceLinks([]); setStatus("");
   });
   const saveAndOpen = async () => {
     try { const prayer = await create(); if (!alive.current) return; guard.allowNavigation(); navigate(`/prayer/${prayer.id}?${new URLSearchParams({ return: back })}`, { replace: true }); }

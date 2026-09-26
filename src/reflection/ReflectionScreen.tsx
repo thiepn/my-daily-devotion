@@ -107,7 +107,9 @@ function ReflectionEditor({ localDate }: { localDate: LocalDate }) {
     await save();
     if (bodyRef.current !== baseline.current) throw new Error("You added more writing during the save. Save again or keep editing.");
   };
-  const guard = useWritingGuard(!loading && !loadError && dirty, saveForNavigation, Boolean(body.trim()) && !conflict);
+  const guard = useWritingGuard(!loading && !loadError && dirty, saveForNavigation, Boolean(body.trim()) && !conflict, undefined, () => {
+    changeBody(baseline.current); setPendingDismissed(true); setStatus(""); setConflict(null);
+  });
   const handoff = async () => {
     try {
       const record = dirty ? await save() : current.current;
