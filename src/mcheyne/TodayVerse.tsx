@@ -33,4 +33,3 @@ export function TodayVerse({ reference, today }: { reference: ScriptureReference
     </div>
   </section>;
 }
-

@@ -27,9 +27,9 @@
 .side-nav .nav-link { font-size: .9rem; }
 .nav-link .devotional-icon { width: 1.6rem; height: 1.6rem; }
 @media (max-width: 860px) {
-  .app-shell { --mobile-nav-height: 72px; --mobile-tabbar-height: 72px; padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  .app-shell { --mobile-nav-height: max(72px, 4rem); --mobile-tabbar-height: var(--mobile-nav-height); padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom)); }
   .mobile-nav {
-    height: auto; min-height: calc(72px + env(safe-area-inset-bottom));
+    height: auto; min-height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
     padding: .35rem .5rem calc(.35rem + env(safe-area-inset-bottom));
     background: var(--color-surface); border-top: 1px solid var(--color-line);
     box-shadow: none; backdrop-filter: none;

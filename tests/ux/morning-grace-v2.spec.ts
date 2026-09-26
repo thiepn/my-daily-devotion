@@ -37,6 +37,11 @@ test('Today reference composition, responsive artwork and deterministic captures
   await expect(page.locator('.today-devotion')).toBeVisible();
   await page.screenshot({ path: `${output}/today-320-text200-${info.project.name}.png`, animations: 'disabled', fullPage: true });
   await expectNoAxeViolations(page);
+  await page.locator('.today-devotion').focus();
+  await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+  const enlargedButton = await page.locator('.today-devotion').boundingBox();
+  const enlargedNav = await page.locator('.mobile-nav').boundingBox();
+  expect(enlargedButton!.y + enlargedButton!.height).toBeLessThanOrEqual(enlargedNav!.y);
   expect(errors).toEqual([]);
 });
 

@@ -63,6 +63,7 @@
 .today-recovery h1 { font-size: 2rem; }
 @media (max-width: 860px) {
   .today-route .utility-bar { display: none; }
+  .grace-today :is(a, button, summary, input) { scroll-margin-block: 12px calc(max(72px, 4rem) + 12px + env(safe-area-inset-bottom)); }
   .grace-today { max-width: 540px; }
   .today-opening { padding-top: calc(20px + env(safe-area-inset-top)); }
   .today-profile { top: calc(21px + env(safe-area-inset-top)); }
@@ -89,4 +90,3 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) .today-opening .grace-art { opacity: .24; }
 }
-
