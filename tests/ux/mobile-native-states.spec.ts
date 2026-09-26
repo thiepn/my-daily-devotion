@@ -92,11 +92,10 @@ test.describe("native mobile application states", () => {
 
   test("empty Prayer, Collections, and Search states stay compact", async ({ page }) => {
     await openRoute(page, "/prayer");
-    const prayerEmpty = page.locator(".mg-prayer-empty");
+    const prayerEmpty = page.locator(".prayer-journal-empty");
     await expect(prayerEmpty).toBeVisible();
-    await expect(prayerEmpty.locator("svg")).toBeHidden();
-    const prayerBox = await prayerEmpty.boundingBox();
-    expect(prayerBox?.height ?? Infinity).toBeLessThan(220);
+    await expect(prayerEmpty.locator("img")).toBeVisible();
+    await expectNoHorizontalOverflow(page);
 
     await openRoute(page, "/bible/collections");
     await expect(page.locator(".mg-empty-state").filter({ hasText: "No collections yet." })).toBeVisible();

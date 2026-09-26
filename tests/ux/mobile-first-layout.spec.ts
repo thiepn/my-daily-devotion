@@ -31,10 +31,10 @@ test.describe("mobile-first Morning Grace layout",()=>{
 
   test("Prayer and History use compact mobile compositions",async({page})=>{
     await openRoute(page,"/prayer");
-    await expect(page.locator(".mg-prayer-hero-art")).toBeHidden();
-    await expect(page.locator(".mg-prayer-library")).toBeVisible();
-    await expect(page.locator(".prayer-status-tabs")).toBeVisible();
-    const prayerHero=await page.locator(".mg-prayer-hero").boundingBox();
+    await expect(page.locator(".prayer-focus-caption img")).toBeVisible();
+    await expect(page.locator(".prayer-journal-library")).toBeVisible();
+    await expect(page.locator(".prayer-journal-tabs")).toBeVisible();
+    const prayerHero=await page.locator(".prayer-journal-heading").boundingBox();
     expect(prayerHero?.height??999).toBeLessThanOrEqual(260);
 
     await openRoute(page,"/history");
@@ -91,7 +91,7 @@ test.describe("mobile-first Morning Grace layout",()=>{
     expect(verseBox?.y??999).toBeLessThan(480);
 
     await openRoute(page,"/prayer");
-    await expect(page.locator(".mg-prayer-hero-art")).toBeHidden();
+    await expect(page.locator(".prayer-focus-caption img")).toBeVisible();
 
     await openRoute(page,"/history");
     await expect(page.locator(".mg-history-hero-art")).toBeHidden();

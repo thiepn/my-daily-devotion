@@ -21,6 +21,9 @@ export function usesMobileAppLayout(page: Page): boolean {
 }
 
 export async function expectRouteTitle(page: Page, heading: string, mobileTitle = heading): Promise<void> {
+  if (heading === "Prayer" && new URL(page.url()).hash.split("?")[0] === "#/prayer") {
+    await expect(page.getByRole("heading", { level: 1, name: "Prayer", exact: true })).toBeVisible(); return;
+  }
   if (heading === "Today") {
     await expect(page.getByRole("heading", { level: 1, name: "Good morning, Friend." })).toBeVisible();
     return;

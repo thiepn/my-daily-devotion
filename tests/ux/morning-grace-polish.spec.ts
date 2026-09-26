@@ -13,8 +13,8 @@ test.describe("Morning Grace final visual polish",()=>{
     const data=page.getByRole("link",{name:"Data",exact:true});
     await expect(search).toBeVisible();
     await expect(data).toBeVisible();
-    await expect(search.locator(".icon-search")).toBeVisible();
-    await expect(data.locator(".icon-settings")).toBeVisible();
+    await expect(search).toHaveAttribute("href", /return=/);
+    await expect(data).toHaveAttribute("href", /return=/);
     await expect(page.locator(".utility-bar .theme-switcher")).toBeHidden();
     await expectNoHorizontalOverflow(page);
     await expectNoAxeViolations(page);

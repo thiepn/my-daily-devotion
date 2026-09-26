@@ -13,6 +13,7 @@ test.describe("native mobile stacked navigation", () => {
       await expect(page.locator(".mobile-appbar-back")).toHaveCount(0);
       if (route === "/today") await expect(page.locator(".today-profile")).toBeVisible();
       else if (route.startsWith("/bible/")) await expect(page.locator(".bible-reader-header")).toBeVisible();
+      else if (route === "/prayer") await expect(page.locator(".prayer-add")).toBeVisible();
       else await expect(page.locator(".utility-actions")).toBeVisible();
       await expectNoHorizontalOverflow(page);
     }
