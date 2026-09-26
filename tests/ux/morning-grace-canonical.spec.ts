@@ -19,9 +19,9 @@ test.describe("Morning Grace canonical screens", () => {
     await expect(page.locator(".prayer-journal-library")).toBeVisible();
 
     await openRoute(page, "/history");
-    await expect(page.locator(".mg-history-hero")).toBeVisible();
-    await expect(page.locator(".mg-history-overview")).toBeVisible();
-    await expect(page.locator(".mg-history-calendar")).toBeVisible();
+    await expect(page.locator(".history-journal-heading")).toBeVisible();
+    await expect(page.locator(".history-overview-card")).toBeVisible();
+    await expect(page.locator(".history-reflection-band")).toBeVisible();
     await expectNoAxeViolations(page);
   });
 

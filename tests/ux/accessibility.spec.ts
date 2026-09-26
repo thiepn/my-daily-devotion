@@ -44,7 +44,7 @@ test.describe("accessibility and keyboard UX", () => {
     await expect(page.getByRole("heading", { level: 1, name: "Reading plan" })).toBeVisible();
     await expect(page.getByLabel("Completed through date")).toBeVisible();
 
-    await openRoute(page, "/history");
+    await openRoute(page, "/history/calendar");
     await expect(page.getByRole("button", { name: "Previous month" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Next month" })).toBeVisible();
   });

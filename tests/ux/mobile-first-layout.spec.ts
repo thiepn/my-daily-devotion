@@ -38,8 +38,8 @@ test.describe("mobile-first Morning Grace layout",()=>{
     expect(prayerHero?.height??999).toBeLessThanOrEqual(260);
 
     await openRoute(page,"/history");
-    await expect(page.locator(".mg-history-hero-art")).toBeHidden();
-    const stats=page.locator(".mg-history-stats");
+    await expect(page.locator(".history-reflection-band img")).toBeVisible();
+    const stats=page.locator(".history-journal-stats");
     await expect(stats).toBeVisible();
     const columns=await stats.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(" ").length);
     expect(columns).toBe(3);
@@ -94,7 +94,7 @@ test.describe("mobile-first Morning Grace layout",()=>{
     await expect(page.locator(".prayer-focus-caption img")).toBeVisible();
 
     await openRoute(page,"/history");
-    await expect(page.locator(".mg-history-hero-art")).toBeHidden();
+    await expect(page.locator(".history-reflection-band img")).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
 

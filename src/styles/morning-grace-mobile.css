@@ -257,18 +257,6 @@
   }
 
   /* Phone app bars already identify the destination; keep the content header task-first. */
-  .mg-history-hero .screen-intro {
-    display: none;
-  }
-
-  .mg-history-hero .mg-hero-copy {
-    padding-bottom: 4px;
-  }
-
-  .mg-history-hero-art,
-  .mg-history-closing {
-    display: none !important;
-  }
 
   /* First-run Today is an app setup list, not two desktop feature cards. */
   .mg-setup-section {
@@ -395,155 +383,6 @@
   }
 
   /* HISTORY — compact summary + calendar app screen */
-  .mg-history-hero {
-    display: block;
-  }
-
-  .mg-history-hero .mg-hero-copy {
-    padding-bottom: 4px;
-  }
-
-  .mg-history-hero .history-tabs {
-    display: flex;
-    gap: 2px;
-    margin: 12px 0 0;
-    padding: 3px;
-    border: 1px solid var(--color-line);
-    border-radius: 10px;
-    background: var(--color-surface);
-  }
-
-  .mg-history-hero .history-tabs a {
-    min-height: 34px;
-    flex: 1;
-    display: grid;
-    place-items: center;
-    margin: 0;
-    padding: 0 8px;
-    border: 0;
-    border-radius: 8px;
-    font-size: .67rem;
-    text-decoration: none;
-  }
-
-  .mg-history-hero .history-tabs a.is-active,
-  .mg-history-hero .history-tabs a[aria-current="page"] {
-    color: var(--color-accent-strong);
-    background: var(--color-accent-soft);
-  }
-
-  .mg-history-overview {
-    margin: 10px 0 12px;
-    padding-top: 10px;
-  }
-
-  .mg-history-overview .mg-section-title-row {
-    margin-bottom: 8px;
-  }
-
-  .mg-history-overview h2 {
-    font-size: 1.18rem;
-  }
-
-  .mg-history-stats {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    margin-top: 10px;
-    border: 1px solid var(--color-line);
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  .mg-history-stats > div,
-  .mg-history-stats > div + div {
-    min-height: 66px;
-    display: grid;
-    grid-template-columns: 1fr;
-    align-content: center;
-    gap: 2px;
-    padding: 8px 7px;
-    border: 0;
-  }
-
-  .mg-history-stats > div + div {
-    border-left: 1px solid var(--color-line);
-  }
-
-  .mg-history-stats strong {
-    font-size: 1.35rem;
-  }
-
-  .mg-history-stats span {
-    font-size: .56rem;
-    line-height: 1.18;
-  }
-
-  .mg-history-recent {
-    margin-top: 10px;
-  }
-
-  .mg-history-recent a {
-    min-height: 48px;
-    grid-template-columns: 52px minmax(0, 1fr) 14px;
-    gap: 7px;
-  }
-
-  .mg-history-recent time {
-    font-size: .63rem;
-  }
-
-  .mg-history-recent strong {
-    font-family: var(--font-ui);
-    font-size: .75rem;
-  }
-
-  .mg-history-calendar {
-    margin: 0 calc(var(--mobile-gutter) * -1);
-    padding: 10px 8px 14px;
-    border: 0;
-    border-top: 1px solid var(--color-line);
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  .mg-history-calendar .history-month-heading {
-    min-height: 42px;
-    margin-bottom: 6px;
-  }
-
-  .history-month-heading h2 {
-    font-size: 1.05rem;
-  }
-
-  .history-month-heading button {
-    width: 36px;
-    height: 36px;
-  }
-
-  .history-weekdays {
-    padding: 6px 0 4px;
-    font-size: .56rem;
-  }
-
-  .history-day {
-    min-height: 48px;
-    padding: 5px;
-  }
-
-  .history-day strong {
-    font-family: var(--font-ui);
-    font-size: .74rem;
-  }
-
-  .history-day.is-today strong {
-    width: 22px;
-    height: 22px;
-  }
-
-  .history-calendar-legend {
-    gap: 10px;
-    margin-top: 8px;
-    font-size: .58rem;
-  }
 
   /* Secondary phone headers collapse to app-style context rows. */
   .mg-plan-workspace .mg-secondary-header,
@@ -913,14 +752,6 @@
   }
 
   /* Keep data-density compatible with enlarged text without restoring desktop spacing. */
-  html[style*="font-size: 200%"] .mg-history-stats {
-    grid-template-columns: 1fr;
-  }
-
-  html[style*="font-size: 200%"] .mg-history-stats > div + div {
-    border-left: 0;
-    border-top: 1px solid var(--color-line);
-  }
 }
 
 @media (max-width: 430px) {

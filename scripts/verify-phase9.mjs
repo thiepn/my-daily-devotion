@@ -33,12 +33,12 @@ for (const selector of [
   ".setup-options",
   ".reflection-prompts button",
   ".metadata-layout",
-  ".history-tabs",
   ".global-search-form",
   ".collections-layout",
   ".data-panel",
 ]) assert.ok(css.includes(selector), `Missing Phase 9 refinement for ${selector}`);
 assert.match(await read("src/styles/prayer.css"), /\.prayer-journal-tabs/);
+assert.match(await read("src/styles/history.css"), /\.history-journal-tabs/);
 // Bible chrome now has one owner instead of an override in Phase 9.
 assert.match(await read("src/styles/bible.css"), /\.verse-action-dock/);
 

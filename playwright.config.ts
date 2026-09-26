@@ -24,8 +24,8 @@ export default defineConfig({
     timeout: 120_000,
   },
   projects: [
-    { name: "desktop-firefox", testMatch: /(?:core-flow|release-smoke|corrective-release|prayer-journal)\.spec\.ts/, use: { ...devices["Desktop Firefox"], serviceWorkers: "block" } },
-    { name: "desktop-webkit", testMatch: /(?:core-flow|release-smoke|corrective-release|prayer-journal)\.spec\.ts/, use: { ...devices["Desktop Safari"], serviceWorkers: "block" } },
+    { name: "desktop-firefox", testMatch: /(?:core-flow|release-smoke|corrective-release|prayer-journal|history-journal)\.spec\.ts/, use: { ...devices["Desktop Firefox"], serviceWorkers: "block" } },
+    { name: "desktop-webkit", testMatch: /(?:core-flow|release-smoke|corrective-release|prayer-journal|history-journal)\.spec\.ts/, use: { ...devices["Desktop Safari"], serviceWorkers: "block" } },
     {
       name: "desktop-chromium",
       testIgnore: /pwa\.spec\.ts/,

@@ -34,7 +34,6 @@ for(const token of [
   ".draft-dialog",
   ".conflict-review",
   ".mg-prayer-capture-workspace",
-  ".mg-history-detail-workspace",
   "@keyframes mg-screen-in",
   "@media (prefers-reduced-motion: reduce)"
 ]) assert.ok(css.includes(token),"Polish CSS missing "+token);
@@ -53,7 +52,8 @@ assert.match(draftGuard,/draft-dialog-save/);
 assert.match(draftGuard,/draft-dialog-discard/);
 assert.match(draftGuard,/draft-dialog-keep/);
 assert.match(newPrayer,/mg-prayer-capture-workspace/);
-assert.match(history,/mg-history-detail-workspace/);
+assert.match(history,/history-day-entry/);
+assert.match(await read("src/styles/history.css"),/\.history-day-entry/);
 
 const secondaryIndex=styles.indexOf('"./morning-grace-secondary.css"');
 const polishIndex=styles.indexOf('"./morning-grace-polish.css"');

@@ -31,10 +31,10 @@ test.describe("Morning Grace final visual polish",()=>{
     await expect(page.locator(".mg-prayer-capture-workspace")).toBeVisible();
 
     await openRoute(page,"/history/moments");
-    await expect(page.locator(".mg-history-detail-workspace")).toBeVisible();
+    await expect(page.locator(".grace-history")).toBeVisible();
 
     await openRoute(page,"/history/day/2026-09-19");
-    await expect(page.locator(".mg-history-detail-workspace")).toBeVisible();
+    await expect(page.locator(".grace-history")).toBeVisible();
   });
 
   test("polished routes reflow at 320px and 200 percent text",async({page})=>{

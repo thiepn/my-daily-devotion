@@ -20,7 +20,6 @@ h3,
 
 .screen-intro,
 .muted-copy,
-.history-entry blockquote,
 .search-hit p {
   text-wrap: pretty;
 }
@@ -44,8 +43,7 @@ h3,
 .quiet-back-link,
 .future-text-link,
 .metadata-manage-links a,
-.plan-links-row a,
-.history-tabs a {
+.plan-links-row a {
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;
 }
@@ -68,8 +66,7 @@ h3,
 .collection-sidebar form button,
 .collection-items button,
 .data-panel button,
-.backup-preview button,
-.history-month-heading button {
+.backup-preview button {
   border-color: var(--color-line-strong);
   border-radius: var(--radius-sm);
   transition:
@@ -90,8 +87,7 @@ h3,
 .collection-sidebar form button:hover:not(:disabled),
 .collection-items button:hover:not(:disabled),
 .data-panel button:hover:not(:disabled),
-.backup-preview button:hover:not(:disabled),
-.history-month-heading button:hover:not(:disabled) {
+.backup-preview button:hover:not(:disabled) {
   color: var(--color-ink);
   border-color: var(--color-accent);
   background: var(--mg-hover);
@@ -231,7 +227,6 @@ textarea:focus-visible {
 }
 
 .mcheyne-loading,
-.history-loading,
 .recovery-screen > p:not(.eyebrow),
 .startup-error > p:not(.eyebrow) {
   color: var(--color-ink-soft);
@@ -363,15 +358,6 @@ textarea:focus-visible {
 }
 
 /* History calendar text must remain subdued without dropping below normal-text contrast. */
-.mg-history-calendar .history-weekdays,
-.mg-history-calendar .history-day.empty,
-.mg-history-calendar .history-calendar-legend {
-  color: var(--color-ink-soft);
-}
-
-.mg-history-calendar .history-day.is-today strong {
-  color: var(--color-ink);
-}
 
 /* Release acceptance: small Prayer and Data text must remain readable on warm paper. */
 
@@ -450,47 +436,15 @@ textarea:focus-visible {
   line-height: 1.6;
 }
 
-.mg-history-detail-workspace .history-entry-list,
-.mg-history-detail-workspace .moments-list {
-  max-width: 850px;
-}
-
-.mg-history-detail-workspace .history-prayer-summary {
-  margin-bottom: 34px;
-  padding: 18px 0;
-  border-top: 1px solid var(--color-prayer);
-  border-bottom: 1px solid var(--color-line);
-}
-
-.mg-history-detail-workspace .history-entry {
-  padding: 26px 0;
-}
-
-.mg-history-detail-workspace .history-entry blockquote {
-  margin: 10px 0 0;
-  font-family: var(--font-reading);
-  line-height: 1.65;
-}
-
-.mg-history-detail-workspace .moment-row {
-  border-bottom: 1px solid var(--color-line);
-}
-
 /* Canonical screen micro-polish */
-.mg-history-recent a,
 .search-hit,
 .collection-items article,
 .metadata-row {
   transition: background-color var(--transition-fast), border-color var(--transition-fast);
 }
 
-.mg-history-recent a:hover,
 .search-hit:hover {
   background: var(--mg-paper-hover);
-}
-
-.mg-history-closing p {
-  text-wrap: balance;
 }
 
 .mg-plan-workspace .plan-summary > div {
@@ -527,8 +481,7 @@ textarea:focus-visible {
   --mg-paper-hover: color-mix(in srgb, var(--color-surface) 90%, var(--color-accent-soft));
 }
 
-:root[data-theme="dark"] .mg-landscape,
-:root[data-theme="dark"] .mg-history-closing .mg-landscape {
+:root[data-theme="dark"] .mg-landscape {
   opacity: .9;
 }
 
@@ -551,8 +504,7 @@ textarea:focus-visible {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .mg-landscape,
-  :root:not([data-theme]) .mg-history-closing .mg-landscape {
+  :root:not([data-theme]) .mg-landscape {
     opacity: .9;
   }
 

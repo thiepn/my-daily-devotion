@@ -191,7 +191,7 @@ test("encrypted backup restores in a fresh profile and failed/cancelled restores
     await expect(fresh.locator(".data-status")).toContainText("merged successfully");
     await openRoute(fresh, "/prayer"); await expect(fresh.locator(".prayer-journal-row")).toHaveCount(1);
     await fresh.locator(".prayer-journal-row").click(); await expect(fresh.locator(".prayer-admin-list")).toContainText("Daily");
-    await openRoute(fresh, "/history/moments"); await expect(fresh.getByText("Backup recovery preserves this prayer.")).toBeVisible();
+    await openRoute(fresh, "/history?view=prayer"); await expect(fresh.getByText("Backup recovery preserves this prayer.")).toBeVisible();
   } finally { await clean.close(); }
 });
 
@@ -240,7 +240,7 @@ test("large local history and prayer lists remain searchable and responsive", as
   await expectNoHorizontalOverflow(page);
   const searchStart = Date.now(); await openRoute(page, "/search?q=Searchable-needle"); await expect(page.locator(".search-hit")).toHaveCount(1); const searchMs = Date.now()-searchStart;
   await expectNoHorizontalOverflow(page); await page.locator(".search-hit").click(); await expect(page.getByLabel("Request", { exact: true })).toContainText("Searchable-needle");
-  const historyStart = Date.now(); await openRoute(page, "/history/moments"); await expect(page.locator(".moment-row")).toHaveCount(200); const historyMs = Date.now()-historyStart;
+  const historyStart = Date.now(); await openRoute(page, "/history?period=all"); await expect(page.locator(".history-journal-row")).toHaveCount(5); await page.getByRole("button", { name: "Show more", exact: true }).click(); await expect(page.locator(".history-journal-row")).toHaveCount(15); const historyMs = Date.now()-historyStart;
   await page.screenshot({ path: testInfo.outputPath("large-history.png") });
   await expectNoHorizontalOverflow(page);
   await testInfo.attach("large-archive-performance", { body: JSON.stringify({ prayers:1000, events:5000, listMs, searchMs, historyMs }), contentType: "application/json" });

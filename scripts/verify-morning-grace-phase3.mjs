@@ -10,7 +10,7 @@ const [contractRaw, today, bible, prayer, history, css, main, doc, packageRaw] =
   read("src/scripture/BibleScreen.tsx"),
   read("src/prayer/PrayerScreen.tsx"),
   read("src/history/HistoryScreens.tsx"),
-  read("src/styles/morning-grace-screens.css"),
+  read("src/styles/history.css"),
   read("src/main.tsx"),
   read("docs/PHASE_3_MORNING_GRACE_CANONICAL_SCREENS.md"),
   read("package.json"),
@@ -30,11 +30,12 @@ for(const screen of ["today","bible","prayer","history"]) assert.ok(contract.scr
 for(const token of ["grace-today","today-opening","today-plan-card","today-responses","MorningGraceArtwork","TodayVerse"]) assert.ok(today.includes(token), "Today missing " + token);
 for(const token of ["grace-bible","BibleReaderControls","mg-scripture-page","mg-bible-chapter-art","mg-verse-action-dock","MorningGraceArtwork"]) assert.ok(bible.includes(token), "Bible missing " + token);
 for(const token of ["grace-prayer","prayer-journal-heading","prayer-focus-card","prayer-journal-library","prayer-journal-row","MorningGraceArtwork"]) assert.ok(prayer.includes(token), "Prayer missing " + token);
-for(const token of ["mg-canonical-screen","mg-history-hero","mg-history-overview","mg-history-stats","mg-history-recent","mg-history-calendar","mg-history-closing"]) assert.ok(history.includes(token), "History missing " + token);
+for(const token of ["grace-history","history-journal-heading","history-overview-card","history-journal-stats","history-journal-row","HistoryCalendarScreen","history-reflection-band"]) assert.ok(history.includes(token), "History missing " + token);
 
-for(const selector of [".mg-canonical-hero",".mg-history-stats",".mg-history-calendar"]) assert.ok(css.includes(selector), "Canonical CSS missing " + selector);
-assert.match(css, /@media\s*\(max-width:\s*700px\)/);
-assert.match(css, /font-size:\s*200%/);
+for(const selector of [".history-journal-heading",".history-journal-stats",".history-calendar-grid"]) assert.ok(css.includes(selector), "Canonical CSS missing " + selector);
+assert.match(css, /@media\s*\(max-width:\s*860px\)/);
+assert.match(css, /@container\s*\(max-width:\s*18rem\)/);
+assert.match(css, /@container\s*\(max-width:\s*13rem\)/);
 assert.doesNotMatch(css, /(?:linear|radial|conic)-gradient\s*\(/i);
 assert.doesNotMatch(css, /url\(\s*["\']?https?:\/\//i);
 
@@ -64,7 +65,7 @@ assert.match(doc,/database schema/i);
 assert.match(doc,/Production remains unchanged/i);
 
 console.log("✓ Morning Grace Editorial Phase 3 verification passed");
-console.log("  V2 Today, Bible and Prayer structure verified; History remains legacy");
+console.log("  V2 Today, Bible, Prayer and History structures verified");
 console.log("  Scripture-first Bible hierarchy and human-first Prayer hierarchy certified");
 console.log("  reflective factual History overview with no gamification certified");
 console.log("  responsive phone/tablet/desktop and 200% reflow rules installed");

@@ -26,13 +26,13 @@ for (const token of ["setOffline(true)", "navigator.serviceWorker.controller", "
 
 assert.match(app, /main-content/); assert.match(app, /focus\(\{ preventScroll: true \}\)/);
 assert.match(today, /<label>Completed through date<input/); assert.match(plan, /aria-label="Completed through date"/);
-assert.match(history, /aria-label="Previous month"/); assert.match(history, /aria-label="Next month"/); assert.match(history, /aria-label=\{`Open history for \$\{dateLabel\(date\)\}`\}/); assert.match(history, /aria-current=/); assert.match(history, /Opening history…/); assert.match(history, /const\s*\[\s*loading\s*,\s*setLoading\s*\]/);
+assert.match(history, /aria-label="Previous month"/); assert.match(history, /aria-label="Next month"/); assert.match(history, /Open history for/); assert.match(history, /aria-current=/); assert.match(history, /Opening your history…/); assert.match(await read("src/history/hooks.ts"), /liveQuery/);
 assert.match(schema, /DATABASE_SCHEMA_VERSION = 1/);
 assert.match(tokens, /--color-ink-faint:\s*#5e625a/); assert.match(tokens, /--color-warning-text:\s*#7a4f2f/);
 assert.match(vite, /manifest:\s*true/);
 assert.match(sw, /\.vite\/manifest\.json/); assert.match(sw, /Object\.values\(buildManifest\)/); assert.match(sw, /entry\.file/); assert.match(sw, /ignoreVary:\s*true/); assert.match(sw, /matchCached\(request\)/);
 const phase10Index=styles.indexOf('"./phase10.css"'); const phase11Index=styles.indexOf('"./phase11.css"'); assert.ok(phase10Index>=0&&phase11Index>phase10Index,"Phase 11 UX fixes must load after Phase 10 styles");
-assert.match(phase11Css, /\.data-warning/); assert.match(phase11Css, /var\(--color-warning-text\)/); assert.match(phase11Css, /\.history-loading/);
+assert.match(phase11Css, /\.data-warning/); assert.match(phase11Css, /var\(--color-warning-text\)/); assert.match(await read("src/styles/history.css"), /\.history-journal-state/);
 
 assert.match(phase11Doc, /Status:\s*\*\*implemented\*\*/i); assert.match(phase11Doc, /Read.*Respond.*Pray.*Remember/is); assert.match(phase11Doc, /Playwright/i); assert.match(phase11Doc, /axe/i); assert.match(phase11Doc, /320/i); assert.match(phase11Doc, /200%/i); assert.match(phase11Doc, /offline/i); assert.match(phase11Doc, /Phase 12 — Release Hardening/i); assert.match(phase11Doc, /npm run verify:phase11/);
 

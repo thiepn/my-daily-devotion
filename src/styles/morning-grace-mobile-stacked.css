@@ -295,8 +295,7 @@
   /* Important context hidden with the desktop H1 remains visible as a compact
      status/date line on detail screens. */
   .mobile-detail-route .mg-prayer-detail-workspace .mg-secondary-header .eyebrow,
-  .mobile-detail-route .mg-reflection-workspace .mg-secondary-header .eyebrow,
-  .mobile-detail-route .history-day-screen .mg-secondary-header .eyebrow {
+  .mobile-detail-route .mg-reflection-workspace .mg-secondary-header .eyebrow {
     display: block;
     margin: 0;
     color: var(--color-muted);
@@ -585,81 +584,6 @@
   }
 
   /* History detail views use compact timeline rows and an app-like local switcher. */
-  .mobile-detail-route .mg-history-detail-workspace .history-tabs {
-    display: flex;
-    gap: 2px;
-    margin: 0 0 10px;
-    padding: 3px;
-    overflow: visible;
-    border: 1px solid var(--color-line);
-    border-radius: 10px;
-    background: var(--color-surface);
-  }
-
-  .mobile-detail-route .mg-history-detail-workspace .history-tabs a {
-    min-height: 44px;
-    flex: 1 1 0;
-    display: grid;
-    place-items: center;
-    padding: 0 6px;
-    border: 0;
-    border-radius: 8px;
-    font-size: .64rem;
-    text-decoration: none;
-  }
-
-  .mobile-detail-route .mg-history-detail-workspace .history-tabs a.is-active,
-  .mobile-detail-route .mg-history-detail-workspace .history-tabs a[aria-current="page"] {
-    color: var(--color-accent-strong);
-    background: var(--color-accent-soft);
-  }
-
-  .mobile-detail-route .mg-history-detail-workspace .history-prayer-summary {
-    gap: 7px;
-    margin: 2px 0 10px;
-    padding: 10px 0;
-  }
-
-  .mobile-detail-route .mg-history-detail-workspace .history-entry {
-    grid-template-columns: 6px minmax(0, 1fr);
-    gap: 10px;
-    padding: 12px 0;
-  }
-
-  .mobile-detail-route .mg-history-detail-workspace .history-entry p {
-    font-size: .68rem;
-  }
-
-  .mobile-detail-route .mg-history-detail-workspace .history-entry strong {
-    font-size: .88rem;
-  }
-
-  .mobile-detail-route .mg-history-detail-workspace .history-entry blockquote {
-    margin: 6px 0 0;
-    padding-left: 10px;
-    font-size: .84rem;
-    line-height: 1.48;
-  }
-
-  .mobile-detail-route .mg-history-detail-workspace .history-entry a {
-    min-height: 40px;
-    display: inline-flex;
-    align-items: center;
-    margin-top: 4px;
-    font-size: .67rem;
-  }
-
-  .mobile-detail-route .mg-history-detail-workspace .moment-row {
-    display: block;
-    border-bottom: 1px solid var(--color-line);
-  }
-
-  .mobile-detail-route .mg-history-detail-workspace .moment-row > time {
-    display: block;
-    padding: 10px 0 0;
-    color: var(--color-muted);
-    font-size: .58rem;
-  }
 
   /* Enlarged-text fallback: dense two-column action layouts become a single
      column rather than relying on text shrinking. */

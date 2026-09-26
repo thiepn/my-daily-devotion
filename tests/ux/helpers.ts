@@ -24,6 +24,7 @@ export async function expectRouteTitle(page: Page, heading: string, mobileTitle 
   if (heading === "Prayer" && new URL(page.url()).hash.split("?")[0] === "#/prayer") {
     await expect(page.getByRole("heading", { level: 1, name: "Prayer", exact: true })).toBeVisible(); return;
   }
+  if (new URL(page.url()).hash.startsWith("#/history")) { await expect(page.getByRole("heading", { level: 1, name: heading, exact: true })).toBeVisible(); return; }
   if (heading === "Today") {
     await expect(page.getByRole("heading", { level: 1, name: "Good morning, Friend." })).toBeVisible();
     return;

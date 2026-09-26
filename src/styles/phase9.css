@@ -135,7 +135,6 @@
 .screen-intro,
 .reflection-excerpt,
 .prayer-update-list p,
-.history-entry blockquote,
 .search-hit p,
 .collection-items p,
 .data-panel p,
@@ -186,8 +185,7 @@ select {
 .data-panel > button,
 .data-actions button,
 .backup-preview button,
-.collection-sidebar form button,
-.history-month-heading button {
+.collection-sidebar form button {
   min-height: 44px;
 }
 
@@ -356,13 +354,6 @@ button:disabled,
   margin-bottom: 40px;
 }
 
-.history-tabs a {
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-  padding-bottom: 8px;
-}
-
 .search-empty {
   padding: clamp(36px, 6vw, 56px) 0;
   border-bottom: 1px solid var(--color-line);
@@ -429,37 +420,6 @@ button:disabled,
 }
 
 /* History */
-.history-tabs {
-  gap: 22px;
-  margin-bottom: 38px;
-}
-
-.history-month-heading {
-  grid-template-columns: 44px minmax(0, 1fr) 44px;
-}
-
-.history-month-heading button {
-  width: 44px;
-  height: 44px;
-}
-
-.history-day {
-  min-height: 70px;
-  padding: 10px;
-  transition: background-color var(--transition-fast), color var(--transition-fast);
-}
-
-.history-day[href]:hover {
-  background: color-mix(in srgb, var(--color-surface-subtle) 56%, transparent);
-}
-
-.history-entry {
-  padding-block: 24px;
-}
-
-.moment-row > time {
-  font-variant-numeric: tabular-nums;
-}
 
 /* Search */
 .global-search-form {
@@ -645,11 +605,6 @@ button:disabled,
     gap: 36px;
   }
 
-  .history-day {
-    min-height: 76px;
-    padding: 8px;
-  }
-
   .data-sections,
   .search-groups {
     gap: 36px;
@@ -734,26 +689,6 @@ button:disabled,
     justify-content: center;
   }
 
-  .history-tabs {
-    gap: 18px;
-    overscroll-behavior-inline: contain;
-    scrollbar-width: none;
-  }
-
-  .history-tabs::-webkit-scrollbar {
-    display: none;
-  }
-
-  .history-day {
-    min-height: 62px;
-    padding: 6px;
-  }
-
-  .history-day.is-today strong {
-    width: 24px;
-    height: 24px;
-  }
-
   .global-search-form {
     margin-bottom: 28px;
   }
@@ -814,19 +749,6 @@ button:disabled,
   .today-prayer-actions {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  .history-weekdays {
-    font-size: .54rem;
-    letter-spacing: .03em;
-  }
-
-  .history-day {
-    min-height: 56px;
-  }
-
-  .history-calendar-legend {
-    gap: 10px 14px;
   }
 
   .global-search-form > button,
@@ -891,7 +813,6 @@ button:disabled,
 .focused-prayer-card > h1 { max-width: 28ch; font-size: clamp(1.9rem, 4vw, 3.2rem); line-height: 1.2; overflow-wrap: anywhere; white-space: pre-wrap; }
 .focused-prayer-screen > h1, .recovery-screen > h1 { font-family: var(--font-editorial); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 500; line-height: 1.2; }
 .recovery-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
-.history-entry > div > a { display: block; width: fit-content; margin-top: 8px; }
 .collection-manage, .collection-rename { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 .collection-rename { padding-bottom: 20px; align-items: end; }
 .collection-rename label { display: grid; gap: 8px; }
