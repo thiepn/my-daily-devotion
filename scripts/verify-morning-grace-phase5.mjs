@@ -17,6 +17,10 @@ const [contractRaw,css,main,app,errorBoundary,draftGuard,newPrayer,history,pkgRa
   read("docs/PHASE_5_MORNING_GRACE_FINAL_POLISH.md")
 ]);
 
+// V2 centralizes imports; the older JSON describes the retained legacy screens.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
+
 const contract=JSON.parse(contractRaw);
 const pkg=JSON.parse(pkgRaw);
 
@@ -51,8 +55,8 @@ assert.match(draftGuard,/draft-dialog-keep/);
 assert.match(newPrayer,/mg-prayer-capture-workspace/);
 assert.match(history,/mg-history-detail-workspace/);
 
-const secondaryIndex=main.indexOf('"./styles/morning-grace-secondary.css"');
-const polishIndex=main.indexOf('"./styles/morning-grace-polish.css"');
+const secondaryIndex=styles.indexOf('"./morning-grace-secondary.css"');
+const polishIndex=styles.indexOf('"./morning-grace-polish.css"');
 assert.ok(secondaryIndex>=0&&polishIndex>secondaryIndex,"Final polish must load after every Morning Grace structural layer");
 assert.match(main,/BrandMark className="mg-state-mark"/);
 

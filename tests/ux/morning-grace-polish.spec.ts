@@ -5,6 +5,10 @@ test.describe("Morning Grace final visual polish",()=>{
   test("mobile chrome is compact and accessible",async({page})=>{
     await page.setViewportSize({width:390,height:844});
     await openRoute(page,"/today");
+    await expect(page.getByRole("link",{name:"Data and settings",exact:true})).toBeVisible();
+    await expect(page.locator(".utility-bar")).toBeHidden();
+    await expectNoAxeViolations(page);
+    await openRoute(page,"/prayer");
     const search=page.getByRole("link",{name:"Search",exact:true});
     const data=page.getByRole("link",{name:"Data",exact:true});
     await expect(search).toBeVisible();
@@ -53,6 +57,6 @@ test.describe("Morning Grace final visual polish",()=>{
   test("reduced motion removes route entrance animation",async({page})=>{
     await page.emulateMedia({reducedMotion:"reduce"});
     await openRoute(page,"/today");
-    await expect(page.locator(".visual-screen")).toHaveCSS("animation-name","none");
+    await expect(page.locator(".grace-today")).toHaveCSS("animation-name","none");
   });
 });

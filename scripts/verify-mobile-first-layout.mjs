@@ -19,6 +19,10 @@ const [contractRaw,css,stackedCss,main,app,search,data,polishTest,navigationTest
   read("package.json")
 ]);
 
+// V2 centralizes imports; the older JSON describes the retained legacy screens.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
+
 const contract=JSON.parse(contractRaw);
 const pkg=JSON.parse(pkgRaw);
 
@@ -30,7 +34,6 @@ for(const selector of [
   ".utility-bar",
   ".mobile-nav",
   ".mg-canonical-hero",
-  ".mg-reading-cards",
   ".mg-bible-toolbar",
   ".mg-bible-chapter-art",
   ".mg-prayer-focus",
@@ -43,15 +46,20 @@ for(const selector of [
 assert.match(css,/@media\s*\(max-width:\s*760px\)/);
 assert.match(css,/--mobile-appbar-height:\s*48px/);
 assert.match(css,/--mobile-tabbar-height:\s*60px/);
-assert.match(css,/\.mg-hero-art,[\s\S]*\.mg-bible-chapter-art[\s\S]*display:\s*none\s*!important/);
-assert.match(css,/\.mg-reading-cards\s*\{[\s\S]*display:\s*block/);
 assert.match(css,/\.mg-history-stats\s*\{[\s\S]*grid-template-columns:\s*repeat\(3/);
 assert.doesNotMatch(css,/(?:linear|radial|conic)-gradient\s*\(/i);
 assert.doesNotMatch(css,/url\(\s*["']?https?:\/\//i);
 
-const polishIndex=main.indexOf('"./styles/morning-grace-polish.css"');
-const mobileIndex=main.indexOf('"./styles/morning-grace-mobile.css"');
-const stackedIndex=main.indexOf('"./styles/morning-grace-mobile-stacked.css"');
+const todayCss = await read("src/styles/today.css");
+const todayVisualTest = await read("tests/ux/morning-grace-v2.spec.ts");
+assert.match(todayCss, /today-opening \.grace-art/);
+assert.match(todayVisualTest, /art!\.height/);
+assert.match(todayVisualTest, /expectNoHorizontalOverflow/);
+assert.match(todayVisualTest, /fontSize = '200%'/);
+
+const polishIndex=styles.indexOf('"./morning-grace-polish.css"');
+const mobileIndex=styles.indexOf('"./morning-grace-mobile.css"');
+const stackedIndex=styles.indexOf('"./morning-grace-mobile-stacked.css"');
 assert.ok(polishIndex>=0&&mobileIndex>polishIndex,"Mobile layout must load after the full Morning Grace desktop system");
 assert.ok(stackedIndex>mobileIndex,"Stacked mobile refinement must load after the certified base mobile layout");
 
@@ -104,8 +112,8 @@ assert.equal(pkg.scripts["verify:mobile-layout"],"node scripts/verify-mobile-fir
 
 console.log("✓ Mobile-first layout contract verified");
 console.log("  compact app bar + bottom root-tab bar installed");
-console.log("  Today reading cards convert to grouped rows");
-console.log("  Bible is reading-first with mobile artwork removed");
+console.log("  Today keeps raster art and a compact plan disclosure on mobile");
+console.log("  Bible art composition remains a deferred V2 phase");
 console.log("  Prayer and History use dense mobile-native compositions");
 console.log("  secondary routes use stacked navigation and 44px contextual Back");
 console.log("  active Focused Prayer can remove outer shell chrome without trapping empty states");
@@ -113,4 +121,4 @@ console.log("  Search/Data preserve exact mobile source context through utility 
 console.log("  Prayer management and History detail routes use dense mobile-native compositions");
 console.log("  loading, recovery, empty, conflict and draft states use native mobile patterns");
 console.log("  320px, 200% text and phone-landscape detail states are covered");
-console.log("  desktop/tablet Morning Grace layers remain upstream and unchanged");
+console.log("  non-Today legacy compositions retain their relative import order");

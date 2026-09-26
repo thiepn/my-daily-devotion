@@ -22,6 +22,10 @@ const [contractRaw,css,main,pkgRaw,doc,...screens]=await Promise.all([
   read("src/data/DataScreen.tsx"),
 ]);
 
+// V2 centralizes imports; the older JSON describes the retained legacy screens.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
+
 const contract=JSON.parse(contractRaw);
 const pkg=JSON.parse(pkgRaw);
 
@@ -59,8 +63,8 @@ assert.match(css,/font-size:\s*200%/);
 assert.doesNotMatch(css,/(?:linear|radial|conic)-gradient\s*\(/i);
 assert.doesNotMatch(css,/url\(\s*["']?https?:\/\//i);
 
-const canonicalIndex=main.indexOf('"./styles/morning-grace-screens.css"');
-const secondaryIndex=main.indexOf('"./styles/morning-grace-secondary.css"');
+const canonicalIndex=styles.indexOf('"./morning-grace-screens.css"');
+const secondaryIndex=styles.indexOf('"./morning-grace-secondary.css"');
 assert.ok(canonicalIndex>=0&&secondaryIndex>canonicalIndex,"Secondary Morning Grace styles must load after canonical screens");
 assert.equal(pkg.scripts["verify:morning-grace:phase4"],"node scripts/verify-morning-grace-phase4.mjs");
 

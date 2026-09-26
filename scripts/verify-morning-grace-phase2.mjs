@@ -21,6 +21,10 @@ const [contractRaw, brandMark, icons, motifs, css, publicMark, publicSprig, publ
 ]);
 
 const themeSwitcher = await read("src/app/visual/ThemeSwitcher.tsx");
+// V2 centralizes imports; the older JSON describes the retained legacy screens.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
+
 const contract = JSON.parse(contractRaw);
 const manifest = JSON.parse(manifestRaw);
 
@@ -80,8 +84,8 @@ for (const [path, width, height] of [
   assert.deepEqual(pngDimensions(bytes), { width, height }, `Unexpected Morning Grace icon dimensions for ${path}`);
 }
 
-const phase1Index = main.indexOf('"./styles/morning-grace.css"');
-const phase2Index = main.indexOf('"./styles/morning-grace-brand.css"');
+const phase1Index = styles.indexOf('"./morning-grace.css"');
+const phase2Index = styles.indexOf('"./morning-grace-brand.css"');
 assert.ok(phase1Index >= 0 && phase2Index > phase1Index, "Morning Grace brand assets must load after the Phase 1 foundation");
 
 assert.match(doc, /Status:\s*\*\*implemented on redesign branch\*\*/i);

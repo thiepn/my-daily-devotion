@@ -4,6 +4,10 @@ const root = new URL("../", import.meta.url); const read = (path) => readFile(ne
 const [schema, reflections, notes, reflectionScreen, context, reader, today, app, main, pkgRaw] = await Promise.all([
   read("src/data/schema.ts"), read("src/data/repositories/reflections.ts"), read("src/data/repositories/verse-notes.ts"), read("src/reflection/ReflectionScreen.tsx"), read("src/reflection/context.ts"), read("src/scripture/BibleScreen.tsx"), read("src/mcheyne/TodayScreen.tsx"), read("src/app/App.tsx"), read("src/main.tsx"), read("package.json"),
 ]);
+// Visual imports moved to the single layered entrypoint; domain gates are unchanged.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
+
 const pkg = JSON.parse(pkgRaw);
 assert.match(schema, /DATABASE_SCHEMA_VERSION = 1/);
 for (const store of ["reflections", "verseNotes", "scriptureLinks"]) assert.match(schema, new RegExp(`${store}:`));
@@ -12,7 +16,7 @@ assert.match(reflectionScreen, /Optional prompts/); assert.match(reflectionScree
 assert.match(context, /sourceReflectionId/); assert.match(context, /sourceDevotionDate/);
 assert.match(reader, /buildReflectionUrl/); assert.match(reader, /> Reflect</); assert.match(reader, /Add verse note|Edit verse note/); assert.match(reader, /Verse note saved locally/); assert.doesNotMatch(reader, /Reflection linkage arrives in Phase 5/);
 assert.match(today, /TodayReflectionPanel/); assert.match(app, /\/today\/reflection\/:localDate/); assert.match(app, /\/prayer\/new/); assert.doesNotMatch(app, /label: "Journal"/);
-assert.ok(main.includes("phase5.css")); assert.ok(pkg.scripts["verify:phase5"]);
+assert.ok(styles.includes("phase5.css")); assert.ok(pkg.scripts["verify:phase5"]);
 const [major, minor] = pkg.version.split(".").map(Number); assert.ok(major > 0 || minor >= 5, `Expected app version >= 0.5.0, got ${pkg.version}`);
 console.log("✓ Phase 5 Reflection & Scripture Capture verification passed");
 console.log("  one dated reflection model with meaningful creation history");

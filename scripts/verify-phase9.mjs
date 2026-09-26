@@ -11,10 +11,14 @@ const [css, main, app, dataScreen, pkgRaw, phase9Doc] = await Promise.all([
   read("package.json"),
   read("docs/PHASE_9_UI_REFINEMENT.md"),
 ]);
+// Visual imports moved to the single layered entrypoint; domain gates are unchanged.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
+
 const pkg = JSON.parse(pkgRaw);
 
-const phase8Index = main.indexOf('"./styles/phase8.css"');
-const phase9Index = main.indexOf('"./styles/phase9.css"');
+const phase8Index = styles.indexOf('"./phase8.css"');
+const phase9Index = styles.indexOf('"./phase9.css"');
 assert.ok(phase8Index >= 0 && phase9Index > phase8Index, "Phase 9 refinement CSS must load after Phase 8 feature styles");
 
 assert.match(app, /Scripture · Prayer · Reflection/);

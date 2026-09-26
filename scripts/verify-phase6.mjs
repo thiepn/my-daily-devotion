@@ -4,11 +4,15 @@ const root = new URL("../", import.meta.url); const read = (path) => readFile(ne
 const [schema, repository, app, prayerScreen, newPrayer, detail, session, context, bible, today, reflection, main, pkgRaw] = await Promise.all([
   read("src/data/schema.ts"), read("src/data/repositories/prayers.ts"), read("src/app/App.tsx"), read("src/prayer/PrayerScreen.tsx"), read("src/prayer/NewPrayerScreen.tsx"), read("src/prayer/PrayerDetailScreen.tsx"), read("src/prayer/PrayerSessionScreen.tsx"), read("src/prayer/context.ts"), read("src/scripture/BibleScreen.tsx"), read("src/mcheyne/TodayScreen.tsx"), read("src/reflection/ReflectionScreen.tsx"), read("src/main.tsx"), read("package.json"),
 ]);
+// Visual imports moved to the single layered entrypoint; domain gates are unchanged.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
+
 const pkg = JSON.parse(pkgRaw);
 assert.match(schema, /DATABASE_SCHEMA_VERSION = 1/); for (const store of ["prayers", "prayerUpdates", "prayerResolutions", "scriptureLinks"]) assert.match(schema, new RegExp(`${store}:`)); for (const event of ["PRAYER_CREATED", "PRAYER_PRAYED", "PRAYER_UPDATED", "ENCOURAGEMENT_RECORDED", "PRAYER_ANSWERED"]) assert.match(repository, new RegExp(event));
 assert.match(repository, /rotationQueue/); assert.match(repository, /lastPrayedAt === null/); assert.match(repository, /attachScripture/); assert.match(repository, /removePrayer/);
 assert.match(app, /PrayerScreen/); assert.match(app, /NewPrayerScreen/); assert.match(app, /PrayerDetailScreen/); assert.match(app, /PrayerSessionScreen/); assert.match(app, /\/prayer\/:prayerId/); assert.match(app, /\/prayer\/session/);
 assert.match(prayerScreen, /Quick/); assert.match(prayerScreen, /Regular/); assert.match(prayerScreen, /Extended/); assert.match(newPrayer, /What do you want to pray about/); assert.match(newPrayer, /sourceReflectionId/); assert.match(detail, /Updates & encouragements/); assert.match(detail, /Mark answered/); assert.match(session, /Next/); assert.match(session, /Skip/); assert.match(context, /buildPrayerFromScriptureUrl/);
 assert.match(bible, /buildPrayerFromScriptureUrl/); assert.match(bible, /onClick=\{openPrayer\}/); assert.doesNotMatch(bible, /Prayer capture arrives in Phase 6/); assert.match(today, /TodayPrayerPanel/); assert.doesNotMatch(today, /Focused prayer becomes functional in Phase 6/); assert.match(reflection, /Create prayer →/); assert.doesNotMatch(reflection, /Phase 6 will turn this into a prayer/);
-assert.ok(main.includes("phase6.css")); assert.ok(pkg.scripts["verify:phase6"]); const [major, minor] = pkg.version.split(".").map(Number); assert.ok(major > 0 || minor >= 6, `Expected app version >= 0.6.0, got ${pkg.version}`);
+assert.ok(styles.includes("phase6.css")); assert.ok(pkg.scripts["verify:phase6"]); const [major, minor] = pkg.version.split(".").map(Number); assert.ok(major > 0 || minor >= 6, `Expected app version >= 0.6.0, got ${pkg.version}`);
 console.log("✓ Phase 6 Prayer Core verification passed"); console.log("  quick capture + prayer lifecycle + append-only updates certified"); console.log("  answered prayer resolution and Scripture/reflection provenance preserved"); console.log("  Bible/Reflection/Today integration + focused prayer flow wired locally");
