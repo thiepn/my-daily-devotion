@@ -115,7 +115,7 @@ test("scheduled prayer session resumes after exit and reload", async ({ page }) 
   await expect(page.locator(".focused-prayer-header")).toContainText("2 / 2");
   const remaining = await page.getByRole("heading", { level: 1 }).innerText();
   await page.getByRole("link", { name: "Exit & resume later" }).click(); await page.reload();
-  await page.getByRole("link", { name: "Resume session", exact: true }).click();
+  await page.getByRole("link", { name: "Resume prayer", exact: true }).click();
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(remaining);
   await page.getByRole("button", { name: "Skip", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Session finished." })).toBeVisible();

@@ -27,7 +27,8 @@ test.describe("native mobile application states", () => {
 
     for (const name of ["Save and continue", "Discard and continue", "Keep editing"]) {
       const buttonBox = await page.getByRole("button", { name, exact: true }).boundingBox();
-      expect(buttonBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+      // Chromium can report a 44px layout box as 43.9999847 during compositing.
+      expect(buttonBox?.height ?? 0).toBeGreaterThanOrEqual(44 - 0.001);
     }
 
     await page.getByRole("button", { name: "Keep editing", exact: true }).click();
@@ -85,7 +86,7 @@ test.describe("native mobile application states", () => {
       expect(buttonBox?.height ?? 0).toBeGreaterThanOrEqual(44);
     }
     const returnBox = await page.getByRole("link", { name: "Return to Today", exact: true }).boundingBox();
-    expect(returnBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+    expect(returnBox?.height ?? 0).toBeGreaterThanOrEqual(44 - 0.001);
     await expectNoHorizontalOverflow(page);
     await page.unroute("**/assets/CollectionsScreen-*.js");
   });
