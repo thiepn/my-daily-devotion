@@ -3,7 +3,8 @@ import { Link, Navigate, NavLink, Route, Routes, useLocation, useNavigate } from
 import { RouteErrorBoundary } from "./RouteErrorBoundary";
 import { PlatformStatus } from "./PlatformStatus";
 import { BrandMark } from "./visual/BrandMark";
-import { Icon, type IconName } from "./visual/Icon";
+import { DevotionalIcon, type DevotionalIconName } from "./visual/DevotionalIcon";
+import { Icon } from "./visual/Icon";
 import { ThemeSwitcher } from "./visual/ThemeSwitcher";
 
 const TodayScreen = lazy(() => import("../mcheyne/TodayScreen").then((module) => ({ default: module.TodayScreen })));
@@ -24,7 +25,7 @@ const HistoryDayScreen = lazy(() => import("../history/HistoryScreens").then((mo
 const SearchScreen = lazy(() => import("../search/SearchScreen").then((module) => ({ default: module.SearchScreen })));
 const DataScreen = lazy(() => import("../data/DataScreen").then((module) => ({ default: module.DataScreen })));
 
-const sections: Array<{ label: string; to: string; icon: IconName }> = [
+const sections: Array<{ label: string; to: string; icon: DevotionalIconName }> = [
   { label: "Today", to: "/today", icon: "today" },
   { label: "Bible", to: "/bible", icon: "bible" },
   { label: "Prayer", to: "/prayer", icon: "prayer" },
@@ -32,7 +33,7 @@ const sections: Array<{ label: string; to: string; icon: IconName }> = [
 ];
 
 function PrimaryNavigation({ mobile = false }: { mobile?: boolean }) {
-  return <nav className={mobile ? "mobile-nav" : "side-nav"} aria-label="Primary">{sections.map(({ label, to, icon }) => <NavLink key={to} to={to} className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}><Icon name={icon} aria-hidden="true" /><span>{label}</span></NavLink>)}</nav>;
+  return <nav className={mobile ? "mobile-nav" : "side-nav"} aria-label="Primary">{sections.map(({ label, to, icon }) => <NavLink key={to} to={to} className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}>{({ isActive }) => <><DevotionalIcon name={icon} active={isActive} /><span>{label}</span></>}</NavLink>)}</nav>;
 }
 
 function routeDomain(pathname: string): "today" | "bible" | "reflection" | "prayer" | "history" | "utility" {
