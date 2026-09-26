@@ -13,6 +13,9 @@
 .scripture-poetry.level-3, .scripture-poetry.level-4 { padding-left: 2.4em; }
 .scripture-blank { height: .65em; }
 .scripture-run { border-radius: 2px; }
+.verse-start { display: inline-flex; align-items: baseline; max-width: 100%; text-indent: 0; }
+.verse-start > .verse-number { flex: none; }
+.verse-start > .scripture-text { min-width: 0; overflow-wrap: anywhere; }
 .scripture-run.is-highlighted .scripture-text { background: var(--color-accent-soft); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 .scripture-run.is-selected .scripture-text { background: var(--color-highlight); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
 .scripture-run.is-selected.is-highlighted .scripture-text { background: var(--color-accent-soft); text-decoration: underline; text-decoration-color: var(--color-accent); text-underline-offset: .2em; }
@@ -20,7 +23,8 @@
 .scripture-run.is-red-letter .scripture-text { color: var(--color-red-letter); }
 .scripture-run.emphasis-bd .scripture-text, .scripture-run.emphasis-bdit .scripture-text { font-weight: 700; }
 .scripture-run.emphasis-em .scripture-text, .scripture-run.emphasis-it .scripture-text, .scripture-run.emphasis-bdit .scripture-text { font-style: italic; }
-.verse-number { position: relative; display: inline-flex; align-items: center; justify-content: center; min-width: 44px; min-height: 44px; margin: -.4em .08em -.4em -.35em; padding: 0 3px; border: 0; border-radius: 4px; color: var(--color-ink-soft); background: transparent; font-family: var(--font-ui); font-size: .58em; font-weight: 400; line-height: 1; vertical-align: baseline; cursor: pointer; text-indent: 0; scroll-margin-block: 110px calc(var(--reader-dock-height, 0px) + var(--mobile-nav-height, 0px) + 60px); }
+/* Keep the numeral beside its own verse; the generous hit area extends before it. */
+.verse-number { position: relative; display: inline-flex; align-items: center; justify-content: flex-end; min-width: 44px; min-height: 44px; margin: -.4em .08em -.4em -.35em; padding: 0 3px; border: 0; border-radius: 4px; color: var(--color-ink-soft); background: transparent; font-family: var(--font-ui); font-size: .58em; font-weight: 400; line-height: 1; vertical-align: baseline; cursor: pointer; text-indent: 0; scroll-margin-block: 110px calc(var(--reader-dock-height, 0px) + var(--mobile-nav-height, 0px) + 60px); }
 .verse-number:hover, .verse-number[aria-pressed="true"] { color: var(--color-accent-strong); background: var(--color-accent-soft); }
 .verse-number.is-bookmarked { text-decoration: underline; text-underline-offset: .3em; text-decoration-thickness: 2px; }
 .verse-number.is-noted::after { content: ""; position: absolute; width: 4px; height: 4px; right: 4px; top: 8px; border-radius: 50%; background: var(--color-prayer); }

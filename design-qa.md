@@ -19,6 +19,7 @@ Visual review: **passed for the scoped light Bible composition after iteration**
 6. [P2, fixed] Bundled Inter exposed 2px of enlarged-text Search overflow. Replaced the fixed action column with intrinsic sizing and restored 44px Search controls. Secondary controls are checked in both themes at narrow/enlarged sizes.
 7. [Content, separately fixed] The old parser omitted a word boundary in Luke 9:1. An isolated parser commit and 112 whitespace-only fixtures correct the source-note case; this is not a display-text patch.
 8. [Test determinism, fixed] Two CI runners captured different selection scroll offsets as local fonts and the status dock settled. Selection baselines now explicitly center the verse after that layout. The two updated candidates were inspected; comparison thresholds were not relaxed. Secondary target measurements disable entrance animation and still require 44px computed and rendered height.
+9. [User review, fixed] Numerals were centered in wide touch targets, separating them from their verses. They now align to the text-facing edge, and an inline group keeps each numeral with the first word when wrapping. Targets remain 44px; every Luke 9 verse start is checked for proximity and same-line placement across the six viewport sizes. Narrow and selected-passage screenshots were reviewed and the affected baselines deliberately refreshed. Corpus text, copy content and persisted data are unchanged.
 
 ## Close matches
 

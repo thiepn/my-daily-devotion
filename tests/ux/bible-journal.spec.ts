@@ -12,6 +12,22 @@ test('Bible journal retains artwork and readable Scripture across viewports', as
     await openRoute(page, '/bible/LUK/9');
     await expect(page.getByRole('heading', { name: 'Luke 9', exact: true })).toBeVisible();
     await page.evaluate(() => document.fonts.ready);
+    const starts = await page.locator('.verse-number').evaluateAll(buttons => buttons.map(button => {
+      const numeral = document.createRange();
+      numeral.selectNodeContents(button);
+      const firstLetter = document.createRange();
+      const text = button.nextElementSibling!.firstChild!;
+      firstLetter.setStart(text, 0);
+      firstLetter.setEnd(text, 1);
+      return { gap: firstLetter.getBoundingClientRect().left - numeral.getBoundingClientRect().right, sameLine: firstLetter.getBoundingClientRect().top < numeral.getBoundingClientRect().bottom, width: button.getBoundingClientRect().width, height: button.getBoundingClientRect().height };
+    }));
+    for (const spacing of starts) {
+      expect(spacing.gap).toBeGreaterThanOrEqual(0);
+      expect(spacing.gap).toBeLessThanOrEqual(6);
+      expect(spacing.width).toBeGreaterThanOrEqual(44);
+      expect(spacing.height).toBeGreaterThanOrEqual(44);
+      expect(spacing.sameLine).toBe(true);
+    }
     await expect(page.locator('.mg-bible-chapter-art img')).toBeVisible();
     const art = await page.locator('.mg-bible-chapter-art').boundingBox();
     expect(art?.height).toBeGreaterThan(110);
