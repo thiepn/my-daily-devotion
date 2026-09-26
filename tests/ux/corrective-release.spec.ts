@@ -63,8 +63,10 @@ test("stale People notes can be compared without replacing the unsaved draft", a
 });
 
 test("stale prayer settings preserve a newer schedule and event date", async ({ page, context }) => {
-  const route = await prayer(page); await openRoute(page, `${route}/settings`);
-  const other = await context.newPage(); await openRoute(other, `${route}/settings`);
+  const route = await prayer(page);
+  const settings = route.includes("?") ? route.replace("?", "/settings?") : `${route}/settings`;
+  await openRoute(page, settings);
+  const other = await context.newPage(); await openRoute(other, settings);
   await other.getByRole("combobox", { name: "Schedule", exact: true }).selectOption("DAILY");
   await other.getByLabel("Event date", { exact: false }).fill("2026-10-01"); await other.getByRole("button", { name: "Save details" }).click();
   await expect(other.getByLabel("Request", { exact: true })).toBeVisible();

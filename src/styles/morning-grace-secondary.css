@@ -27,81 +27,6 @@
 }
 
 /* Reflection — journal workspace */
-.mg-reflection-workspace .reflection-layout {
-  grid-template-columns: minmax(0, 1.5fr) minmax(270px, .5fr);
-  gap: clamp(34px, 5vw, 64px);
-}
-
-.mg-reflection-workspace .reflection-editor-panel {
-  padding: clamp(24px, 4vw, 42px);
-  border: 1px solid var(--color-line);
-  border-top: 3px solid var(--color-reflection);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-paper);
-}
-
-.mg-reflection-workspace .reflection-editor-topline h2 {
-  font-family: var(--font-display);
-  font-size: clamp(1.55rem, 2.4vw, 2.05rem);
-  font-weight: 500;
-}
-
-.mg-reflection-workspace .markdown-toolbar {
-  margin-top: 20px;
-  padding-top: 14px;
-  border-top: 1px solid var(--color-line);
-}
-
-.mg-reflection-workspace .markdown-toolbar button {
-  color: var(--color-muted);
-  background: transparent;
-}
-
-.mg-reflection-workspace .reflection-textarea {
-  min-height: 500px;
-  margin-top: 10px;
-  padding: clamp(22px, 3.5vw, 34px);
-  border-color: var(--color-line);
-  background: color-mix(in srgb, var(--color-canvas) 72%, var(--color-surface));
-  font-family: var(--font-reading);
-  font-size: 1.07rem;
-  line-height: 1.72;
-}
-
-.mg-reflection-workspace .reflection-context-panel {
-  position: relative;
-  align-self: start;
-}
-
-.mg-reflection-workspace .reflection-context-panel > section {
-  padding: 24px 0;
-  border-top: 1px solid var(--color-line);
-}
-
-.mg-reflection-workspace .reflection-context-panel > section:first-of-type {
-  border-top-color: var(--color-reflection);
-}
-
-.mg-reflection-workspace .reflection-context-panel h2 {
-  font-family: var(--font-display);
-  font-size: 1.55rem;
-  font-weight: 500;
-}
-
-.mg-reflection-workspace .mg-reflection-sprig {
-  width: 70px;
-  margin: 0 0 16px auto;
-  opacity: .52;
-}
-
-.mg-reflection-workspace .linked-scripture-row {
-  border-bottom: 1px solid var(--color-line);
-}
-
-.mg-reflection-workspace .reflection-prayer-handoff {
-  border-top-color: var(--color-prayer) !important;
-}
 
 /* Full plan — devotional almanac, not spreadsheet */
 .mg-plan-workspace .plan-summary {
@@ -263,8 +188,7 @@
   line-height: 1.65;
 }
 
-.mg-prayer-detail-workspace .prayer-detail-context,
-.mg-prayer-detail-workspace .prayer-source-context {
+.mg-prayer-detail-workspace .prayer-detail-context {
   padding-top: 20px;
   border-top: 1px solid var(--color-prayer);
 }
@@ -579,7 +503,6 @@
 
 /* Responsive secondary workflows */
 @media (max-width: 900px) {
-  .mg-reflection-workspace .reflection-layout,
   .mg-prayer-detail-workspace .prayer-detail-layout,
   .mg-prayer-metadata-workspace .metadata-layout,
   .mg-collections-workspace .collections-layout {
@@ -590,7 +513,6 @@
     grid-template-columns: 100px minmax(0, 1fr);
   }
 
-  .mg-reflection-workspace .reflection-context-panel,
   .mg-prayer-metadata-workspace .metadata-editor,
   .mg-collections-workspace .collection-sidebar {
     position: static;
@@ -612,17 +534,11 @@
     font-size: clamp(2.35rem, 11vw, 3.15rem);
   }
 
-  .mg-reflection-workspace .reflection-editor-panel,
   .mg-prayer-settings-workspace .prayer-settings-panel,
   .mg-prayer-metadata-workspace .metadata-editor,
   .mg-data-workspace .import-panel {
     padding: 20px;
     border-radius: var(--radius-md);
-  }
-
-  .mg-reflection-workspace .reflection-textarea {
-    min-height: 46vh;
-    padding: 18px;
   }
 
   .mg-plan-workspace .plan-summary {
@@ -700,7 +616,6 @@
 }
 
 /* Zoom/reflow safety for rich secondary workspaces. */
-html[style*="font-size: 200%"] .mg-reflection-workspace .reflection-layout,
 html[style*="font-size: 200%"] .mg-prayer-detail-workspace .prayer-detail-layout,
 html[style*="font-size: 200%"] .mg-prayer-metadata-workspace .metadata-layout,
 html[style*="font-size: 200%"] .mg-collections-workspace .collections-layout,

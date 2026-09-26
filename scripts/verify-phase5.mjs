@@ -12,7 +12,7 @@ const pkg = JSON.parse(pkgRaw);
 assert.match(schema, /DATABASE_SCHEMA_VERSION = 1/);
 for (const store of ["reflections", "verseNotes", "scriptureLinks"]) assert.match(schema, new RegExp(`${store}:`));
 assert.match(reflections, /REFLECTION_CREATED/); assert.match(reflections, /attachScripture/); assert.match(reflections, /removeDaily/); assert.match(notes, /class VerseNoteRepository/); assert.match(notes, /deletedAt: nowInstant/);
-assert.match(reflectionScreen, /Optional prompts/); assert.match(reflectionScreen, /Save reflection/); assert.match(reflectionScreen, /Linked Scripture/); assert.match(reflectionScreen, /buildPrayerHandoffUrl/);
+assert.match(reflectionScreen, /Optional prompts/); assert.match(reflectionScreen, /Save reflection/); assert.match(reflectionScreen, /From Scripture/); assert.match(reflectionScreen, /buildPrayerHandoffUrl/);
 assert.match(context, /sourceReflectionId/); assert.match(context, /sourceDevotionDate/);
 assert.match(reader, /buildReflectionUrl/); assert.match(reader, /> Reflect</); assert.match(reader, /Add verse note|Edit verse note/); assert.match(reader, /Verse note saved locally/); assert.doesNotMatch(reader, /Reflection linkage arrives in Phase 5/);
 assert.match(today, /TodayReflectionPanel/); assert.match(app, /\/today\/reflection\/:localDate/); assert.match(app, /\/prayer\/new/); assert.doesNotMatch(app, /label: "Journal"/);

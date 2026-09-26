@@ -1,4 +1,4 @@
-import { access, mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,10 +11,13 @@ const sections = [];
 for (const [packagePath, metadata] of Object.entries(lock.packages ?? {})) {
   if (!packagePath.startsWith("node_modules/") || metadata.dev === true || metadata.optional === true) continue;
   const packageName = packagePath.slice("node_modules/".length);
+  const files = await readdir(join(ROOT, packagePath));
   let licensePath = null;
   for (const candidate of candidates) {
-    const current = join(ROOT, packagePath, candidate);
-    try { await access(current); licensePath = current; break; } catch {}
+    // Resolve the actual filename so lowercase package licenses also work on
+    // case-sensitive filesystems, while retaining the preferred license order.
+    const filename = files.find(name => name.toLowerCase() === candidate.toLowerCase());
+    if (filename) { licensePath = join(ROOT, packagePath, filename); break; }
   }
   if (!licensePath) throw new Error(`Production dependency ${packageName}@${metadata.version} has no discoverable license file.`);
   const licenseText = (await readFile(licensePath, "utf8")).trim();

@@ -34,8 +34,9 @@ assert.equal(contract.name,"Morning Grace Secondary Workflows");
 assert.equal(contract.status,"phase-4-frozen");
 for(const key of ["reflection","readingPlan","prayerDetail","prayerAdministration","focusedPrayer","collections","search","data"]) assert.ok(contract.workspaces[key],"Missing Phase 4 workspace "+key);
 
-for(const screen of screens) assert.ok(screen.includes("mg-secondary-screen"),"A Phase 4 screen is missing mg-secondary-screen");
-assert.match(screens[0], /return \(\s*<main className="visual-screen reflection-screen mg-secondary-screen mg-reflection-workspace">/);
+for(const screen of screens.slice(1)) assert.ok(screen.includes("mg-secondary-screen"),"A Phase 4 screen is missing mg-secondary-screen");
+assert.match(screens[0], /journal-workspace journal-reflection/);
+assert.match(await read("src/styles/writing.css"), /\.journal-paper/);
 assert.ok(screens[1].includes("mg-plan-workspace"));
 assert.ok(screens[2].includes("mg-prayer-detail-workspace"));
 assert.ok(screens[3].includes("mg-prayer-settings-workspace"));
@@ -47,7 +48,6 @@ assert.ok(screens[8].includes("mg-search-workspace"));
 assert.ok(screens[9].includes("mg-data-workspace"));
 
 for(const selector of [
-  ".mg-reflection-workspace",
   ".mg-plan-workspace",
   ".mg-prayer-detail-workspace",
   ".mg-prayer-settings-workspace",

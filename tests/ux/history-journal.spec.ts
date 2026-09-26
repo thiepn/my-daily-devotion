@@ -18,6 +18,9 @@ test('Calendar browses stored dates with a narrow accessible day-list fallback',
   await page.getByLabel('Month',{exact:true}).fill('2024-02');await expect(page.locator('.history-month-grid')).toContainText('29');await expect(page.locator('.history-month-grid')).not.toContainText('30');await expectNoHorizontalOverflow(page);await page.locator('.history-back').click();await expect(page.getByLabel('History period')).toHaveValue('2025');await expect(page.locator('#history-browse-dates')).toBeFocused();expect(await historySnapshot(page)).toEqual(before);
 });
 test('Moments excludes ordinary requests and discovers more than 200 reflective entries',async({page})=>{
+  // Ten growing pages, a reload, and full before/after database snapshots can
+  // exceed the ordinary journey budget in WebKit on a busy host.
+  test.setTimeout(90_000);
   await seedHistoryJournal(page,{count:230});const before=await historySnapshot(page);await page.getByRole('link',{name:'Moments',exact:true}).click();await expect(page.locator('.history-journal-row')).toHaveCount(20);await expect(page.locator('.history-journal-list')).not.toContainText('Added a prayer request');
   for(let i=0;i<10;i++){await page.getByRole('button',{name:'Show more',exact:true}).click();await expect(page.locator('.history-journal-row')).toHaveCount(40+i*20);}await expect(page.locator('.history-journal-row')).toHaveCount(220);await expect(page.getByRole('status')).toContainText('220 of 227');
   await page.reload();await expect(page.locator('.history-journal-row')).toHaveCount(220);expect(await historySnapshot(page)).toEqual(before);

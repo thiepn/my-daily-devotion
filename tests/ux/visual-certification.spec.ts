@@ -37,10 +37,12 @@ test("visual record of populated devotional journeys and management screens", as
   await expect(page.getByText("1 of 4", { exact: true })).toBeVisible();
   await openRoute(page, "/prayer/people"); await page.getByLabel("Name", { exact: true }).fill("Anna"); await page.getByLabel("Relationship", { exact: false }).fill("Family");
   await page.getByRole("button", { name: "Add person", exact: true }).click(); await expect(page.locator(".metadata-row").filter({ hasText: "Anna" })).toBeVisible();
+  // Category management initializes its defaults; opening capture is read-only.
+  await openRoute(page, "/prayer/categories"); await expect(page.locator(".metadata-row").filter({ hasText: "Family" })).toBeVisible();
   await openRoute(page, "/today/reflection/2026-09-17?translation=BSB&start=JHN.3.16&end=JHN.3.16");
   await page.getByLabel("Daily reflection").fill("God’s love invites a generous response.\n\nToday I want to listen carefully and show kindness to my family, especially when the day feels hurried.");
   await page.getByRole("button", { name: "Save reflection" }).click(); await expect(page.getByText("Reflection created and saved locally.")).toBeVisible();
-  await page.getByRole("link", { name: "Create prayer →" }).click();
+  await page.getByRole("button", { name: /Bring into prayer/ }).click();
   await page.getByLabel("What do you want to pray about?").fill("Give Anna wisdom and peace for the week ahead.");
   await page.getByRole("button", { name: "Add details", exact: true }).click(); await page.getByRole("combobox", { name: "Person optional", exact: true }).selectOption({ label: "Anna" });
   await page.getByRole("combobox", { name: "Category optional", exact: true }).selectOption({ label: "Family" }); await page.getByRole("combobox", { name: "Schedule", exact: true }).selectOption("DAILY");

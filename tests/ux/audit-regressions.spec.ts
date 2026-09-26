@@ -28,13 +28,8 @@ test("reflection drafts survive cancelled navigation, reload and stale saves", a
   await openRoute(page, "/today/reflection/2026-09-17");
   const editor = page.getByLabel("Daily reflection");
   await editor.fill("A reflection worth keeping.\nA second line.");
-  const leaveReflection = () => usesMobileAppLayout(page)
-    ? page.getByRole("button", { name: "Back", exact: true }).click()
-    : visibleNavLink(page, "Today").click();
-  await Promise.all([
-    page.waitForEvent("dialog").then(async (dialog) => { expect(dialog.type()).toBe("confirm"); await dialog.dismiss(); }),
-    leaveReflection(),
-  ]);
+  await page.locator(".journal-heading .quiet-back-link").click();
+  await page.getByRole("button", { name: "Keep editing" }).click();
   await expect(editor).toHaveValue("A reflection worth keeping.\nA second line.");
   // Reload is tested via the native beforeunload event, with a real user gesture above.
   await Promise.all([
@@ -44,6 +39,7 @@ test("reflection drafts survive cancelled navigation, reload and stale saves", a
   await expect(editor).toHaveValue("A reflection worth keeping.\nA second line.");
   await page.getByRole("button", { name: "Save reflection" }).click();
   await expect(page.getByText("Reflection created and saved locally.")).toBeVisible();
+  await editor.fill("My older draft is still here.");
   const other = await context.newPage(); await openRoute(other, "/today/reflection/2026-09-17");
   await other.getByLabel("Daily reflection").fill("A newer version from a second tab.");
   await other.getByRole("button", { name: "Save reflection" }).click();

@@ -8,6 +8,14 @@ function sameReference(a: ScriptureReference, b: ScriptureReference): boolean {
   return a.translationId === b.translationId && a.startVerseKey === b.startVerseKey && a.endVerseKey === b.endVerseKey;
 }
 
+/** A recoverable optimistic-concurrency result; never replaces the caller's draft. */
+export class ReflectionConflictError extends Error {
+  constructor(public readonly latest: Reflection | undefined) {
+    super("This reflection changed in another tab. Your text is still here.");
+    this.name = "ReflectionConflictError";
+  }
+}
+
 export class ReflectionRepository {
   private readonly days: DevotionDayRepository;
   private readonly activity: ActivityLog;
@@ -27,13 +35,13 @@ export class ReflectionRepository {
     return item && item.deletedAt === null ? item : undefined;
   }
 
-  async saveDaily(localDate: LocalDate, bodyMd: string, expectedRevision?: number | null, reference?: ScriptureReference): Promise<{ reflection: Reflection; created: boolean }> {
+  async saveDaily(localDate: LocalDate, bodyMd: string, expectedRevision?: number | null, reference?: ScriptureReference): Promise<{ reflection: Reflection; created: boolean; links: ScriptureLink[] }> {
     return this.database.transaction("rw", [this.database.devotionDays, this.database.reflections, this.database.activityEvents, this.database.scriptureLinks], async () => {
       const current = await this.getDaily(localDate);
-      if (expectedRevision !== undefined && (current?.revision ?? null) !== expectedRevision) throw new Error("This reflection changed in another tab. Your text is still here; copy it before reopening the latest version.");
+      if (expectedRevision !== undefined && (current?.revision ?? null) !== expectedRevision) throw new ReflectionConflictError(current);
       const result = await this.saveDailyInternal(localDate, bodyMd);
       if (reference) await this.attachScripture(result.reflection.id, reference);
-      return result;
+      return { ...result, links: await this.listScriptureLinks(result.reflection.id) };
     });
   }
 
@@ -137,10 +145,11 @@ export class ReflectionRepository {
     await this.database.scriptureLinks.put({ ...link, ...nextMutableFields(link), deletedAt: nowInstant() });
   }
 
-  async removeDaily(localDate: LocalDate): Promise<void> {
-    const reflection = await this.getDaily(localDate);
-    if (!reflection) return;
+  async removeDaily(localDate: LocalDate, expectedRevision?: number): Promise<void> {
     await this.database.transaction("rw", this.database.reflections, this.database.scriptureLinks, async () => {
+      const reflection = await this.getDaily(localDate);
+      if (expectedRevision !== undefined && reflection?.revision !== expectedRevision) throw new ReflectionConflictError(reflection);
+      if (!reflection) return;
       await this.database.reflections.put({ ...reflection, ...nextMutableFields(reflection), deletedAt: nowInstant() });
       const links = await this.listScriptureLinks(reflection.id);
       for (const link of links) {

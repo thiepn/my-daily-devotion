@@ -106,7 +106,7 @@
     line-height: 1.4;
   }
 
-  .mobile-detail-route .quiet-back-link {
+  .mobile-detail-route:not(.writing-journal-route) .quiet-back-link {
     display: none !important;
   }
 
@@ -159,34 +159,6 @@
 
   /* Keyboard-first editors retain their primary action at the bottom edge
      instead of making the user scroll past the editor after typing. */
-  .mobile-detail-route .mg-prayer-capture-workspace .prayer-capture-actions,
-  .mobile-detail-route .mg-reflection-workspace .reflection-editor-actions {
-    position: sticky;
-    z-index: 15;
-    bottom: 0;
-    margin-inline: calc(var(--mobile-gutter) * -1);
-    padding: 8px var(--mobile-gutter) calc(8px + env(safe-area-inset-bottom));
-    border-top: 1px solid var(--color-line);
-    background: color-mix(in srgb, var(--color-canvas) 96%, var(--color-surface));
-  }
-
-  .mobile-detail-route .mg-prayer-capture-workspace .prayer-capture-actions {
-    gap: 10px;
-  }
-
-  .mobile-detail-route .mg-prayer-capture-workspace .prayer-capture-actions .primary-editorial-action,
-  .mobile-detail-route .mg-reflection-workspace .reflection-editor-actions .primary-editorial-action {
-    min-height: 42px;
-  }
-
-  .mobile-detail-route .mg-prayer-capture-workspace .prayer-capture-editor textarea {
-    min-height: min(31dvh, 260px);
-    max-height: 42dvh;
-  }
-
-  .mobile-detail-route .mg-reflection-workspace .reflection-textarea {
-    min-height: min(46dvh, 420px);
-  }
 
   /* Keep pushed app-bar geometry usable during the project's 200% text test. */
   html[style*="font-size: 200%"] .mobile-detail-route .utility-mobile-title {
@@ -294,8 +266,7 @@
 
   /* Important context hidden with the desktop H1 remains visible as a compact
      status/date line on detail screens. */
-  .mobile-detail-route .mg-prayer-detail-workspace .mg-secondary-header .eyebrow,
-  .mobile-detail-route .mg-reflection-workspace .mg-secondary-header .eyebrow {
+  .mobile-detail-route .mg-prayer-detail-workspace .mg-secondary-header .eyebrow {
     display: block;
     margin: 0;
     color: var(--color-muted);

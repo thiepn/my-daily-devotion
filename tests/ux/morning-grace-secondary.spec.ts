@@ -22,7 +22,7 @@ test.describe("Morning Grace secondary workflows",()=>{
     const prayerRoute=await createPrayer(page);
     await expect(page.locator(".mg-prayer-detail-workspace")).toBeVisible();
 
-    await openRoute(page,prayerRoute+"/settings");
+    await openRoute(page,prayerRoute.includes("?") ? prayerRoute.replace("?", "/settings?") : prayerRoute+"/settings");
     await expect(page.locator(".mg-prayer-settings-workspace")).toBeVisible();
 
     await openRoute(page,"/prayer/people");
@@ -53,7 +53,7 @@ test.describe("Morning Grace secondary workflows",()=>{
       "/today/reflection/2026-09-19",
       "/today/plan",
       prayerRoute,
-      prayerRoute+"/settings",
+      prayerRoute.includes("?") ? prayerRoute.replace("?", "/settings?") : prayerRoute+"/settings",
       "/prayer/people",
       "/prayer/categories",
       "/prayer/session?depth=quick",

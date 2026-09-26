@@ -5,6 +5,7 @@ coverage/
 playwright-report/
 visual-report/
 test-results/
+test-results-writing-visual/
 .DS_Store
 *.log
 *.tsbuildinfo
