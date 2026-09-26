@@ -39,3 +39,7 @@
   .mobile-nav .nav-link .devotional-icon { width: 1.65rem; height: 1.65rem; }
   .mobile-detail-route .mobile-nav { display: none; }
 }
+@media (max-width: 350px) {
+  /* Keep enlarged labels separate without shrinking the user's text. */
+  html[style*="font-size: 200%"] .mobile-nav { padding-inline: 0; }
+}

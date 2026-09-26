@@ -194,8 +194,7 @@ html {
   }
 
   .nav-link.active,
-  .history-tabs a.is-active,
-  .prayer-status-tabs a.is-active {
+  .history-tabs a.is-active {
     text-decoration: underline;
     text-underline-offset: 4px;
   }

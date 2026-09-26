@@ -129,6 +129,7 @@ export function App() {
     mobileBack ? "mobile-detail-route" : "",
     location.pathname === "/bible" || /^\/bible\/[^/]+\/\d+$/.test(location.pathname) ? "bible-reader-route" : "",
     location.pathname === "/prayer/session" ? "mobile-immersive-route" : "",
+    location.pathname === "/prayer" ? "prayer-journal-route" : "",
   ].filter(Boolean).join(" ");
 
   const goBack = () => {

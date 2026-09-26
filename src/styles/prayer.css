@@ -1,0 +1,87 @@
+/* Prayer journal: one owner for composition, states and responsive behavior. */
+.grace-prayer { width: 100%; max-width: 760px; margin: 0 auto; padding: 10px 0 28px; color: var(--color-ink); }
+.prayer-journal-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 4px; }
+.prayer-journal-heading h1 { margin: 0; font-family: var(--font-display); font-size: 2.3rem; line-height: 1.2; letter-spacing: -.04em; }
+.prayer-add { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; border: 1px solid var(--color-accent); border-radius: 50%; background: var(--color-accent-strong); color: var(--color-action-on); box-shadow: var(--shadow-soft); }
+.prayer-add:hover { background: var(--color-accent); }
+.prayer-quotation { margin: 0 12px 4px; text-align: center; }
+.prayer-quotation blockquote, .prayer-quotation > p { margin: 0 auto; max-width: 34rem; font-family: var(--font-reading); font-size: .9rem; font-style: italic; line-height: 1.45; color: var(--color-ink-soft); }
+.prayer-quotation a { display: inline-flex; align-items: center; min-height: 44px; font-family: var(--font-ui); font-size: .57rem; line-height: 1.5; letter-spacing: .18em; text-transform: uppercase; color: var(--color-ink-soft); text-decoration: none; }
+.prayer-journal-tabs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 2px; padding: 2px; border-radius: 15px; background: var(--color-surface-subtle); }
+.prayer-journal-tabs a { display: flex; justify-content: center; align-items: center; gap: 5px; min-width: 0; min-height: 44px; padding: 6px 2px; border-radius: 13px; color: var(--color-ink-soft); text-decoration: none; font: .72rem/1.4 var(--font-reading); }
+.prayer-journal-tabs small { font: .59rem/1.3 var(--font-ui); }
+.prayer-journal-tabs a[aria-current] { background: var(--color-accent-strong); color: var(--color-action-on); box-shadow: var(--shadow-soft); }
+.prayer-list-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; min-height: 48px; }
+.prayer-list-heading h2, .prayer-focus-caption h2 { margin: 0; font: 500 .65rem/1.5 var(--font-ui); letter-spacing: .12em; text-transform: uppercase; }
+.grace-prayer button, .prayer-journal-state > a, .prayer-filters a { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 6px 8px; border: 0; border-radius: 6px; background: transparent; color: var(--color-accent-strong); font: .75rem/1.5 var(--font-ui); cursor: pointer; text-decoration: none; }
+.grace-prayer button:hover, .prayer-filters a:hover { background: var(--color-surface-subtle); }
+.grace-prayer button:disabled { opacity: .55; cursor: default; }
+.grace-prayer button .devotional-icon { width: 16px; height: 16px; }
+.prayer-filters { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 0 0 12px; padding: 14px; }
+.prayer-filter-field { display: grid; gap: 6px; min-width: 0; font: .75rem/1.5 var(--font-ui); }
+.prayer-filters select { width: 100%; min-width: 0; min-height: 44px; padding: 8px; border: 1px solid var(--color-line-strong); border-radius: 6px; background: var(--color-surface); color: var(--color-ink); font: inherit; }
+.prayer-filters > div:last-child { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 4px 8px; }
+.prayer-journal-row { display: grid; grid-template-columns: 2.75rem minmax(0, 1fr) 16px; align-items: center; gap: 12px; min-height: 60px; padding: 7px 0; border-top: 1px solid var(--color-line); color: var(--color-ink); text-decoration: none; }
+.prayer-journal-row:hover { background: var(--color-surface); }
+.prayer-identity { display: grid; place-items: center; width: 2.75rem; height: 2.75rem; border-radius: 50%; font: 1.15rem/1 var(--font-display); background: var(--color-accent-soft); color: var(--color-accent-strong); }
+.prayer-identity--clay { background: var(--color-prayer-soft); color: var(--color-prayer); }
+.prayer-row-copy { min-width: 0; display: grid; gap: 3px; }
+.prayer-row-copy strong { font: 700 .86rem/1.35 var(--font-reading); overflow-wrap: anywhere; }
+.prayer-request-preview { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; font: .77rem/1.5 var(--font-reading); color: var(--color-ink-soft); }
+.prayer-request-preview.is-request-title { font-size: .86rem; color: var(--color-ink); }
+.prayer-row-copy small { font: .6rem/1.5 var(--font-ui); color: var(--color-ink-faint); }
+.prayer-journal-row > .devotional-icon { width: 16px; height: 16px; color: var(--color-accent-strong); }
+.prayer-list-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 4px; min-height: 32px; font: .64rem/1.5 var(--font-ui); color: var(--color-ink-faint); }
+.prayer-journal-state { padding: 16px; margin: 8px 0; background: var(--color-surface); border: 1px solid var(--color-line); border-radius: 12px; font: .86rem/1.6 var(--font-reading); }
+.prayer-journal-state h3 { margin: 8px 0; font: 1.15rem/1.4 var(--font-display); }
+.prayer-journal-state p { margin: 8px 0; }
+.prayer-journal-empty { text-align: center; padding-block: 22px; }
+.prayer-journal-empty .grace-art { margin: 0 auto; width: 55px; }
+.prayer-focus-card { position: relative; padding: 12px 18px 4px; margin-top: 8px; background: var(--color-surface); }
+.prayer-focus-caption { display: flex; align-items: center; gap: 8px; }
+.prayer-focus-caption .grace-art { flex: 0 0 32px; width: 32px; height: 34px; }
+.prayer-focus-card h3 { margin: 3px 0 5px; font: 1.22rem/1.35 var(--font-display); letter-spacing: -.025em; overflow-wrap: anywhere; }
+.prayer-focus-request { margin: 0; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; color: var(--color-ink-soft); font: .84rem/1.5 var(--font-reading); }
+.prayer-focus-reason { margin: 4px 0 0; color: var(--color-ink-faint); font: .66rem/1.5 var(--font-ui); }
+.prayer-focus-action { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; color: var(--color-accent-strong); text-decoration: none; font: .84rem/1.5 var(--font-reading); }
+.prayer-focus-action .devotional-icon { width: 20px; height: 20px; }
+.prayer-session-length { border-top: 1px solid var(--color-line); }
+.prayer-session-length summary { display: flex; align-items: center; min-height: 44px; cursor: pointer; color: var(--color-ink-soft); font: .68rem/1.5 var(--font-ui); }
+.prayer-session-length summary .devotional-icon { width: 16px; height: 16px; margin-left: auto; }
+.prayer-session-length[open] summary .devotional-icon { transform: rotate(180deg); }
+.prayer-session-length > div { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.prayer-session-length a { display: flex; flex-direction: column; justify-content: center; gap: 4px; min-height: 60px; padding: 8px; border: 1px solid var(--color-line); border-radius: 8px; color: var(--color-accent-strong); font: .72rem/1.4 var(--font-ui); text-decoration: none; }
+.prayer-session-length a span { font-size: .65rem; color: var(--color-ink-soft); }
+.prayer-session-length > p { font: .65rem/1.5 var(--font-ui); color: var(--color-ink-faint); }
+.grace-prayer :is(a, button, select, summary):focus-visible { outline: 2px solid var(--color-focus-ring); outline-offset: 3px; }
+@media (max-width: 860px) {
+  .prayer-journal-route .utility-bar { display: none; }
+  .prayer-journal-route .workspace-content { padding: 0 18px; }
+  .grace-prayer { padding-top: max(20px, env(safe-area-inset-top)); }
+}
+@media (max-width: 350px) {
+  .prayer-journal-route .workspace-content { padding-inline: 12px; }
+  .prayer-journal-tabs a { gap: 3px; font-size: .68rem; }
+  .prayer-journal-row { gap: 9px; }
+  .prayer-filters { grid-template-columns: 1fr; }
+}
+/* em queries respond to browser text sizing; explicit root resizing is also covered. */
+@media (max-width: 22em) { .prayer-session-length > div { grid-template-columns: 1fr; } }
+html[style*="font-size: 200%"] .prayer-journal-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+html[style*="font-size: 200%"] .prayer-filters { grid-template-columns: 1fr; }
+html[style*="font-size: 200%"] .prayer-session-length > div { grid-template-columns: 1fr; }
+html[style*="font-size: 200%"] .prayer-request-preview,
+html[style*="font-size: 200%"] .prayer-focus-request { display: block; overflow: visible; }
+@media (prefers-reduced-motion: reduce) { .grace-prayer * { animation: none; transition: none; } }
+.prayer-utility-links { display: none; }
+@media (max-width: 860px) {
+  .prayer-utility-links { display: flex; justify-content: center; gap: 28px; margin-top: 10px; }
+  .prayer-utility-links a { display: inline-flex; align-items: center; min-height: 44px; color: var(--color-ink-faint); font: .7rem/1.5 var(--font-ui); }
+}
+/* Preserve reflow when the browser increases its default text size as well. */
+.grace-prayer { container-type: inline-size; }
+@container (max-width: 14rem) {
+  .prayer-journal-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .prayer-filters, .prayer-session-length > div { grid-template-columns: 1fr; }
+}
+@media (prefers-contrast: more) { .prayer-journal-tabs a[aria-current] { text-decoration: underline; text-underline-offset: 4px; } }

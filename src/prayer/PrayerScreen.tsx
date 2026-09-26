@@ -1,137 +1,122 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { Icon } from "../app/visual/Icon";
-import { BotanicalSprig, EditorialFlourish } from "../app/visual/MorningGraceMotifs";
-import { db } from "../data/database";
-import { PrayerSessionRepository } from "../data/repositories/prayer-sessions";
-import { PrayerRepository } from "../data/repositories/prayers";
-import { useLocalClock } from "../app/useLocalClock";
-import type { Prayer, PrayerSession, PrayerStatus } from "../domain/types";
-
-const repository = new PrayerRepository(db);
-const sessions = new PrayerSessionRepository(db);
-const statuses: PrayerStatus[] = ["ACTIVE", "WAITING", "ANSWERED", "ARCHIVED"];
-const labels: Record<PrayerStatus, string> = { ACTIVE: "Active", WAITING: "Waiting", ANSWERED: "Answered", ARCHIVED: "Archived" };
-
-function lastPrayedLabel(prayer: Prayer): string {
-  if (!prayer.lastPrayedAt) return "Not prayed in MDD yet";
-  return `Last prayed ${new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric" }).format(new Date(prayer.lastPrayedAt))}`;
-}
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
+import { PlusIcon } from '@phosphor-icons/react/dist/csr/Plus';
+import { DevotionalIcon } from '../app/visual/DevotionalIcon';
+import { MorningGraceArtwork } from '../app/visual/MorningGraceArtwork';
+import { useLocalClock } from '../app/useLocalClock';
+import { db } from '../data/database';
+import { PRAYER_DEPTH_TARGETS } from '../data/repositories/prayer-sessions';
+import { loadBibleChapter } from '../scripture/loader';
+import { identityTone, loadPrayerFocus, loadPrayerLibrary, personInitials, prayerFilters, prayerStatusLabels, prayerStatuses, type PrayerFocus, type PrayerLibrary } from './journal';
 
 export function PrayerScreen() {
-  const { localDate: today } = useLocalClock();
-  const [params] = useSearchParams();
-  const requested = params.get("status")?.toUpperCase() as PrayerStatus | undefined;
-  const selected: PrayerStatus = requested && statuses.includes(requested) ? requested : "ACTIVE";
-  const [items, setItems] = useState<Prayer[]>([]);
-  const [all, setAll] = useState<Prayer[]>([]);
-  const [openSession, setOpenSession] = useState<PrayerSession | null>(null);
+  const { localDate, timeZone } = useLocalClock();
+  const [params, setParams] = useSearchParams();
+  const [library, setLibrary] = useState<PrayerLibrary | null>(null);
+  const [focus, setFocus] = useState<PrayerFocus | null>(null);
+  const [error, setError] = useState('');
+  const [focusError, setFocusError] = useState('');
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-
-  const refresh = useCallback(async () => {
-    setLoading(true);
-    const [nextItems, nextAll, session] = await Promise.all([
-      repository.listByStatus(selected),
-      repository.listActive(),
-      sessions.getOpenSession(),
-    ]);
-    setItems(nextItems);
-    setAll(nextAll);
-    setOpenSession(session?.localDate === today ? session : null);
-    setLoading(false);
-  }, [selected, today]);
+  const [retry, setRetry] = useState(0);
+  const [quote, setQuote] = useState('');
+  const [quoteFailed, setQuoteFailed] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(5);
+  const [filtersOpen, setFiltersOpen] = useState(Boolean(params.get('person') || params.get('category')));
 
   useEffect(() => {
-    void refresh().catch(() => {
-      setError("Could not open prayers. Reload to try again.");
-      setLoading(false);
-    });
-  }, [refresh]);
+    let cancelled = false;
+    setQuoteFailed(false);
+    void loadBibleChapter('COL', 4).then(chapter => {
+      if (!cancelled) setQuote(chapter.blocks.filter(block => ['paragraph', 'poetry', 'superscription'].includes(block.kind))
+        .flatMap(block => block.segments).filter(segment => segment.verseKey === 'COL.4.2').map(segment => segment.text).join('').trim());
+    }).catch(() => { if (!cancelled) setQuoteFailed(true); });
+    return () => { cancelled = true; };
+  }, [retry]);
 
-  const counts = useMemo(
-    () => Object.fromEntries(statuses.map((status) => [status, all.filter((item) => item.status === status).length])) as Record<PrayerStatus, number>,
-    [all],
-  );
+  useEffect(() => {
+    let generation = 0;
+    let cancelled = false;
+    const refresh = () => {
+      const current = ++generation;
+      const active = () => !cancelled && current === generation;
+      setLoading(true); setError(''); setFocusError('');
+      void loadPrayerLibrary(db).then(value => { if (active()) setLibrary(value); })
+        .catch(() => { if (active()) setError('Could not open prayers. Your saved requests are unchanged.'); })
+        .finally(() => { if (active()) setLoading(false); });
+      void loadPrayerFocus(db, localDate, timeZone).then(value => { if (active()) setFocus(value); })
+        .catch(() => { if (active()) { setFocus(null); setFocusError('Could not open the prayer preview. Your list is still available.'); } });
+    };
+    const onVisible = () => { if (document.visibilityState === 'visible') refresh(); };
+    refresh();
+    window.addEventListener('focus', refresh); window.addEventListener('pageshow', refresh); document.addEventListener('visibilitychange', onVisible);
+    return () => { cancelled = true; window.removeEventListener('focus', refresh); window.removeEventListener('pageshow', refresh); document.removeEventListener('visibilitychange', onVisible); };
+  }, [localDate, timeZone, retry]);
 
-  return (
-    <main className="visual-screen prayer-screen live-prayer-screen mg-canonical-screen">
-      <header className="mg-canonical-hero mg-prayer-hero">
-        <div className="mg-hero-copy">
-          <p className="eyebrow">Bring it to Him</p>
-          <h1>Prayer</h1>
-          <p className="screen-intro">People, needs, gratitude, and ordinary days belong here.</p>
-          <div className="prayer-primary-actions">
-            <Link className="primary-editorial-action compact-action" to="/prayer/new"><Icon name="plus" /> Add prayer</Link>
-            {openSession
-              ? <Link className="prayer-now-link" to={`/prayer/session?depth=${openSession.depth}`}>Resume session</Link>
-              : counts.ACTIVE > 0
-                ? <Link className="prayer-now-link" to="/prayer/session?depth=quick">Pray now</Link>
-                : null}
-          </div>
-          <div className="prayer-management-links"><Link to="/prayer/people"><Icon name="people" /> People</Link><Link to="/prayer/categories">Categories</Link></div>
-        </div>
-        <div className="mg-prayer-hero-art" aria-hidden="true">
-          <BotanicalSprig />
-          <p>“Bring everything to God.”</p>
-          <span>Philippians 4:6</span>
-        </div>
-      </header>
+  const selected = library ? prayerFilters(params, library) : { status: prayerStatuses.find(s => s === params.get('status')?.toUpperCase()) ?? 'ACTIVE', person: '', category: '' };
+  const query = params.toString();
+  useEffect(() => { setVisibleCount(5); }, [query]);
+  useEffect(() => {
+    if (!library) return;
+    const next = new URLSearchParams(params);
+    const valid = prayerFilters(params, library);
+    if (next.has('person') && !valid.person) next.delete('person');
+    if (next.has('category') && !valid.category) next.delete('category');
+    if (next.has('status') && next.get('status') !== valid.status) next.set('status', valid.status);
+    if (next.toString() !== params.toString()) setParams(next, { replace: true });
+  }, [library, params, setParams]);
+  const people = useMemo(() => new Map(library?.people.map(person => [person.id, person])), [library]);
+  const items = library?.prayers.filter(prayer => prayer.status === selected.status && (!selected.person || prayer.personId === selected.person) && (!selected.category || prayer.categoryId === selected.category)) ?? [];
+  const listUrl = `/prayer${query ? `?${query}` : ''}`;
+  const returnQuery = new URLSearchParams({ return: listUrl }).toString();
+  const addUrl = `/prayer/new?${returnQuery}`;
+  const filtered = Boolean(selected.person || selected.category);
+  const setFilter = (key: string, value: string) => { const next = new URLSearchParams(params); if (value) next.set(key, value); else next.delete(key); setParams(next); };
+  const clearFilters = () => { const next = new URLSearchParams(params); next.delete('person'); next.delete('category'); setParams(next); };
+  const focusPerson = focus?.prayer?.personId ? people.get(focus.prayer.personId) : null;
 
-      {counts.ACTIVE > 0 ? (
-        <section className="prayer-session-choices mg-prayer-focus" aria-label="Focused prayer depth">
-          <div className="mg-prayer-focus-copy">
-            <p className="section-kicker">Focused prayer</p>
-            <h2>{openSession ? "Continue where you stopped." : "Set aside a few quiet minutes."}</h2>
-            {openSession ? <p className="session-resume-note">Your unfinished {openSession.depth} session from today is preserved. Your place is saved.</p> : <p className="muted-copy">The queue brings focused and due requests first, then rotates through the rest.</p>}
-          </div>
-          <div className="mg-session-depths">
-            <Link to="/prayer/session?depth=quick"><strong>Quick</strong><span>about 4 requests</span><Icon name="arrow" /></Link>
-            <Link to="/prayer/session?depth=regular"><strong>Regular</strong><span>about 10 requests</span><Icon name="arrow" /></Link>
-            <Link to="/prayer/session?depth=extended"><strong>Extended</strong><span>about 20 requests</span><Icon name="arrow" /></Link>
-          </div>
-          <small className="session-depth-note">Focused and due requests may make a session longer.</small>
-        </section>
-      ) : null}
-
-      <section className="mg-prayer-library" aria-labelledby="prayer-list-heading">
-        <div className="mg-section-title-row">
-          <div>
-            <p className="section-kicker">Prayer list</p>
-            <h2 id="prayer-list-heading">What you’re carrying.</h2>
-          </div>
-          <EditorialFlourish />
-        </div>
-
-        <nav className="prayer-status-tabs" aria-label="Prayer status">
-          {statuses.map((status) => (
-            <Link key={status} aria-current={selected === status ? "page" : undefined} className={selected === status ? "is-active" : ""} to={`/prayer?status=${status}`}>
-              <span>{labels[status]}</span><small>{counts[status]}</small>
-            </Link>
-          ))}
-        </nav>
-
-        <section className="prayer-live-list" aria-live="polite">
-          {error ? <p className="mg-inline-state mg-error-state" role="alert">{error}</p> : loading ? <p className="muted-copy mg-inline-state mg-loading-state">Opening prayers…</p> : items.length === 0 ? (
-            <div className="prayer-empty mg-prayer-empty mg-empty-state">
-              <BotanicalSprig aria-hidden="true" />
-              <h2>No {labels[selected].toLowerCase()} prayers.</h2>
-              <p>{selected === "ACTIVE" ? "Add a request when there is something you genuinely want to carry into prayer." : "Nothing needs to be here."}</p>
-              {selected === "ACTIVE" ? <Link to="/prayer/new">Add prayer →</Link> : null}
-            </div>
-          ) : items.map((prayer) => (
-            <Link className="prayer-live-row mg-prayer-row" to={`/prayer/${prayer.id}`} key={prayer.id}>
-              <span className="mg-prayer-row-icon" aria-hidden="true"><Icon name={prayer.status === "ANSWERED" ? "answered" : "prayer"} /></span>
-              <div>
-                <span className={`prayer-status-word status-${prayer.status.toLowerCase()}`}>{labels[prayer.status]}</span>
-                <p>{prayer.body}</p>
-                <small>{lastPrayedLabel(prayer)}</small>
-              </div>
-              <Icon name="arrow" />
-            </Link>
-          ))}
-        </section>
-      </section>
-    </main>
-  );
+  return <main className="grace-prayer">
+    <header className="prayer-journal-heading">
+      <h1>Prayer</h1>
+      <Link className="prayer-add" to={addUrl} aria-label="Add prayer"><PlusIcon size={23} weight="light" aria-hidden="true" /></Link>
+    </header>
+    <div className="prayer-quotation">
+      {quote ? <blockquote>“{quote}”</blockquote> : <p>{quoteFailed ? 'A moment to bring your heart to God.' : 'A quiet moment for prayer.'}</p>}
+      <Link to={`/bible/COL/4?verse=2&${returnQuery}`}>Colossians 4:2 · BSB</Link>
+    </div>
+    <nav className="prayer-journal-tabs" aria-label="Prayer status">
+      {prayerStatuses.map(status => { const next = new URLSearchParams(params); next.set('status', status); return <Link key={status} aria-current={selected.status === status ? 'page' : undefined} to={`/prayer?${next}`}>
+        <span>{prayerStatusLabels[status]}</span><small>{library?.counts[status] ?? '–'}</small>
+      </Link>; })}
+    </nav>
+    <section className="prayer-journal-library" aria-labelledby="prayer-list-heading">
+      <div className="prayer-list-heading"><h2 id="prayer-list-heading">Prayer requests</h2><button type="button" aria-expanded={filtersOpen} aria-controls="prayer-filters" onClick={() => setFiltersOpen(value => !value)}>Filters{filtered ? ' · On' : ''}<DevotionalIcon name="down" /></button></div>
+      {filtersOpen && <div className="prayer-filters grace-paper" id="prayer-filters">
+        <div className="prayer-filter-field"><label htmlFor="prayer-person">Person</label><select id="prayer-person" value={selected.person} onChange={event => setFilter('person', event.target.value)}><option value="">All people</option>{library?.people.map(person => <option key={person.id} value={person.id}>{person.name}</option>)}</select></div>
+        <div className="prayer-filter-field"><label htmlFor="prayer-category">Category</label><select id="prayer-category" value={selected.category} onChange={event => setFilter('category', event.target.value)}><option value="">All categories</option>{library?.categories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}</select></div>
+        <div><button type="button" disabled={!filtered} onClick={clearFilters}>Clear filters</button><Link to="/prayer/people">People</Link><Link to="/prayer/categories">Categories</Link></div>
+      </div>}
+      {error && <div className="prayer-journal-state" role="alert"><p>{error}</p><button type="button" onClick={() => setRetry(value => value + 1)}>Try again</button></div>}
+      {loading && !library ? <p className="prayer-journal-state" role="status">Opening prayers…</p> : library && <>
+        {items.length ? <div className="prayer-journal-list">{items.slice(0, visibleCount).map(prayer => {
+          const person = prayer.personId ? people.get(prayer.personId) : null;
+          return <Link className="prayer-journal-row" key={prayer.id} to={`/prayer/${prayer.id}?${returnQuery}`}>
+            <span className={`prayer-identity prayer-identity--${identityTone(person?.id ?? prayer.id)}`} aria-hidden="true">{person ? personInitials(person.name) : <DevotionalIcon name={prayer.status === 'ANSWERED' ? 'check' : 'prayer'} />}</span>
+            <span className="prayer-row-copy">{person && <strong>{person.name}</strong>}<span className={`prayer-request-preview${person ? '' : ' is-request-title'}`}>{prayer.body}</span>{prayer.lastPrayedAt && <small>Last prayed <time dateTime={prayer.lastPrayedAt}>{new Intl.DateTimeFormat(undefined, { month: 'short', day: 'numeric', year: 'numeric', timeZone }).format(new Date(prayer.lastPrayedAt))}</time></small>}</span>
+            <DevotionalIcon name="chevron" />
+          </Link>;
+        })}</div> : <div className="prayer-journal-state prayer-journal-empty"><MorningGraceArtwork variant="botanical" /><h3>{filtered ? 'No matching requests.' : `No ${prayerStatusLabels[selected.status].toLowerCase()} prayers.`}</h3><p>{filtered ? 'Try another person or category, or clear the filters.' : selected.status === 'ACTIVE' ? 'Bring what is on your heart. A few words are enough to begin.' : 'There is nothing here just now.'}</p>{filtered ? <button type="button" onClick={clearFilters}>Clear filters</button> : selected.status === 'ACTIVE' ? <Link to={addUrl}>Add prayer<DevotionalIcon name="arrow" /></Link> : null}</div>}
+        <div className="prayer-list-footer"><span role="status">Showing {Math.min(visibleCount, items.length)} of {items.length} requests</span>{items.length > visibleCount && <button type="button" onClick={() => setVisibleCount(value => value + 10)}>Show more<DevotionalIcon name="down" /></button>}</div>
+      </>}
+    </section>
+    <section className="prayer-focus-card grace-paper" aria-labelledby="prayer-focus-heading">
+      <div className="prayer-focus-caption"><MorningGraceArtwork variant="botanical" /><h2 id="prayer-focus-heading">A focus prayer</h2></div>
+      {focusError ? <div role="status"><p>{focusError}</p><button type="button" onClick={() => setRetry(value => value + 1)}>Retry preview</button></div> : !focus ? <p>Preparing your prayer preview…</p> : <>
+        {focus.prayer ? <><h3>{focusPerson?.name ?? 'Bring it to Him'}</h3><p className="prayer-focus-request">{focus.prayer.body}</p></> : <h3>{focus.session ? 'A quiet place to finish.' : 'A moment for prayer.'}</h3>}
+        {(focus.prayer || focus.session) && <Link className="prayer-focus-action" to={`/prayer/session?depth=${focus.session?.depth ?? 'quick'}`}>{focus.session ? focus.prayer ? 'Resume prayer' : 'Finish session' : 'Begin prayer'}<DevotionalIcon name="arrow" /></Link>}
+        <p className="prayer-focus-reason">{focus.reason}{!focus.prayer && !focus.session ? ' Manual-only requests remain in your list.' : ''}</p>
+        {!focus.session && focus.prayer && <details className="prayer-session-length"><summary>Session length<DevotionalIcon name="down" /></summary><div>{Object.entries(PRAYER_DEPTH_TARGETS).map(([depth, target]) => <Link key={depth} to={`/prayer/session?depth=${depth}`}><strong>{depth.charAt(0).toUpperCase() + depth.slice(1)}</strong><span>about {target} requests</span></Link>)}</div><p>Focused and due requests may make a session longer.</p></details>}
+      </>}
+    </section>
+    <nav className="prayer-utility-links" aria-label="Prayer utilities"><Link to={`/search?${returnQuery}`}>Search</Link><Link to={`/data?${returnQuery}`}>Data</Link></nav>
+  </main>;
 }
