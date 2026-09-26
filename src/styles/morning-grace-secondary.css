@@ -552,6 +552,7 @@
   border: 1px solid var(--color-line-strong);
   border-radius: var(--radius-sm);
   background: var(--color-surface);
+  color: var(--color-ink);
 }
 
 .mg-data-workspace .import-panel {
