@@ -72,13 +72,13 @@ export class HistoryRepository {
       if (event.type === 'HIGHLIGHT_CREATED') {
         const item = highlights.get(event.subjectId), valid = item && !item.deletedAt;
         const reference = valid ? { translationId: item.translationId, startVerseKey: item.startVerseKey, endVerseKey: item.endVerseKey } : null;
-        return { ...base, kind: 'highlight' as const, title: item?.deletedAt ? 'Highlight removed' : 'Scripture highlighted', reference,
+        return { ...base, kind: 'highlight' as const, title: 'Scripture highlighted', reference,
           href: reference ? `/bible/${reference.startVerseKey.split('.')[0]}/${reference.startVerseKey.split('.')[1]}?verse=${reference.startVerseKey.split('.')[2]}` : null,
           availability: valid ? 'available' as const : item?.deletedAt ? 'removed' as const : 'unavailable' as const };
       }
       if (event.type === 'REFLECTION_CREATED') {
         const item = reflections.get(event.subjectId), valid = item && !item.deletedAt;
-        return { ...base, kind: 'reflection' as const, title: item?.deletedAt ? 'Reflection removed' : 'Reflection written', body: valid ? historyExcerpt(item.bodyMd) : null, fullText: valid ? item.bodyMd : null,
+        return { ...base, kind: 'reflection' as const, title: 'Reflection written', body: valid ? historyExcerpt(item.bodyMd) : null, fullText: valid ? item.bodyMd : null,
           href: valid ? `/today/reflection/${event.localDate}` : null, availability: valid ? 'available' as const : item?.deletedAt ? 'removed' as const : 'unavailable' as const };
       }
       if (event.type === 'PRAYER_UPDATED' || event.type === 'ENCOURAGEMENT_RECORDED') {
@@ -93,11 +93,11 @@ export class HistoryRepository {
         const resolutionId = event.metadata.resolutionId;
         const resolution = typeof resolutionId === 'string' ? resolutions.get(resolutionId) : snapshot.resolutions.find(r => r.prayerId === event.subjectId);
         const available = valid && resolution && !resolution.deletedAt && resolution.prayerId === event.subjectId;
-        return { ...base, kind: 'answer' as const, title: prayer?.deletedAt ? 'Prayer removed' : 'Answered prayer', body: available ? historyExcerpt(resolution.reflectionMd) : null,
+        return { ...base, kind: 'answer' as const, title: 'Answered prayer', body: available ? historyExcerpt(resolution.reflectionMd) : null,
           fullText: available ? resolution.reflectionMd : null, href: available ? `/prayer/${event.subjectId}` : null,
           availability: available ? 'available' as const : prayer?.deletedAt || resolution?.deletedAt ? 'removed' as const : 'unavailable' as const };
       }
-      return { ...base, title: prayer?.deletedAt ? 'Prayer removed' : event.type === 'PRAYER_CREATED' ? 'Added a prayer request' : 'Prayer prayed', body: valid ? historyExcerpt(prayer.body) : null,
+      return { ...base, title: event.type === 'PRAYER_CREATED' ? 'Added a prayer request' : 'Prayer prayed', body: valid ? historyExcerpt(prayer.body) : null,
         fullText: valid ? prayer.body : null, href: valid ? `/prayer/${prayer.id}` : null, availability: valid ? 'available' as const : prayer?.deletedAt ? 'removed' as const : 'unavailable' as const };
     });
   }

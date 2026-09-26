@@ -18,7 +18,8 @@ describe("HistoryRepository", () => {
     const moments = await new HistoryRepository(database).listMoments();
     expect(moments).toHaveLength(3);
     expect(moments.every((entry) => entry.body === null && entry.href === null)).toBe(true);
-    expect(moments.map((entry) => entry.title)).toContain("Reflection removed");
+    expect(moments.map((entry) => entry.title).sort()).toEqual(["Added a prayer request", "Answered prayer", "Reflection written"]);
+    expect(moments.every((entry) => entry.availability === "removed")).toBe(true);
   });
   it("groups meaningful activity by local date without precreating empty days", async () => {
     const database = testDb(); await prepareDatabase(database);

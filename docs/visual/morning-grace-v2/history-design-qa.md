@@ -22,6 +22,7 @@ The illustration matches the reference's material, palette and composition rathe
 - Reading groups require the same stored date, enrollment and assignment. They list actual completed passages. Explicit prayed actions form a daily row whose destination exposes each event. Other actions stay separate.
 - Ordering uses stored date, latest constituent event time and stable ID. Browser time-zone changes cannot move an event to another historical day.
 - Removed records can contribute factual metrics. Both child and parent tombstones suppress private excerpts and source links. Answer resolution IDs are honored; missing answers never fall back to unrelated writing.
+- Original action titles remain factual after removal. For example, a removed reflection still has a "Reflection written" event with a separate unavailable-source explanation; its creation date is never relabeled as a deletion date.
 - Excerpts reflect current saved writing. History is not a snapshot archive. Day provides full text and a separate original-record action.
 - Overview reveals five rows, then ten; Moments reveals twenty at a time with no 200-entry cutoff. Totals need no archive-wide private-body scan.
 
