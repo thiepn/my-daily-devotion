@@ -146,6 +146,23 @@ test("opening capture and its details never creates metadata or events",async({p
   await openRoute(page,"/prayer/new");await page.getByRole("button",{name:"Add details",exact:true}).click();await expect(page.getByRole("combobox",{name:"Category optional"})).toBeVisible();
   expect(await writingSnapshot(page)).toEqual(before);
 });
+test("discarding a same-date route change restores saved writing",async({page})=>{
+  await seedWriting(page,"reflection");
+  await openRoute(page,"/today/reflection/2026-04-24?return="+encodeURIComponent("/today/reflection/2026-04-24?return=%2Ftoday"));
+  await page.getByLabel("Daily reflection").fill("Discard this temporary version.");
+  await page.locator(".journal-heading .quiet-back-link").click();
+  await page.getByRole("button",{name:"Discard and continue"}).click();
+  await expect(page.getByLabel("Daily reflection")).toHaveValue(writingBody);
+  await expect(page.locator(".journal-heading .quiet-back-link")).toHaveAttribute("href","#/today");
+});
+test("detaching the incoming passage does not silently reattach it on save",async({page})=>{
+  await seedWriting(page,"reflection");
+  await openRoute(page,"/today/reflection/2026-04-24?translation=BSB&start=JHN.3.16&end=JHN.3.18");
+  await page.locator(".journal-context summary").click();await page.getByRole("button",{name:"Detach JHN.3.16",exact:true}).click();
+  await expect(page.locator(".journal-context")).toHaveCount(0);
+  await page.getByLabel("Daily reflection").fill("Remember grace without a linked passage.");await page.getByRole("button",{name:"Save reflection",exact:true}).click();await expect(page.locator(".journal-status")).toContainText("saved locally");
+  const links=((await writingSnapshot(page)).find((row:any)=>row[0]==="scriptureLinks") as any)[1];expect(links.filter((link:any)=>link.deletedAt===null)).toHaveLength(0);
+});
 test("both writing screens reflow and remain accessible in light and dark",async({page})=>{
   for(const screen of ["reflection","prayer"] as const){
     await seedWriting(page,screen);

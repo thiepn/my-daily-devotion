@@ -16,15 +16,17 @@ const message = (reason: unknown) => reason instanceof Error ? reason.message : 
 
 export function ReflectionScreen() {
   const { localDate = "" } = useParams();
+  const location = useLocation();
   try { assertLocalDate(localDate); } catch {
     return <main className="journal-workspace"><h1>Invalid date</h1><p>This reflection date is not valid.</p><Link to="/today">Return to Today</Link></main>;
   }
-  return <ReflectionEditor key={localDate} localDate={localDate as LocalDate} />;
+  return <ReflectionEditor key={localDate + location.search} localDate={localDate as LocalDate} />;
 }
 
 function ReflectionEditor({ localDate }: { localDate: LocalDate }) {
   const location = useLocation(); const navigate = useNavigate(); const [params] = useSearchParams();
-  const pending = parsePendingScripture(params);
+  const [pendingDismissed, setPendingDismissed] = useState(false);
+  const pending = pendingDismissed ? null : parsePendingScripture(params);
   const self = location.pathname + location.search;
   const returnParam = params.get("return");
   const back = returnParam?.startsWith("/") && !returnParam.startsWith("//") ? returnParam : "/today";
@@ -128,7 +130,11 @@ function ReflectionEditor({ localDate }: { localDate: LocalDate }) {
       {(links.length > 0 || pending) ? <details className="journal-context"><summary>From Scripture <span>{links.length + (pendingLinked ? 0 : 1)} passage{links.length + (pendingLinked ? 0 : 1) === 1 ? "" : "s"}</span></summary>
         {pending && !pendingLinked ? <ScriptureContext reference={pending} returnTo={self} pending /> : null}
         {links.map(link => <div key={link.id}><ScriptureContext reference={link} returnTo={self} /><button className="journal-detach" disabled={busy} onClick={async () => {
-          try { await repository.detachScripture(link.id); setLinks(previous => previous.filter(item => item.id !== link.id)); }
+          try {
+            await repository.detachScripture(link.id);
+            if (pending && pending.translationId === link.translationId && pending.startVerseKey === link.startVerseKey && pending.endVerseKey === link.endVerseKey) setPendingDismissed(true);
+            setLinks(previous => previous.filter(item => item.id !== link.id));
+          }
           catch { setStatus("Could not detach the passage. Please try again."); }
         }} aria-label={`Detach ${link.startVerseKey}`}>Detach passage</button></div>)}
       </details> : null}
