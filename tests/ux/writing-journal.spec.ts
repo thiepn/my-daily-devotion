@@ -167,7 +167,12 @@ test("both writing screens reflow and remain accessible in light and dark",async
   for(const screen of ["reflection","prayer"] as const){
     await seedWriting(page,screen);
     for(const width of [320,360,390,430,768,1440]){await page.setViewportSize({width,height:844});await expectNoHorizontalOverflow(page);await expect(page.locator(".journal-heading .grace-art img")).toBeVisible();}
-    for(const colorScheme of ["light","dark"] as const){await page.emulateMedia({colorScheme});await expectNoAxeViolations(page);}
+    for(const colorScheme of ["light","dark"] as const){
+      await page.emulateMedia({colorScheme});
+      // Audit the settled theme, not an intermediate sidebar color transition.
+      await page.evaluate(()=>Promise.all(document.getAnimations().map(animation=>animation.finished.catch(()=>{}))));
+      await expectNoAxeViolations(page);
+    }
     await page.setViewportSize({width:320,height:568});await page.evaluate(()=>{document.documentElement.style.fontSize="200%";});await expectNoHorizontalOverflow(page);
     const sizes=await page.locator(".journal-workspace button:visible,.journal-heading a:visible").evaluateAll(nodes=>nodes.map(node=>({w:node.getBoundingClientRect().width,h:node.getBoundingClientRect().height})));
     for(const size of sizes){expect(size.w).toBeGreaterThanOrEqual(44);expect(size.h).toBeGreaterThanOrEqual(44);}
