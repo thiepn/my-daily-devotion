@@ -29,6 +29,8 @@ export interface NewPrayerInput {
   eventDate?: LocalDate | null;
   focusUntil?: LocalDate | null;
   sourceReflectionId?: UUID | null;
+  /** Optional optimistic source check used by capture; never stored. */
+  expectedSourceReflectionRevision?: number;
   sourceDevotionDate?: LocalDate | null;
   scriptureReferences?: ScriptureReference[];
 }
@@ -76,8 +78,13 @@ export class PrayerRepository extends MutableRepository<Prayer> {
         this.database.prayerSchedules,
         this.database.people,
         this.database.categories,
+        this.database.reflections,
       ],
       async () => {
+        if (input.sourceReflectionId && input.expectedSourceReflectionRevision !== undefined) {
+          const source = await this.database.reflections.get(input.sourceReflectionId);
+          if (!source || source.deletedAt || source.revision !== input.expectedSourceReflectionRevision) throw new Error("The source reflection changed or was removed. Retry the source before saving.");
+        }
         await this.validateMetadata(input.personId ?? null, input.categoryId ?? null);
         let scheduleId = input.scheduleId ?? null;
         if (input.schedule !== undefined) {
