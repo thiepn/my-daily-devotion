@@ -43,26 +43,30 @@ export class HistoryRepository {
   async resolveEvents(events: ActivityEvent[]): Promise<HistoryEntry[]> {
     const db = this.database;
     const ids = (types: ActivityEventType[]) => [...new Set(events.filter(e => types.includes(e.type)).map(e => e.subjectId))];
-    const snapshot = await db.transaction('r', [db.reflections, db.highlights, db.prayers, db.prayerUpdates, db.prayerResolutions], async () => {
+    const snapshot = await db.transaction('r', [db.reflections, db.highlights, db.prayers, db.prayerUpdates, db.prayerResolutions, db.planEnrollments], async () => {
       const [reflections, highlights, updates] = await Promise.all([
         db.reflections.bulkGet(ids(['REFLECTION_CREATED'])), db.highlights.bulkGet(ids(['HIGHLIGHT_CREATED'])),
         db.prayerUpdates.bulkGet(ids(['PRAYER_UPDATED', 'ENCOURAGEMENT_RECORDED'])),
       ]);
       const prayerIds = [...new Set([...ids(['PRAYER_CREATED', 'PRAYER_PRAYED', 'PRAYER_ANSWERED']), ...updates.flatMap(u => u ? [u.prayerId] : [])])];
       const [prayers, resolutions] = await Promise.all([db.prayers.bulkGet(prayerIds), db.prayerResolutions.where('prayerId').anyOf(ids(['PRAYER_ANSWERED'])).toArray()]);
-      return { reflections, highlights, updates, prayers, resolutions };
+      const enrollmentIds = [...new Set(events.flatMap(e => e.type === 'READING_COMPLETED' && typeof e.metadata.enrollmentId === 'string' ? [e.metadata.enrollmentId] : []))];
+      const enrollments = await db.planEnrollments.bulkGet(enrollmentIds);
+      return { reflections, highlights, updates, prayers, resolutions, enrollments };
     });
     const byId = <T extends { id: string }>(items: (T | undefined)[]) => new Map(items.filter((i): i is T => Boolean(i)).map(i => [i.id, i]));
-    const reflections = byId(snapshot.reflections), highlights = byId(snapshot.highlights), prayers = byId(snapshot.prayers), updates = byId(snapshot.updates), resolutions = byId(snapshot.resolutions);
+    const reflections = byId(snapshot.reflections), highlights = byId(snapshot.highlights), prayers = byId(snapshot.prayers), updates = byId(snapshot.updates), resolutions = byId(snapshot.resolutions), enrollments = byId(snapshot.enrollments);
     const plan = events.some(e => e.type === 'READING_COMPLETED') ? await loadMcheynePlan().catch(() => null) : null;
     return events.map(event => {
       const base: HistoryEntry = { id: event.id, eventType: event.type, localDate: event.localDate, occurredAt: event.occurredAt, kind: 'prayer', title: 'Recorded prayer', body: null, fullText: null, href: null, reference: null, metadata: event.metadata, availability: 'unavailable' };
       if (event.type === 'READING_COMPLETED') {
         const sequence = Number(event.metadata.assignmentSequence), index = Number(event.metadata.readingIndex);
-        const reading = Number.isInteger(sequence) && sequence >= 1 && sequence <= 365 && typeof event.metadata.readingIndex === 'number' && index >= 0 && index <= 3 ? plan?.assignments[sequence - 1]?.readings[index] : null;
+        const reading = typeof event.metadata.assignmentSequence === 'number' && Number.isInteger(sequence) && sequence >= 1 && sequence <= 365 && typeof event.metadata.readingIndex === 'number' && Number.isInteger(index) && index >= 0 && index <= 3 ? plan?.assignments[sequence - 1]?.readings[index] : null;
         const enrollment = typeof event.metadata.enrollmentId === 'string' ? event.metadata.enrollmentId : null;
+        const savedEnrollment = enrollment ? enrollments.get(enrollment) : null;
+        const start = reading?.references[0]?.startVerseKey.split('.');
         return { ...base, kind: 'scripture' as const, title: 'Completed reading', body: reading?.displayReference ?? null,
-          href: reading && enrollment ? buildPlanReadingUrl(reading, enrollment, sequence, index, 'plan') : null,
+          href: reading && enrollment && savedEnrollment && !savedEnrollment.deletedAt ? buildPlanReadingUrl(reading, enrollment, sequence, index, 'plan') : start ? `/bible/${start[0]}/${start[1]}?verse=${start[2]}` : null,
           reference: reading?.references[0] ?? null, availability: reading ? 'available' as const : 'unavailable' as const };
       }
       if (event.type === 'HIGHLIGHT_CREATED') {

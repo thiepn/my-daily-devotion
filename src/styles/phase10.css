@@ -193,8 +193,7 @@ html {
     --color-line: var(--color-line-strong);
   }
 
-  .nav-link.active,
-  .history-tabs a.is-active {
+  .nav-link.active {
     text-decoration: underline;
     text-underline-offset: 4px;
   }
@@ -202,10 +201,7 @@ html {
 
 @media (forced-colors: active) {
   .reading-state,
-  .event-mark,
-  .history-entry-mark,
-  .history-day-marks i,
-  .history-calendar-legend i {
+  .event-mark {
     forced-color-adjust: auto;
   }
 }

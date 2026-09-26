@@ -20,7 +20,6 @@ h3,
 .journal-page p,
 .focus-preview blockquote,
 .reflection-body,
-.history-entry-copy,
 .prayer-body-copy {
   font-family: var(--font-reading);
 }

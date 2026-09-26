@@ -74,7 +74,7 @@ export function BibleScreen() {
           {leading?.[2]&&<span className="scripture-text">{leading[2]}</span>}
         </> : <span className="scripture-text">{segment.text}</span>}
       </span>;});if(block.kind==="heading")return <h3 className={`scripture-heading level-${block.level}`} key={blockIndex}>{content}</h3>;if(block.kind==="superscription")return <p className="scripture-superscription" key={blockIndex}>{content}</p>;if(block.kind==="poetry")return <p className={`scripture-block scripture-poetry level-${block.level}`} key={blockIndex}>{content}</p>;return <p className="scripture-block" key={blockIndex}>{content}</p>;};
-  const firstChapter=currentIndex===0&&routeChapter===1;const lastBook=currentIndex===manifest.books.length-1&&routeChapter===activeBook.chapterCount;const currentSegment=planContext?.reading.references[planContext.locator.segmentIndex]??null;const segmentCount=planContext?.reading.references.length??0;const backTarget=planContext?.locator.origin==="plan"?"/today/plan":"/today";
+  const firstChapter=currentIndex===0&&routeChapter===1;const lastBook=currentIndex===manifest.books.length-1&&routeChapter===activeBook.chapterCount;const currentSegment=planContext?.reading.references[planContext.locator.segmentIndex]??null;const segmentCount=planContext?.reading.references.length??0;const requestedReturn=new URLSearchParams(searchKey).get("return");const backTarget=requestedReturn?.startsWith("/")&&!requestedReturn.startsWith("//")?requestedReturn:planContext?.locator.origin==="plan"?"/today/plan":"/today";
   const readerStyle = {
     '--scripture-scale': readerAppearance.appearance.scale,
     '--scripture-leading': { close: 1.45, comfortable: 1.65, generous: 1.85 }[readerAppearance.appearance.leading],
@@ -96,7 +96,7 @@ export function BibleScreen() {
           <section className="plan-reading-context mg-plan-context" aria-label="M’Cheyne reading context">
             <div className="plan-context-copy"><span className="section-kicker">M’Cheyne · {planContext.reading.group === "family" ? "Family" : "Private"}</span><strong>{planContext.reading.displayReference}</strong><span>Day {planContext.locator.sequence}{segmentCount > 1 ? ` · Part ${planContext.locator.segmentIndex + 1} of ${segmentCount}` : ""}</span></div>
             <div className="plan-context-actions">
-              <Link to={backTarget}>Back to {planContext.locator.origin === "plan" ? "plan" : "Today"}</Link>
+              <Link to={backTarget}>Back to {backTarget.startsWith("/history") ? "History" : planContext.locator.origin === "plan" ? "plan" : "Today"}</Link>
               {planContext.locator.segmentIndex > 0 ? <Link to={buildPlanReadingUrl(planContext.reading, planContext.enrollment.id, planContext.locator.sequence, planContext.locator.readingIndex, planContext.locator.origin, planContext.locator.segmentIndex - 1)}>Previous passage</Link> : null}
               {planContext.locator.segmentIndex + 1 < segmentCount ? <Link to={buildPlanReadingUrl(planContext.reading, planContext.enrollment.id, planContext.locator.sequence, planContext.locator.readingIndex, planContext.locator.origin, planContext.locator.segmentIndex + 1)}>Next passage</Link> : null}
               <button type="button" className={planContext.completed ? "is-complete" : ""} disabled={annotationBusy} onClick={() => void runMutation(() => togglePlanCompletion())}>{planContext.completed ? "Mark unread" : "Mark reading complete"}</button>

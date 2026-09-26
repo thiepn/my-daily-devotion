@@ -2,47 +2,6 @@
 .utility-actions > a { color: var(--color-ink-soft); font-size: .74rem; text-decoration: none; }
 .quiet-link-row { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 22px; }
 .quiet-link-row a { color: var(--color-accent-strong); font-size: .78rem; text-decoration: none; }
-.history-tabs { display: flex; gap: 24px; margin: -24px 0 42px; border-bottom: 1px solid var(--color-line-strong); }
-.history-tabs a { padding: 0 0 12px; color: var(--color-ink-soft); font-size: .78rem; text-decoration: none; }
-.history-tabs a.is-active { color: var(--color-ink); border-bottom: 2px solid var(--color-accent); }
-.history-calendar { max-width: 880px; }
-.history-month-heading { display: grid; grid-template-columns: 42px 1fr 42px; align-items: center; gap: 14px; padding: 18px 0; border-top: 1px solid var(--color-line-strong); border-bottom: 1px solid var(--color-line); }
-.history-month-heading h2 { margin: 0; text-align: center; font-family: var(--font-editorial); font-size: clamp(1.55rem, 3vw, 2.25rem); font-weight: 500; }
-.history-month-heading button { width: 42px; height: 42px; border: 0; background: transparent; color: var(--color-ink-soft); cursor: pointer; }
-.history-weekdays, .history-month-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
-.history-weekdays { padding: 13px 0 8px; color: var(--color-ink-faint); font-size: .66rem; text-align: center; text-transform: uppercase; letter-spacing: .06em; }
-.history-day { min-height: 92px; display: flex; flex-direction: column; justify-content: space-between; padding: 10px; border-top: 1px solid var(--color-line); border-right: 1px solid var(--color-line); color: var(--color-ink); text-decoration: none; }
-.history-day:nth-child(7n+1) { border-left: 1px solid var(--color-line); }
-.history-day:nth-last-child(-n+7) { border-bottom: 1px solid var(--color-line); }
-.history-day.blank { background: color-mix(in srgb, var(--color-surface-subtle) 38%, transparent); }
-.history-day.empty { color: var(--color-ink-faint); }
-.history-day.is-today strong { width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--color-accent); border-radius: 50%; }
-.history-day strong { font-family: var(--font-editorial); font-size: 1rem; font-weight: 500; }
-.history-day-marks { display: flex; gap: 5px; align-items: center; }
-.history-day-marks i, .history-calendar-legend i { width: 7px; height: 7px; display: inline-block; border: 1px solid var(--color-ink-faint); border-radius: 50%; }
-.history-day-marks .mark-scripture, .history-calendar-legend .mark-scripture { border-color: var(--color-accent); background: var(--color-accent); }
-.history-day-marks .mark-reflection, .history-calendar-legend .mark-reflection { border-radius: 1px; border-color: var(--color-ink-soft); }
-.history-day-marks .mark-prayer, .history-calendar-legend .mark-prayer { background: transparent; }
-.history-day-marks .mark-answer, .history-calendar-legend .mark-answer { border-color: var(--color-answer); background: var(--color-answer); }
-.history-calendar-legend { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 14px; color: var(--color-ink-faint); font-size: .68rem; }
-.history-calendar-legend span { display: inline-flex; align-items: center; gap: 6px; }
-.history-day-screen .screen-heading { margin-bottom: 40px; }
-.history-prayer-summary { display: flex; align-items: baseline; gap: 10px; margin-bottom: 34px; padding: 14px 0; border-top: 1px solid var(--color-line); border-bottom: 1px solid var(--color-line); }
-.history-prayer-summary .section-kicker { margin-right: auto; }
-.history-prayer-summary strong { font-family: var(--font-editorial); font-size: 2rem; font-weight: 500; }
-.history-prayer-summary span { color: var(--color-ink-soft); font-size: .74rem; }
-.history-entry-list, .moments-list { border-top: 1px solid var(--color-line-strong); }
-.history-entry { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 16px; padding: 22px 0; border-bottom: 1px solid var(--color-line); }
-.history-entry-mark { width: 7px; height: 7px; margin-top: 8px; border: 1px solid var(--color-ink-faint); border-radius: 50%; }
-.history-entry.kind-scripture .history-entry-mark { border-color: var(--color-accent); background: var(--color-accent); }
-.history-entry.kind-answer .history-entry-mark, .history-entry.kind-encouragement .history-entry-mark { border-color: var(--color-answer); background: var(--color-answer); }
-.history-entry p { margin: 0 0 5px; color: var(--color-ink-faint); font-size: .68rem; letter-spacing: .04em; text-transform: uppercase; }
-.history-entry strong { font-family: var(--font-editorial); font-size: 1.03rem; font-weight: 500; }
-.history-entry blockquote { max-width: 62ch; margin: 9px 0 0; color: var(--color-ink-soft); font-family: var(--font-editorial); line-height: 1.55; }
-.history-entry a { display: inline-block; margin-top: 9px; color: var(--color-accent-strong); font-size: .72rem; }
-.moment-row { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 32px; border-bottom: 1px solid var(--color-line); }
-.moment-row > time { padding-top: 24px; color: var(--color-ink-faint); font-size: .7rem; }
-.moment-row .history-entry { border-bottom: 0; }
 .global-search-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; margin-bottom: 48px; }
 .global-search-form > input { min-height: 52px; padding: 0 16px; border: 1px solid var(--color-line-strong); border-radius: var(--radius-small); background: var(--color-surface); color: var(--color-ink); font-family: var(--font-editorial); font-size: 1rem; }
 .global-search-form > button, .data-panel > button, .data-actions button, .backup-preview button { min-height: 42px; padding: 0 14px; border: 1px solid var(--color-ink); border-radius: var(--radius-small); background: var(--color-ink); color: var(--color-surface); cursor: pointer; }
@@ -93,5 +52,5 @@
 .backup-preview span { color: var(--color-ink-soft); font-size: .74rem; }
 .backup-preview button { width: fit-content; margin-top: 12px; }
 .data-status { min-height: 1.5em; margin-top: 26px; color: var(--color-ink-soft); font-size: .78rem; }
-@media (max-width: 760px) { .collections-layout { grid-template-columns: 1fr; } .moment-row { grid-template-columns: 1fr; gap: 0; } .moment-row > time { padding-top: 22px; } .history-day { min-height: 72px; padding: 7px; } }
-@media (max-width: 620px) { .utility-actions > a { display: none; } .history-tabs { margin-top: -16px; } .history-day { min-height: 58px; } .history-weekdays { font-size: .58rem; } .global-search-form { grid-template-columns: 1fr; } .global-search-form > button { width: 100%; } .search-filters { grid-column: auto; flex-direction: column; } .search-filters label { justify-content: space-between; } .import-mode { grid-template-columns: 1fr; } .import-mode span { margin-bottom: 8px; } }
+@media (max-width: 760px) { .collections-layout { grid-template-columns: 1fr; } }
+@media (max-width: 620px) { .utility-actions > a { display: none; } .global-search-form { grid-template-columns: 1fr; } .global-search-form > button { width: 100%; } .search-filters { grid-column: auto; flex-direction: column; } .search-filters label { justify-content: space-between; } .import-mode { grid-template-columns: 1fr; } .import-mode span { margin-bottom: 8px; } }
