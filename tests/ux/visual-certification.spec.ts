@@ -33,7 +33,7 @@ test("visual record of populated devotional journeys and management screens", as
   test.setTimeout(300_000);
   const errors: string[] = []; page.on("pageerror", (error) => errors.push(error.message));
   await enrollCalendarPlan(page);
-  await page.locator(".reading-toggle").first().click();
+  await page.locator(".today-plan-card summary").click(); await page.locator(".today-reading-check").first().click();
   await expect(page.getByText("1 of 4", { exact: true })).toBeVisible();
   await openRoute(page, "/prayer/people"); await page.getByLabel("Name", { exact: true }).fill("Anna"); await page.getByLabel("Relationship", { exact: false }).fill("Family");
   await page.getByRole("button", { name: "Add person", exact: true }).click(); await expect(page.locator(".metadata-row").filter({ hasText: "Anna" })).toBeVisible();

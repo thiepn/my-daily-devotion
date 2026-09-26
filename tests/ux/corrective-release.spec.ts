@@ -113,20 +113,24 @@ test("failed enrollment and reading writes show an error and succeed on retry", 
   await failNextWrite(page, "planEnrollments"); await page.getByRole("button", { name: /Follow today’s calendar/ }).click();
   await expect(page.getByRole("alert")).toContainText("Test storage full");
   await page.getByRole("button", { name: /Follow today’s calendar/ }).click();
-  await expect(page.getByText("0 of 4", { exact: true })).toBeVisible();
-  await failNextWrite(page, "readingProgress", "put"); await page.locator(".reading-toggle").first().click();
+  await expect(page.locator(".today-plan-card")).toBeVisible();
+  if (await page.locator(".today-plan-card").getAttribute("open") === null) await page.locator(".today-plan-card summary").click();
+  await expect(page.locator('.today-reading-check[aria-pressed="true"]')).toHaveCount(0);
+  await failNextWrite(page, "readingProgress", "put"); await page.locator(".today-reading-check").first().click();
   await expect(page.getByRole("alert")).toContainText("Test storage full");
   await expect(page.locator("html")).toHaveAttribute("data-injected-write", "readingProgress:put");
-  await expect(page.getByText("0 of 4", { exact: true })).toBeVisible();
-  await page.locator(".reading-toggle").first().click();
+  await expect(page.locator(".today-plan-card")).toBeVisible();
+  if (await page.locator(".today-plan-card").getAttribute("open") === null) await page.locator(".today-plan-card summary").click();
+  await expect(page.locator('.today-reading-check[aria-pressed="true"]')).toHaveCount(0);
+  await page.locator(".today-reading-check").first().click();
   await expect(page.getByText("1 of 4", { exact: true })).toBeVisible(); expect(errors).toEqual([]);
 });
 
 test("Today refreshes at local midnight without changing a historical reflection", async ({ page, context }) => {
   // Keep timers running so IndexedDB scheduling and React can finish startup.
   await page.clock.install({ time: new Date("2026-09-17T21:59:00Z") });
-  await enrollCalendarPlan(page); await expect(page.getByRole("heading", { name: "Day 260 readings" })).toBeVisible();
-  await page.clock.fastForward(61_000); await expect(page.getByRole("heading", { name: "Day 261 readings" })).toBeVisible();
+  await enrollCalendarPlan(page); await expect(page.getByText("Day 260", { exact: true })).toBeVisible();
+  await page.clock.fastForward(61_000); await expect(page.getByText("Day 261", { exact: true })).toBeVisible();
   const other = await context.newPage(); await openRoute(other, "/today/reflection/2026-09-17");
   await other.getByLabel("Daily reflection").fill("A historical reflection remains dated.");
   await other.getByRole("button", { name: "Save reflection" }).click();

@@ -51,12 +51,6 @@
   margin: 0;
 }
 
-.mg-hero-ornament {
-  width: 80px;
-  margin-top: 28px;
-}
-
-.mg-hero-art,
 .mg-history-hero-art {
   position: relative;
   min-height: 100%;
@@ -64,7 +58,6 @@
   background: var(--color-surface-muted);
 }
 
-.mg-hero-art::before,
 .mg-history-hero-art::before {
   content: "";
   position: absolute;
@@ -76,7 +69,6 @@
   opacity: .72;
 }
 
-.mg-hero-art .mg-landscape,
 .mg-history-hero-art .mg-landscape {
   position: absolute;
   inset: 0;
@@ -85,113 +77,7 @@
 }
 
 /* Today */
-.mg-today-reading {
-  padding-top: 22px;
-}
 
-.mg-reading-progress {
-  min-width: 70px;
-  display: flex;
-  align-items: baseline;
-  justify-content: flex-end;
-  gap: 5px;
-  color: var(--color-muted);
-}
-
-.mg-reading-progress strong {
-  color: var(--color-accent-strong);
-  font-family: var(--font-display);
-  font-size: 2.6rem;
-  font-weight: 500;
-  line-height: 1;
-}
-
-.mg-reading-progress span {
-  font-size: .78rem;
-}
-
-.mg-reading-cards {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  border: 0;
-}
-
-.mg-reading-card,
-.mg-reading-card:first-child {
-  min-height: 134px;
-  grid-template-columns: 26px minmax(0, 1fr) 20px;
-  grid-template-rows: auto 1fr;
-  align-content: start;
-  gap: 12px 10px;
-  padding: 18px;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-soft);
-}
-
-.mg-reading-card .reading-state {
-  grid-row: 1;
-}
-
-.mg-reading-card .reading-group {
-  grid-column: 2;
-  grid-row: 1;
-  align-self: center;
-  display: block;
-  color: var(--color-muted);
-  font-size: .65rem;
-  font-weight: 650;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-}
-
-.mg-reading-card .reading-passage {
-  grid-column: 1 / 3;
-  grid-row: 2;
-  align-self: end;
-  text-decoration: none;
-}
-
-.mg-reading-card .reading-passage strong {
-  display: block;
-  color: var(--color-ink);
-  font-family: var(--font-display);
-  font-size: clamp(1.05rem, 1.8vw, 1.28rem);
-  font-weight: 600;
-  line-height: 1.22;
-}
-
-.mg-reading-card .reading-arrow {
-  grid-column: 3;
-  grid-row: 1 / 3;
-  align-self: end;
-}
-
-.mg-reading-card.is-complete {
-  background: color-mix(in srgb, var(--color-accent-soft) 38%, var(--color-surface));
-}
-
-.mg-reading-card.is-complete .reading-passage strong {
-  color: var(--color-ink-soft);
-}
-
-.mg-continue-reading {
-  margin-top: 22px;
-}
-
-.mg-response-section {
-  margin-top: clamp(58px, 8vw, 96px);
-  padding-top: 22px;
-  border-top: 1px solid var(--color-line-strong);
-}
-
-.mg-response-heading {
-  max-width: 560px;
-}
-
-.mg-response-heading h2,
 .mg-prayer-focus h2,
 .mg-prayer-library h2,
 .mg-history-overview h2 {
@@ -202,52 +88,6 @@
   line-height: 1.08;
   letter-spacing: -.028em;
 }
-
-.mg-response-grid {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 16px;
-  margin-top: 26px;
-}
-
-.mg-response-grid > .editorial-section {
-  min-height: 280px;
-  padding: 26px;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-soft);
-}
-
-.mg-response-grid > .reflection-preview {
-  border-top: 3px solid var(--color-reflection);
-}
-
-.mg-response-grid > .prayer-preview {
-  border-top: 3px solid var(--color-prayer);
-}
-
-.mg-response-grid h2 {
-  max-width: 22ch;
-  font-size: clamp(1.55rem, 2.3vw, 2rem);
-}
-
-.mg-response-grid .prayer-count-line strong {
-  color: var(--color-prayer);
-}
-
-.mg-panel-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.mg-panel-kicker .icon {
-  width: 16px;
-  height: 16px;
-}
-
-.reflection-preview .mg-panel-kicker { color: var(--color-reflection); }
-.prayer-preview .mg-panel-kicker { color: var(--color-prayer); }
 
 /* Bible — chapter first, controls secondary. */
 .mg-bible-shell-header {
@@ -700,14 +540,6 @@
     grid-template-columns: minmax(0, 1fr) minmax(250px, .72fr);
   }
 
-  .mg-reading-cards {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .mg-response-grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
   .mg-prayer-focus {
     grid-template-columns: 1fr;
   }
@@ -738,42 +570,13 @@
     font-size: clamp(2.8rem, 14vw, 4rem);
   }
 
-  .mg-hero-art,
   .mg-history-hero-art {
     min-height: 150px;
     border-top: 1px solid var(--color-line);
   }
 
-  .mg-hero-art::before,
   .mg-history-hero-art::before {
     display: none;
-  }
-
-  .mg-reading-cards {
-    grid-template-columns: 1fr 1fr;
-    gap: 9px;
-  }
-
-  .mg-reading-card,
-  .mg-reading-card:first-child {
-    min-height: 118px;
-    padding: 14px;
-  }
-
-  .mg-reading-card .reading-group {
-    font-size: .59rem;
-  }
-
-  .mg-reading-card .reading-passage strong {
-    font-size: 1rem;
-  }
-
-  .mg-response-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .mg-response-grid > .editorial-section {
-    min-height: 0;
   }
 
   .mg-bible-shell-header {
@@ -901,22 +704,6 @@
 }
 
 @media (max-width: 430px) {
-  .mg-reading-cards {
-    grid-template-columns: 1fr;
-  }
-
-  .mg-reading-card,
-  .mg-reading-card:first-child {
-    min-height: 92px;
-  }
-
-  .mg-reading-card .reading-passage {
-    align-self: center;
-  }
-
-  .mg-reading-card .reading-arrow {
-    align-self: center;
-  }
 
   .mg-prayer-row {
     grid-template-columns: 36px minmax(0, 1fr) 18px;
@@ -936,17 +723,14 @@
 /* 200% text/reflow: preserve the editorial hierarchy without fixed-height clipping. */
 @media (max-width: 1280px) {
   html[style*="font-size: 200%"] .mg-canonical-hero,
-  html[style*="font-size: 200%"] .mg-prayer-focus,
-  html[style*="font-size: 200%"] .mg-response-grid {
+  html[style*="font-size: 200%"] .mg-prayer-focus {
     grid-template-columns: 1fr;
   }
 
-  html[style*="font-size: 200%"] .mg-hero-art,
   html[style*="font-size: 200%"] .mg-history-hero-art {
     min-height: 180px;
   }
 
-  html[style*="font-size: 200%"] .mg-reading-cards,
   html[style*="font-size: 200%"] .mg-session-depths,
   html[style*="font-size: 200%"] .mg-history-stats {
     grid-template-columns: 1fr;

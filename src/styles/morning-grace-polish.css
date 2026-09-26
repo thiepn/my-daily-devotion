@@ -504,7 +504,6 @@ textarea:focus-visible {
 }
 
 /* Canonical screen micro-polish */
-.mg-reading-card,
 .mg-prayer-row,
 .mg-history-recent a,
 .search-hit,
@@ -513,7 +512,6 @@ textarea:focus-visible {
   transition: background-color var(--transition-fast), border-color var(--transition-fast);
 }
 
-.mg-reading-card:hover,
 .mg-prayer-row:hover,
 .mg-history-recent a:hover,
 .search-hit:hover {

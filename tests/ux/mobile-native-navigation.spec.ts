@@ -11,7 +11,8 @@ test.describe("native mobile stacked navigation", () => {
       await openRoute(page, route);
       await expect(page.locator(".mobile-nav")).toBeVisible();
       await expect(page.locator(".mobile-appbar-back")).toHaveCount(0);
-      await expect(page.locator(".utility-actions")).toBeVisible();
+      if (route === "/today") await expect(page.locator(".today-profile")).toBeVisible();
+      else await expect(page.locator(".utility-actions")).toBeVisible();
       await expectNoHorizontalOverflow(page);
     }
   });
