@@ -4,6 +4,8 @@
 
 Status: **implemented on redesign branch**
 
+Brand update: the user-approved **Cream Forest Book and Cross** supersedes the historical Morning Sprig Book described below. See [approved artwork and export guidance](artwork/approved-brand.md). The old no-cross/no-shadow mark restrictions no longer apply. Other unmigrated screen directions here remain historical.
+
 Phase 2 freezes the visual asset language that sits on top of the Phase 1 design system.
 
 ## Brand mark — Morning Sprig Book

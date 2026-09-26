@@ -35,3 +35,11 @@ Compact four-control header; wide ink-and-wash landscape; cream canvas; large li
 - [Not claimed] Axe and keyboard checks do not constitute a manual screen-reader certification, usability study or physical iOS/Android test.
 
 No unresolved P0/P1/P2 visual issue remains in the scoped light Bible composition. Baselines are review candidates, not user approval. Exact regression results and reviewed commit are recorded with the PR and task report.
+
+## Approved app identity follow-up
+
+The user selected the cream-and-forest book/cross/sun artwork. Its exact raster master now supplies the sidebar mark, browser favicons, Apple touch icon and install icons. See `docs/artwork/approved-brand.md` for provenance and reproducible exports. The old sprig geometry is replaced; screen composition and data are unchanged.
+
+Reviewed the 16/32/48/64/180px sizes, circular and rounded launcher masks, both sidebar themes, and Today/Bible at 1440px. The approved soft cream finish and green/gold geometry are retained. The maskable export keeps the green foreground within radius 0.350 of the canvas, inside the 0.400 safe radius. The SVG favicon embeds a raster; no vector master or physical-device launcher certification is claimed.
+
+Validation: TypeScript, 130 unit tests, production build, brand/PWA verifiers, 20 image comparisons, automated accessibility checks, and cold offline loading of all seven icon assets passed. The initial 14-test browser run had 13 passes and one Firefox Data-screen loading timeout; the trace showed the chunk returned HTTP 200 while the opening state remained visible. Both isolated repeats of the Firefox smoke suite passed (four checks) without code or timeout changes. The original timeout remains recorded rather than being presented as an entirely clean initial run.

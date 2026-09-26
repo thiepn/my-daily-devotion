@@ -5,6 +5,7 @@
   "type": "module",
   "description": "My Daily Devotion — private, local-first Scripture, reflection, prayer, and devotional history.",
   "scripts": {
+    "icons:build": "node scripts/build-brand-icons.mjs",
     "bible:build": "node scripts/build-bsb.mjs",
     "mcheyne:build": "node scripts/build-mcheyne.mjs",
     "notices:build": "node scripts/build-third-party-notices.mjs",

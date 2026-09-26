@@ -61,3 +61,12 @@ test('Bible asset failure remains recoverable', async ({ page }) => {
   await expect(page.locator('.bible-error')).toBeVisible();
   await expect(page).toHaveScreenshot('bible-error.png');
 });
+
+for (const theme of ['light', 'dark'] as const) test(`Approved brand in ${theme} mode`, async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.emulateMedia({ colorScheme: theme });
+  await openRoute(page, '/bible/LUK/9');
+  await page.evaluate(() => document.fonts.ready);
+  await expect.poll(() => page.locator('.brand-mark').evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth === 192)).toBe(true);
+  await expect(page.getByRole('link', { name: 'My Daily Devotion home' })).toHaveScreenshot(`brand-${theme}.png`);
+});

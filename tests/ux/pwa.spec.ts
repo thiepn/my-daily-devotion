@@ -39,6 +39,12 @@ test.describe("offline PWA UX", () => {
     await expect(coldPage.getByRole("heading", { level: 1, name: "Bible" })).toBeVisible();
     await expect(coldPage.getByRole("heading", { level: 2, name: "John 3" })).toBeVisible();
     await expect(coldPage.getByRole("button", { name: "Select John 3:16" })).toBeVisible();
+    await expect.poll(() => coldPage.locator('.brand-mark').evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth === 192)).toBe(true);
+    const offlineBrandAssets = await coldPage.evaluate(async () => {
+      const paths = ['brand-mark.svg', 'icons/favicon-16.png', 'icons/favicon-32.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'apple-touch-icon.png'];
+      return Promise.all(paths.map(async path => ({ path, ok: (await fetch(new URL(path, location.origin + location.pathname))).ok })));
+    });
+    expect(offlineBrandAssets.every(asset => asset.ok), JSON.stringify(offlineBrandAssets)).toBe(true);
 
     await coldPage.getByRole("link", { name: "Search", exact: true }).click();
     await expect(coldPage.getByRole("heading", { level: 1, name: "Search" })).toBeVisible();
