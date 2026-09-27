@@ -206,9 +206,10 @@ export class PrayerRepository extends MutableRepository<Prayer> {
     return items.slice(0, Number.isFinite(limit) ? Math.max(0, limit) : items.length);
   }
 
-  async transition(id: UUID, status: PrayerStatus): Promise<Prayer> {
+  async transition(id: UUID, status: PrayerStatus, expectedRevision?: number): Promise<Prayer> {
     return this.database.transaction("rw", this.database.prayers, async () => {
     const prayer = await this.require(id);
+    assertExpectedRevision(prayer, expectedRevision);
     assertPrayerTransition(prayer.status, status);
     if (status === "ANSWERED") throw new Error("Use answer() so an answered prayer always has a resolution record.");
     const at = nowInstant();
@@ -224,9 +225,10 @@ export class PrayerRepository extends MutableRepository<Prayer> {
     });
   }
 
-  async restoreArchived(id: UUID): Promise<Prayer> {
+  async restoreArchived(id: UUID, expectedRevision?: number): Promise<Prayer> {
     return this.database.transaction("rw", this.database.prayers, this.database.prayerResolutions, async () => {
       const prayer = await this.require(id);
+      assertExpectedRevision(prayer, expectedRevision);
       if (prayer.status !== "ARCHIVED") throw new Error("Only archived prayers can be restored.");
       const resolution = await this.getResolution(id);
       const next: Prayer = { ...prayer, status: resolution ? "ANSWERED" : "ACTIVE", archivedAt: null, ...nextMutableFields(prayer) };
@@ -275,9 +277,10 @@ export class PrayerRepository extends MutableRepository<Prayer> {
     return item && item.deletedAt === null ? item : undefined;
   }
 
-  async answer(id: UUID, reflectionMd: string | null = null, at: Instant = nowInstant()): Promise<{ prayer: Prayer; resolution: PrayerResolution }> {
+  async answer(id: UUID, reflectionMd: string | null = null, at: Instant = nowInstant(), expectedRevision?: number): Promise<{ prayer: Prayer; resolution: PrayerResolution }> {
     return this.database.transaction("rw", this.database.prayers, this.database.prayerResolutions, this.database.activityEvents, async () => {
       const prayer = await this.require(id);
+      assertExpectedRevision(prayer, expectedRevision);
       assertPrayerTransition(prayer.status, "ANSWERED");
       const existingResolution = await this.database.prayerResolutions.where("prayerId").equals(id).first();
       if (existingResolution && !existingResolution.deletedAt) throw new Error(`Prayer already has a resolution: ${id}`);
@@ -317,9 +320,10 @@ export class PrayerRepository extends MutableRepository<Prayer> {
     return link;
   }
 
-  async removePrayer(id: UUID): Promise<void> {
+  async removePrayer(id: UUID, expectedRevision?: number): Promise<void> {
     await this.database.transaction("rw", this.database.prayers, this.database.prayerUpdates, this.database.prayerResolutions, this.database.scriptureLinks, this.database.prayerSchedules, async () => {
       const prayer = await this.require(id);
+      assertExpectedRevision(prayer, expectedRevision);
       const at = nowInstant();
       await this.database.prayers.put({ ...prayer, deletedAt: at, updatedAt: at, revision: prayer.revision + 1 });
       const updates = await this.database.prayerUpdates.where("prayerId").equals(id).filter((item) => item.deletedAt === null).toArray();

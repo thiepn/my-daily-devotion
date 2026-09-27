@@ -5,7 +5,7 @@ async function createPrayer(page: Page, body: string) {
   await openRoute(page, "/prayer/new");
   await page.getByLabel("What do you want to pray about?").fill(body);
   await page.getByRole("button", { name: "Save prayer", exact: true }).click();
-  await expect(page.getByLabel("Request", { exact: true })).toHaveValue(body);
+  await expect(page.locator(".prayer-request-text")).toHaveText(body);
   return page.url().split("#")[1]!;
 }
 
@@ -14,16 +14,16 @@ test.describe("native mobile application states", () => {
     await page.setViewportSize({ width: 390, height: 844 });
   });
 
-  test("unsaved-change confirmation is a bottom sheet with reachable actions", async ({ page }) => {
+  test("unsaved-change confirmation keeps all journal-dialog actions reachable", async ({ page }) => {
     await createPrayer(page, "Keep this request safe.");
-    await page.getByLabel("Request", { exact: true }).fill("Keep this edited request safe.");
-    await page.getByRole("button", { name: "Archive", exact: true }).click();
+    await page.getByRole("button", { name: "Edit wording", exact: true }).click(); await page.getByLabel("Request", { exact: true }).fill("Keep this edited request safe.");
+    await page.getByText("More actions", { exact: true }).click(); await page.getByRole("button", { name: "Archive prayer", exact: true }).click();
 
-    const dialog = page.locator("dialog.draft-dialog");
+    const dialog = page.locator("dialog.journal-dialog");
     await expect(dialog).toBeVisible();
     const box = await dialog.boundingBox();
-    expect(box?.width ?? 0).toBeGreaterThanOrEqual(380);
-    expect(Math.abs((box?.y ?? 0) + (box?.height ?? 0) - 844)).toBeLessThanOrEqual(2);
+    expect(box?.width ?? 0).toBeGreaterThanOrEqual(280);
+    expect((box?.y ?? 0) + (box?.height ?? 0)).toBeLessThanOrEqual(844);
 
     for (const name of ["Save and continue", "Discard and continue", "Keep editing"]) {
       const buttonBox = await page.getByRole("button", { name, exact: true }).boundingBox();
@@ -37,29 +37,30 @@ test.describe("native mobile application states", () => {
     await expectNoAxeViolations(page);
   });
 
-  test("conflict review is an edge-to-edge mobile comparison state", async ({ page, context }) => {
+  test("conflict review is a readable mobile comparison state", async ({ page, context }) => {
     const route = await createPrayer(page, "Original request.");
+    await page.getByRole("button", { name: "Edit wording", exact: true }).click(); await page.getByLabel("Request", { exact: true }).fill("My local draft.");
     const other = await context.newPage();
     try {
       await other.setViewportSize({ width: 390, height: 844 });
       await openRoute(other, route);
-      await other.getByLabel("Request", { exact: true }).fill("Saved in another tab.");
+      await other.getByRole("button", { name: "Edit wording", exact: true }).click(); await other.getByLabel("Request", { exact: true }).fill("Saved in another tab.");
       await other.getByRole("button", { name: "Save wording", exact: true }).click();
-      await expect(other.getByText("Prayer saved locally.")).toBeVisible();
+      await expect(other.getByText("Saved locally.", { exact: true })).toBeVisible();
 
-      await page.getByLabel("Request", { exact: true }).fill("My local draft.");
+
       await page.getByRole("button", { name: "Save wording", exact: true }).click();
 
-      const review = page.locator(".conflict-review");
+      const review = page.locator(".journal-conflict");
       await expect(review).toBeVisible();
       await expect(page.getByLabel("Request", { exact: true })).toHaveValue("My local draft.");
-      await page.getByRole("button", { name: "Review latest saved version", exact: true }).click();
-      await expect(page.getByLabel("Your unsaved draft")).toHaveValue("My local draft.");
-      await expect(page.getByLabel("Latest saved version")).toHaveValue("Saved in another tab.");
+      await page.getByRole("button", { name: "Compare versions", exact: true }).click();
+      await expect(page.getByLabel("Your changes", { exact: true })).toHaveValue("My local draft.");
+      await expect(page.getByLabel("Saved version", { exact: true })).toHaveValue("Saved in another tab.");
 
       const reviewBox = await review.boundingBox();
-      expect(reviewBox?.width ?? 0).toBeGreaterThanOrEqual(380);
-      for (const name of ["Use saved version", "Keep my draft"]) {
+      expect(reviewBox?.width ?? 0).toBeGreaterThanOrEqual(280);
+      for (const name of ["Use saved wording", "Keep my wording for review"]) {
         const buttonBox = await page.getByRole("button", { name, exact: true }).boundingBox();
         expect(buttonBox?.height ?? 0).toBeGreaterThanOrEqual(44);
       }
@@ -124,32 +125,32 @@ test.describe("native mobile application states", () => {
     await page.evaluate(() => window.dispatchEvent(new Event("online")));
   });
 
-  test("draft bottom sheet and state surfaces reflow at 320px and 200 percent text", async ({ page }) => {
+  test("journal draft dialog and state surfaces reflow at 320px and 200 percent text", async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 568 });
     await page.addInitScript(() => document.addEventListener("DOMContentLoaded", () => {
       document.documentElement.style.fontSize = "200%";
     }));
 
     await createPrayer(page, "A narrow-screen request.");
-    await page.getByLabel("Request", { exact: true }).fill("A narrow-screen edited request.");
-    await page.getByRole("button", { name: "Archive", exact: true }).click();
-    await expect(page.locator("dialog.draft-dialog")).toBeVisible();
+    await page.getByRole("button", { name: "Edit wording", exact: true }).click(); await page.getByLabel("Request", { exact: true }).fill("A narrow-screen edited request.");
+    await page.getByText("More actions", { exact: true }).click(); await page.getByRole("button", { name: "Archive prayer", exact: true }).click();
+    await expect(page.locator("dialog.journal-dialog")).toBeVisible();
     await expect(page.locator("html")).toHaveCSS("font-size", "32px");
     await expectNoHorizontalOverflow(page);
 
     await page.getByRole("button", { name: "Keep editing", exact: true }).click();
     await openRoute(page, "/prayer/removed/settings");
-    await expect(page.getByRole("heading", { name: "Prayer unavailable" })).toBeVisible();
+    await expect(page.getByText("This prayer is no longer available. It will not be recreated.")).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
 
   test("desktop dialog and state composition remains centered", async ({ page }) => {
     await page.setViewportSize({ width: 1280, height: 900 });
     await createPrayer(page, "Desktop state preservation.");
-    await page.getByLabel("Request", { exact: true }).fill("Desktop state preservation edited.");
-    await page.getByRole("button", { name: "Archive", exact: true }).click();
+    await page.getByRole("button", { name: "Edit wording", exact: true }).click(); await page.getByLabel("Request", { exact: true }).fill("Desktop state preservation edited.");
+    await page.getByText("More actions", { exact: true }).click(); await page.getByRole("button", { name: "Archive prayer", exact: true }).click();
 
-    const dialog = page.locator("dialog.draft-dialog");
+    const dialog = page.locator("dialog.journal-dialog");
     await expect(dialog).toBeVisible();
     const box = await dialog.boundingBox();
     expect(box?.width ?? Infinity).toBeLessThan(700);

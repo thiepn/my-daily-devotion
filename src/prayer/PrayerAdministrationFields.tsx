@@ -49,29 +49,29 @@ export function administrationInputFromValue(value: PrayerAdministrationValue): 
   return { personId: value.personId, categoryId: value.categoryId, eventDate: dateOrNull(value.eventDate), focusUntil: dateOrNull(value.focusUntil), schedule };
 }
 
-export function PrayerAdministrationFields({ value, people, categories, onChange }: { value: PrayerAdministrationValue; people: Person[]; categories: Category[]; onChange: (next: PrayerAdministrationValue) => void }) {
+export function PrayerAdministrationFields({ value, people, categories, onChange, section }: { section?: "people" | "schedule" | "dates"; value: PrayerAdministrationValue; people: Person[]; categories: Category[]; onChange: (next: PrayerAdministrationValue) => void }) {
   const set = (patch: Partial<PrayerAdministrationValue>) => onChange({ ...value, ...patch });
   const toggleWeekday = (day: number) => set({ weekdays: value.weekdays.includes(day) ? value.weekdays.filter((item) => item !== day) : [...value.weekdays, day].sort((a, b) => a - b) });
   return (
-    <div className="prayer-administration-fields">
-      <div className="prayer-field-grid">
-        <label><span>Person <small>optional</small></span><select value={value.personId ?? ""} onChange={(event) => set({ personId: event.target.value || null })}><option value="">No person</option>{people.map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}</select></label>
-        <label><span>Category <small>optional</small></span><select value={value.categoryId ?? ""} onChange={(event) => set({ categoryId: event.target.value || null })}><option value="">No category</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label>
-      </div>
+    <div className={"prayer-administration-fields"+(section?" is-sectioned":"")}>
+      {(!section || section === "people") && <div className="prayer-field-grid">
+        <label><span>Person <small>optional</small></span><select value={value.personId ?? ""} onChange={(event) => set({ personId: event.target.value || null })}><option value="">No person</option>{value.personId && !people.some(person => person.id === value.personId) ? <option value={value.personId}>Unavailable person (retained)</option> : null}{people.map((person) => <option key={person.id} value={person.id}>{person.name}</option>)}</select></label>
+        <label><span>Category <small>optional</small></span><select value={value.categoryId ?? ""} onChange={(event) => set({ categoryId: event.target.value || null })}><option value="">No category</option>{value.categoryId && !categories.some(category => category.id === value.categoryId) ? <option value={value.categoryId}>Unavailable category (retained)</option> : null}{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select></label>
+      </div>}
 
-      <label className="schedule-field"><span>Schedule</span><select value={value.scheduleMode} onChange={(event) => set({ scheduleMode: event.target.value as PrayerScheduleMode })}>
+      {(!section || section === "schedule") && <><label className="schedule-field"><span>Schedule</span><select value={value.scheduleMode} onChange={(event) => set({ scheduleMode: event.target.value as PrayerScheduleMode })}>
         <option value="ROTATION">Normal rotation</option><option value="DAILY">Daily</option><option value="WEEKDAYS">Selected weekdays</option><option value="INTERVAL_DAYS">Every few days</option><option value="MONTHLY">Monthly</option><option value="ON_DATE">One specific date</option><option value="MANUAL_ONLY">Manual only</option>
       </select></label>
       {value.scheduleMode === "WEEKDAYS" ? <div className="weekday-picker" aria-label="Scheduled weekdays">{weekdayOptions.map(([day, label]) => <label key={day}><input type="checkbox" checked={value.weekdays.includes(day)} onChange={() => toggleWeekday(day)} /><span><Icon name="check" aria-hidden="true" />{label}</span></label>)}</div> : null}
       {value.scheduleMode === "INTERVAL_DAYS" ? <div className="prayer-field-grid"><label><span>Every</span><input type="number" min="1" max="3650" value={value.intervalDays} onChange={(event) => set({ intervalDays: event.target.value })} /></label><label><span>Starting</span><input type="date" value={value.anchorDate} onChange={(event) => set({ anchorDate: event.target.value })} /></label></div> : null}
       {value.scheduleMode === "MONTHLY" ? <label><span>Day of month</span><input type="number" min="1" max="31" value={value.monthlyDay} onChange={(event) => set({ monthlyDay: event.target.value })} /></label> : null}
       {value.scheduleMode === "ON_DATE" ? <label><span>Date</span><input type="date" value={value.onDate} onChange={(event) => set({ onDate: event.target.value })} /></label> : null}
-      <p className="field-help">Schedules bring a prayer back when it is due. Missed days do not accumulate.</p>
+      <p className="field-help">Schedules bring a prayer back when it is due. Missed days do not accumulate.</p></>}
 
-      <div className="prayer-field-grid">
+      {(!section || section === "dates") && <div className="prayer-field-grid">
         <label><span>Event date <small>optional</small></span><input type="date" value={value.eventDate} onChange={(event) => set({ eventDate: event.target.value })} /><small>Appears the day before, on the day, and the day after.</small></label>
         <label><span>Focus until <small>optional</small></span><input type="date" value={value.focusUntil} onChange={(event) => set({ focusUntil: event.target.value })} /><small>Keep this prayer near the front until this date.</small></label>
-      </div>
+      </div>}
     </div>
   );
 }

@@ -46,14 +46,14 @@ test("visual record of populated devotional journeys and management screens", as
   await page.getByLabel("What do you want to pray about?").fill("Give Anna wisdom and peace for the week ahead.");
   await page.getByRole("button", { name: "Add details", exact: true }).click(); await page.getByRole("combobox", { name: "Person optional", exact: true }).selectOption({ label: "Anna" });
   await page.getByRole("combobox", { name: "Category optional", exact: true }).selectOption({ label: "Family" }); await page.getByRole("combobox", { name: "Schedule", exact: true }).selectOption("DAILY");
-  await page.getByRole("button", { name: "Save prayer" }).click(); await expect(page.getByLabel("Request", { exact: true })).toHaveValue("Give Anna wisdom and peace for the week ahead.");
+  await page.getByRole("button", { name: "Save prayer" }).click(); await expect(page.locator(".prayer-request-text")).toHaveText("Give Anna wisdom and peace for the week ahead.");
   const prayer = page.url().split("#")[1]!;
   const prayerSettings = prayer.includes("?") ? prayer.replace("?", "/settings?") : `${prayer}/settings`;
-  await page.getByLabel("Prayer update").fill("We had a good conversation today. Keep helping me listen."); await page.getByRole("button", { name: "Add update", exact: true }).click();
-  await expect(page.getByText("Update recorded.")).toBeVisible(); await page.getByRole("button", { name: "Prayed now" }).click();
+  await page.getByRole("button", { name: "Add update", exact: true }).click(); await page.getByLabel("Prayer update").fill("We had a good conversation today. Keep helping me listen."); await page.locator(".prayer-record-editor").getByRole("button", { name: "Add update", exact: true }).click();
+  await expect(page.getByText("Saved locally.", { exact: true })).toBeVisible(); await page.getByRole("button", { name: "Prayed now" }).click();
   await expect(page.getByText("Prayed now recorded.")).toBeVisible();
   await openRoute(page, "/prayer/new"); await page.getByLabel("What do you want to pray about?").fill("Help me listen with patience and speak with kindness today.");
-  await page.getByRole("button", { name: "Save prayer" }).click(); await expect(page.getByLabel("Request", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Save prayer" }).click(); await expect(page.locator(".prayer-request-text")).toBeVisible();
   await openRoute(page, "/bible/collections?translation=BSB&start=JHN.3.16&end=JHN.3.16"); await page.getByLabel("New collection").fill("Promises to remember");
   await page.getByRole("button", { name: "Add", exact: true }).click(); await page.getByRole("button", { name: "Add selected passage to Promises to remember" }).click();
   await expect(page.getByRole("link", { name: "John 3:16", exact: true })).toBeVisible();
@@ -63,7 +63,7 @@ test("visual record of populated devotional journeys and management screens", as
   const surfaces: Surface[] = [
     ...emptySurfaces.filter((item) => item[0] !== "search"),
     ["plan", "/today/plan", "Reading plan"], ["prayer-new", "/prayer/new", "Add prayer"], ["prayer-detail", prayer, "Prayer"],
-    ["prayer-settings", prayerSettings, "Prayer details", "Prayer settings"], ["people", "/prayer/people", "People", "Prayer people"], ["categories", "/prayer/categories", "Categories", "Prayer categories"],
+    ["prayer-settings", prayerSettings, "Prayer settings", "Prayer settings"], ["people", "/prayer/people", "People", "Prayer people"], ["categories", "/prayer/categories", "Categories", "Prayer categories"],
     ["moments", "/history/moments", "Moments", "History moments"], ["search-results", "/search?q=love", "Search"],
   ];
   for (const mode of ["light", "dark", "mobile", "mobile-dark", "small-mobile", "tablet-portrait", "tablet-landscape"] as const) {

@@ -8,7 +8,7 @@ async function createPrayer(page: Page, body: string, schedule?: string) {
   await page.getByLabel("What do you want to pray about?").fill(body);
   if (schedule) { await page.getByRole("button", { name: "Add details", exact: true }).click(); await page.getByRole("combobox", { name: "Schedule", exact: true }).selectOption(schedule); }
   await page.getByRole("button", { name: "Save prayer", exact: true }).click();
-  await expect(page.getByLabel("Request", { exact: true })).toHaveValue(body.trim());
+  await expect(page.locator(".prayer-request-text")).toHaveText(body.trim());
   return page.url().split("#")[1]!;
 }
 async function backup(page: Page, encrypted = false) {
@@ -80,23 +80,23 @@ test("verse notes protect drafts and saved annotations survive reload", async ({
 
 test("prayer activity preserves draft wording and archive restores answered state", async ({ page }) => {
   await createPrayer(page, "Give us patience and wisdom.");
-  await page.getByLabel("Request", { exact: true }).fill("Give us patience, wisdom, and kindness.");
+  await page.getByRole("button", { name: "Edit wording", exact: true }).click(); await page.getByLabel("Request", { exact: true }).fill("Give us patience, wisdom, and kindness.");
   await page.getByRole("button", { name: "Prayed now", exact: true }).click();
   await expect(page.getByText("Prayed now recorded.")).toBeVisible();
   await expect(page.getByLabel("Request", { exact: true })).toHaveValue("Give us patience, wisdom, and kindness.");
   await page.getByRole("button", { name: "Save wording" }).click();
-  await expect(page.getByText("Prayer saved locally.")).toBeVisible();
-  await page.getByLabel("Prayer update").fill("A conversation brought encouragement.");
+  await expect(page.getByText("Saved locally.", { exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "Add update", exact: true }).click(); await page.getByLabel("Prayer update").fill("A conversation brought encouragement.");
   await page.getByRole("button", { name: "Encouragement", exact: true }).click();
   await page.getByRole("button", { name: "Add encouragement", exact: true }).click();
-  await expect(page.getByText("Encouragement recorded.")).toBeVisible();
-  await page.getByRole("button", { name: "Answered", exact: true }).click();
-  await page.getByLabel("What happened?").fill("We found a peaceful way forward.");
+  await expect(page.getByText("Saved locally.", { exact: true })).toBeVisible();
   await page.getByRole("button", { name: "Mark answered", exact: true }).click();
-  await expect(page.getByText("Prayer marked answered.")).toBeVisible();
-  await page.getByRole("button", { name: "Archive", exact: true }).click();
+  await page.getByLabel("What happened?", { exact: false }).fill("We found a peaceful way forward.");
+  await page.locator(".prayer-record-editor").getByRole("button", { name: "Mark answered", exact: true }).click();
+  await expect(page.getByText("Saved locally.", { exact: true })).toBeVisible();
+  await page.getByText("More actions", { exact: true }).click(); await page.getByRole("button", { name: "Archive prayer", exact: true }).click();
   await page.getByRole("button", { name: "Restore to answered" }).click();
-  await expect(page.locator(".prayer-detail-heading")).toContainText("answered");
+  await expect(page.locator(".prayer-record .journal-heading")).toContainText("answered");
   await expect(page.getByText("We found a peaceful way forward.")).toBeVisible();
   await page.reload(); await expect(page.getByText("We found a peaceful way forward.")).toBeVisible();
 });
@@ -186,15 +186,15 @@ test("encrypted backup restores in a fresh profile and failed/cancelled restores
     await fresh.getByRole("button", { name: "Merge validated backup" }).click();
     await expect(fresh.locator(".data-status")).toContainText("merged successfully");
     await openRoute(fresh, "/prayer"); await expect(fresh.locator(".prayer-journal-row")).toHaveCount(1);
-    await fresh.locator(".prayer-journal-row").click(); await expect(fresh.locator(".prayer-admin-list")).toContainText("Daily");
+    await fresh.locator(".prayer-journal-row").click(); await expect(fresh.locator(".prayer-record-settings")).toContainText("Daily");
     await openRoute(fresh, "/history?view=prayer"); await expect(fresh.getByText("Backup recovery preserves this prayer.")).toBeVisible();
   } finally { await clean.close(); }
 });
 
 test("invalid, deleted and failed lazy routes have recoverable states", async ({ page }, testInfo) => {
   await openRoute(page, "/history/day/2026-02-30"); await expect(page.getByRole("heading", { name: "Invalid date" })).toBeVisible();
-  await openRoute(page, "/prayer/removed/settings"); await expect(page.getByRole("heading", { name: "Prayer unavailable" })).toBeVisible();
-  await page.getByRole("link", { name: "Return to Prayer" }).click(); await expectCanonicalTitle(page, "Prayer");
+  await openRoute(page, "/prayer/removed/settings"); await expect(page.getByText("This prayer is no longer available. It will not be recreated.")).toBeVisible();
+  await page.locator(".journal-heading .quiet-back-link").click(); await expectCanonicalTitle(page, "Prayer");
   await page.route("**/assets/CollectionsScreen-*.js", (route) => route.abort());
   await openRoute(page, "/bible/collections");
   await expect(page.getByRole("button", { name: "Reload MDD" })).toBeVisible();
@@ -207,11 +207,11 @@ test("invalid, deleted and failed lazy routes have recoverable states", async ({
 test("populated dark forms and Scripture remain accessible with long text", async ({ page }, testInfo) => {
   await createPrayer(page, "May we grow in patience. ".repeat(30));
   await page.evaluate(() => { document.documentElement.dataset.theme = "dark"; });
-  await page.getByLabel("Prayer update").fill("A little encouragement.");
+  await page.getByRole("button", { name: "Add update", exact: true }).click(); await page.getByLabel("Prayer update").fill("A little encouragement.");
   await page.screenshot({ path: testInfo.outputPath("long-prayer-dark.png"), fullPage: true });
   await expectNoHorizontalOverflow(page); await expectNoAxeViolations(page);
-  await page.getByRole("button", { name: "Add update", exact: true }).click();
-  await expect(page.getByText("Update recorded.")).toBeVisible();
+  await page.locator(".prayer-record-editor").getByRole("button", { name: "Add update", exact: true }).click();
+  await expect(page.getByText("Saved locally.", { exact: true })).toBeVisible();
   await openRoute(page, "/bible/PSA/119?verse=105");
   await expect(page.getByRole("button", { name: "Select Psalms 119:105", exact: true })).toHaveAttribute("aria-pressed", "true");
   await expectNoHorizontalOverflow(page); await expectNoAxeViolations(page);
@@ -235,7 +235,7 @@ test("large local history and prayer lists remain searchable and responsive", as
   await page.screenshot({ path: testInfo.outputPath("large-prayer-list.png") });
   await expectNoHorizontalOverflow(page);
   const searchStart = Date.now(); await openRoute(page, "/search?q=Searchable-needle"); await expect(page.locator(".search-hit")).toHaveCount(1); const searchMs = Date.now()-searchStart;
-  await expectNoHorizontalOverflow(page); await page.locator(".search-hit").click(); await expect(page.getByLabel("Request", { exact: true })).toContainText("Searchable-needle");
+  await expectNoHorizontalOverflow(page); await page.locator(".search-hit").click(); await expect(page.locator(".prayer-request-text")).toContainText("Searchable-needle");
   const historyStart = Date.now(); await openRoute(page, "/history?period=all"); await expect(page.locator(".history-journal-row")).toHaveCount(5); await page.getByRole("button", { name: "Show more", exact: true }).click(); await expect(page.locator(".history-journal-row")).toHaveCount(15); const historyMs = Date.now()-historyStart;
   await page.screenshot({ path: testInfo.outputPath("large-history.png") });
   await expectNoHorizontalOverflow(page);
@@ -249,7 +249,7 @@ test("weekday scheduling shows keyboard focus, selection, and readable validatio
   const schedule = page.getByRole("combobox", { name: "Schedule", exact: true });
   await schedule.selectOption("WEEKDAYS");
   await page.getByRole("button", { name: "Save prayer", exact: true }).click();
-  await expect(page.locator(".prayer-form-status")).toContainText("Choose at least one weekday");
+  await expect(page.locator(".journal-status")).toContainText("Choose at least one weekday");
   await page.screenshot({ path: testInfo.outputPath("weekday-validation.png"), fullPage: true });
   await schedule.focus(); await page.keyboard.press("Tab");
   const monday = page.getByRole("checkbox", { name: "Mon", exact: true });
@@ -267,8 +267,8 @@ test("weekday scheduling shows keyboard focus, selection, and readable validatio
   await page.screenshot({ path: testInfo.outputPath("weekday-keyboard-selection-dark.png"), fullPage: true });
   await expectNoAxeViolations(page);
   await page.getByRole("button", { name: "Save prayer", exact: true }).click();
-  await expect(page.locator(".prayer-admin-list")).toContainText("Every Monday, Sunday");
-  await page.reload(); await expect(page.locator(".prayer-admin-list")).toContainText("Every Monday, Sunday");
+  await expect(page.locator(".prayer-record-settings")).toContainText("Every Monday, Sunday");
+  await page.reload(); await expect(page.locator(".prayer-record-settings")).toContainText("Every Monday, Sunday");
 });
 
 test("Scripture word boundaries remain readable in search and the reader", async ({ page }, testInfo) => {

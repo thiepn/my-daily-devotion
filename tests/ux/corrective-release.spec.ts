@@ -12,7 +12,7 @@ async function prayer(page: Page) {
   await openRoute(page, "/prayer/new");
   await page.getByLabel("What do you want to pray about?").fill("Pray for the visit.");
   await page.getByRole("button", { name: "Save prayer", exact: true }).click();
-  await expect(page.getByLabel("Request", { exact: true })).toHaveValue("Pray for the visit.");
+  await expect(page.locator(".prayer-request-text")).toHaveText("Pray for the visit.");
   return page.url().split("#")[1]!;
 }
 async function failNextWrite(page: Page, table: string, method: "add" | "put" = "add") {
@@ -63,50 +63,30 @@ test("stale People notes can be compared without replacing the unsaved draft", a
 });
 
 test("stale prayer settings preserve a newer schedule and event date", async ({ page, context }) => {
-  const route = await prayer(page);
-  const settings = route.includes("?") ? route.replace("?", "/settings?") : `${route}/settings`;
-  await openRoute(page, settings);
-  const other = await context.newPage(); await openRoute(other, settings);
-  await other.getByRole("combobox", { name: "Schedule", exact: true }).selectOption("DAILY");
-  await other.getByLabel("Event date", { exact: false }).fill("2026-10-01"); await other.getByRole("button", { name: "Save details" }).click();
-  await expect(other.getByLabel("Request", { exact: true })).toBeVisible();
-  await page.getByLabel("Focus until", { exact: false }).fill("2026-10-04"); await page.getByRole("button", { name: "Save details" }).click();
-  await expect(page.locator(".prayer-form-status")).toContainText("another tab");
-  await expect(page.getByLabel("Focus until", { exact: false })).toHaveValue("2026-10-04");
-  await page.getByRole("button", { name: "Review latest saved version" }).click(); await page.getByRole("button", { name: "Use saved version" }).click();
-  await expect(page.getByRole("combobox", { name: "Schedule", exact: true })).toHaveValue("DAILY");
-  await expect(page.getByLabel("Event date", { exact: false })).toHaveValue("2026-10-01");
+ const route=await prayer(page);const settings=route.includes("?")?route.replace("?","/settings?"):route+"/settings";
+ await openRoute(page,settings);await page.getByLabel("Focus until",{exact:false}).fill("2026-10-04");
+ const other=await context.newPage();await openRoute(other,settings);await other.getByRole("combobox",{name:"Schedule",exact:true}).selectOption("DAILY");
+ await other.getByLabel("Event date",{exact:false}).fill("2026-10-01");await other.getByRole("button",{name:"Save details"}).click();await expect(other.locator(".prayer-request-text")).toBeVisible();
+ await page.getByRole("button",{name:"Save details"}).click();await expect(page.locator(".journal-status")).toContainText("another tab");await expect(page.getByLabel("Focus until",{exact:false})).toHaveValue("2026-10-04");
+ await page.getByRole("button",{name:"Compare versions"}).click();await page.getByRole("button",{name:"Use saved details"}).click();
+ await expect(page.getByRole("combobox",{name:"Schedule",exact:true})).toHaveValue("DAILY");await expect(page.getByLabel("Event date",{exact:false})).toHaveValue("2026-10-01");
 });
-
-test("archiving saves wording and encouragement drafts only after explicit consent", async ({ page }) => {
-  await prayer(page);
-  await page.getByLabel("Request", { exact: true }).fill("A changed request worth keeping.");
-  await page.getByLabel("Prayer update").fill("Keep this encouragement.");
-  await page.getByRole("button", { name: "Encouragement", exact: true }).click();
-  await page.getByRole("button", { name: "Archive", exact: true }).click();
-  await page.getByRole("dialog").getByRole("button", { name: "Keep editing" }).click();
-  await expect(page.getByLabel("Request", { exact: true })).toBeEnabled();
-  await expect(page.getByLabel("Prayer update")).toHaveValue("Keep this encouragement.");
-  await page.getByRole("button", { name: "Archive", exact: true }).click();
-  await page.getByRole("dialog").getByRole("button", { name: "Save and continue" }).click();
-  await expect(page.locator(".prayer-detail-heading .eyebrow")).toContainText("archived");
-  await expect(page.getByLabel("Request", { exact: true })).toBeDisabled();
-  await page.reload();
-  await expect(page.getByLabel("Request", { exact: true })).toHaveValue("A changed request worth keeping.");
-  await expect(page.getByText("Keep this encouragement.", { exact: true })).toBeVisible();
+test("archiving saves wording and encouragement only after explicit consent",async({page})=>{
+ await prayer(page);await page.getByRole("button",{name:"Edit wording",exact:true}).click();await page.getByLabel("Request",{exact:true}).fill("A changed request worth keeping.");
+ await page.getByRole("button",{name:"Add update",exact:true}).click();await page.getByRole("dialog").getByRole("button",{name:"Save and continue"}).click();
+ await page.getByLabel("Prayer update").fill("Keep this encouragement.");await page.getByRole("button",{name:"Encouragement",exact:true}).click();
+ await page.getByText("More actions",{exact:true}).click();await page.getByRole("button",{name:"Archive prayer"}).click();await page.getByRole("button",{name:"Keep editing",exact:true}).click();
+ await expect(page.getByLabel("Prayer update")).toHaveValue("Keep this encouragement.");await page.getByRole("button",{name:"Archive prayer"}).click();await page.getByRole("dialog").getByRole("button",{name:"Save and continue"}).click();
+ await expect(page.locator(".prayer-record .journal-date")).toContainText("archived");await expect(page.getByRole("button",{name:"Edit wording",exact:true})).toHaveCount(0);
+ await page.reload();await expect(page.locator(".prayer-request-text")).toHaveText("A changed request worth keeping.");await expect(page.getByText("Keep this encouragement.",{exact:true})).toBeVisible();
 });
-
-test("answering preserves both request drafts and the separate answer note", async ({ page }) => {
-  await prayer(page); await page.getByLabel("Request", { exact: true }).fill("Changed wording.");
-  await page.getByLabel("Prayer update").fill("An important update.");
-  await page.getByRole("button", { name: "Answered", exact: true }).click();
-  await page.getByLabel("What happened?", { exact: false }).fill("The visit went well.");
-  await page.getByRole("button", { name: "Mark answered", exact: true }).click();
-  await page.getByRole("dialog").getByRole("button", { name: "Save and continue" }).click();
-  await expect(page.getByText("Prayer marked answered.")).toBeVisible(); await page.reload();
-  await expect(page.getByLabel("Request", { exact: true })).toHaveValue("Changed wording.");
-  await expect(page.getByText("An important update.", { exact: true })).toBeVisible();
-  await expect(page.getByText("The visit went well.", { exact: true })).toBeVisible();
+test("answering preserves request wording and an explicitly saved update",async({page})=>{
+ await prayer(page);await page.getByRole("button",{name:"Edit wording",exact:true}).click();await page.getByLabel("Request",{exact:true}).fill("Changed wording.");
+ await page.getByRole("button",{name:"Add update",exact:true}).click();await page.getByRole("dialog").getByRole("button",{name:"Save and continue"}).click();
+ await page.getByLabel("Prayer update").fill("An important update.");await page.locator(".prayer-record-actions").getByRole("button",{name:"Mark answered",exact:true}).click();
+ await page.getByRole("dialog").getByRole("button",{name:"Save and continue"}).click();await page.getByLabel("What happened?",{exact:false}).fill("The visit went well.");
+ await page.locator(".prayer-record-editor").getByRole("button",{name:"Mark answered",exact:true}).click();await expect(page.locator(".journal-status")).toHaveText("Saved locally.");await page.reload();
+ await expect(page.locator(".prayer-request-text")).toHaveText("Changed wording.");await expect(page.getByText("An important update.",{exact:true})).toBeVisible();await expect(page.getByText("The visit went well.",{exact:true})).toBeVisible();
 });
 
 test("failed enrollment and reading writes show an error and succeed on retry", async ({ page }) => {
@@ -163,6 +143,6 @@ test("encrypted backup restores in a fresh browser context on this engine", asyn
     await restored.getByRole("button", { name: "Preview & validate" }).click();
     await restored.getByRole("button", { name: "Merge validated backup" }).click();
     await expect(restored.getByRole("status")).toContainText("merged successfully");
-    await openRoute(restored, route); await expect(restored.getByLabel("Request", { exact: true })).toHaveValue("Pray for the visit.");
+    await openRoute(restored, route); await expect(restored.locator(".prayer-request-text")).toHaveText("Pray for the visit.");
   } finally { await target.close(); }
 });

@@ -9,7 +9,7 @@ import { scriptureTextForRange } from "../scripture/plain-text";
 export function scriptureHref(reference: ScriptureReference, returnTo: string): string {
   const start = parseVerseKey(reference.startVerseKey);
   const end = parseVerseKey(reference.endVerseKey);
-  const params = new URLSearchParams({ verse: String(start.verse), return: returnTo });
+  const params = new URLSearchParams({ verse: String(start.verse), return: returnTo, translation: reference.translationId, start: reference.startVerseKey, end: reference.endVerseKey });
   if (start.chapter === end.chapter && start.bookId === end.bookId) params.set("endVerse", String(end.verse));
   return `/bible/${start.bookId}/${start.chapter}?${params.toString()}`;
 }

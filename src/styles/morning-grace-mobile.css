@@ -598,13 +598,11 @@
     font-size: .82rem;
   }
 
-  .mg-prayer-detail-workspace .prayer-detail-layout,
   .mg-prayer-metadata-workspace .metadata-layout,
   .mg-collections-workspace .collections-layout {
     gap: 14px;
   }
 
-  .mg-prayer-settings-workspace .prayer-settings-panel,
   .mg-prayer-metadata-workspace .metadata-editor,
   .mg-data-workspace .import-panel {
     margin-inline: calc(var(--mobile-gutter) * -1);
@@ -636,13 +634,6 @@
 
   .mg-plan-workspace .plan-day-readings a {
     min-height: 46px;
-  }
-
-  .mg-prayer-detail-workspace .prayer-detail-body {
-    min-height: 120px;
-    padding: 14px 0 16px;
-    font-size: 1.12rem;
-    line-height: 1.48;
   }
 
   .mg-focused-prayer-workspace {

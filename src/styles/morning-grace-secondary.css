@@ -132,90 +132,10 @@
 }
 
 /* Prayer detail — a prayer story rather than a record editor */
-.mg-prayer-detail-workspace .prayer-detail-layout {
-  grid-template-columns: minmax(0, 1.4fr) minmax(280px, .6fr);
-  gap: clamp(36px, 5vw, 62px);
-}
-
-.mg-prayer-detail-workspace .prayer-detail-main {
-  min-width: 0;
-}
-
-.mg-prayer-detail-workspace .prayer-detail-body {
-  min-height: 190px;
-  padding: 24px 0 28px;
-  border: 0;
-  border-top: 1px solid var(--color-prayer);
-  border-bottom: 1px solid var(--color-line);
-  border-radius: 0;
-  background: transparent;
-  font-family: var(--font-reading);
-  font-size: clamp(1.35rem, 2.6vw, 1.9rem);
-  line-height: 1.58;
-}
-
-.mg-prayer-detail-workspace .prayer-lifecycle-actions {
-  margin: 18px 0 34px;
-}
-
-.mg-prayer-detail-workspace .prayer-answer-form,
-.mg-prayer-detail-workspace .answered-prayer-note {
-  margin: 28px 0;
-  padding: 24px;
-  border: 1px solid var(--color-line);
-  border-left: 3px solid var(--color-prayer);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-}
-
-.mg-prayer-detail-workspace .answered-prayer-note {
-  border-left-color: var(--color-morning);
-}
-
-.mg-prayer-detail-workspace .prayer-timeline-section {
-  margin-top: 46px;
-  padding-top: 22px;
-  border-top: 1px solid var(--color-line-strong);
-}
-
-.mg-prayer-detail-workspace .prayer-update-list article {
-  padding: 20px 0;
-  border-bottom: 1px solid var(--color-line);
-}
-
-.mg-prayer-detail-workspace .prayer-update-list p {
-  font-family: var(--font-reading);
-  line-height: 1.65;
-}
-
-.mg-prayer-detail-workspace .prayer-detail-context {
-  padding-top: 20px;
-  border-top: 1px solid var(--color-prayer);
-}
 
 /* Prayer settings + People + Categories — quiet administration */
-.mg-prayer-settings-workspace .prayer-settings-panel,
 .mg-prayer-metadata-workspace .metadata-layout {
   max-width: 980px;
-}
-
-.mg-prayer-settings-workspace .prayer-settings-panel {
-  padding: clamp(24px, 4vw, 38px);
-  border: 1px solid var(--color-line);
-  border-top: 3px solid var(--color-prayer);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-}
-
-.mg-prayer-settings-workspace .editor-fieldset {
-  border: 0;
-  padding: 0;
-}
-
-.mg-prayer-settings-workspace .prayer-settings-actions {
-  margin-top: 30px;
-  padding-top: 18px;
-  border-top: 1px solid var(--color-line);
 }
 
 .mg-prayer-metadata-workspace .metadata-layout {
@@ -503,7 +423,6 @@
 
 /* Responsive secondary workflows */
 @media (max-width: 900px) {
-  .mg-prayer-detail-workspace .prayer-detail-layout,
   .mg-prayer-metadata-workspace .metadata-layout,
   .mg-collections-workspace .collections-layout {
     grid-template-columns: 1fr;
@@ -534,7 +453,6 @@
     font-size: clamp(2.35rem, 11vw, 3.15rem);
   }
 
-  .mg-prayer-settings-workspace .prayer-settings-panel,
   .mg-prayer-metadata-workspace .metadata-editor,
   .mg-data-workspace .import-panel {
     padding: 20px;
@@ -557,10 +475,6 @@
 
   .mg-plan-workspace .plan-day-readings {
     grid-template-columns: 1fr;
-  }
-
-  .mg-prayer-detail-workspace .prayer-detail-body {
-    font-size: 1.3rem;
   }
 
   .mg-focused-prayer-workspace {
@@ -616,7 +530,6 @@
 }
 
 /* Zoom/reflow safety for rich secondary workspaces. */
-html[style*="font-size: 200%"] .mg-prayer-detail-workspace .prayer-detail-layout,
 html[style*="font-size: 200%"] .mg-prayer-metadata-workspace .metadata-layout,
 html[style*="font-size: 200%"] .mg-collections-workspace .collections-layout,
 html[style*="font-size: 200%"] .mg-plan-workspace .plan-day {
