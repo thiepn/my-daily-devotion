@@ -6,6 +6,7 @@ playwright-report/
 visual-report/
 test-results/
 test-results-writing-visual/
+test-results-detail-visual/
 .DS_Store
 *.log
 *.tsbuildinfo

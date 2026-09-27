@@ -5,7 +5,7 @@ async function createPrayer(page) {
   await openRoute(page,"/prayer/new");
   await page.getByLabel("What do you want to pray about?").fill("Give wisdom and peace today.");
   await page.getByRole("button",{name:"Save prayer",exact:true}).click();
-  await expect(page.getByLabel("Request",{exact:true})).toHaveValue("Give wisdom and peace today.");
+  await expect(page.locator(".prayer-request-text")).toHaveText("Give wisdom and peace today.");
   return new URL(page.url()).hash.replace(/^#/,"");
 }
 
@@ -20,10 +20,10 @@ test.describe("Morning Grace secondary workflows",()=>{
     await expect(page.locator(".mg-plan-workspace")).toBeVisible();
 
     const prayerRoute=await createPrayer(page);
-    await expect(page.locator(".mg-prayer-detail-workspace")).toBeVisible();
+    await expect(page.locator(".prayer-record")).toBeVisible();
 
     await openRoute(page,prayerRoute.includes("?") ? prayerRoute.replace("?", "/settings?") : prayerRoute+"/settings");
-    await expect(page.locator(".mg-prayer-settings-workspace")).toBeVisible();
+    await expect(page.locator(".prayer-settings-journal")).toBeVisible();
 
     await openRoute(page,"/prayer/people");
     await expect(page.locator(".mg-prayer-metadata-workspace")).toBeVisible();

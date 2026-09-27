@@ -33,39 +33,39 @@ test.describe("dense secondary mobile workflows", () => {
     }
   });
 
-  test("Prayer detail is a compact mobile story with visible status context", async ({ page }) => {
+  test("Prayer detail is a readable journal story with visible status context", async ({ page }) => {
     await openRoute(page, "/prayer/new");
     await page.getByLabel("What do you want to pray about?").fill("Give wisdom and patience today.");
     await page.getByRole("button", { name: "Save prayer", exact: true }).click();
-    await expect(page.getByLabel("Request", { exact: true })).toHaveValue("Give wisdom and patience today.");
+    await expect(page.locator(".prayer-request-text")).toHaveText("Give wisdom and patience today.");
 
-    const eyebrow = page.locator(".prayer-detail-heading .eyebrow");
+    const eyebrow = page.locator(".prayer-record .journal-date");
     await expect(eyebrow).toBeVisible();
     await expect(eyebrow).toContainText("active");
 
-    const lifecycle = page.locator(".prayer-lifecycle-actions");
-    await expect(lifecycle).toHaveCSS("display", "grid");
+    const lifecycle = page.locator(".prayer-record-actions");
+    await expect(lifecycle).toHaveCSS("display", "flex");
     const buttons = lifecycle.getByRole("button");
     for (let index = 0; index < await buttons.count(); index += 1) {
       const box = await buttons.nth(index).boundingBox();
       expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
     }
 
-    await expect(page.locator(".prayer-detail-context")).toHaveCSS("display", "block");
+    await expect(page.locator(".prayer-record-settings")).toBeVisible();
     await expectNoHorizontalOverflow(page);
     await expectNoAxeViolations(page);
   });
 
-  test("Prayer Settings uses a flat form and sticky mobile save bar", async ({ page }) => {
+  test("Prayer Settings groups fields with actions in document flow", async ({ page }) => {
     await openRoute(page, "/prayer/new");
     await page.getByLabel("What do you want to pray about?").fill("Pray faithfully this week.");
     await page.getByRole("button", { name: "Save prayer", exact: true }).click();
-    await expect(page.getByLabel("Request", { exact: true })).toHaveValue("Pray faithfully this week.");
-    await page.getByRole("link", { name: "Edit", exact: true }).click();
+    await expect(page.locator(".prayer-request-text")).toHaveText("Pray faithfully this week.");
+    await page.getByRole("link", { name: "Edit details", exact: true }).click();
 
-    await expect(page.locator(".prayer-settings-panel")).toBeVisible();
+    await expect(page.locator(".prayer-settings-paper")).toBeVisible();
     const actions = page.locator(".prayer-settings-actions");
-    await expect(actions).toHaveCSS("position", "sticky");
+    await expect(actions).toHaveCSS("position", "static");
     const saveBox = await page.getByRole("button", { name: "Save details", exact: true }).boundingBox();
     expect(saveBox?.height ?? 0).toBeGreaterThanOrEqual(44);
     await expectNoHorizontalOverflow(page);

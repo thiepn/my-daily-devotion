@@ -57,3 +57,9 @@ The complete History journey now follows the fourth phone's journal direction. T
 The approved writing release is reviewed in [writing-design-qa.md](docs/visual/morning-grace-v2/writing-design-qa.md). It contains before/after evidence, a normalized visual-family comparison, the six-width image matrix, corrections made after review, and explicit scope limitations. These secondary screens extend the canonical identity; the board does not depict their exact composition. Functional certification is recorded separately against the final commit.
 
 final result: passed
+
+## Prayer Detail and Settings follow-up
+
+The Prayer destination now opens in reading mode with explicit editors, newest-first updates/answers, preserved Scripture/source context and grouped settings. The scoped [Prayer Detail and Settings review](docs/visual/morning-grace-v2/prayer-detail-design-qa.md) records the combined visual-family comparison, mobile and enlarged-text corrections, rendered in-app checks and remaining limitations. This extends the integrated Writing release; Focused Prayer, metadata management, durable drafts and Data remain outside this scope.
+
+final result: passed

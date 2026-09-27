@@ -125,14 +125,14 @@ test.describe("native mobile stacked navigation", () => {
     await page.getByRole("button", { name: "Add details", exact: true }).click();
     await page.getByRole("combobox", { name: "Schedule", exact: true }).selectOption("DAILY");
     await page.getByRole("button", { name: "Save prayer", exact: true }).click();
-    await expect(page.getByLabel("Request", { exact: true })).toHaveValue("Give wisdom and patience today.");
+    await expect(page.locator(".prayer-request-text")).toHaveText("Give wisdom and patience today.");
 
     await openRoute(page, "/prayer/new");
     await page.getByLabel("What do you want to pray about?").fill("Give peace and clarity today.");
     await page.getByRole("button", { name: "Add details", exact: true }).click();
     await page.getByRole("combobox", { name: "Schedule", exact: true }).selectOption("DAILY");
     await page.getByRole("button", { name: "Save prayer", exact: true }).click();
-    await expect(page.getByLabel("Request", { exact: true })).toHaveValue("Give peace and clarity today.");
+    await expect(page.locator(".prayer-request-text")).toHaveText("Give peace and clarity today.");
 
     await openRoute(page, "/prayer/session?depth=quick");
     await expect(page.locator(".mg-focused-prayer-workspace")).toBeVisible();

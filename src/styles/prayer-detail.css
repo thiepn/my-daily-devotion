@@ -2,7 +2,8 @@
 .prayer-record .journal-date { text-transform:capitalize; letter-spacing:.08em; color:var(--color-prayer); }
 .prayer-request { padding:20px; }
 .prayer-record-person { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
-.prayer-record-initials { display:grid; place-items:center; flex:0 0 46px; height:46px; border-radius:50%; background:var(--color-accent-soft); color:var(--color-accent-strong); font:1.15rem/1 var(--font-reading); }
+.prayer-record-initials { display:grid; place-items:center; flex:0 0 max(46px,2.2em); height:max(46px,2.2em); border-radius:50%; background:var(--color-accent-soft); color:var(--color-accent-strong); font:1.15rem/1 var(--font-reading); }
+.prayer-record-person > div { min-width:0; overflow-wrap:anywhere; }
 .prayer-record-person strong { display:block; font:400 1.05rem/1.5 var(--font-display); }
 .prayer-record-person small { display:block; color:var(--color-ink-faint); font:.7rem/1.6 var(--font-ui); }
 .prayer-request-text { white-space:pre-wrap; overflow-wrap:anywhere; margin:0; font:1.08rem/1.8 var(--font-reading); }

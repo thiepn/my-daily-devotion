@@ -22,6 +22,9 @@ describe("Prayer detail read models and guarded lifecycle",()=>{
   const db=setup();await prepareDatabase(db);const repo=new PrayerRepository(db);const prayer=await repo.createPrayer({body:"Request"});
   const update=await repo.addUpdate(prayer.id,"Hidden");await db.prayerUpdates.update(update.id,{deletedAt:"2026-04-22T06:00:00.000Z"});
   expect((await readPrayerDetail(db,prayer.id))?.updates).toEqual([]);
+  const answer=await repo.answer(prayer.id,"Hidden answer");
+  await db.prayerResolutions.update(answer.resolution.id,{deletedAt:"2026-04-22T06:00:00.000Z"});
+  expect((await readPrayerDetail(db,prayer.id))?.resolution).toBeNull();
   await repo.removePrayer(prayer.id);expect(await readPrayerDetail(db,prayer.id)).toBeNull();
  });
  it("rejects stale lifecycle changes without events or record changes",async()=>{
@@ -41,6 +44,8 @@ describe("Prayer detail read models and guarded lifecycle",()=>{
   expect(query.shown).toBe(60);expect(query.entry).toBe("update:abc");expect(query.returnTo).toBe(back);
   expect(parsePrayerDetailQuery("?shown=-4&entry=bad&return=https://example.com").search).toBe("");
   expect(safePrayerReturn("//example.com")).toBe("/prayer");
+  expect(parsePrayerDetailQuery("?entry=&shown=").search).toBe("");
+  expect(parsePrayerDetailQuery("?shown=9007199254740991").shown).toBe(20);
  });
 });
 

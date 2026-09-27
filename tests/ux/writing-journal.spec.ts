@@ -9,7 +9,7 @@ test("save-and-continue preserves Scripture, devotional date and complete return
   await page.locator(".journal-context summary").click();await expect(page.locator(".journal-preview")).toContainText("Grace for the next conversation.");
   await expect(page.locator(".journal-scripture blockquote")).toContainText("For God so loved the world");
   await page.getByLabel("What do you want to pray about?").fill("Help me listen patiently.");
-  await page.getByRole("button",{name:"Save prayer",exact:true}).click();await expect(page.getByLabel("Request",{exact:true})).toHaveValue("Help me listen patiently.");
+  await page.getByRole("button",{name:"Save prayer",exact:true}).click();await expect(page.locator(".prayer-request-text")).toHaveText("Help me listen patiently.");
   const data=await writingSnapshot(page);const prayers=data.find((row:any)=>row[0]==="prayers") as any;
   expect(prayers[1]).toHaveLength(1);expect(prayers[1][0]).toMatchObject({sourceReflectionId:"writing-reflection",sourceDevotionDate:"2026-04-24"});
   const returnTarget=new URLSearchParams(new URL(page.url()).hash.split("?")[1]).get("return");expect(returnTarget).toBe(reflectionRoute);
@@ -76,7 +76,7 @@ test("capture keeps request and settings when collapsing details and crossing mi
   await page.getByLabel("What do you want to pray about?").fill("A request begun yesterday.");
   await page.getByRole("button",{name:"Add details",exact:true}).click();await page.getByRole("combobox",{name:"Schedule",exact:true}).selectOption("MANUAL_ONLY");
   await page.getByRole("button",{name:"Hide details",exact:true}).click();await page.clock.setFixedTime(new Date("2026-04-25T00:01:00+02:00"));
-  await page.getByRole("button",{name:"Save prayer",exact:true}).click();await expect(page.getByLabel("Request",{exact:true})).toHaveValue("A request begun yesterday.");
+  await page.getByRole("button",{name:"Save prayer",exact:true}).click();await expect(page.locator(".prayer-request-text")).toHaveText("A request begun yesterday.");
   const data=await writingSnapshot(page);const prayers=data.find((row:any)=>row[0]==="prayers") as any;expect(prayers[1][0].sourceDevotionDate).toBe("2026-04-24");
   const schedules=data.find((row:any)=>row[0]==="prayerSchedules") as any;expect(schedules[1][0].mode).toBe("MANUAL_ONLY");
 });
@@ -93,7 +93,7 @@ test("missing source requires an explicit choice and preserves the request",asyn
   await page.getByLabel("What do you want to pray about?").fill("Keep my request.");
   await expect(page.getByRole("button",{name:"Save prayer",exact:true})).toBeDisabled();
   await page.getByRole("button",{name:"Continue without reflection"}).click();await page.getByRole("button",{name:"Save prayer",exact:true}).click();
-  await expect(page.getByLabel("Request",{exact:true})).toHaveValue("Keep my request.");
+  await expect(page.locator(".prayer-request-text")).toHaveText("Keep my request.");
 });
 test("failed reflection save retains writing and does not navigate",async({page})=>{
   await seedWriting(page,"reflection");await page.getByLabel("Daily reflection").fill("Keep this after failure.");
@@ -119,7 +119,7 @@ test("typing during save stays unsaved and prevents a handoff",async({page})=>{
 test("rapid capture submissions create only one prayer and History event",async({page})=>{
   await openRoute(page,"/prayer/new");await page.getByLabel("What do you want to pray about?").fill("A single request.");
   await page.getByRole("button",{name:"Save prayer",exact:true}).evaluate(button=>{(button as HTMLButtonElement).click();(button as HTMLButtonElement).click();});
-  await expect(page.getByLabel("Request",{exact:true})).toHaveValue("A single request.");
+  await expect(page.locator(".prayer-request-text")).toHaveText("A single request.");
   const data=await writingSnapshot(page);expect((data.find((row:any)=>row[0]==="prayers") as any)[1]).toHaveLength(1);
   expect((data.find((row:any)=>row[0]==="activityEvents") as any)[1].filter((event:any)=>event.type==="PRAYER_CREATED")).toHaveLength(1);
 });
@@ -138,13 +138,13 @@ test("saving before opening Scripture returns to the newly saved prayer",async({
   const back=new URLSearchParams(new URL(page.url()).hash.split("?")[1]).get("return")!;
   expect(back).toMatch(/^\/prayer\/(?!new)[^?]+\?return=/);
   await page.getByRole("link",{name:"Return to devotional context",exact:true}).click();
-  await expect(page.getByLabel("Request",{exact:true})).toHaveValue("Give me patience and wisdom in the conversations ahead.");
+  await expect(page.locator(".prayer-request-text")).toHaveText("Give me patience and wisdom in the conversations ahead.");
 });
 test("metadata failure leaves standalone capture usable",async({page})=>{
   await page.addInitScript(()=>{const original=IDBObjectStore.prototype.openCursor;IDBObjectStore.prototype.openCursor=function(...args){if(this.name==="people")throw new DOMException("People unavailable","UnknownError");return original.apply(this,args);};});
   await openRoute(page,"/prayer/new");await page.getByLabel("What do you want to pray about?").fill("A request without metadata.");
   await page.getByRole("button",{name:"Add details",exact:true}).click();await expect(page.getByRole("button",{name:"Retry details"})).toBeVisible();
-  await page.getByRole("button",{name:"Save prayer",exact:true}).click();await expect(page.getByLabel("Request",{exact:true})).toHaveValue("A request without metadata.");
+  await page.getByRole("button",{name:"Save prayer",exact:true}).click();await expect(page.locator(".prayer-request-text")).toHaveText("A request without metadata.");
 });
 test("pending attachments are guarded and source disappearance never saves silently",async({page,context})=>{
   await openRoute(page,"/today/reflection/2026-04-24?translation=BSB&start=JHN.3.16&end=JHN.3.18");await page.locator(".journal-heading .quiet-back-link").click();
