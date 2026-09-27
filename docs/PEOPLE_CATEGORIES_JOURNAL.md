@@ -39,4 +39,3 @@ Schema remains **v1**. No stored fields, UUID format, tombstone behavior, backup
 Coverage includes all four linked statuses, query normalization, ordering/pagination, duplicate names, explicit category creation, no-op saves, removal/assignment races, conflict comparisons, cross-tab deletion, readonly database snapshots, late input, failed writes, committed saves followed by failed reads, exact return URLs and focus restoration. Existing offline, backup and primary-screen image comparisons remain release gates.
 
 Deterministic candidate images cover 320, 360, 390, 430, 768 and 1440px, dark mode, 200% text, empty and populated directories, long content, expanded requests, editors, confirmations, conflicts, no results and errors. Exact-commit certification evidence is generated outside tracked source and reported on the draft PR.
-

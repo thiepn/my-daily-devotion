@@ -19,7 +19,7 @@ These screens are not directly depicted in the canonical four-phone board. The i
 2. **P2, fixed — enlarged text.** At 320px/200%, fixed identity circles and the heading/art row constrained text. Circles now grow with text, artwork wraps onto its own row, and the narrow heading scale preserves a readable Categories title.
 3. **P2, fixed — terracotta initials contrast.** The inherited clay text color did not meet the normal-text threshold on this surface. A scoped token blend darkens the initials appropriately in light and dark modes. Independent axe checks pass.
 4. **Interaction, fixed — return readiness and counts.** Focus restoration waits for linked requests. Selected entries outside the current page/search receive an explicit label, preserving truthful matching counts and stable ordering.
-5. **Capture correction.** Early full-page images retained scroll offsets after field focus. The suite now resets capture scroll consistently; this does not change application focus behavior.
+5. **Capture correction.** Early full-page images retained scroll offsets after field focus. The existing long History Day comparison also exposed a font-dependent offset of the off-screen skip link; that one baseline was recaptured with an explicit top scroll position, preserving selected-entry focus and unchanged History content. The suite now resets capture scroll consistently; this does not change application focus behavior.
 6. **Cascade cleanup.** Seventy-six superseded metadata selectors were removed from six legacy files. One screens-layer stylesheet owns the replacement; shared components used elsewhere remain intact.
 
 ## Visual assessment
@@ -41,4 +41,3 @@ These screens are not directly depicted in the canonical four-phone board. The i
 No actionable P0/P1/P2 visual finding remains in the inspected replacement. Functional exact-commit certification is reported separately in the draft PR.
 
 final result: passed
-

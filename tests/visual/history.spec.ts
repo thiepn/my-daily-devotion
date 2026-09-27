@@ -28,5 +28,9 @@ for(const state of ['dark','empty','long','year','enlarged','calendar','calendar
   if(state.startsWith('day')){await page.locator('#history-row-history-reflection-event').click();await expect(page.locator('.history-day-entry.is-selected')).toBeFocused();}
   if(state==='moments'){await page.getByRole('link',{name:'Moments',exact:true}).click();await expect(page.locator('.history-journal-row')).toHaveCount(2);}
   if(state==='error'){await page.addInitScript(()=>{const original=IDBObjectStore.prototype.getAll;IDBObjectStore.prototype.getAll=function(...args){if(this.name==='activityEvents')throw new DOMException('Test read failure','UnknownError');return original.apply(this,args);};});await page.reload();await expect(page.getByRole('alert')).toBeVisible();await expect(page.locator('.history-reflection-band blockquote')).toBeVisible();}
-  await page.evaluate(()=>document.fonts.ready);await page.mouse.move(0,0);await expect(page).toHaveScreenshot(`history-${state}.png`,{fullPage:state==='enlarged'||state==='day-expanded'});
+  await page.evaluate(()=>document.fonts.ready);
+  // The selected entry has focus already. Normalize the full-page capture so
+  // fixed skip navigation isn't rasterized at a font-dependent scroll offset.
+  if(state==='day-expanded')await page.evaluate(()=>window.scrollTo(0,0));
+  await page.mouse.move(0,0);await expect(page).toHaveScreenshot(`history-${state}.png`,{fullPage:state==='enlarged'||state==='day-expanded'});
 });
