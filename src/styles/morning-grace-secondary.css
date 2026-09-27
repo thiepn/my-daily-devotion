@@ -134,42 +134,6 @@
 /* Prayer detail — a prayer story rather than a record editor */
 
 /* Prayer settings + People + Categories — quiet administration */
-.mg-prayer-metadata-workspace .metadata-layout {
-  max-width: 980px;
-}
-
-.mg-prayer-metadata-workspace .metadata-layout {
-  grid-template-columns: minmax(0, 1fr) minmax(280px, .58fr);
-  gap: clamp(34px, 5vw, 60px);
-}
-
-.mg-prayer-metadata-workspace .metadata-list {
-  border-top: 1px solid var(--color-prayer);
-}
-
-.mg-prayer-metadata-workspace .metadata-row {
-  min-height: 86px;
-  padding: 16px 0;
-  border-bottom: 1px solid var(--color-line);
-}
-
-.mg-prayer-metadata-workspace .metadata-row strong {
-  font-family: var(--font-display);
-  font-size: 1.03rem;
-  font-weight: 500;
-}
-
-.mg-prayer-metadata-workspace .metadata-editor {
-  padding: 24px;
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-soft);
-}
-
-.mg-prayer-metadata-workspace .metadata-editor .section-kicker {
-  color: var(--color-prayer);
-}
 
 /* Focused prayer — sanctuary mode */
 
@@ -357,7 +321,6 @@
 
 /* Responsive secondary workflows */
 @media (max-width: 900px) {
-  .mg-prayer-metadata-workspace .metadata-layout,
   .mg-collections-workspace .collections-layout {
     grid-template-columns: 1fr;
   }
@@ -366,7 +329,6 @@
     grid-template-columns: 100px minmax(0, 1fr);
   }
 
-  .mg-prayer-metadata-workspace .metadata-editor,
   .mg-collections-workspace .collection-sidebar {
     position: static;
     max-height: none;
@@ -387,7 +349,6 @@
     font-size: clamp(2.35rem, 11vw, 3.15rem);
   }
 
-  .mg-prayer-metadata-workspace .metadata-editor,
   .mg-data-workspace .import-panel {
     padding: 20px;
     border-radius: var(--radius-md);
@@ -445,7 +406,6 @@
 }
 
 /* Zoom/reflow safety for rich secondary workspaces. */
-html[style*="font-size: 200%"] .mg-prayer-metadata-workspace .metadata-layout,
 html[style*="font-size: 200%"] .mg-collections-workspace .collections-layout,
 html[style*="font-size: 200%"] .mg-plan-workspace .plan-day {
   grid-template-columns: 1fr;

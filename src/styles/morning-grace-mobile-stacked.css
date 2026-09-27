@@ -248,97 +248,10 @@
 
   /* Prayer Settings becomes a flat settings page with a reachable save bar. */
 
-  /* People/Categories: editor first, then a dense native-style list. */
-  .mobile-detail-route .mg-prayer-metadata-workspace .metadata-layout {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  .mobile-detail-route .mg-prayer-metadata-workspace .metadata-editor {
-    order: -1;
-    margin-inline: calc(var(--mobile-gutter) * -1);
-    padding: 12px var(--mobile-gutter);
-    border-inline: 0;
-    border-top: 1px solid var(--color-prayer);
-    border-bottom: 1px solid var(--color-line);
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  .mobile-detail-route .mg-prayer-metadata-workspace .metadata-editor label {
-    gap: 4px;
-    font-size: .69rem;
-  }
-
-  .mobile-detail-route .mg-prayer-metadata-workspace .metadata-editor input {
-    min-height: 44px;
-  }
-
-  .mobile-detail-route .mg-prayer-metadata-workspace .metadata-editor textarea {
-    min-height: 84px;
-    max-height: 150px;
-  }
-
-  .mobile-detail-route .mg-prayer-metadata-workspace .metadata-editor > div {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    gap: 6px;
-  }
-
-  .mobile-detail-route .mg-prayer-metadata-workspace .metadata-editor button {
-    min-height: 44px;
-  }
-
-  .mobile-detail-route .mg-prayer-metadata-workspace .metadata-list {
-    padding-top: 2px;
-    border-top: 0;
-  }
-
-  .mobile-detail-route .mg-prayer-metadata-workspace .metadata-list > .section-kicker {
-    margin-bottom: 4px;
-  }
-
-  .mobile-detail-route .mg-prayer-metadata-workspace .metadata-row {
-    min-height: 58px;
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 0;
-  }
-
-  .mobile-detail-route .mg-prayer-metadata-workspace .metadata-row > div:last-child {
-    flex-wrap: nowrap;
-    gap: 4px;
-  }
-
-  .mobile-detail-route .mg-prayer-metadata-workspace .metadata-row button {
-    min-height: 44px;
-    padding-inline: 8px;
-    font-size: .64rem;
-  }
-
   /* History detail views use compact timeline rows and an app-like local switcher. */
 
   /* Enlarged-text fallback: dense two-column action layouts become a single
      column rather than relying on text shrinking. */
-  html[style*="font-size: 200%"] .mobile-detail-route .mg-prayer-metadata-workspace .metadata-editor > div,
-  html[style*="font-size: 200%"] .mobile-detail-route .mg-prayer-metadata-workspace .metadata-row {
-    grid-template-columns: 1fr;
-  }
-
-  html[style*="font-size: 200%"] .mobile-detail-route .mg-prayer-metadata-workspace .metadata-row > div:last-child {
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: flex-start;
-  }
-
-  html[style*="font-size: 200%"] .mobile-detail-route .mg-prayer-metadata-workspace .metadata-editor button,
-  html[style*="font-size: 200%"] .mobile-detail-route .mg-prayer-metadata-workspace .metadata-row button {
-    width: 100%;
-    min-width: 0;
-  }
 
 }
 

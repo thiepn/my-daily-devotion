@@ -598,12 +598,10 @@
     font-size: .82rem;
   }
 
-  .mg-prayer-metadata-workspace .metadata-layout,
   .mg-collections-workspace .collections-layout {
     gap: 14px;
   }
 
-  .mg-prayer-metadata-workspace .metadata-editor,
   .mg-data-workspace .import-panel {
     margin-inline: calc(var(--mobile-gutter) * -1);
     padding: 14px var(--mobile-gutter);
