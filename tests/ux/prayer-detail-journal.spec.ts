@@ -1,4 +1,4 @@
-import {expect,test} from "@playwright/test";
+import {expect,test,type Locator} from "@playwright/test";
 import {seedPrayerDetail,detailRoute} from "./prayer-detail-fixture";
 import {writingSnapshot} from "./writing-fixture";
 import {expectNoAxeViolations,expectNoHorizontalOverflow,openRoute} from "./helpers";
@@ -101,9 +101,30 @@ test("removing a prayer requires confirmation and returns to its exact origin",a
  await page.getByRole("dialog").getByRole("button",{name:"Remove prayer",exact:true}).click();await expect(page.getByRole("heading",{name:"Prayer",exact:true})).toBeVisible();
  const data=await writingSnapshot(page);expect((data.find((r:any)=>r[0]==="prayers") as any)[1][0].deletedAt).not.toBeNull();
 });
+async function expectHoverContrast(button:Locator){
+ await button.hover();
+ const contrast=await button.evaluate(node=>{
+  for(const animation of node.getAnimations()){const end=animation.effect?.getComputedTiming().endTime;if(typeof end==="number"&&Number.isFinite(end))animation.currentTime=end;}
+  const style=getComputedStyle(node);
+  const luminance=(color:string)=>{const channels=color.match(/[\d.]+/g)!.slice(0,3).map(Number).map(value=>{const s=value/255;return s<=.04045?s/12.92:((s+.055)/1.055)**2.4;});return .2126*channels[0]+.7152*channels[1]+.0722*channels[2];};
+  const foreground=luminance(style.color),background=luminance(style.backgroundColor);
+  return (Math.max(foreground,background)+.05)/(Math.min(foreground,background)+.05);
+ });
+ expect(contrast,"Hovered prayer action text contrast").toBeGreaterThanOrEqual(4.5);
+}
+
 test("journal controls support narrow, enlarged and dark keyboard use",async({page})=>{
  await page.setViewportSize({width:320,height:720});await seedPrayerDetail(page);
  await expectNoHorizontalOverflow(page);await expectNoAxeViolations(page);
+ await page.getByText("More actions",{exact:true}).click();
+ for(const theme of ["light","dark"]){
+  await page.evaluate(theme=>{document.documentElement.dataset.theme=theme;},theme);
+  for(const name of ["Add update","Mark answered","Remove prayer"])await expectHoverContrast(page.getByRole("button",{name,exact:true}));
+  await page.getByRole("button",{name:"Remove prayer",exact:true}).click();
+  await expectHoverContrast(page.getByRole("dialog").getByRole("button",{name:"Remove prayer",exact:true}));
+  await page.getByRole("button",{name:"Keep prayer",exact:true}).click();
+ }
+ await page.evaluate(()=>{delete document.documentElement.dataset.theme;});await page.mouse.move(0,0);
  await page.getByRole("button",{name:"Edit wording",exact:true}).click();await expect(page.getByLabel("Request",{exact:true})).toBeFocused();await expectNoAxeViolations(page);
  await page.getByRole("button",{name:"Cancel editing",exact:true}).click();await page.getByRole("link",{name:"Edit details",exact:true}).click();
  await page.evaluate(()=>{document.documentElement.style.fontSize="200%";});await expectNoHorizontalOverflow(page);await expectNoAxeViolations(page);
