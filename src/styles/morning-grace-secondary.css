@@ -252,72 +252,6 @@
 }
 
 /* Data / backup — archival utility */
-.mg-data-workspace {
-  max-width: 1040px;
-}
-
-.mg-data-workspace .data-sections {
-  display: grid;
-  gap: 0;
-}
-
-.mg-data-workspace .data-panel {
-  padding: 30px 0;
-  border-top: 1px solid var(--color-line);
-  background: transparent;
-}
-
-.mg-data-workspace .data-panel:first-child {
-  border-top-color: var(--color-line-strong);
-}
-
-.mg-data-workspace .data-panel h2 {
-  max-width: 26ch;
-  font-family: var(--font-display);
-  font-size: clamp(1.45rem, 2.4vw, 2rem);
-  font-weight: 500;
-  line-height: 1.2;
-}
-
-.mg-data-workspace .data-panel p {
-  max-width: 72ch;
-  line-height: 1.65;
-}
-
-.mg-data-workspace .data-actions {
-  margin: 22px 0;
-}
-
-.mg-data-workspace .data-panel button,
-.mg-data-workspace .backup-preview button {
-  min-height: 46px;
-  border: 1px solid var(--color-line-strong);
-  border-radius: var(--radius-sm);
-  background: var(--color-surface);
-  color: var(--color-ink);
-}
-
-.mg-data-workspace .import-panel {
-  margin-top: 20px;
-  padding: 30px;
-  border: 1px solid var(--color-line-strong);
-  border-top: 3px solid var(--color-morning);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-}
-
-.mg-data-workspace .backup-preview {
-  padding: 22px;
-  border: 1px solid var(--color-line);
-  border-left: 3px solid var(--color-accent);
-  border-radius: var(--radius-md);
-  background: var(--color-canvas);
-}
-
-.mg-data-workspace .data-warning {
-  max-width: 64ch;
-  color: var(--color-warning-text) !important;
-}
 
 /* Responsive secondary workflows */
 @media (max-width: 900px) {
@@ -349,11 +283,6 @@
     font-size: clamp(2.35rem, 11vw, 3.15rem);
   }
 
-  .mg-data-workspace .import-panel {
-    padding: 20px;
-    border-radius: var(--radius-md);
-  }
-
   .mg-plan-workspace .plan-summary {
     grid-template-columns: 1fr 1fr;
   }
@@ -378,10 +307,6 @@
 
   .mg-search-workspace .global-search-form > button {
     width: 100%;
-  }
-
-  .mg-data-workspace .import-panel {
-    margin-inline: -4px;
   }
 }
 

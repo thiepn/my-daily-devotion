@@ -1,10 +1,6 @@
 /* Morning Grace — Mobile First App Layout
    Phone-only composition layer. Desktop/tablet remain governed by the 1.1.0 Morning Grace system. */
 
-.mobile-appearance-panel {
-  display: none;
-}
-
 .mobile-appbar-back {
   display: none;
 }
@@ -118,29 +114,6 @@
   /* Appearance belongs in Settings/Data on phone, not every app bar. */
   .utility-bar .theme-switcher {
     display: none;
-  }
-
-  .mobile-appearance-panel {
-    display: block;
-  }
-
-  .mobile-appearance-panel .theme-switcher {
-    display: inline-flex;
-    margin-top: 8px;
-  }
-
-  .mobile-appearance-panel .theme-option {
-    min-width: 46px;
-    min-height: 38px;
-  }
-
-  .mobile-appearance-panel .theme-option span {
-    position: static;
-    width: auto;
-    height: auto;
-    overflow: visible;
-    clip: auto;
-    white-space: normal;
   }
 
   /* Compact bottom tab bar */
@@ -387,7 +360,6 @@
   /* Secondary phone headers collapse to app-style context rows. */
   .mg-plan-workspace .mg-secondary-header,
   .mg-search-workspace .mg-secondary-header,
-  .mg-data-workspace .mg-secondary-header,
   .mg-collections-workspace .mg-secondary-header {
     margin-bottom: 10px;
     padding: 0 0 8px;
@@ -395,7 +367,6 @@
 
   .mg-plan-workspace .mg-secondary-header h1,
   .mg-search-workspace .mg-secondary-header h1,
-  .mg-data-workspace .mg-secondary-header h1,
   .mg-collections-workspace .mg-secondary-header h1 {
     margin: 2px 0 3px;
     font-family: var(--font-ui);
@@ -407,13 +378,11 @@
   .mg-plan-workspace .mg-secondary-header .screen-intro,
   .mg-plan-workspace .mg-secondary-header .muted-copy,
   .mg-search-workspace .mg-secondary-header .screen-intro,
-  .mg-data-workspace .mg-secondary-header .screen-intro,
   .mg-collections-workspace .mg-secondary-header .screen-intro {
     display: none;
   }
 
   .mg-search-workspace .mg-secondary-header .eyebrow,
-  .mg-data-workspace .mg-secondary-header .eyebrow,
   .mg-collections-workspace .mg-secondary-header .eyebrow {
     display: none;
   }
@@ -565,24 +534,6 @@
   }
 
   /* Data keeps warnings intact but removes desktop-scale spacing. */
-  .mg-data-workspace .data-status:empty {
-    display: none;
-  }
-
-  .mg-data-workspace > .data-panel {
-    padding: 14px 0;
-  }
-
-  .mg-data-workspace > .data-panel h2 {
-    margin-bottom: 7px;
-    font-size: 1.05rem;
-  }
-
-  .mg-data-workspace > .data-panel p {
-    margin-bottom: 8px;
-    font-size: .76rem;
-    line-height: 1.45;
-  }
 
   /* SECONDARY ROUTES — compact app screens, not desktop forms. */
   .mg-secondary-screen {
@@ -600,14 +551,6 @@
 
   .mg-collections-workspace .collections-layout {
     gap: 14px;
-  }
-
-  .mg-data-workspace .import-panel {
-    margin-inline: calc(var(--mobile-gutter) * -1);
-    padding: 14px var(--mobile-gutter);
-    border-inline: 0;
-    border-radius: 0;
-    box-shadow: none;
   }
 
   .mg-plan-workspace .plan-summary {
@@ -651,18 +594,6 @@
 
   .mg-search-workspace .search-hit {
     padding: 13px 0;
-  }
-
-  .mg-data-workspace .data-panel {
-    padding: 18px 0;
-  }
-
-  .mg-data-workspace .data-panel h2 {
-    font-size: 1.18rem;
-  }
-
-  .mg-data-workspace .data-panel p {
-    font-size: .82rem;
   }
 
   .mg-route-loading {

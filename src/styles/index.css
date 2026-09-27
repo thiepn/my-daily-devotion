@@ -37,3 +37,4 @@
 @import "./prayer-detail.css" layer(screens);
 @import "./focused-prayer.css" layer(screens);
 @import "./prayer-metadata.css" layer(screens);
+@import "./data.css" layer(screens);
