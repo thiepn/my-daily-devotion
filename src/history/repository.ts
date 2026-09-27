@@ -86,7 +86,7 @@ export class HistoryRepository {
         const valid = update && !update.deletedAt && prayer && !prayer.deletedAt;
         return { ...base, kind: event.type === 'ENCOURAGEMENT_RECORDED' ? 'encouragement' as const : 'prayer' as const,
           title: event.type === 'ENCOURAGEMENT_RECORDED' ? 'Encouragement recorded' : 'Prayer updated', body: valid ? historyExcerpt(update.body) : null, fullText: valid ? update.body : null,
-          href: valid ? `/prayer/${prayer.id}` : null, availability: valid ? 'available' as const : update?.deletedAt || prayer?.deletedAt ? 'removed' as const : 'unavailable' as const };
+          href: valid ? `/prayer/${prayer.id}?entry=${encodeURIComponent(`update:${update.id}`)}` : null, availability: valid ? 'available' as const : update?.deletedAt || prayer?.deletedAt ? 'removed' as const : 'unavailable' as const };
       }
       const prayer = prayers.get(event.subjectId), valid = prayer && !prayer.deletedAt;
       if (event.type === 'PRAYER_ANSWERED') {
@@ -94,7 +94,7 @@ export class HistoryRepository {
         const resolution = typeof resolutionId === 'string' ? resolutions.get(resolutionId) : snapshot.resolutions.find(r => r.prayerId === event.subjectId);
         const available = valid && resolution && !resolution.deletedAt && resolution.prayerId === event.subjectId;
         return { ...base, kind: 'answer' as const, title: 'Answered prayer', body: available ? historyExcerpt(resolution.reflectionMd) : null,
-          fullText: available ? resolution.reflectionMd : null, href: available ? `/prayer/${event.subjectId}` : null,
+          fullText: available ? resolution.reflectionMd : null, href: available ? `/prayer/${event.subjectId}?entry=${encodeURIComponent(`answer:${resolution.id}`)}` : null,
           availability: available ? 'available' as const : prayer?.deletedAt || resolution?.deletedAt ? 'removed' as const : 'unavailable' as const };
       }
       return { ...base, title: event.type === 'PRAYER_CREATED' ? 'Added a prayer request' : 'Prayer prayed', body: valid ? historyExcerpt(prayer.body) : null,

@@ -41,9 +41,10 @@ export function parsePrayerDetailQuery(search:string):PrayerDetailQuery{
  const params=new URLSearchParams(search);const rawEntry=params.get("entry"),rawShown=params.get("shown");
  const entry=rawEntry&&/^(update|answer):[a-zA-Z0-9_-]+$/.test(rawEntry)?rawEntry:null;
  const count=rawShown&&/^\d+$/.test(rawShown)?Number(rawShown):20;
- const shown=Number.isSafeInteger(count)&&count>=20?Math.ceil(count/20)*20:20;
- if(rawEntry&&!entry)params.delete("entry");
- if(rawShown) {if(shown===20)params.delete("shown");else params.set("shown",String(shown));}
+ const rounded=Math.ceil(count/20)*20;
+ const shown=Number.isSafeInteger(rounded)&&count>=20?rounded:20;
+ if(rawEntry!==null&&!entry)params.delete("entry");
+ if(rawShown!==null) {if(shown===20)params.delete("shown");else params.set("shown",String(shown));}
  const returnTo=safePrayerReturn(params.get("return"));if(params.has("return")&&returnTo!==params.get("return"))params.delete("return");
  return {entry,shown,returnTo,search:params.size?"?"+params.toString():""};
 }
@@ -51,4 +52,3 @@ export function prayerDetailUrl(id:string,returnTo?:string,entry?:string):string
  const params=new URLSearchParams();if(returnTo)params.set("return",safePrayerReturn(returnTo));if(entry)params.set("entry",entry);
  return "/prayer/"+encodeURIComponent(id)+(params.size?"?"+params.toString():"");
 }
-

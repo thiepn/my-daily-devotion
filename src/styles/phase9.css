@@ -11,7 +11,6 @@
 .workspace,
 .visual-screen,
 .visual-screen > *,
-.prayer-detail-layout > *,
 .metadata-layout > *,
 .collections-layout > * {
   min-width: 0;
@@ -132,11 +131,9 @@
 .muted-copy,
 .screen-intro,
 .reflection-excerpt,
-.prayer-update-list p,
 .search-hit p,
 .collection-items p,
 .data-panel p,
-.prayer-detail-body,
 .metadata-row strong,
 .metadata-row span {
   overflow-wrap: anywhere;
@@ -168,11 +165,6 @@ select {
 
 .primary-editorial-action.compact-action,
 .quiet-button,
-.prayer-lifecycle-actions button,
-.prayer-answer-form button,
-.prayer-update-form > button,
-.update-type-toggle button,
-.prayer-settings-actions button,
 .metadata-row button,
 .metadata-editor button,
 .weekday-picker span,
@@ -203,11 +195,6 @@ select {
 }
 
 .quiet-button,
-.prayer-lifecycle-actions button,
-.prayer-answer-form button,
-.prayer-update-form > button,
-.update-type-toggle button,
-.prayer-settings-actions button,
 .metadata-row button,
 .metadata-editor button,
 .collection-sidebar form button {
@@ -230,7 +217,6 @@ button:disabled,
 }
 
 /* Action groups */
-.prayer-settings-actions,
 .prayer-handoff-actions,
 .focused-prayer-secondary,
 .data-actions {
@@ -320,22 +306,11 @@ button:disabled,
   min-width: 48px;
 }
 
-.prayer-detail-body {
-  min-height: 170px;
-}
-
-.prayer-lifecycle-actions {
-  gap: 7px;
-}
-
-.prayer-answer-form,
 .focused-answer-form {
   padding: 20px;
 }
 
-.prayer-answer-form textarea,
 .focused-answer-form textarea,
-.prayer-update-form textarea,
 .metadata-editor textarea {
   padding: 12px 14px;
   line-height: 1.58;
@@ -483,7 +458,6 @@ button:disabled,
 
 /* Wide-screen master/detail composition */
 @media (min-width: 1100px) {
-  .prayer-detail-context,
   .metadata-editor,
   .collection-sidebar {
     position: sticky;
@@ -492,10 +466,6 @@ button:disabled,
     max-height: calc(100vh - 112px);
     overflow: auto;
     scrollbar-width: thin;
-  }
-
-  .prayer-detail-layout {
-    grid-template-columns: minmax(0, 1.42fr) minmax(300px, .58fr);
   }
 
   .metadata-layout {
@@ -534,7 +504,6 @@ button:disabled,
     gap: 24px;
   }
 
-  .prayer-detail-layout,
   .metadata-layout,
   .collections-layout {
     gap: 36px;
@@ -606,10 +575,6 @@ button:disabled,
   .reading-row,
   .live-reading-list .reading-row {
     min-height: 64px;
-  }
-
-  .prayer-settings-actions {
-    align-items: stretch;
   }
 
   .global-search-form {
@@ -727,10 +692,9 @@ button:disabled,
 .setup-options .editorial-option { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 8px; text-align: left; }
 .today-lower-grid { margin-top: var(--section-rhythm); }
 .screen-heading h1 { letter-spacing: -.035em; }
-.quiet-button, .prayer-lifecycle-actions button, .prayer-update-form button, .prayer-answer-form button, .metadata-row button, .metadata-editor button, .prayer-settings-actions button, .collection-sidebar form button { font-size: .85rem; }
+.quiet-button, .metadata-row button, .metadata-editor button, .collection-sidebar form button { font-size: .85rem; }
 .metadata-manage-links a, .quiet-back-link, .field-help, .prayer-administration-fields label small { font-size: .8rem; }
 .prayer-administration-fields label, .metadata-editor label { font-size: .875rem; }
-.prayer-detail-body { font-size: clamp(1.3rem, 2.2vw, 1.75rem); line-height: 1.55; }
 .focused-prayer-card > h1 { max-width: 28ch; font-size: clamp(1.9rem, 4vw, 3.2rem); line-height: 1.2; overflow-wrap: anywhere; white-space: pre-wrap; }
 .focused-prayer-screen > h1, .recovery-screen > h1 { font-family: var(--font-editorial); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 500; line-height: 1.2; }
 .recovery-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }

@@ -1,51 +1,135 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
-import { useUnsavedChanges } from "../app/useUnsavedChanges";
-import { useDraftGuard } from "../app/useDraftGuard";
-import { ConflictReview } from "../app/ConflictReview";
-import { isEditConflict } from "../data/conflicts";
-import { db } from "../data/database";
-import { PrayerRepository } from "../data/repositories/prayers";
-import type { Category, Person, Prayer, PrayerResolution, PrayerSchedule, PrayerUpdate, PrayerUpdateType, ScriptureLink } from "../domain/types";
-import { loadBibleManifest } from "../scripture/loader";
-import type { BibleManifest } from "../scripture/types";
-import { prayerBibleHref, prayerReferenceLabel } from "./references";
-import { scheduleLabel } from "./scheduling";
-
-const repository = new PrayerRepository(db);
-export function PrayerDetailScreen() {
-  const { prayerId = "" } = useParams(); const navigate = useNavigate(); const location = useLocation(); const returnParam = new URLSearchParams(location.search).get("return"); const backTarget = returnParam?.startsWith("/") && !returnParam.startsWith("//") ? returnParam : "/prayer"; const [prayer, setPrayer] = useState<Prayer | null>(null); const [updates, setUpdates] = useState<PrayerUpdate[]>([]); const [links, setLinks] = useState<ScriptureLink[]>([]); const [resolution, setResolution] = useState<PrayerResolution | null>(null); const [manifest, setManifest] = useState<BibleManifest | null>(null); const [person, setPerson] = useState<Person | null>(null); const [category, setCategory] = useState<Category | null>(null); const [schedule, setSchedule] = useState<PrayerSchedule | null>(null); const [body, setBody] = useState(""); const [updateBody, setUpdateBody] = useState(""); const [updateType, setUpdateType] = useState<PrayerUpdateType>("update"); const [answerBody, setAnswerBody] = useState(""); const [answerOpen, setAnswerOpen] = useState(false); const [status, setStatus] = useState(""); const [loading, setLoading] = useState(true);
-  const baseline = useRef<{ body: string; revision: number } | null>(null);
-  const bodyRef = useRef(body); bodyRef.current = body;
-  const busy = useRef(false); const [pending, setPending] = useState(false); const [conflict, setConflict] = useState(false);
-  const run = async (action: () => Promise<void>) => { if (busy.current) return; busy.current = true; setPending(true); try { await action(); } catch (reason) { setConflict(isEditConflict(reason)); setStatus(reason instanceof Error ? reason.message : "Could not update this prayer. Please try again."); } finally { busy.current = false; setPending(false); } };
-  const refresh = useCallback(async () => { const item = await repository.get(prayerId); if (!item) { setPrayer(null); setLoading(false); return; } const [nextUpdates, nextLinks, nextResolution, nextManifest, nextPerson, nextCategory, nextSchedule] = await Promise.all([repository.listUpdates(item.id), repository.listScriptureLinks(item.id), repository.getResolution(item.id), loadBibleManifest(), item.personId ? db.people.get(item.personId) : Promise.resolve(undefined), item.categoryId ? db.categories.get(item.categoryId) : Promise.resolve(undefined), repository.getScheduleForPrayer(item.id)]); setPrayer(item); if (!baseline.current || bodyRef.current === baseline.current.body) { setBody(item.body); baseline.current = { body: item.body, revision: item.revision }; } else if (baseline.current.body === item.body) { baseline.current.revision = item.revision; } setUpdates(nextUpdates); setLinks(nextLinks); setResolution(nextResolution ?? null); setManifest(nextManifest); setPerson(nextPerson && !nextPerson.deletedAt ? nextPerson : null); setCategory(nextCategory && !nextCategory.deletedAt ? nextCategory : null); setSchedule(nextSchedule); setLoading(false); }, [prayerId]); useEffect(() => { void refresh().catch(() => { setLoading(false); setStatus("Could not open this prayer. Please try again."); }); }, [refresh]);
-  const wordingDirty = Boolean(prayer && body !== baseline.current?.body);
-  const allowNavigation = useUnsavedChanges(wordingDirty || Boolean(updateBody) || Boolean(answerBody));
-  const discardRequestDrafts = () => { const saved = baseline.current?.body ?? ""; bodyRef.current = saved; setBody(saved); setUpdateBody(""); };
-  const saveRequestDrafts = async () => {
-    if (!prayer) throw new Error("Prayer unavailable.");
-    const updated = await db.transaction("rw", db.prayers, db.prayerUpdates, db.activityEvents, async () => {
-      if (wordingDirty) await repository.updateBody(prayer.id, body, baseline.current?.revision);
-      if (updateBody.trim()) await repository.addUpdate(prayer.id, updateBody, updateType);
-      return repository.get(prayer.id);
-    });
-    if (!updated) throw new Error("Prayer unavailable.");
-    baseline.current = { body: updated.body, revision: updated.revision };
-    bodyRef.current = updated.body; setBody(updated.body); setUpdateBody(""); setPrayer(updated); setConflict(false);
-  };
-  const requestGuard = useDraftGuard(wordingDirty || Boolean(updateBody), saveRequestDrafts, discardRequestDrafts);
-  const allGuard = useDraftGuard(wordingDirty || Boolean(updateBody) || Boolean(answerBody), answerBody ? undefined : saveRequestDrafts, () => { discardRequestDrafts(); setAnswerBody(""); setAnswerOpen(false); });
-  if (loading) return <main className="visual-screen prayer-detail-screen mg-secondary-screen mg-prayer-detail-workspace mg-route-state mg-loading-state"><p className="eyebrow">Prayer</p><p className="mg-inline-state">Opening prayer…</p></main>;
-  if (!prayer) return <main className="visual-screen prayer-detail-screen mg-secondary-screen mg-prayer-detail-workspace mg-route-state mg-error-state"><p className="eyebrow">Prayer</p><h1>Prayer unavailable</h1><p className="mg-inline-state" role="status">{status || "This prayer may have been removed."}</p><Link className="quiet-back-link" to="/prayer">Return to Prayer</Link></main>;
-  const saveBody = async () => { const saved = await repository.updateBody(prayer.id, body, baseline.current?.revision); baseline.current = { body: saved.body, revision: saved.revision }; bodyRef.current = saved.body; setBody(saved.body); setConflict(false); setStatus("Prayer saved locally."); await refresh(); };
-  const changeStatus = async (next: "ACTIVE" | "WAITING" | "ARCHIVED") => { if (next === "ARCHIVED" && !await allGuard.confirmDrafts()) return; await repository.transition(prayer.id, next); await refresh(); };
-  const addUpdate = async () => { await repository.addUpdate(prayer.id, updateBody, updateType); setUpdateBody(""); setStatus(updateType === "encouragement" ? "Encouragement recorded." : "Update recorded."); await refresh(); };
-  const answer = async () => { if (!await requestGuard.confirmDrafts()) return; await repository.answer(prayer.id, answerBody); setAnswerOpen(false); setAnswerBody(""); setStatus("Prayer marked answered."); await refresh(); };
-  const markPrayed = async () => { await repository.markPrayed(prayer.id); setStatus("Prayed now recorded."); await refresh(); };
-  const remove = async () => { if (!await allGuard.confirmDrafts() || !window.confirm("Remove this prayer and its updates? Removed records remain in backups; this is not secure erasure.")) return; await repository.removePrayer(prayer.id); allowNavigation(); navigate("/prayer", { replace: true }); };
-  const editable = prayer.status === "ACTIVE" || prayer.status === "WAITING";
-  return <main className="visual-screen prayer-detail-screen mg-secondary-screen mg-prayer-detail-workspace"><header className="screen-heading compact-heading prayer-detail-heading mg-secondary-header"><p className="eyebrow">Prayer · {prayer.status.toLowerCase()}</p><h1>Prayer</h1><Link className="quiet-back-link" to={backTarget}>← Back</Link></header><div className="prayer-detail-layout"><section className="prayer-detail-main"><label htmlFor="prayer-edit-body" className="section-kicker">Request</label><textarea id="prayer-edit-body" className="prayer-detail-body" value={body} disabled={!editable || pending} onChange={(event) => setBody(event.target.value)} />{editable && body !== baseline.current?.body ? <button disabled={pending} className="quiet-button" type="button" onClick={() => void run(() => saveBody())}>Save wording</button> : null}<div className="prayer-lifecycle-actions">{prayer.status === "ACTIVE" ? <><button disabled={pending} type="button" onClick={() => void run(() => markPrayed())}>Prayed now</button><button disabled={pending} type="button" onClick={() => void run(() => changeStatus("WAITING"))}>Move to waiting</button></> : null}{prayer.status === "WAITING" ? <button disabled={pending} type="button" onClick={() => void run(() => changeStatus("ACTIVE"))}>Return to active</button> : null}{(prayer.status === "ACTIVE" || prayer.status === "WAITING") ? <button disabled={pending} type="button" onClick={() => { if (answerOpen && answerBody && !window.confirm("Discard the unsaved answer note?")) return; if (answerOpen) setAnswerBody(""); setAnswerOpen((value) => !value); }}>Answered</button> : null}{prayer.status === "ARCHIVED" ? <button disabled={pending} type="button" onClick={() => void run(async () => { await repository.restoreArchived(prayer.id); await refresh(); })}>Restore to {resolution ? "answered" : "active"}</button> : null}{prayer.status !== "ARCHIVED" ? <button disabled={pending} type="button" onClick={() => void run(() => changeStatus("ARCHIVED"))}>Archive</button> : null}</div>{answerOpen ? <div className="prayer-answer-form"><label htmlFor="answer-reflection">What happened? <span>optional</span></label><textarea id="answer-reflection" disabled={pending} value={answerBody} onChange={(event) => setAnswerBody(event.target.value)} placeholder="Record the answer or what you want to remember." /><button disabled={pending} type="button" onClick={() => void run(() => answer())}>Mark answered</button></div> : null}{resolution ? <section className="answered-prayer-note"><p className="section-kicker">Answered</p><h2>{new Intl.DateTimeFormat(undefined, { dateStyle: "long" }).format(new Date(resolution.answeredAt))}</h2>{resolution.reflectionMd ? <p>{resolution.reflectionMd}</p> : <p className="muted-copy">No answer reflection was added.</p>}</section> : null}<section className="prayer-timeline-section"><div className="section-heading-line compact"><div><p className="section-kicker">History</p><h2>Updates & encouragements</h2></div><span className="quiet-count">{updates.length}</span></div>{updates.length ? <div className="prayer-update-list">{updates.map((item) => <article key={item.id} className={item.type === "encouragement" ? "is-encouragement" : ""}><span>{item.type === "encouragement" ? "Encouragement" : "Update"} · {new Intl.DateTimeFormat(undefined, { month: "short", day: "numeric", year: "numeric" }).format(new Date(item.occurredAt))}</span><p>{item.body}</p></article>)}</div> : <p className="muted-copy">No updates yet. The original request stays unchanged as its story develops.</p>}{editable ? <div className="prayer-update-form"><div className="update-type-toggle"><button disabled={pending} type="button" aria-pressed={updateType === "update"} className={updateType === "update" ? "is-active" : ""} onClick={() => setUpdateType("update")}>Update</button><button disabled={pending} type="button" aria-pressed={updateType === "encouragement"} className={updateType === "encouragement" ? "is-active" : ""} onClick={() => setUpdateType("encouragement")}>Encouragement</button></div><textarea aria-label="Prayer update" disabled={pending} value={updateBody} onChange={(event) => setUpdateBody(event.target.value)} placeholder={updateType === "encouragement" ? "Record a sign of grace or progress without calling the prayer answered." : "What changed?"} /><button type="button" disabled={pending || !updateBody.trim()} onClick={() => void run(() => addUpdate())}>Add {updateType}</button></div> : null}</section><p className="prayer-form-status" aria-live="polite">{status}</p><ConflictReview active={conflict} draftText={body}
-      loadLatest={async()=>{const latest=await repository.get(prayer.id);if(!latest)throw new Error("This prayer is no longer available.");return latest;}}
-      describe={(latest)=>latest.body} useLatest={(latest)=>{baseline.current={body:latest.body,revision:latest.revision};bodyRef.current=latest.body;setBody(latest.body);setPrayer(latest);setConflict(false);}} /></section><aside className="prayer-detail-context"><section><p className="section-kicker">Origin</p>{prayer.sourceReflectionId && prayer.sourceDevotionDate ? <Link to={`/today/reflection/${prayer.sourceDevotionDate}`}>Reflection · {prayer.sourceDevotionDate}</Link> : <p className="muted-copy">Captured directly.</p>}</section><section><p className="section-kicker">Scripture</p>{links.length ? <div className="prayer-scripture-list">{links.map((link) => <Link key={link.id} to={prayerBibleHref(link)}>{prayerReferenceLabel(link, manifest)}</Link>)}</div> : <p className="muted-copy">No Scripture is attached.</p>}</section><section className="prayer-admin-section"><div className="section-heading-line compact"><p className="section-kicker">Prayer details</p>{editable ? <Link to={`/prayer/${prayer.id}/settings${location.search}`}>Edit</Link> : null}</div><dl className="prayer-admin-list"><div><dt>Person</dt><dd>{person?.name ?? "—"}</dd></div><div><dt>Category</dt><dd>{category?.name ?? "—"}</dd></div><div><dt>Schedule</dt><dd>{scheduleLabel(schedule)}</dd></div><div><dt>Event</dt><dd>{prayer.eventDate ?? "—"}</dd></div><div><dt>Focus until</dt><dd>{prayer.focusUntil ?? "—"}</dd></div><div><dt>Last prayed</dt><dd>{prayer.lastPrayedAt ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(prayer.lastPrayedAt)) : "Not yet in MDD"}</dd></div></dl><button disabled={pending} className="danger-quiet" type="button" onClick={() => void run(() => remove())}>Remove prayer</button></section></aside></div>{requestGuard.draftDialog}{allGuard.draftDialog}</main>;
+import {useEffect,useRef,useState} from "react";
+import {Link,useLocation,useNavigate,useParams} from "react-router-dom";
+import {db} from "../data/database";
+import {PrayerRepository} from "../data/repositories/prayers";
+import {isEditConflict} from "../data/conflicts";
+import type {Prayer,PrayerStatus} from "../domain/types";
+import {JournalDialog,JournalHeading,WritingPreview} from "../writing/JournalPrimitives";
+import {ScriptureContext} from "../writing/ScriptureContext";
+import {buildReflectionUrl} from "../reflection/context";
+import {parsePrayerDetailQuery,prayerTimeline,readPrayerDetail,readPrayerMetadata,readPrayerSettings,type PrayerDetailModel} from "./detail-model";
+import {usePrayerPosition,usePrayerRead} from "./detail-hooks";
+import {usePrayerDraftGuard} from "./usePrayerDraftGuard";
+import {scheduleLabel} from "./scheduling";
+import {personInitials} from "./journal";
+const repository=new PrayerRepository(db);
+type Editor="wording"|"update"|"encouragement"|"answer"|null;
+const date=(value:string)=>new Intl.DateTimeFormat(undefined,{dateStyle:"medium"}).format(new Date(value));
+export function PrayerDetailScreen(){const {prayerId=""}=useParams();return <PrayerRecord key={prayerId} prayerId={prayerId}/>;}
+function PrayerRecord({prayerId}:{prayerId:string}) {
+ const location=useLocation(),navigate=useNavigate(),query=parsePrayerDetailQuery(location.search);
+ const url=location.pathname+query.search;
+ const load=usePrayerRead(prayerId,()=>readPrayerDetail(db,prayerId));
+ const metadata=usePrayerRead("detail-metadata",()=>readPrayerMetadata(db));
+ const administration=usePrayerRead("detail-administration:"+prayerId,()=>readPrayerSettings(db,prayerId));
+ const model=load.data,prayer=model?.prayer;
+ const [editor,setEditor]=useState<Editor>(null),[draft,setDraft]=useState(""),[message,setMessage]=useState(""),[busy,setBusy]=useState(false);
+ const [conflict,setConflict]=useState(false),[review,setReview]=useState<Prayer|null>(null),[reviewError,setReviewError]=useState("");
+ const [removeOpen,setRemoveOpen]=useState(false),[expanded,setExpanded]=useState<Set<string>>(new Set());
+ const draftRef=useRef(draft);draftRef.current=draft;
+ const baseline=useRef<{body:string;revision:number}|null>(null),acting=useRef(false),editorRef=useRef<HTMLTextAreaElement>(null);
+ const committed=useRef<{serial:number;prayer:Prayer|null}>({serial:0,prayer:null});
+ const noteCommit=(saved:Prayer)=>{committed.current={serial:committed.current.serial+1,prayer:saved};if(baseline.current?.body===saved.body)baseline.current={body:saved.body,revision:saved.revision};};
+ const dirty=editor==="wording"?draft!==baseline.current?.body:editor==="answer"||Boolean(editor&&draft.trim());
+ const rows=model?prayerTimeline(model):[];
+ const selectedIndex=rows.findIndex(row=>row.id===query.entry),shown=Math.max(query.shown,selectedIndex>=0?Math.ceil((selectedIndex+1)/20)*20:20);
+ const selected=selectedIndex>=0?query.entry:null;
+ usePrayerPosition(url,Boolean(model),selected);
+ useEffect(()=>{if(location.search!==query.search)navigate(location.pathname+query.search,{replace:true});},[location.pathname,location.search,query.search,navigate]);
+ useEffect(()=>{if(selected)setExpanded(old=>new Set(old).add(selected));},[selected]);
+ useEffect(()=>{if(editor)editorRef.current?.focus();},[editor]);
+ useEffect(()=>{if(editor==="wording"&&prayer&&!dirty&&!acting.current){baseline.current={body:prayer.body,revision:prayer.revision};draftRef.current=prayer.body;setDraft(prayer.body);}},[prayer,editor,dirty]);
+ const discard=()=>{draftRef.current="";setDraft("");setEditor(null);setConflict(false);setReview(null);setMessage("");};
+ const accept=(change:(current:PrayerDetailModel)=>PrayerDetailModel)=>load.accept(current=>current?change(current):current??null);
+ const perform=async(action:()=>Promise<void>)=>{
+  if(acting.current)throw new Error("Please wait for the current action to finish.");
+  acting.current=true;setBusy(true);setMessage("");
+  try{await action();}catch(reason){if(isEditConflict(reason)){setConflict(true);setReview(null);}setMessage(reason instanceof Error?reason.message:"Could not save. Please try again.");throw reason;}finally{acting.current=false;setBusy(false);}
+ };
+ const saveEditor=async()=>perform(async()=>{
+  if(!prayer||!editor)throw new Error("This prayer is no longer available.");
+  const captured=draftRef.current,revision=baseline.current?.revision??prayer.revision;
+  if(editor==="wording"){
+   const saved=await repository.updateBody(prayerId,captured,revision);baseline.current={body:saved.body,revision:saved.revision};noteCommit(saved);accept(current=>({...current,prayer:saved}));
+   if(draftRef.current!==captured)throw new Error("Your earlier wording was saved. Newer changes are still unsaved.");
+  }else if(editor==="answer"){
+   const saved=await repository.answer(prayerId,captured,undefined,revision);accept(current=>({...current,prayer:saved.prayer,resolution:saved.resolution}));
+  }else{
+   const saved=await db.transaction("rw",db.prayers,db.prayerUpdates,db.activityEvents,async()=>{const update=await repository.addUpdate(prayerId,captured,editor);const item=await repository.get(prayerId);if(!item)throw new Error("Prayer unavailable.");return {update,prayer:item};});noteCommit(saved.prayer);accept(current=>({...current,prayer:saved.prayer,updates:[...current.updates.filter(item=>item.id!==saved.update.id),saved.update]}));
+   if(draftRef.current!==captured)throw new Error("Your update was recorded. Newer writing is still unsaved.");
+  }
+  setConflict(false);setReview(null);draftRef.current="";setDraft("");setEditor(null);setMessage("Saved locally.");load.retry();
+ });
+ const guard=usePrayerDraftGuard({dirty,save:saveEditor,discard,answer:editor==="answer",canSave:Boolean(draft.trim())});
+ const startEditor=(next:Editor)=>{
+  const serial=committed.current.serial;
+  guard.request(()=>{
+   // A guarded switch may have just saved the previous editor. Use that result,
+   // rather than the prayer captured before the confirmation dialog opened.
+   const current=committed.current.serial!==serial?committed.current.prayer:prayer;
+   if(!current)return;
+   baseline.current={body:current.body,revision:current.revision};
+   const text=next==="wording"?current.body:"";
+   draftRef.current=text;setDraft(text);setEditor(next);setConflict(false);setReview(null);setMessage("");
+  });
+ };
+ const run=(action:()=>Promise<void>)=>void perform(action).catch(()=>{});
+ const transition=(status:PrayerStatus)=>{const serial=committed.current.serial;guard.request(()=>run(async()=>{if(!prayer)return;const revision=committed.current.serial!==serial?committed.current.prayer!.revision:prayer.revision;const saved=await repository.transition(prayerId,status,revision);accept(current=>({...current,prayer:saved}));discard();setMessage(status==="ARCHIVED"?"Prayer archived.":"Prayer status updated.");load.retry();}));};
+ const editorTitle=editor==="wording"?"Edit wording":editor==="answer"?"Record an answer":editor==="encouragement"?"Add encouragement":"Add update";
+ const saveLabel=editor==="wording"?"Save wording":editor==="answer"?"Mark answered":editor==="encouragement"?"Add encouragement":"Add update";
+ if(model===undefined)return <main className="journal-workspace prayer-record"><JournalHeading title="Prayer" subtitle="Your prayer journal" back={query.returnTo}/>{load.error?<div role="alert" className="journal-notice"><p>Could not open this prayer. Your saved records are unchanged.</p><button onClick={load.retry}>Retry</button></div>:<p role="status">Opening prayer…</p>}</main>;
+ if(model===null)return <main className="journal-workspace prayer-record"><JournalHeading title="Prayer unavailable" subtitle="Your prayer journal" back={query.returnTo}/><p>This prayer has been removed or is no longer available.</p>{dirty?<div className="journal-notice"><h2>Your unsaved writing</h2><p>It has not been saved. You can copy it before leaving.</p><textarea aria-label="Unsaved prayer writing" value={draft} readOnly/></div>:null}{guard.dialog}</main>;
+ const editable=prayer!.status==="ACTIVE"||prayer!.status==="WAITING";
+ const person=metadata.data?.people.find(item=>item.id===prayer!.personId),category=metadata.data?.categories.find(item=>item.id===prayer!.categoryId);
+ const settingsUrl=location.pathname+"/settings"+query.search;
+ return <main className="journal-workspace prayer-record">
+  <JournalHeading title="Prayer" subtitle={prayer!.status.toLowerCase()} back={query.returnTo}/>
+  <section className="journal-paper prayer-request" aria-label="Prayer request">
+   {person?<div className="prayer-record-person"><span className="prayer-record-initials" aria-hidden="true">{personInitials(person.name)}</span><div><strong>{person.name}</strong>{person.relationship?<small>{person.relationship}</small>:null}</div></div>:null}
+   <p className="prayer-request-text">{prayer!.body}</p>
+   {editable?<button id="edit-prayer-wording" disabled={busy} onClick={()=>startEditor("wording")}>Edit wording</button>:null}
+   <dl className="prayer-record-dates"><div><dt>Created</dt><dd>{date(prayer!.createdAt)}</dd></div><div><dt>Last prayed</dt><dd>{prayer!.lastPrayedAt?date(prayer!.lastPrayedAt):"Not recorded yet"}</dd></div></dl>
+  </section>
+  <div className="prayer-record-actions">
+   {prayer!.status==="ACTIVE"?<button className="grace-primary" disabled={busy} onClick={()=>run(async()=>{const saved=await repository.markPrayed(prayerId);noteCommit(saved);accept(current=>({...current,prayer:saved}));setMessage("Prayed now recorded.");load.retry();})}>Prayed now</button>:null}
+   {editable?<><button id="open-prayer-update" disabled={busy} onClick={()=>startEditor("update")}>Add update</button><button disabled={busy} onClick={()=>startEditor("answer")}>Mark answered</button></>:null}
+   {prayer!.status==="WAITING"?<button disabled={busy} onClick={()=>transition("ACTIVE")}>Return to active</button>:null}
+   {prayer!.status==="ARCHIVED"?<button className="grace-primary" disabled={busy} onClick={()=>run(async()=>{const saved=await repository.restoreArchived(prayerId,prayer!.revision);accept(current=>({...current,prayer:saved}));setMessage("Prayer restored.");load.retry();})}>Restore to {model.resolution?"answered":"active"}</button>:null}
+  </div>
+  {editor?<section className="journal-paper prayer-record-editor" aria-label={editorTitle}>
+   <div className="prayer-editor-heading"><h2>{editorTitle}</h2><span className="save-state" role="status">{busy?"Saving…":dirty?"Unsaved changes":editor==="wording"?"Saved locally":"Not saved yet"}</span></div>
+   {(editor==="update"||editor==="encouragement")?<div className="journal-tabs"><button disabled={busy} aria-pressed={editor==="update"} onClick={()=>setEditor("update")}>Update</button><button disabled={busy} aria-pressed={editor==="encouragement"} onClick={()=>setEditor("encouragement")}>Encouragement</button></div>:null}
+   {!editable?<p className="journal-notice">This prayer is now read-only. Your unsaved writing is still here to copy or discard.</p>:null}
+   <label htmlFor="prayer-record-writing">{editor==="answer"?"What happened? (optional)":editor==="wording"?"Request":"Prayer update"}</label>
+   <textarea ref={editorRef} id="prayer-record-writing" className="journal-textarea" disabled={busy&&editor==="answer"} value={draft} onChange={event=>{draftRef.current=event.target.value;setDraft(event.target.value);}}/>
+   <div className="journal-actions"><button className="grace-primary" disabled={!editable||busy||(editor!=="answer"&&!draft.trim())||(editor==="wording"&&!dirty)} onClick={()=>void saveEditor().catch(()=>{})}>{saveLabel}</button><button disabled={busy} onClick={()=>guard.request(discard)}>Cancel editing</button></div>
+   <p className="journal-help">Save to keep your writing on this device. Unsaved changes are lost when the app closes.</p>
+  </section>:null}
+  {message?<p className="journal-status" role="status">{message}</p>:null}
+  {conflict?<section className="journal-conflict"><h2>Review the saved prayer</h2><p>Your writing is still here. Review changes from another tab before continuing.</p>{reviewError?<p role="alert">{reviewError}</p>:null}
+   {!review?<button onClick={()=>{void repository.get(prayerId).then(latest=>{if(!latest)throw new Error("This prayer is no longer available.");setReview(latest);}).catch(reason=>setReviewError(reason.message));}}>Compare versions</button>:<>
+    {editor?<><label>Your changes<textarea aria-label="Your changes" readOnly value={draft}/></label><label>Saved version<textarea aria-label="Saved version" readOnly value={review.body}/></label><p>Status: {review.status.toLowerCase()}</p></>:<p className="prayer-request-text">{review.body}</p>}
+    {editor==="wording"&&(review.status==="ACTIVE"||review.status==="WAITING")?<><button onClick={()=>{baseline.current={body:review.body,revision:review.revision};draftRef.current=review.body;setDraft(review.body);accept(current=>({...current,prayer:review}));setConflict(false);setReview(null);requestAnimationFrame(()=>editorRef.current?.focus());}}>Use saved wording</button><button onClick={()=>{baseline.current={body:review.body,revision:review.revision};accept(current=>({...current,prayer:review}));setConflict(false);setReview(null);setMessage("Your wording is ready for an explicit save.");requestAnimationFrame(()=>editorRef.current?.focus());}}>Keep my wording for review</button></>:<button onClick={()=>{accept(current=>({...current,prayer:review}));if(editor)baseline.current={body:review.body,revision:review.revision};setConflict(false);setReview(null);load.retry();}}>I have reviewed the saved prayer</button>}
+   </>}
+  </section>:null}
+  {load.error?<div className="journal-notice" role="alert"><p>{load.error} Completed actions stay saved; Retry only reloads this view.</p><button onClick={load.retry}>Retry details</button></div>:null}
+  {metadata.error?<div className="journal-notice"><p>People and categories could not load. Your request is still available.</p><button onClick={metadata.retry}>Retry people and categories</button></div>:null}
+  {model.links.length?<details className="journal-context"><summary>Linked Scripture<span>{model.links.length} {model.links.length===1?"passage":"passages"}</span></summary>{model.links.map(link=><ScriptureContext key={link.id} reference={link} returnTo={url}/>)}</details>:null}
+  {prayer!.sourceReflectionId?<details className="journal-context"><summary>From your reflection<span>{prayer!.sourceDevotionDate??"Original reflection"}</span></summary>{model.source?<><WritingPreview text={model.source.bodyMd}/><Link id="prayer-source-reflection" className="prayer-context-link" to={buildReflectionUrl(model.source.localDate,null,url)}>Open reflection</Link></>:<p className="journal-help">The original reflection is no longer available.</p>}</details>:null}
+  <section className="prayer-story" aria-labelledby="prayer-story-heading"><div className="prayer-story-heading"><h2 id="prayer-story-heading">Updates &amp; encouragement</h2><span>Newest first</span></div>
+   {query.entry&&!selected?<p className="journal-help">That entry is no longer available. The remaining story is shown below.</p>:null}
+   {rows.length?<>{rows.slice(0,shown).map(row=><article id={"prayer-entry-"+row.id} key={row.id} tabIndex={-1} className={"prayer-story-entry is-"+row.kind}>
+    <div className="prayer-story-meta"><span>{row.kind==="answer"?"Answered":row.kind==="encouragement"?"Encouragement":"Update"}</span><time dateTime={row.at}>{date(row.at)}</time></div>
+    <p>{row.body?row.body.length>320&&!expanded.has(row.id)?row.body.slice(0,320).trimEnd()+"…":row.body:"No answer note was added."}</p>
+    {row.body.length>320?<button aria-expanded={expanded.has(row.id)} onClick={()=>setExpanded(old=>{const next=new Set(old);if(next.has(row.id))next.delete(row.id);else next.add(row.id);return next;})}>{expanded.has(row.id)?"Show less":"Read more"}</button>:null}
+   </article>)}<div className="prayer-story-pagination"><p>{Math.min(shown,rows.length)} of {rows.length} entries</p>{shown<rows.length?<button onClick={()=>{const params=new URLSearchParams(query.search);params.set("shown",String(shown+20));navigate(location.pathname+"?"+params.toString(),{preventScrollReset:true});}}>Show more</button>:null}</div></>:<p className="prayer-story-empty">Updates, encouragement, and a recorded answer will appear here as this prayer's story develops.</p>}
+  </section>
+  <section className="prayer-record-settings" aria-label="Prayer settings"><div className="prayer-story-heading"><h2>Prayer details</h2>{editable?<Link id="prayer-settings-link" to={settingsUrl}>Edit details</Link>:null}</div>
+   <dl><div><dt>Person</dt><dd>{person?.name??(prayer!.personId?"Unavailable":"No person")}</dd></div><div><dt>Category</dt><dd>{category?.name??(prayer!.categoryId?"Unavailable":"No category")}</dd></div><div><dt>Schedule</dt><dd>{administration.error?"Unavailable":administration.data===undefined?"Loading…":scheduleLabel(administration.data?.schedule??null)}</dd></div>{prayer!.eventDate?<div><dt>Event date</dt><dd>{prayer!.eventDate}</dd></div>:null}{prayer!.focusUntil?<div><dt>Focus until</dt><dd>{prayer!.focusUntil}</dd></div>:null}</dl>
+   {administration.error?<button onClick={administration.retry}>Retry schedule</button>:null}
+  </section>
+  <details className="prayer-more-actions"><summary>More actions</summary>{prayer!.status==="ACTIVE"?<button disabled={busy} onClick={()=>transition("WAITING")}>Move to waiting</button>:null}{prayer!.status!=="ARCHIVED"?<button disabled={busy} onClick={()=>transition("ARCHIVED")}>Archive prayer</button>:null}<button className="prayer-remove" disabled={busy} onClick={()=>guard.request(()=>setRemoveOpen(true))}>Remove prayer</button></details>
+  {guard.dialog}
+  {removeOpen?<JournalDialog title="Remove this prayer?" busy={busy} close={()=>setRemoveOpen(false)}><p>The request, its updates, and answer will be removed from current views. Existing backups are unaffected.</p><div className="journal-dialog-actions"><button className="prayer-remove" disabled={busy} onClick={()=>run(async()=>{await repository.removePrayer(prayerId,prayer!.revision);guard.allowNavigation();navigate(query.returnTo,{replace:true});})}>Remove prayer</button><button disabled={busy} data-initial-focus onClick={()=>setRemoveOpen(false)}>Keep prayer</button></div>{message?<p role="alert">{message}</p>:null}</JournalDialog>:null}
+ </main>;
 }

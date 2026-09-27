@@ -52,7 +52,7 @@ function safeReturnTarget(search: string): string | null {
 }
 
 function utilityReturnTarget(pathname: string, search: string): string {
-  if (pathname === "/today" || pathname === "/prayer" || pathname.startsWith("/history") || pathname === "/bible" || /^\/bible\/[^/]+\/\d+$/.test(pathname)) {
+  if (pathname === "/today" || pathname.startsWith("/prayer") || pathname.startsWith("/history") || pathname === "/bible" || /^\/bible\/[^/]+\/\d+$/.test(pathname)) {
     return `${pathname}${search}`;
   }
   return "/today";
@@ -133,7 +133,7 @@ export function App() {
     location.pathname === "/prayer/session" ? "mobile-immersive-route" : "",
     location.pathname === "/prayer" ? "prayer-journal-route" : "",
     location.pathname.startsWith("/history") ? "history-journal-route" : "",
-    location.pathname.startsWith("/today/reflection/") || location.pathname === "/prayer/new" ? "writing-journal-route" : "",
+    location.pathname.startsWith("/today/reflection/") || location.pathname === "/prayer/new" || (/^\/prayer\/[^/]+(?:\/settings)?$/.test(location.pathname) && !["/prayer/people", "/prayer/categories", "/prayer/session"].includes(location.pathname)) ? "writing-journal-route" : "",
   ].filter(Boolean).join(" ");
 
   const goBack = () => {
