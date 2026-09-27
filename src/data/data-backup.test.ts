@@ -14,6 +14,9 @@ afterEach(async () => { for (const db of databases.splice(0)) { db.close(); awai
 const now = "2026-04-24T07:00:00.000Z" as Instant;
 
 describe("reviewed restore", () => {
+  it("bounds archive size before decompression", () => {
+    expect(() => inspectMddBackup(new Uint8Array(64 * 1024 * 1024 + 1))).toThrow(/supported size/);
+  });
   it("reads provisional encryption without claiming the body was validated", async () => {
     const source = await setup(), target = await setup();
     const generated = await generateMddBackup(source, "0.8.0", "a-long-password");

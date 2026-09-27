@@ -10,7 +10,9 @@ for (const theme of ['light', 'dark'] as const) {
   test(`Data controls retain readable labels in ${theme} mode`, async ({ page }, info) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await openRoute(page, '/data');
+    await page.getByText('Appearance', { exact: true }).click();
     await page.getByRole('button', { name: `${theme === 'light' ? 'Light' : 'Dark'} theme` }).click();
+    await page.getByText('Other export options', { exact: true }).click();
     const backup = page.getByRole('button', { name: 'Download plain backup', exact: true });
     await backup.scrollIntoViewIfNeeded();
     // axe can classify same-color text as invisible. Check this recovered control directly.
@@ -29,6 +31,7 @@ for (const theme of ['light', 'dark'] as const) {
     expect(contrast).toBeGreaterThanOrEqual(4.5);
     await backup.focus();
     await expect(backup).toBeFocused();
+    await page.getByRole('button', { name: 'Create encrypted backup' }).click();
     await expect(page.getByRole('button', { name: 'Download encrypted backup' })).toBeDisabled();
     await expectNoAxeViolations(page);
     await expectNoHorizontalOverflow(page);

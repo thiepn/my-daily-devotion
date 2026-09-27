@@ -4,10 +4,10 @@ Data has no dedicated phone in the canonical board. This release extends integra
 
 ## Evidence inspected
 
-- [Before and after](docs/visual/morning-grace-v2/data-backup/data-before-after.png): the same 390 × 844 application viewport. The previous screen led with schema, technical privacy detail and historical corrections; the replacement leads with protecting the journal.
-- [Source family and implementation](docs/visual/morning-grace-v2/data-backup/data-visual-family.png): Prayer Detail, Reflection, People and Your data at 390 × 844. Thumbnails preserve aspect ratio. These are synthetic fixture records, never personal data.
-- [Responsive layouts](docs/visual/morning-grace-v2/data-backup/data-responsive.png): 320, 360, 390 and 430px, with original heights 568, 800, 844 and 932. Additional original-size inspection covered 768 × 1024 and [1440px desktop](docs/visual/morning-grace-v2/data-backup/after-1440.png); the [old desktop](docs/visual/morning-grace-v2/data-backup/before-1440.png) is retained.
-- [Dark, export, review, confirmation and result](docs/visual/morning-grace-v2/data-backup/data-states.png), plus [320px at 200% text](docs/visual/morning-grace-v2/data-backup/data-enlarged.png). Individual baseline images also cover long filenames, mismatch/errors, replacement backup, Appearance, Privacy and Advanced.
+- [Before and after](data-backup/data-before-after.png): the same 390 × 844 application viewport. The previous screen led with schema, technical privacy detail and historical corrections; the replacement leads with protecting the journal.
+- [Source family and implementation](data-backup/data-visual-family.png): Prayer Detail, Reflection, People and Your data at 390 × 844. Thumbnails preserve aspect ratio. These are synthetic fixture records, never personal data.
+- [Responsive layouts](data-backup/data-responsive.png): 320, 360, 390 and 430px, with original heights 568, 800, 844 and 932. Additional original-size inspection covered 768 × 1024 and [1440px desktop](data-backup/after-1440.png); the [old desktop](data-backup/before-1440.png) is retained.
+- [Dark, export, review, confirmation and result](data-backup/data-states.png), plus [320px at 200% text](data-backup/data-enlarged.png). Individual baseline images also cover long filenames, mismatch/errors, replacement backup, Appearance, Privacy and Advanced.
 - Captures use bundled fonts, fixed fixture dates, reduced motion and top scroll reset. Full-page screenshots paint fixed bottom navigation at the initial viewport bottom; subsequent content is accessible by scrolling.
 - The in-app preview verified the encrypted form opens with container focus, Tab enters its first field, and Other export options exposes explicit unencrypted/retained-record explanations. No field autofocus opens a mobile keyboard.
 

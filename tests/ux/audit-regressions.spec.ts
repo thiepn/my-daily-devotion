@@ -13,15 +13,18 @@ async function createPrayer(page: Page, body: string, schedule?: string) {
 }
 async function backup(page: Page, encrypted = false) {
   await openRoute(page, "/data");
-  if (encrypted) await page.getByLabel("Encrypted backup password").fill("test-only-backup-passphrase");
+  if (encrypted) { await page.getByRole("button", { name: "Create encrypted backup" }).click(); await page.getByLabel("Encrypted backup password").fill("test-only-backup-passphrase"); await page.getByLabel("Confirm password").fill("test-only-backup-passphrase"); }
+  else { const options = page.getByText("Other export options", { exact: true }); if (await options.locator("..").getAttribute("open") === null) await options.click(); }
   const downloading = page.waitForEvent("download");
   await page.getByRole("button", { name: encrypted ? "Download encrypted backup" : "Download plain backup", exact: true }).click();
   const download = await downloading;
   return readFile((await download.path())!);
 }
 async function upload(page: Page, bytes: Buffer) {
+  const restart = page.getByRole("button", { name: "Restore another backup", exact: true });
+  if (await restart.isVisible()) await restart.click();
   await page.getByLabel("Backup file").setInputFiles({ name: "test.mddbackup", mimeType: "application/zip", buffer: bytes });
-  await expect(page.getByRole("button", { name: "Preview & validate" })).toBeEnabled();
+  await expect(page.locator(".data-filename")).toHaveText("test.mddbackup");
 }
 
 test("reflection drafts survive cancelled navigation, reload and stale saves", async ({ page, context }) => {
@@ -159,32 +162,39 @@ test("encrypted backup restores in a fresh profile and failed/cancelled restores
     await openRoute(fresh, "/data"); await upload(fresh, encrypted);
     await fresh.getByLabel("Backup password", { exact: false }).last().fill("incorrect-password");
     await fresh.getByRole("button", { name: "Preview & validate" }).click();
-    await expect(fresh.locator(".data-status")).toContainText("password is incorrect");
-    await fresh.locator(".data-status").scrollIntoViewIfNeeded(); await fresh.screenshot({ path: testInfo.outputPath("restore-wrong-password.png") });
+    await expect(fresh.getByRole("alert")).toContainText("password is incorrect");
+    await fresh.getByRole("alert").scrollIntoViewIfNeeded(); await fresh.screenshot({ path: testInfo.outputPath("restore-wrong-password.png") });
     await fresh.getByLabel("Backup password", { exact: false }).last().fill("test-only-backup-passphrase");
     await fresh.getByRole("button", { name: "Preview & validate" }).click();
     await expect(fresh.locator(".data-status")).toContainText("Backup validated");
-    await fresh.getByRole("radio", { name: "Replace", exact: true }).check();
-    await expect(fresh.getByRole("button", { name: "Replace with validated backup" })).toBeDisabled();
+    await fresh.getByRole("radio", { name: /^Replace/ }).check();
+    await expect(fresh.locator(".backup-preview")).toHaveCount(0);
+    await fresh.getByRole("button", { name: "Preview & validate" }).click();
+    await fresh.getByRole("button", { name: "Continue to confirmation" }).click();
+    await expect(fresh.getByRole("dialog")).toBeVisible();
+    await fresh.getByRole("button", { name: "Keep reviewing" }).click();
     await fresh.locator(".data-status").scrollIntoViewIfNeeded(); await fresh.screenshot({ path: testInfo.outputPath("restore-confirmation.png") });
     await fresh.getByRole("button", { name: "Cancel restore" }).click();
     await expect(fresh.locator(".data-status")).toContainText("Restore cancelled");
+    await upload(fresh, encrypted);
+    await fresh.getByLabel("Backup password", { exact: true }).fill("test-only-backup-passphrase");
     await fresh.getByRole("button", { name: "Preview & validate" }).click();
-    await fresh.getByRole("checkbox", { name: "I understand this replaces all current MDD data." }).check();
+    await fresh.getByRole("button", { name: "Continue to confirmation" }).click();
     await fresh.getByRole("button", { name: "Replace with validated backup" }).click();
     await expect(fresh.locator(".data-status")).toContainText("restored successfully");
     await fresh.locator(".data-status").scrollIntoViewIfNeeded(); await fresh.screenshot({ path: testInfo.outputPath("restore-success.png") });
     const before = JSON.parse(strFromU8(unzipSync(await backup(fresh))["data.json"]!));
-    await upload(fresh, Buffer.from("not a backup")); await fresh.getByRole("button", { name: "Preview & validate" }).click();
-    await expect(fresh.locator(".data-status")).toContainText("not a valid");
-    await fresh.locator(".data-status").scrollIntoViewIfNeeded(); await fresh.screenshot({ path: testInfo.outputPath("restore-corrupt-file.png") });
+    await upload(fresh, Buffer.from("not a backup"));
+    await expect(fresh.getByRole("alert")).toContainText("not a valid");
+    await fresh.getByRole("alert").scrollIntoViewIfNeeded(); await fresh.screenshot({ path: testInfo.outputPath("restore-corrupt-file.png") });
     const after = JSON.parse(strFromU8(unzipSync(await backup(fresh))["data.json"]!));
     expect(after).toEqual(before);
     await upload(fresh, encrypted); await fresh.getByLabel("Backup password", { exact: false }).last().fill("test-only-backup-passphrase");
-    await fresh.getByRole("radio", { name: "Merge", exact: true }).check();
+    await fresh.getByRole("radio", { name: /^Merge/ }).check();
     await fresh.getByRole("button", { name: "Preview & validate" }).click();
+    await fresh.getByRole("button", { name: "Continue to confirmation" }).click();
     await fresh.getByRole("button", { name: "Merge validated backup" }).click();
-    await expect(fresh.locator(".data-status")).toContainText("merged successfully");
+    await expect(fresh.locator(".restore-status")).toContainText("merged successfully");
     await openRoute(fresh, "/prayer"); await expect(fresh.locator(".prayer-journal-row")).toHaveCount(1);
     await fresh.locator(".prayer-journal-row").click(); await expect(fresh.locator(".prayer-record-settings")).toContainText("Daily");
     await openRoute(fresh, "/history?view=prayer"); await expect(fresh.getByText("Backup recovery preserves this prayer.")).toBeVisible();

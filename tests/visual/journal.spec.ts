@@ -23,7 +23,9 @@ for (const theme of ['light', 'dark']) {
   test(`Data backup controls ${theme}`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await openRoute(page, '/data');
+    await page.getByText('Appearance', { exact: true }).click();
     await page.getByRole('button', { name: `${theme === 'light' ? 'Light' : 'Dark'} theme`, exact: true }).click();
+    await page.getByText('Other export options', { exact: true }).click();
     const panel = page.locator('.data-panel').filter({ has: page.getByRole('button', { name: 'Download plain backup', exact: true }) });
     await page.evaluate(() => document.fonts.ready);
     await expect(panel).toHaveScreenshot(`data-backup-${theme}.png`);

@@ -48,6 +48,7 @@ export function ThemeSwitcher() {
   const [mode, setMode] = useState<ThemeMode>(initialTheme);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let active = true;
@@ -55,10 +56,10 @@ export function ThemeSwitcher() {
       next: preference => { if (active) { const next = asTheme(preference?.value) ?? "system"; setMode(next); applyTheme(next); } },
       error: () => { if (active) setError("Could not read your saved appearance. Try choosing it again."); },
     });
-    const refresh = () => { if (active) setMode(initialTheme()); };
+    const refresh = () => { if (active) { setMode(initialTheme()); setError(""); setAttempt(value => value + 1); } };
     window.addEventListener("mdd-theme-refreshed", refresh);
     return () => { active = false; subscription.unsubscribe(); window.removeEventListener("mdd-theme-refreshed", refresh); };
-  }, []);
+  }, [attempt]);
 
   useEffect(() => {
     applyTheme(mode);
@@ -77,6 +78,7 @@ export function ThemeSwitcher() {
         if ((await db.preferences.get(PREFERENCE_KEY))?.value !== next) await db.preferences.put({ key: PREFERENCE_KEY, value: next, updatedAt: nowInstant() });
       });
       setMode(next); applyTheme(next);
+      window.dispatchEvent(new Event("mdd-theme-refreshed"));
     } catch { setError("Appearance could not be saved. Please try again."); }
     finally { setBusy(false); }
   };

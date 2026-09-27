@@ -75,6 +75,7 @@
 .data-journal .theme-error { flex-basis:100%; color:var(--color-prayer); }
 .data-journal :is(h2,summary):focus { outline-offset:4px; }
 .data-journal .journal-actions { margin-top:16px; }
+.data-journal .journal-actions > .grace-primary { flex:1 0 min(100%, 16rem); min-width:0; }
 @media (max-width:860px) { .data-journal-route .mobile-nav { display:grid; } .data-journal-route { padding-bottom:calc(var(--mobile-nav-height) + env(safe-area-inset-bottom)); } }
 @media (max-width:430px) { .data-journal .data-panel { padding:20px 18px; } }
 @media (max-width:350px) { .data-journal .data-panel { padding:18px 14px; } .backup-counts, .restore-effects { grid-template-columns:1fr; } .data-journal h1 { font-size:2rem; } }

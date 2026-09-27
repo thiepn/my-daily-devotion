@@ -32,7 +32,7 @@ assert.match(tokens, /--color-ink-faint:\s*#5e625a/); assert.match(tokens, /--co
 assert.match(vite, /manifest:\s*true/);
 assert.match(sw, /\.vite\/manifest\.json/); assert.match(sw, /Object\.values\(buildManifest\)/); assert.match(sw, /entry\.file/); assert.match(sw, /ignoreVary:\s*true/); assert.match(sw, /matchCached\(request\)/);
 const phase10Index=styles.indexOf('"./phase10.css"'); const phase11Index=styles.indexOf('"./phase11.css"'); assert.ok(phase10Index>=0&&phase11Index>phase10Index,"Phase 11 UX fixes must load after Phase 10 styles");
-assert.match(phase11Css, /\.data-warning/); assert.match(phase11Css, /var\(--color-warning-text\)/); assert.match(await read("src/styles/history.css"), /\.history-journal-state/);
+assert.match(await read("src/styles/data.css"), /\.data-error/); assert.match(await read("src/styles/data.css"), /var\(--color-prayer\)/); assert.match(await read("src/styles/history.css"), /\.history-journal-state/);
 
 assert.match(phase11Doc, /Status:\s*\*\*implemented\*\*/i); assert.match(phase11Doc, /Read.*Respond.*Pray.*Remember/is); assert.match(phase11Doc, /Playwright/i); assert.match(phase11Doc, /axe/i); assert.match(phase11Doc, /320/i); assert.match(phase11Doc, /200%/i); assert.match(phase11Doc, /offline/i); assert.match(phase11Doc, /Phase 12 — Release Hardening/i); assert.match(phase11Doc, /npm run verify:phase11/);
 

@@ -125,7 +125,9 @@ test("copy preserves poetry line boundaries and the reader keeps quotation spaci
 
 test("encrypted backup restores in a fresh browser context on this engine", async ({ page, browser }) => {
   const route = await prayer(page); await openRoute(page, "/data");
+  await page.getByRole("button", { name: "Create encrypted backup" }).click();
   await page.getByLabel("Encrypted backup password").fill("engine-test-passphrase");
+  await page.getByLabel("Confirm password").fill("engine-test-passphrase");
   const downloadPromise = page.waitForEvent("download"); await page.getByRole("button", { name: "Download encrypted backup", exact: true }).click();
   const file = await downloadPromise, bytes = await readFile((await file.path())!);
   const target = await browser.newContext({ baseURL: "http://127.0.0.1:4173", serviceWorkers: "block" });
@@ -134,6 +136,7 @@ test("encrypted backup restores in a fresh browser context on this engine", asyn
     await restored.getByLabel("Backup file").setInputFiles({ name: "test.mddbackup", mimeType: "application/zip", buffer: bytes });
     await restored.getByLabel("Backup password", { exact: false }).last().fill("engine-test-passphrase");
     await restored.getByRole("button", { name: "Preview & validate" }).click();
+    await restored.getByRole("button", { name: "Continue to confirmation" }).click();
     await restored.getByRole("button", { name: "Merge validated backup" }).click();
     await expect(restored.getByRole("status")).toContainText("merged successfully");
     await openRoute(restored, route); await expect(restored.locator(".prayer-request-text")).toHaveText("Pray for the visit.");

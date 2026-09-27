@@ -20,7 +20,7 @@ export function useDataReturnPosition(url: string) {
     let frame = 0;
     const restore = () => {
       if (document.querySelector(".route-loading, .data-journal") || !document.querySelector("#main-content main")) return;
-      const target = (saved.id ? document.getElementById(saved.id) : null) ?? [...document.querySelectorAll<HTMLAnchorElement>("a[href]")].find(link => link.getAttribute("href") === saved.href);
+      const target = (saved.id ? document.getElementById(saved.id) : null) ?? [...document.querySelectorAll<HTMLAnchorElement>("a[href]")].find(link => link.getAttribute("href") === saved.href && link.getClientRects().length > 0);
       if (!target) return;
       observer.disconnect(); origin = null;
       frame = requestAnimationFrame(() => { frame = requestAnimationFrame(() => { target.focus({ preventScroll: true }); window.scrollTo({ top: saved.y, behavior: "instant" }); }); });
