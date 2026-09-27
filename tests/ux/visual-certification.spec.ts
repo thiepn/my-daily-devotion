@@ -70,7 +70,7 @@ test("visual record of populated devotional journeys and management screens", as
     await page.setViewportSize(mode.includes("mobile") ? { width: mode === "small-mobile" ? 320 : 390, height: mode === "small-mobile" ? 568 : 844 } : mode === "tablet-portrait" ? { width: 768, height: 1024 } : mode === "tablet-landscape" ? { width: 1024, height: 768 } : { width: 1440, height: 900 });
     await setVisualTheme(page, mode.includes("dark") ? "dark" : "light");
     for (const surface of surfaces) await capture(page, testInfo, `populated-${mode}`, surface);
-    await openRoute(page, "/prayer/session?depth=quick"); await expect(page.locator(".focused-prayer-card")).toBeVisible();
+    await openRoute(page, "/prayer/session?depth=quick"); await expect(page.locator(".session-request-paper")).toBeVisible();
     await expectNoHorizontalOverflow(page); await page.screenshot({ path: testInfo.outputPath(`populated-${mode}-focused-prayer.png`) });
     await expectNoAxeViolations(page);
     await openRoute(page, "/history"); await page.locator(".history-journal-row").first().click();

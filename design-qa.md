@@ -1,65 +1,40 @@
-# Morning Grace V2 — Bible and shared-control visual QA
+# Focused Prayer — visual review
 
-Visual review: **passed for the scoped light Bible composition after iteration**. User design approval remains pending. This is not certification of Prayer, History, the whole redesign, final dark artwork or native-device accessibility. The preceding Today review is archived at `docs/visual/morning-grace-v2/today-design-qa.md`; Today was recaptured after bundling Inter.
+The canonical board does not depict a focused session. This release extends the integrated Prayer Detail and Reflection journal, with the primary Prayer screen providing the palette, botanical character and action language.
 
 ## Evidence
 
-- Source: user-supplied 1448 × 1086 Concept 11 board. Second phone application crop: x398–708, y198–892, excluding status bar/poster. Uniform normalization: 310 × 694 to 390 × 873. A narrow bezel edge is excluded from judgement.
-- Render: production preview `/#/bible/LUK/9`, light, 390 × 844 CSS pixels, scale factor 1, reduced motion, local fonts loaded. No invented subtitle or skipped verses. Separate screenshots show actual Luke 9:23 selection and dock.
-- Versioned evidence: `tests/visual/baselines`, plus `docs/visual/morning-grace-v2/bible-comparison.png` (source left, implementation right). The different source aspect ratio is retained; no pixel-perfect score is claimed against fictional sample content.
-- Additional sizes: 320 × 568, 360 × 800, 430 × 932, 768 × 1024, 1440 × 900, 200% text. Annotation, preliminary dark, offline and failed-load journeys are exercised. Reader settings were also inspected in the in-app browser, including Escape/focus behavior.
+- Direct visual sources: `tests/visual/baselines/prayer-light-390.png`, `writing-reflection-390.png`, and `prayer-detail-390.png` from the integrated Prayer Detail branch.
+- [Combined source and implementation](docs/visual/morning-grace-v2/focused-prayer/focused-prayer-visual-family.png): four 390 × 844 application captures at density 1. Different screen purposes and fixture content are intentional; this is a family comparison, not a pixel-identical claim.
+- [Before and after](docs/visual/morning-grace-v2/focused-prayer/focused-prayer-comparison.png): the same request, date and 390 × 844 viewport. The old oversized request heading and primitive branch are replaced with a journal heading, full literary request and bundled botanical asset. Full before/after desktop captures are also retained in this directory.
+- [Responsive comparison](docs/visual/morning-grace-v2/focused-prayer/focused-prayer-responsive.png): 320 × 568, 360 × 800, 390 × 844 and 430 × 932; thumbnails preserve aspect ratio. Original pixels are in `tests/visual/baselines/focused-prayer-*.png`.
+- [Dark, editor, dialog and closing states](docs/visual/morning-grace-v2/focused-prayer/focused-prayer-states.png), and [Scripture, enlarged text and an earlier session date](docs/visual/morning-grace-v2/focused-prayer/focused-prayer-context-enlarged.png). The enlarged contact-sheet panel shows its first 2,000 source pixels; the complete 320px image was independently inspected.
+- Additional original-size inspection: 768 × 1024 and 1440 × 900, long requests, empty queue, unavailable session, read failure and changed request. All deterministic captures load bundled fonts, disable animation and use real fixture records rather than production hard-coding.
+- The in-app browser was used to open a saved session, open an answer editor, leave through the shared discard/keep-editing dialog, open Prayer Detail and return to the same session/control. No application error was logged. One router warning came from direct hash navigation during preview setup; ordinary links and return actions were tested separately.
 
 ## Findings and corrections
 
-1. [P1, fixed] Mobile hid the Bible illustration and promoted utility chrome. Replaced with back/passage/collections/Aa controls and a locally bundled landscape visible at every required width.
-2. [P1, fixed] Data's plain-backup label inherited the same color as its background. Its owning rule now sets ink explicitly. Direct contrast, keyboard and image checks cover both themes and disabled encrypted export.
-3. [P1, fixed] The first 320px/200% modal clipped its title horizontally. Bounded width, shrinkable heading and shorter title now reflow; internal scroll-width is asserted. Vertical scrolling remains available.
-4. [P2, fixed] Initial native/React autofocus timing was inconsistent. Dialogs now focus the first available selector after opening and restore the trigger on close. Keyboard and reload/persistence tests cover this.
-5. [P2, fixed] Initial header/translation metadata pushed Scripture too far down. A 54px header retains 44px controls; art/title rhythm now aligns with the reference. Real corpus headings remain. Translation attribution lives in reader help and the passage panel.
-6. [P2, fixed] Bundled Inter exposed 2px of enlarged-text Search overflow. Replaced the fixed action column with intrinsic sizing and restored 44px Search controls. Secondary controls are checked in both themes at narrow/enlarged sizes.
-7. [Content, separately fixed] The old parser omitted a word boundary in Luke 9:1. An isolated parser commit and 112 whitespace-only fixtures correct the source-note case; this is not a display-text patch.
-8. [Test determinism, fixed] Two CI runners captured different selection scroll offsets as local fonts and the status dock settled. Selection baselines now explicitly center the verse after that layout. The two updated candidates were inspected; comparison thresholds were not relaxed. Secondary target measurements disable entrance animation and still require 44px computed and rendered height.
-9. [User review, fixed] Numerals were centered in wide touch targets, separating them from their verses. They now align to the text-facing edge, and an inline group keeps each numeral with the first word when wrapping. Targets remain 44px; every Luke 9 verse start is checked for proximity and same-line placement across the six viewport sizes. Narrow and selected-passage screenshots were reviewed and the affected baselines deliberately refreshed. Corpus text, copy content and persisted data are unchanged.
+1. **P2, fixed — enlarged heading/art overlap.** At 320px and 200% root text size, the first candidate kept the botanical asset beside a word wider than its available column. The session heading now wraps its artwork onto a separate row when enlarged text needs the space. The revised full enlarged image shows clear separation, visible artwork and usable controls with natural vertical scrolling.
+2. **P2, fixed — competing actions while answering.** The answer editor initially left two forest primary actions. While an answer is open, Mark answered receives the primary treatment and Prayed remains a quieter guarded action. The revised answer capture shows the change.
+3. **Interaction, corrected — contextual focus.** Returning to Scripture reopens its containing disclosure and restores the exact reference link. The shared position helper also handles Back that cancels a lazy route before the session unmounts. Shell announcements yield to a specific restored target. Behavioral results are recorded with release verification, separately from the visual assessment.
+4. **Test maintenance.** Legacy selectors were updated to the journal composition without removing navigation, contrast, touch-target, backup or overflow assertions. Session-owned rules were removed from seven legacy stylesheets; one new stylesheet owns the composition in the existing screens layer.
 
-## Close matches
+## Required fidelity surfaces
 
-Compact four-control header; wide ink-and-wash landscape; cream canvas; large literary chapter title; subdued metadata; small visible verse numerals; sage highlights; compact icon dock; refined four-tab navigation. The art is about 140px high at 390px and remains over 110px at 320px. Desktop has a bounded reading column. Today retains its illustrated opening, verse card, plan disclosure, Reflect/Pray cards and dominant CTA.
+- **Fonts and typography:** the integrated Caslon display face, literary reading face and Inter metadata are retained. Requests preserve paragraphs and are not headings. Date and saved-queue position are subordinate. Long writing wraps without truncating the request; the latest update has an explicit expansion action.
+- **Spacing and layout:** the column is capped at 760px. Warm paper, restrained borders, quiet separators and in-flow actions match the secondary journal family. The representative three-request fixture shows the primary action at 390 × 844. At 320/360px the heading wraps; long text and 200% text scroll naturally. Mobile has no bottom navigation; desktop retains the integrated side rail.
+- **Colors and tokens:** cream paper, forest actions, sage identity and terracotta metadata use the current shared system. Dark mode is warm olive/charcoal with cream type. Contrast, hover/touch behavior, focus and disabled controls are checked independently of screenshot approval.
+- **Image quality:** the locally bundled olive sprig is reused through `MorningGraceArtwork`. No new landscape, logo, photograph, remote dependency, generated lettering or illustration inversion was added. The accent remains visible on mobile and moves when text needs more space.
+- **Copy and content:** dates, names, updates, requests and Scripture come from existing records/corpus. Position describes the saved queue, never a spiritual score. Creation-time reasons are transient; resumed sessions truthfully say “Part of your saved session.” Finished and ended states differ. Answer wording and dialogs make explicit commitment and memory-only unsaved writing clear.
 
 ## Remaining differences and limits
 
-- [P3, artwork] Larger foreground olive tree, subtler village and slightly more taupe palette than the reference. The medium and natural depth match, not the exact drawing. No external light-mode asset is required for this slice.
-- [Expected, Scripture] BSB wording, headings, cross-references, paragraph grouping and red-letter styling differ from the mock's composite text. Actual chapter/saved/deep-linked positions are respected; verses 1–22 are not omitted to reproduce the poster.
-- [Expected, interaction] Copy maps the mock's Share position to the existing offline feature. Selection reference, clear action and mutation feedback make the dock taller. More retains devotional/collection actions; the dock appears only for a selection.
-- [P3, type/icons] Caslon headings are a little heavier and Phosphor strokes finer. Inter is bundled for consistent offline metadata/control rendering.
-- [Deferred] Dark mode uses warm tokens and illustration opacity without inversion. Dedicated evening art is pending. Loading/error surfaces remain the existing recoverable states, not a new secondary-screen certification. Prayer and History await their own rebuilds.
-- [Not claimed] Axe and keyboard checks do not constitute a manual screen-reader certification, usability study or physical iOS/Android test.
+- Focused Prayer has no direct phone in the reference board. Its paper reading card is an intentional extension of Prayer Detail, not a reproduction of the Prayer library list.
+- The integrated display font is not an exact match for the concept lettering. Dedicated evening artwork remains later work; current artwork uses the existing warm dark treatment.
+- At 200% text, the artwork occupies its own row and the main action may appear far below a long request. Nothing is hidden to force a compact viewport.
+- Automated keyboard, contrast and reflow checks do not constitute physical-device keyboard or manual screen-reader certification. Those remain review limitations.
+- Screenshot baselines are reviewed implementation candidates, not a claim of user design approval. No new external artwork is needed for this release.
 
-No unresolved P0/P1/P2 visual issue remains in the scoped light Bible composition. Baselines are review candidates, not user approval. Exact regression results and reviewed commit are recorded with the PR and task report.
-
-## Approved app identity follow-up
-
-The user selected the cream-and-forest book/cross/sun artwork. Its exact raster master now supplies the sidebar mark, browser favicons, Apple touch icon and install icons. See `docs/artwork/approved-brand.md` for provenance and reproducible exports. The old sprig geometry is replaced; screen composition and data are unchanged.
-
-Reviewed the 16/32/48/64/180px sizes, circular and rounded launcher masks, both sidebar themes, and Today/Bible at 1440px. The approved soft cream finish and green/gold geometry are retained. The maskable export keeps the green foreground within radius 0.350 of the canvas, inside the 0.400 safe radius. The SVG favicon embeds a raster; no vector master or physical-device launcher certification is claimed.
-
-Validation: TypeScript, 130 unit tests, production build, brand/PWA verifiers, 20 image comparisons, automated accessibility checks, and cold offline loading of all seven icon assets passed. The initial 14-test browser run had 13 passes and one Firefox Data-screen loading timeout; the trace showed the chunk returned HTTP 200 while the opening state remained visible. Both isolated repeats of the Firefox smoke suite passed (four checks) without code or timeout changes. The original timeout remains recorded rather than being presented as an entirely clean initial run.
-
-## Prayer journal follow-up
-
-The primary Prayer screen now follows the third phone's composition, with real BSB text, person initials, four status segments, existing-metadata filters and a read-only next-request/session preview. See `docs/visual/morning-grace-v2/prayer-design-qa.md` for normalized reference measurements, all five fidelity surfaces, corrections, deliberate differences and verification scope. History and secondary workflow redesigns remain deferred. The Prayer inspection does not supersede the earlier Bible or brand evidence above.
-
-## History journal follow-up
-
-The complete History journey now follows the fourth phone's journal direction. The overview, separate calendar, selected Day entries and reflective Moments share a read-only presentation model and one screen stylesheet. See `docs/visual/morning-grace-v2/history-design-qa.md` and `history-comparison.png` for the reference comparison, factual metric definitions, privacy handling, artwork provenance, enlarged-text corrections and honest visual differences. This supersedes the earlier statements that History remained deferred; other secondary workflows remain outside this release. Exact-commit verification belongs in the History PR and delivery report.
-
-## Reflection and prayer capture follow-up
-
-The approved writing release is reviewed in [writing-design-qa.md](docs/visual/morning-grace-v2/writing-design-qa.md). It contains before/after evidence, a normalized visual-family comparison, the six-width image matrix, corrections made after review, and explicit scope limitations. These secondary screens extend the canonical identity; the board does not depict their exact composition. Functional certification is recorded separately against the final commit.
-
-final result: passed
-
-## Prayer Detail and Settings follow-up
-
-The Prayer destination now opens in reading mode with explicit editors, newest-first updates/answers, preserved Scripture/source context and grouped settings. The scoped [Prayer Detail and Settings review](docs/visual/morning-grace-v2/prayer-detail-design-qa.md) records the combined visual-family comparison, mobile and enlarged-text corrections, rendered in-app checks and remaining limitations. This extends the integrated Writing release; Focused Prayer, metadata management, durable drafts and Data remain outside this scope.
+No actionable P0/P1/P2 visual finding remains after the recaptured corrections. Functional certification is reported independently on the draft PR and in the generated verification evidence.
 
 final result: passed

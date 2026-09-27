@@ -137,25 +137,6 @@
 
   /* Focused Prayer owns its own session header. Remove outer shell chrome only
      when an actual session workspace exists; empty/finished states keep Back. */
-  .mobile-immersive-route:has(.mg-focused-prayer-workspace) .utility-bar {
-    display: none;
-  }
-
-  .mobile-immersive-route:has(.mg-focused-prayer-workspace) .workspace-content {
-    min-height: 100svh;
-    min-height: 100dvh;
-  }
-
-  .mobile-immersive-route .mg-focused-prayer-workspace {
-    min-height: 100svh;
-    min-height: 100dvh;
-    padding-top: max(8px, env(safe-area-inset-top));
-    padding-bottom: max(14px, env(safe-area-inset-bottom));
-  }
-
-  .mobile-immersive-route .focused-prayer-header {
-    min-height: 44px;
-  }
 
   /* Keyboard-first editors retain their primary action at the bottom edge
      instead of making the user scroll past the editor after typing. */

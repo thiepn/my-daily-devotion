@@ -43,9 +43,9 @@ test('Prayer previews saved order and resumes only after explicit action', async
   await page.reload(); await expect(page.locator('.prayer-focus-card')).toContainText('Parents');
   expect(await prayerDatabaseSnapshot(page)).toEqual(before);
   await page.getByRole('link', { name: 'Resume prayer', exact: true }).click();
-  await expect(page.locator('.focused-prayer-card h1')).toHaveText('Health and daily encouragement.');
+  await expect(page.locator('.session-request-text')).toHaveText('Health and daily encouragement.');
   await page.getByRole('button', { name: /Prayed · Next/ }).click();
-  await expect(page.locator('.focused-prayer-card h1')).toHaveText('Courage and patience in a new season.');
+  await expect(page.locator('.session-request-text')).toHaveText('Courage and patience in a new season.');
 });
 
 test('Prayer removes invalid filters and preserves manual-only requests', async ({ page }) => {

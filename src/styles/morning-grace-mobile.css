@@ -636,29 +636,6 @@
     min-height: 46px;
   }
 
-  .mg-focused-prayer-workspace {
-    width: 100%;
-    padding: 8px 12px 22px;
-  }
-
-  .mg-focused-prayer-workspace .focused-prayer-card {
-    margin: 14px 0 0;
-    padding: 18px 14px;
-    border-radius: 14px;
-    box-shadow: none;
-  }
-
-  .mg-focused-prayer-workspace .focused-prayer-card > h1 {
-    margin: 8px 0 18px;
-    font-size: 1.55rem;
-    line-height: 1.28;
-  }
-
-  .mg-focused-prayer-workspace .focused-next-button {
-    min-height: 46px;
-    margin-top: 18px;
-  }
-
   .mg-collections-workspace .collection-sidebar {
     margin-inline: calc(var(--mobile-gutter) * -1);
     padding-inline: var(--mobile-gutter);

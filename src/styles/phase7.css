@@ -30,6 +30,4 @@
 .metadata-editor input, .metadata-editor textarea { width: 100%; padding: 9px 10px; border: 1px solid var(--color-line); border-radius: var(--radius-small); color: var(--color-ink); background: var(--color-surface); }
 .metadata-editor textarea { min-height: 100px; resize: vertical; }
 .metadata-editor > div { display: flex; gap: 8px; }
-.end-session-button { justify-self: end; padding: 0; border: 0; background: transparent; color: var(--color-ink-faint); cursor: pointer; font-size: .7rem; }
-.focused-person { margin: 0; color: var(--color-ink-faint); font-size: .72rem; letter-spacing: .04em; }
 @media (max-width: 760px) { .prayer-field-grid, .metadata-layout { grid-template-columns: 1fr; } .metadata-row { align-items: start; padding: 14px 0; } }

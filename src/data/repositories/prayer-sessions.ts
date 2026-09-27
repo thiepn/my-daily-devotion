@@ -4,12 +4,27 @@ import type { ActivityEvent, Instant, LocalDate, Prayer, PrayerSession, PrayerSe
 import { PrayerQueueService } from "../../prayer/queue";
 import type { MddDatabase } from "../database";
 import { PrayerRepository } from "./prayers";
+import { assertExpectedRevision } from "../conflicts";
 
 export const PRAYER_DEPTH_TARGETS = { quick: 4, regular: 10, extended: 20 } as const;
 export type PrayerDepth = keyof typeof PRAYER_DEPTH_TARGETS;
 
 export interface PrayerSessionEntry { item: PrayerSessionItem; prayer: Prayer | null; }
-export interface PrayerSessionState { session: PrayerSession; entries: PrayerSessionEntry[]; }
+export interface PrayerSessionState {
+  session: PrayerSession;
+  entries: PrayerSessionEntry[];
+  /** Creation-time queue reasons are presentation-only, never persisted. */
+  reasons?: Record<string, string>;
+}
+export interface SessionExpectedRevisions { session?: number; item?: number; prayer?: number; }
+export interface SessionActionResult {
+  state: PrayerSessionState;
+  action: "NEXT" | "SKIP" | "ANSWERED" | "ENDED";
+  itemId?: UUID;
+}
+export class PrayerSessionUnavailableError extends Error {
+  constructor() { super("This prayer session is no longer available."); this.name = "PrayerSessionUnavailableError"; }
+}
 
 export class PrayerSessionRepository {
   private readonly queue: PrayerQueueService;
@@ -22,7 +37,7 @@ export class PrayerSessionRepository {
 
   async getOpenSession(): Promise<PrayerSession | undefined> {
     const sessions = await this.database.prayerSessions.filter((item) => item.deletedAt === null && item.endedAt === null).toArray();
-    return sessions.sort((a, b) => b.startedAt.localeCompare(a.startedAt))[0];
+    return sessions.sort((a, b) => b.startedAt.localeCompare(a.startedAt) || a.id.localeCompare(b.id))[0];
   }
 
   async startOrResume(depth: PrayerDepth, localDate: LocalDate = todayLocalDate(), at: Instant = nowInstant()): Promise<PrayerSessionState | null> {
@@ -42,28 +57,39 @@ export class PrayerSessionRepository {
         }));
         await this.database.prayerSessions.add(session);
         await this.database.prayerSessionItems.bulkAdd(items);
-        return this.loadStateInternal(session.id, false);
+        return { ...await this.loadStateInternal(session.id, false), reasons: Object.fromEntries(items.map((item, index) => [item.id, queue[index]!.reason])) };
       },
     );
   }
 
-  async loadState(sessionId: UUID): Promise<PrayerSessionState> { return this.loadStateInternal(sessionId, true); }
+  /** Subscription-safe: viewing context never reconciles or changes revisions. */
+  async readState(sessionId: UUID): Promise<PrayerSessionState> {
+    return this.database.transaction("r", this.database.prayerSessions, this.database.prayerSessionItems, this.database.prayers,
+      () => this.loadStateInternal(sessionId, false));
+  }
+
+  /** Explicit workflow entry/continuation may reconcile invalid pending requests. */
+  async loadState(sessionId: UUID): Promise<PrayerSessionState> {
+    return this.database.transaction("rw", this.database.prayerSessions, this.database.prayerSessionItems, this.database.prayers,
+      () => this.loadStateInternal(sessionId, true));
+  }
 
   private async loadStateInternal(sessionId: UUID, reconcile: boolean): Promise<PrayerSessionState> {
     const session = await this.database.prayerSessions.get(sessionId);
-    if (!session || session.deletedAt) throw new Error("Prayer session not found.");
+    if (!session || session.deletedAt) throw new PrayerSessionUnavailableError();
     const items = await this.database.prayerSessionItems.where("sessionId").equals(sessionId).filter((item) => item.deletedAt === null).sortBy("position");
+    items.sort((a, b) => a.position - b.position || a.id.localeCompare(b.id));
     const entries: PrayerSessionEntry[] = [];
     const toReconcile: Array<{ item: PrayerSessionItem; outcome: "ANSWERED" | "SKIP" }> = [];
     for (const item of items) {
       const prayer = await this.database.prayers.get(item.prayerId);
       const activePrayer = prayer && !prayer.deletedAt ? prayer : null;
-      if (reconcile && item.outcome === null && (!activePrayer || activePrayer.status !== "ACTIVE")) {
+      if (reconcile && !session.endedAt && item.outcome === null && (!activePrayer || activePrayer.status !== "ACTIVE")) {
         toReconcile.push({ item, outcome: activePrayer?.status === "ANSWERED" ? "ANSWERED" : "SKIP" });
       }
       entries.push({ item, prayer: activePrayer });
     }
-    if (reconcile && toReconcile.length) {
+    if (reconcile && !session.endedAt) {
       const at = nowInstant();
       for (const change of toReconcile) await this.database.prayerSessionItems.put({ ...change.item, outcome: change.outcome, actedAt: at, updatedAt: at, revision: change.item.revision + 1 });
       await this.finishIfDone(session, at);
@@ -72,12 +98,13 @@ export class PrayerSessionRepository {
     return { session: (await this.database.prayerSessions.get(sessionId)) ?? session, entries };
   }
 
-  async next(sessionId: UUID, itemId: UUID, at: Instant = nowInstant()): Promise<void> {
-    await this.database.transaction("rw", this.database.prayerSessions, this.database.prayerSessionItems, this.database.prayers, this.database.activityEvents, async () => {
+  async next(sessionId: UUID, itemId: UUID, at: Instant = nowInstant(), expected: SessionExpectedRevisions = {}): Promise<SessionActionResult> {
+    return this.database.transaction("rw", this.database.prayerSessions, this.database.prayerSessionItems, this.database.prayers, this.database.activityEvents, async () => {
       const session = await this.requireOpenSession(sessionId);
       const item = await this.requirePendingItem(sessionId, itemId);
       const prayer = await this.database.prayers.get(item.prayerId);
       if (!prayer || prayer.deletedAt || prayer.status !== "ACTIVE") throw new Error("This prayer is no longer active.");
+      assertExpectedRevision(session, expected.session); assertExpectedRevision(item, expected.item); assertExpectedRevision(prayer, expected.prayer);
       await this.database.prayers.put({ ...prayer, lastPrayedAt: at, updatedAt: at, revision: prayer.revision + 1 });
       await this.database.prayerSessionItems.put({ ...item, outcome: "NEXT", actedAt: at, updatedAt: at, revision: item.revision + 1 });
       const event: ActivityEvent = {
@@ -85,32 +112,45 @@ export class PrayerSessionRepository {
       };
       await this.database.activityEvents.add(event);
       await this.finishIfDone(session, at);
+      return { state: await this.loadStateInternal(sessionId, true), action: "NEXT", itemId };
     });
   }
 
-  async skip(sessionId: UUID, itemId: UUID, at: Instant = nowInstant()): Promise<void> {
-    await this.database.transaction("rw", this.database.prayerSessions, this.database.prayerSessionItems, async () => {
+  async skip(sessionId: UUID, itemId: UUID, at: Instant = nowInstant(), expected: SessionExpectedRevisions = {}): Promise<SessionActionResult> {
+    return this.database.transaction("rw", this.database.prayerSessions, this.database.prayerSessionItems, this.database.prayers, async () => {
       const session = await this.requireOpenSession(sessionId);
       const item = await this.requirePendingItem(sessionId, itemId);
+      assertExpectedRevision(session, expected.session); assertExpectedRevision(item, expected.item);
       await this.database.prayerSessionItems.put({ ...item, outcome: "SKIP", actedAt: at, updatedAt: at, revision: item.revision + 1 });
       await this.finishIfDone(session, at);
+      return { state: await this.loadStateInternal(sessionId, true), action: "SKIP", itemId };
     });
   }
 
-  async answer(sessionId: UUID, itemId: UUID, reflectionMd: string | null, at: Instant = nowInstant()): Promise<void> {
-    await this.database.transaction("rw", [this.database.prayerSessions, this.database.prayerSessionItems, this.database.prayers, this.database.prayerResolutions, this.database.activityEvents], async () => {
+  async answer(sessionId: UUID, itemId: UUID, reflectionMd: string | null, at: Instant = nowInstant(), expected: SessionExpectedRevisions = {}): Promise<SessionActionResult> {
+    return this.database.transaction("rw", [this.database.prayerSessions, this.database.prayerSessionItems, this.database.prayers, this.database.prayerResolutions, this.database.activityEvents], async () => {
       const session = await this.requireOpenSession(sessionId);
       const fresh = await this.requirePendingItem(sessionId, itemId);
-      await this.prayers.answer(fresh.prayerId, reflectionMd, at);
+      const prayer = await this.database.prayers.get(fresh.prayerId);
+      if (!prayer || prayer.deletedAt || prayer.status !== "ACTIVE") throw new Error("This prayer is no longer active.");
+      assertExpectedRevision(session, expected.session); assertExpectedRevision(fresh, expected.item);
+      await this.prayers.answer(fresh.prayerId, reflectionMd, at, expected.prayer);
       await this.database.prayerSessionItems.put({ ...fresh, outcome: "ANSWERED", actedAt: at, updatedAt: at, revision: fresh.revision + 1 });
       await this.finishIfDone(session, at);
+      return { state: await this.loadStateInternal(sessionId, true), action: "ANSWERED", itemId };
     });
   }
 
-  async endSession(sessionId: UUID, at: Instant = nowInstant()): Promise<void> {
-    const session = await this.database.prayerSessions.get(sessionId);
-    if (!session || session.deletedAt || session.endedAt) return;
-    await this.database.prayerSessions.put({ ...session, endedAt: at, updatedAt: at, revision: session.revision + 1 });
+  async endSession(sessionId: UUID, at: Instant = nowInstant(), expectedRevision?: number): Promise<SessionActionResult | null> {
+    return this.database.transaction("rw", this.database.prayerSessions, this.database.prayerSessionItems, this.database.prayers, async () => {
+      const session = await this.database.prayerSessions.get(sessionId);
+      if (!session || session.deletedAt) return null;
+      if (!session.endedAt) {
+        assertExpectedRevision(session, expectedRevision);
+        await this.database.prayerSessions.put({ ...session, endedAt: at, updatedAt: at, revision: session.revision + 1 });
+      }
+      return { state: await this.loadStateInternal(sessionId, false), action: "ENDED" };
+    });
   }
 
   private async requireOpenSession(sessionId: UUID): Promise<PrayerSession> {
