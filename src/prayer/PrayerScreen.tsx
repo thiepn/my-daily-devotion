@@ -7,6 +7,7 @@ import { useLocalClock } from '../app/useLocalClock';
 import { db } from '../data/database';
 import { PRAYER_DEPTH_TARGETS, type PrayerDepth } from '../data/repositories/prayer-sessions';
 import { prayerSessionUrl } from './session-context';
+import { metadataUrl } from './metadata-model';
 import { loadBibleChapter } from '../scripture/loader';
 import { identityTone, loadPrayerFocus, loadPrayerLibrary, personInitials, prayerFilters, prayerStatusLabels, prayerStatuses, type PrayerFocus, type PrayerLibrary } from './journal';
 
@@ -94,7 +95,7 @@ export function PrayerScreen() {
       {filtersOpen && <div className="prayer-filters grace-paper" id="prayer-filters">
         <div className="prayer-filter-field"><label htmlFor="prayer-person">Person</label><select id="prayer-person" value={selected.person} onChange={event => setFilter('person', event.target.value)}><option value="">All people</option>{library?.people.map(person => <option key={person.id} value={person.id}>{person.name}</option>)}</select></div>
         <div className="prayer-filter-field"><label htmlFor="prayer-category">Category</label><select id="prayer-category" value={selected.category} onChange={event => setFilter('category', event.target.value)}><option value="">All categories</option>{library?.categories.map(category => <option key={category.id} value={category.id}>{category.name}</option>)}</select></div>
-        <div><button type="button" disabled={!filtered} onClick={clearFilters}>Clear filters</button><Link to="/prayer/people">People</Link><Link to="/prayer/categories">Categories</Link></div>
+        <div><button type="button" disabled={!filtered} onClick={clearFilters}>Clear filters</button><Link to={metadataUrl("people", listUrl)}>People</Link><Link to={metadataUrl("categories", listUrl)}>Categories</Link></div>
       </div>}
       {error && <div className="prayer-journal-state" role="alert"><p>{error}</p><button type="button" onClick={() => setRetry(value => value + 1)}>Try again</button></div>}
       {loading && !library ? <p className="prayer-journal-state" role="status">Opening prayers…</p> : library && <>
