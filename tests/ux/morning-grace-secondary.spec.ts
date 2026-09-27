@@ -32,7 +32,7 @@ test.describe("Morning Grace secondary workflows",()=>{
     await expect(page.locator(".mg-prayer-metadata-workspace")).toBeVisible();
 
     await openRoute(page,"/prayer/session?depth=quick");
-    await expect(page.locator(".mg-focused-prayer-workspace")).toBeVisible();
+    await expect(page.locator(".session-is-active")).toBeVisible();
 
     await openRoute(page,"/bible/collections");
     await expect(page.locator(".mg-collections-workspace")).toBeVisible();

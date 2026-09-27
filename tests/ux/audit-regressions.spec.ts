@@ -106,15 +106,15 @@ test("scheduled prayer session resumes after exit and reload", async ({ page }) 
   await createPrayer(page, "Second daily request.", "DAILY");
   await createPrayer(page, "Manual request stays out of sessions.", "MANUAL_ONLY");
   await openRoute(page, "/prayer/session?depth=quick");
-  await expect(page.locator(".focused-prayer-header")).toContainText("1 / 2");
+  await expect(page.locator(".session-heading-top")).toContainText("Request 1 of 2");
   await page.getByRole("button", { name: "Prayed · Next" }).click();
-  await expect(page.locator(".focused-prayer-header")).toContainText("2 / 2");
-  const remaining = await page.getByRole("heading", { level: 1 }).innerText();
-  await page.getByRole("link", { name: "Exit & resume later" }).click(); await page.reload();
+  await expect(page.locator(".session-heading-top")).toContainText("Request 2 of 2");
+  const remaining = await page.locator(".session-request-text").innerText();
+  await page.getByRole("link", { name: "Pause and return" }).click(); await page.reload();
   await page.getByRole("link", { name: "Resume prayer", exact: true }).click();
-  await expect(page.getByRole("heading", { level: 1 })).toHaveText(remaining);
-  await page.getByRole("button", { name: "Skip", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Session finished." })).toBeVisible();
+  await expect(page.locator(".session-request-text")).toHaveText(remaining);
+  await page.getByRole("button", { name: "Skip this request", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "Session finished" })).toBeVisible();
 });
 
 test("collections can be renamed, reject collisions, and remove passages", async ({ page }) => {

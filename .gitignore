@@ -7,6 +7,7 @@ visual-report/
 test-results/
 test-results-writing-visual/
 test-results-detail-visual/
+test-results-focused-visual/
 .DS_Store
 *.log
 *.tsbuildinfo

@@ -113,8 +113,8 @@ test.describe("native mobile stacked navigation", () => {
   test("empty focused-prayer states retain pushed navigation", async ({ page }) => {
     await openRoute(page, "/prayer/session?depth=quick");
     await expect(page.locator(".app-shell")).toHaveClass(/mobile-immersive-route/);
-    await expect(page.locator(".utility-bar")).toBeVisible();
-    await expect(page.getByRole("button", { name: "Back", exact: true })).toBeVisible();
+    await expect(page.locator(".utility-bar")).toBeHidden();
+    await expect(page.locator(".journal-heading .quiet-back-link")).toBeVisible();
     await expect(page.locator(".mobile-nav")).toBeHidden();
     await expectNoHorizontalOverflow(page);
   });
@@ -135,7 +135,7 @@ test.describe("native mobile stacked navigation", () => {
     await expect(page.locator(".prayer-request-text")).toHaveText("Give peace and clarity today.");
 
     await openRoute(page, "/prayer/session?depth=quick");
-    await expect(page.locator(".mg-focused-prayer-workspace")).toBeVisible();
+    await expect(page.locator(".session-is-active")).toBeVisible();
     await expect(page.locator(".utility-bar")).toBeHidden();
     await expect(page.locator(".mobile-nav")).toBeHidden();
     await expectNoHorizontalOverflow(page);

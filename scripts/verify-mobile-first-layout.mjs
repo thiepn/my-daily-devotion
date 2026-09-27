@@ -64,7 +64,7 @@ assert.match(stackedCss,/\.mobile-detail-route \.mobile-nav,[\s\S]*display:\s*no
 assert.match(stackedCss,/\.mobile-detail-route \.utility-bar \.utility-actions/);
 assert.match(stackedCss,/\.mobile-detail-route \.mobile-appbar-back\s*\{[\s\S]*width:\s*44px[\s\S]*height:\s*44px/);
 assert.match(stackedCss,/\.mobile-detail-route \.mg-secondary-header h1\s*\{[\s\S]*position:\s*absolute/);
-assert.match(stackedCss,/\.mobile-immersive-route:has\(\.mg-focused-prayer-workspace\) \.utility-bar\s*\{[\s\S]*display:\s*none/);
+assert.ok(styles.includes("focused-prayer.css"), "Focused Prayer owns its responsive journal composition");
 assert.match(stackedCss,/safe-area-inset-top/);
 assert.match(stackedCss,/safe-area-inset-bottom/);
 assert.doesNotMatch(stackedCss,/(?:linear|radial|conic)-gradient\s*\(/i);

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { MddDatabase } from "../data/database";
 import { PrayerRepository } from "../data/repositories/prayers";
 import { PrayerSessionRepository } from "../data/repositories/prayer-sessions";
@@ -74,6 +74,26 @@ describe("focused prayer journal safety", () => {
     await prayers.removePrayer(id);
     const before = await snapshot(db); expect(await readSessionRequestContext(db, id)).toEqual({ latest: null, links: [] });
     expect(await snapshot(db)).toEqual(before);
+  });
+  it("rolls back every reconciliation change when any item write fails", async () => {
+    const { db, prayers, sessions, state } = await setup(2);
+    for (const entry of state.entries) await prayers.transition(entry.prayer!.id, "WAITING");
+    const before = await snapshot(db), original = db.prayerSessionItems.put.bind(db.prayerSessionItems);
+    let writes = 0;
+    const spy = vi.spyOn(db.prayerSessionItems, "put").mockImplementation((...args: Parameters<typeof original>) => {
+      if (++writes === 2) throw new Error("Storage interrupted");
+      return original(...args);
+    });
+    await expect(sessions.loadState(state.session.id)).rejects.toThrow("Storage interrupted"); spy.mockRestore();
+    expect(await snapshot(db)).toEqual(before);
+  });
+  it("finishes after the last valid request and reconciles only unavailable pending items", async () => {
+    const { db, prayers, sessions, state } = await setup(3);
+    await prayers.transition(state.entries[1]!.prayer!.id, "WAITING"); await prayers.removePrayer(state.entries[2]!.prayer!.id);
+    expect(sessionPresentation(await sessions.readState(state.session.id)).last).toBe(true);
+    const result = await sessions.next(state.session.id, state.entries[0]!.item.id);
+    expect(sessionPresentation(result.state).closed).toBe("finished"); expect(result.state.entries.map(entry => entry.item.outcome)).toEqual(["NEXT", "SKIP", "SKIP"]);
+    expect(await db.activityEvents.where("type").equals("PRAYER_PRAYED").count()).toBe(1);
   });
   it("validates session identity without falling back to creation and keeps nested return URLs", () => {
     expect(parsePrayerSessionContext("?session=&depth=unknown&return=https://example.com")).toEqual({ sessionId: null, invalidSession: true, depth: "quick", returnTo: "/prayer" });
