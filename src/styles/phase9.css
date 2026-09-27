@@ -218,7 +218,6 @@ button:disabled,
 
 /* Action groups */
 .prayer-handoff-actions,
-.focused-prayer-secondary,
 .data-actions {
   row-gap: 10px;
 }
@@ -306,11 +305,6 @@ button:disabled,
   min-width: 48px;
 }
 
-.focused-answer-form {
-  padding: 20px;
-}
-
-.focused-answer-form textarea,
 .metadata-editor textarea {
   padding: 12px 14px;
   line-height: 1.58;
@@ -327,15 +321,6 @@ button:disabled,
 
 .metadata-editor {
   gap: 16px;
-}
-
-.end-session-button {
-  min-height: 44px;
-  padding-inline: 8px;
-}
-
-.focused-next-button {
-  min-height: 50px;
 }
 
 /* History */
@@ -682,10 +667,6 @@ button:disabled,
   .screen-heading h1 {
     font-size: clamp(2.25rem, 7vw, 3rem);
   }
-
-  .focused-prayer-card {
-    padding-top: 28px;
-  }
 }
 
 /* Release audit: readable controls, restrained page headings and resilient content. */
@@ -695,8 +676,7 @@ button:disabled,
 .quiet-button, .metadata-row button, .metadata-editor button, .collection-sidebar form button { font-size: .85rem; }
 .metadata-manage-links a, .quiet-back-link, .field-help, .prayer-administration-fields label small { font-size: .8rem; }
 .prayer-administration-fields label, .metadata-editor label { font-size: .875rem; }
-.focused-prayer-card > h1 { max-width: 28ch; font-size: clamp(1.9rem, 4vw, 3.2rem); line-height: 1.2; overflow-wrap: anywhere; white-space: pre-wrap; }
-.focused-prayer-screen > h1, .recovery-screen > h1 { font-family: var(--font-editorial); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 500; line-height: 1.2; }
+.recovery-screen > h1 { font-family: var(--font-editorial); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 500; line-height: 1.2; }
 .recovery-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
 .collection-manage, .collection-rename { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
 .collection-rename { padding-bottom: 20px; align-items: end; }
@@ -730,7 +710,6 @@ input, select, textarea { max-width: 100%; }
   .utility-actions { gap: 4px; }
   .utility-actions > a { display: inline-flex; padding-inline: 6px; min-width: 44px; justify-content: center; }
   input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: max(1rem, 16px); }
-  .focused-prayer-card > h1 { font-size: 2rem; }
   .prayer-main-heading { margin-bottom: 28px; }
   .collection-content .section-heading-line { align-items: flex-start; }
   .section-heading-line h2 { font-size: 1.6rem; }

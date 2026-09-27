@@ -14,7 +14,7 @@ export function scriptureHref(reference: ScriptureReference, returnTo: string): 
   return `/bible/${start.bookId}/${start.chapter}?${params.toString()}`;
 }
 
-export function ScriptureContext({ reference, returnTo, pending = false }: { reference: ScriptureReference; returnTo: string; pending?: boolean }) {
+export function ScriptureContext({ reference, returnTo, pending = false, linkId }: { reference: ScriptureReference; returnTo: string; pending?: boolean; linkId?: string }) {
   const [result, setResult] = useState<{ label: string; text: string } | null>(null);
   const [error, setError] = useState(false);
   const [attempt, setAttempt] = useState(0);
@@ -43,7 +43,7 @@ export function ScriptureContext({ reference, returnTo, pending = false }: { ref
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [identity, attempt]);
   return <div className="journal-scripture">
-    <Link to={scriptureHref(reference, returnTo)}>{result?.label ?? prayerReferenceLabel(reference, null)}</Link>
+    <Link id={linkId} to={scriptureHref(reference, returnTo)}>{result?.label ?? prayerReferenceLabel(reference, null)}</Link>
     {pending ? <small>Will attach on save</small> : null}
     {result ? <blockquote>{result.text}</blockquote> : error ? <p className="journal-help">Scripture text could not load. Your writing is still available. <button type="button" onClick={() => setAttempt(value => value + 1)}>Retry Scripture</button></p> : <p className="journal-help">Opening Scripture…</p>}
   </div>;

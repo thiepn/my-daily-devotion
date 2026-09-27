@@ -5,7 +5,8 @@ import { DevotionalIcon } from '../app/visual/DevotionalIcon';
 import { MorningGraceArtwork } from '../app/visual/MorningGraceArtwork';
 import { useLocalClock } from '../app/useLocalClock';
 import { db } from '../data/database';
-import { PRAYER_DEPTH_TARGETS } from '../data/repositories/prayer-sessions';
+import { PRAYER_DEPTH_TARGETS, type PrayerDepth } from '../data/repositories/prayer-sessions';
+import { prayerSessionUrl } from './session-context';
 import { loadBibleChapter } from '../scripture/loader';
 import { identityTone, loadPrayerFocus, loadPrayerLibrary, personInitials, prayerFilters, prayerStatusLabels, prayerStatuses, type PrayerFocus, type PrayerLibrary } from './journal';
 
@@ -112,9 +113,9 @@ export function PrayerScreen() {
       <div className="prayer-focus-caption"><MorningGraceArtwork variant="botanical" /><h2 id="prayer-focus-heading">A focus prayer</h2></div>
       {focusError ? <div role="status"><p>{focusError}</p><button type="button" onClick={() => setRetry(value => value + 1)}>Retry preview</button></div> : !focus ? <p>Preparing your prayer preview…</p> : <>
         {focus.prayer ? <><h3>{focusPerson?.name ?? 'Bring it to Him'}</h3><p className="prayer-focus-request">{focus.prayer.body}</p></> : <h3>{focus.session ? 'A quiet place to finish.' : 'A moment for prayer.'}</h3>}
-        {(focus.prayer || focus.session) && <Link className="prayer-focus-action" to={`/prayer/session?depth=${focus.session?.depth ?? 'quick'}`}>{focus.session ? focus.prayer ? 'Resume prayer' : 'Finish session' : 'Begin prayer'}<DevotionalIcon name="arrow" /></Link>}
+        {(focus.prayer || focus.session) && <Link className="prayer-focus-action" to={prayerSessionUrl({sessionId:focus.session?.id,returnTo:listUrl})}>{focus.session ? focus.prayer ? 'Resume prayer' : 'Finish session' : 'Begin prayer'}<DevotionalIcon name="arrow" /></Link>}
         <p className="prayer-focus-reason">{focus.reason}{!focus.prayer && !focus.session ? ' Manual-only requests remain in your list.' : ''}</p>
-        {!focus.session && focus.prayer && <details className="prayer-session-length"><summary>Session length<DevotionalIcon name="down" /></summary><div>{Object.entries(PRAYER_DEPTH_TARGETS).map(([depth, target]) => <Link key={depth} to={`/prayer/session?depth=${depth}`}><strong>{depth.charAt(0).toUpperCase() + depth.slice(1)}</strong><span>about {target} requests</span></Link>)}</div><p>Focused and due requests may make a session longer.</p></details>}
+        {!focus.session && focus.prayer && <details className="prayer-session-length"><summary>Session length<DevotionalIcon name="down" /></summary><div>{Object.entries(PRAYER_DEPTH_TARGETS).map(([depth, target]) => <Link key={depth} to={prayerSessionUrl({depth:depth as PrayerDepth,returnTo:listUrl})}><strong>{depth.charAt(0).toUpperCase() + depth.slice(1)}</strong><span>about {target} requests</span></Link>)}</div><p>Focused and due requests may make a session longer.</p></details>}
       </>}
     </section>
     <nav className="prayer-utility-links" aria-label="Prayer utilities"><Link to={`/search?${returnQuery}`}>Search</Link><Link to={`/data?${returnQuery}`}>Data</Link></nav>

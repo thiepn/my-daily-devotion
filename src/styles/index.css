@@ -35,3 +35,4 @@
 @import "./history.css" layer(screens);
 @import "./writing.css" layer(screens);
 @import "./prayer-detail.css" layer(screens);
+@import "./focused-prayer.css" layer(screens);

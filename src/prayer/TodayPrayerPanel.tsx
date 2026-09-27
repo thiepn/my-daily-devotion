@@ -6,6 +6,7 @@ import { PrayerSessionRepository } from '../data/repositories/prayer-sessions';
 import { PrayerRepository } from '../data/repositories/prayers';
 import { useLocalClock } from '../app/useLocalClock';
 import type { PrayerSession } from '../domain/types';
+import { prayerSessionUrl } from './session-context';
 const repository = new PrayerRepository(db);
 const sessions = new PrayerSessionRepository(db);
 export function TodayPrayerPanel() {
@@ -20,7 +21,7 @@ export function TodayPrayerPanel() {
     }).catch(() => { if (!cancelled) setError(true); });
     return () => { cancelled = true; };
   }, [today]);
-  const href = error ? '/prayer' : openSession ? `/prayer/session?depth=${openSession.depth}` : count ? '/prayer/session?depth=quick' : '/prayer/new';
+  const href = error ? '/prayer' : openSession ? prayerSessionUrl({sessionId:openSession.id,returnTo:'/today'}) : count ? prayerSessionUrl({returnTo:'/today'}) : '/prayer/new?return=%2Ftoday';
   return <Link className="today-response grace-paper today-response--prayer" to={href} aria-label={error ? 'Pray — Open Prayer' : openSession ? 'Pray — Resume session' : count ? 'Pray — Begin quietly' : 'Pray — Add prayer'}>
     <span className="grace-icon-circle grace-icon-circle--prayer"><DevotionalIcon name="prayer" /></span>
     <h2>Pray</h2>

@@ -109,7 +109,12 @@ function RouteAnnouncer() {
   useEffect(() => {
     document.title = label === "My Daily Devotion" ? label : `${label} — My Daily Devotion`;
     if (initialRoute.current) { initialRoute.current = false; return; }
-    requestAnimationFrame(() => document.getElementById("main-content")?.focus({ preventScroll: true }));
+    const frame = requestAnimationFrame(() => {
+      const main = document.getElementById("main-content");
+      // A screen may already have restored a more useful, specific focus target.
+      if (main && !main.contains(document.activeElement)) main.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
   }, [label, location.pathname]);
   return <p className="sr-only" aria-live="polite" aria-atomic="true">{label}</p>;
 }
@@ -130,7 +135,7 @@ export function App() {
     location.pathname === "/today" || location.pathname === "/" ? "today-route" : "",
     mobileBack ? "mobile-detail-route" : "",
     location.pathname === "/bible" || /^\/bible\/[^/]+\/\d+$/.test(location.pathname) ? "bible-reader-route" : "",
-    location.pathname === "/prayer/session" ? "mobile-immersive-route" : "",
+    location.pathname === "/prayer/session" ? "mobile-immersive-route focused-journal-route writing-journal-route" : "",
     location.pathname === "/prayer" ? "prayer-journal-route" : "",
     location.pathname.startsWith("/history") ? "history-journal-route" : "",
     location.pathname.startsWith("/today/reflection/") || location.pathname === "/prayer/new" || (/^\/prayer\/[^/]+(?:\/settings)?$/.test(location.pathname) && !["/prayer/people", "/prayer/categories", "/prayer/session"].includes(location.pathname)) ? "writing-journal-route" : "",

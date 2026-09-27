@@ -23,7 +23,7 @@ export function parsePrayerSessionContext(search: string): PrayerSessionContext 
   };
 }
 
-export function prayerSessionUrl({ sessionId, depth = "quick", returnTo = "/prayer" }: { sessionId?: string; depth?: PrayerDepth; returnTo?: string } = {}): string {
+export function prayerSessionUrl({ sessionId, depth = "quick", returnTo = "/prayer" }: { sessionId?: string | undefined; depth?: PrayerDepth; returnTo?: string } = {}): string {
   const params = new URLSearchParams(sessionId ? { session: sessionId } : { depth });
   params.set("return", safePrayerReturn(returnTo));
   return `/prayer/session?${params}`;

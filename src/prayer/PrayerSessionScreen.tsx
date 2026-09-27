@@ -1,34 +1,163 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { useUnsavedChanges } from "../app/useUnsavedChanges";
-import { Icon } from "../app/visual/Icon";
-import { BotanicalSprig } from "../app/visual/MorningGraceMotifs";
+import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { db } from "../data/database";
-import { PRAYER_DEPTH_TARGETS, PrayerSessionRepository, type PrayerDepth, type PrayerSessionState } from "../data/repositories/prayer-sessions";
-import { PrayerRepository } from "../data/repositories/prayers";
-import { todayLocalDate } from "../domain/time";
-import type { Person, PrayerUpdate, ScriptureLink } from "../domain/types";
-import { loadBibleManifest } from "../scripture/loader";
-import type { BibleManifest } from "../scripture/types";
-import { prayerBibleHref, prayerReferenceLabel } from "./references";
+import { isEditConflict } from "../data/conflicts";
+import { PrayerSessionRepository, type PrayerSessionEntry, type PrayerSessionState } from "../data/repositories/prayer-sessions";
+import { useLocalClock } from "../app/useLocalClock";
+import { DevotionalIcon } from "../app/visual/DevotionalIcon";
+import { MorningGraceArtwork } from "../app/visual/MorningGraceArtwork";
+import { JournalDialog, JournalHeading } from "../writing/JournalPrimitives";
+import { ScriptureContext } from "../writing/ScriptureContext";
+import { personInitials } from "./journal";
+import { prayerDetailUrl } from "./detail-model";
+import { usePrayerPosition, usePrayerRead } from "./detail-hooks";
+import { usePrayerDraftGuard } from "./usePrayerDraftGuard";
+import { useSessionState } from "./session-hooks";
+import { parsePrayerSessionContext, prayerSessionUrl, readSessionPerson, readSessionRequestContext, sessionPresentation, sessionReason, type PrayerSessionContext } from "./session-context";
 
-const sessions = new PrayerSessionRepository(db); const prayers = new PrayerRepository(db);
+const repository = new PrayerSessionRepository(db);
+const pendingCreationReasons = new Map<string, Record<string, string>>();
+const dateLabel = (value: string) => new Intl.DateTimeFormat(undefined, { dateStyle: "long" }).format(new Date(`${value}T12:00:00`));
+const instantLabel = (value: string) => new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(new Date(value));
+type AnswerDraft = { itemId: string; revision: number; request: string; body: string; committed: boolean };
+
+function SessionFrame({ returnTo, children }: { returnTo: string; children: ReactNode }) {
+  return <main className="journal-workspace session-journal"><JournalHeading title="Focused prayer" subtitle="A quiet moment with God" back={returnTo}/>{children}</main>;
+}
+
 export function PrayerSessionScreen() {
-  const navigate = useNavigate(); const [params] = useSearchParams(); const requested = params.get("depth") as PrayerDepth | null; const depth: PrayerDepth = requested && Object.hasOwn(PRAYER_DEPTH_TARGETS, requested) ? requested : "quick"; const [state, setState] = useState<PrayerSessionState | null>(null); const [updates, setUpdates] = useState<PrayerUpdate[]>([]); const [links, setLinks] = useState<ScriptureLink[]>([]); const [person, setPerson] = useState<Person | null>(null); const [manifest, setManifest] = useState<BibleManifest | null>(null); const [answerOpen, setAnswerOpen] = useState(false); const [answerBody, setAnswerBody] = useState(""); const [loading, setLoading] = useState(true); const [status, setStatus] = useState("");
-  const allowNavigation = useUnsavedChanges(Boolean(answerBody));
-  const [busy, setBusy] = useState(false);
-  const acting = useRef(false);
-  const refresh = useCallback(async (sessionId: string) => setState(await sessions.loadState(sessionId)), []);
-  useEffect(() => { let cancelled = false; Promise.all([sessions.startOrResume(depth, todayLocalDate()), loadBibleManifest()]).then(([nextState, nextManifest]) => { if (!cancelled) { setState(nextState); setManifest(nextManifest); setLoading(false); } }).catch((reason: unknown) => { if (!cancelled) { setStatus(reason instanceof Error ? reason.message : "Could not start prayer session."); setLoading(false); } }); return () => { cancelled = true; }; }, [depth]);
-  const currentEntry = state?.entries.find((entry) => entry.item.outcome === null && entry.prayer?.status === "ACTIVE") ?? null; const current = currentEntry?.prayer ?? null; const actedCount = state?.entries.filter((entry) => entry.item.outcome !== null).length ?? 0;
-  useEffect(() => { let cancelled = false; if (!current) { setUpdates([]); setLinks([]); setPerson(null); return () => { cancelled = true; }; } Promise.all([prayers.listUpdates(current.id), prayers.listScriptureLinks(current.id), current.personId ? db.people.get(current.personId) : Promise.resolve(undefined)]).then(([nextUpdates, nextLinks, nextPerson]) => { if (!cancelled) { setUpdates(nextUpdates); setLinks(nextLinks); setPerson(nextPerson && !nextPerson.deletedAt ? nextPerson : null); setAnswerOpen(false); setAnswerBody(""); } }).catch(() => { if (!cancelled) setStatus("Could not open this request’s context. Your session is preserved; reopen it to try again."); }); return () => { cancelled = true; }; }, [current]);
-  const latestUpdate = useMemo(() => updates.at(-1) ?? null, [updates]);
-  const act = async (action: "next" | "skip") => { if (!state || !currentEntry || acting.current) return; if (answerBody && !window.confirm("Discard the unsaved answer note?")) return; acting.current = true; setBusy(true); try { if (action === "next") await sessions.next(state.session.id, currentEntry.item.id); else await sessions.skip(state.session.id, currentEntry.item.id); await refresh(state.session.id); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not update prayer session."); } finally { acting.current = false; setBusy(false); } };
-  const answer = async () => { if (!state || !currentEntry || acting.current) return; acting.current = true; setBusy(true); try { await sessions.answer(state.session.id, currentEntry.item.id, answerBody); setAnswerBody(""); await refresh(state.session.id); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not mark prayer answered."); } finally { acting.current = false; setBusy(false); } };
-  const end = async () => { if (!state || acting.current) return; if (answerBody && !window.confirm("Discard the unsaved answer note and end this session?")) return; acting.current = true; setBusy(true); try { await sessions.endSession(state.session.id); allowNavigation(); navigate("/prayer", { replace: true }); } catch (reason) { setStatus(reason instanceof Error ? reason.message : "Could not end this session. Try again."); } finally { acting.current = false; setBusy(false); } };
-  if (loading) return <main className="visual-screen focused-prayer-screen"><p className="eyebrow">Focused prayer</p><p>Preparing a quiet session…</p></main>;
-  if (status && !state) return <main className="visual-screen focused-prayer-screen"><p className="eyebrow">Focused prayer</p><h1>Session unavailable</h1><p role="alert">{status}</p><Link to="/prayer">Return to Prayer</Link></main>;
-  if (!state) return <main className="visual-screen focused-prayer-screen"><p className="eyebrow">Focused prayer</p><h1>No prayers to surface</h1><p className="screen-intro">There are no active requests eligible for an automatic session today. Manual-only requests remain in your Prayer list.</p><Link className="future-text-link" to="/prayer">Return to Prayer →</Link></main>;
-  if (!current) return <main className="visual-screen focused-prayer-screen"><p className="eyebrow">Focused prayer</p><h1>Session finished.</h1><p className="screen-intro">You can return whenever you are ready to pray again.</p><Link className="future-text-link" to="/prayer">Return to Prayer →</Link></main>;
-  return <main className="visual-screen focused-prayer-screen mg-secondary-screen mg-focused-prayer-workspace"><header className="focused-prayer-header"><Link to="/prayer">Exit & resume later</Link><span>{actedCount + 1} / {state.entries.length}</span><button type="button" disabled={busy} className="end-session-button" onClick={() => void end()}>End session</button></header><article className="focused-prayer-card"><BotanicalSprig className="mg-focused-prayer-sprig" />{person ? <p className="focused-person">{person.name}{person.relationship ? ` · ${person.relationship}` : ""}</p> : <p className="section-kicker">Prayer</p>}<h1>{current.body}</h1>{latestUpdate ? <div className={latestUpdate.type === "encouragement" ? "focused-latest is-encouragement" : "focused-latest"}><span>Latest {latestUpdate.type}</span><p>{latestUpdate.body}</p></div> : null}{links.length ? <div className="focused-scripture">{links.map((link) => <Link key={link.id} to={prayerBibleHref(link)}>{prayerReferenceLabel(link, manifest)}</Link>)}</div> : null}{answerOpen ? <div className="focused-answer-form"><label htmlFor="focused-answer">What happened? <span>optional</span></label><textarea disabled={busy} id="focused-answer" value={answerBody} onChange={(event) => setAnswerBody(event.target.value)} /><div><button type="button" disabled={busy} onClick={() => void answer()}>Mark answered</button><button type="button" disabled={busy} onClick={() => { if (!answerBody || window.confirm("Discard the unsaved answer note?")) {setAnswerOpen(false);setAnswerBody("");} }}>Cancel</button></div></div> : null}<div className="focused-prayer-secondary"><Link to={`/prayer/${current.id}`}>Update / details</Link><button type="button" disabled={busy} onClick={() => setAnswerOpen(true)}>Answered</button><button type="button" disabled={busy} onClick={() => void act("skip")}>Skip</button></div><button disabled={busy} className="focused-next-button" type="button" onClick={() => void act("next")}>Prayed · Next <Icon name="arrow" /></button><p className="reader-status" aria-live="polite">{status}</p></article></main>;
+  const location = useLocation();
+  const context = parsePrayerSessionContext(location.search);
+  if (context.invalidSession) return <SessionFrame returnTo={context.returnTo}><div className="session-state"><h2>Session unavailable</h2><p>This session link is not valid. Your saved requests are unchanged.</p><Link to={context.returnTo}>Return to Prayer</Link></div></SessionFrame>;
+  if (!context.sessionId) return <SessionStart key={`${context.depth}|${context.returnTo}`} context={context}/>;
+  return <SessionJournal key={context.sessionId} id={context.sessionId} returnTo={context.returnTo} reasons={pendingCreationReasons.get(context.sessionId)}/>;
+}
+
+function SessionStart({ context }: { context: PrayerSessionContext }) {
+  const navigate = useNavigate(), { localDate } = useLocalClock();
+  const [initiatedDate] = useState(localDate);
+  const [error, setError] = useState(""), [empty, setEmpty] = useState(false), [attempt, setAttempt] = useState(0);
+  useEffect(() => {
+    let active = true; setError(""); setEmpty(false);
+    void repository.startOrResume(context.depth, initiatedDate).then(state => {
+      if (!active) return;
+      if (!state) { setEmpty(true); return; }
+      if (state.reasons) pendingCreationReasons.set(state.session.id, state.reasons);
+      navigate(prayerSessionUrl({ sessionId: state.session.id, returnTo: context.returnTo }), { replace: true });
+    }).catch(() => { if (active) setError("Could not prepare your session. Please try again."); });
+    return () => { active = false; };
+  }, [context.depth, context.returnTo, initiatedDate, attempt, navigate]);
+  return <SessionFrame returnTo={context.returnTo}>
+    {error ? <div className="journal-notice" role="alert"><p>{error}</p><button onClick={() => setAttempt(value => value + 1)}>Retry</button></div>
+      : empty ? <div className="session-state"><h2>A moment for prayer</h2><p>No active requests are eligible for an automatic session today. Manual-only requests remain in your Prayer list.</p><Link to={context.returnTo}>Return to Prayer</Link></div>
+      : <p role="status">Preparing your saved requests…</p>}
+  </SessionFrame>;
+}
+
+function SessionJournal({ id, returnTo, reasons }: { id: string; returnTo: string; reasons: Record<string, string> | undefined }) {
+  const location = useLocation(), navigate = useNavigate(), { localDate } = useLocalClock();
+  const load = useSessionState(id), state = load.data;
+  const view = state ? sessionPresentation(state) : null;
+  const current = view?.current ?? null, prayer = current?.prayer ?? null;
+  const url = prayerSessionUrl({ sessionId: id, returnTo });
+  const context = usePrayerRead(`session-context:${prayer?.id ?? "none"}`, () => prayer ? readSessionRequestContext(db, prayer.id) : Promise.resolve(null));
+  const person = usePrayerRead(`session-person:${prayer?.id ?? "none"}`, () => prayer ? readSessionPerson(db, prayer.id) : Promise.resolve(null));
+  const [draft, setDraft] = useState<AnswerDraft | null>(null), [busy, setBusy] = useState(false);
+  const [message, setMessage] = useState(""), [endOpen, setEndOpen] = useState(false), [updateExpanded, setUpdateExpanded] = useState(false);
+  const [conflict, setConflict] = useState(false);
+  const [creationReasons] = useState(reasons);
+  const draftRef = useRef(draft); draftRef.current = draft;
+  const acting = useRef(false), previousItem = useRef<string | null>(null), answerInput = useRef<HTMLTextAreaElement>(null);
+  const discard = () => { draftRef.current = null; setDraft(null); setConflict(false); };
+  const guard = usePrayerDraftGuard({ dirty: Boolean(draft), save: async () => {}, discard, answer: true, pending: busy });
+  usePrayerPosition(url, state === null || Boolean(state && (state.session.endedAt || !prayer || context.data !== undefined || context.error)), null, ".session-journal");
+  useEffect(() => { pendingCreationReasons.delete(id); }, [id]);
+
+  useEffect(() => { if (location.pathname + location.search !== url) navigate(url, { replace: true, state: location.state }); }, [url, location.pathname, location.search, location.state, navigate]);
+  useEffect(() => {
+    if (previousItem.current && current?.item.id !== previousItem.current && !draft) {
+      document.getElementById("session-request")?.focus();
+      if (!current) document.getElementById("session-state-heading")?.focus();
+    }
+    previousItem.current = current?.item.id ?? null;
+  }, [current?.item.id, draft]);
+  useEffect(() => { setUpdateExpanded(false); }, [current?.item.id]);
+  useEffect(() => { if (draft && !draft.committed) answerInput.current?.focus(); }, [draft?.itemId]);
+
+  const perform = async (action: () => Promise<void>) => {
+    if (acting.current) return;
+    acting.current = true; setBusy(true); setMessage("");
+    try { await action(); }
+    catch (reason) { setConflict(isEditConflict(reason)); setMessage(reason instanceof Error ? reason.message : "Could not record this action. Please try again."); }
+    finally { acting.current = false; setBusy(false); }
+  };
+  const continueSession = () => guard.request(() => void perform(async () => {
+    load.accept(await repository.loadState(id)); setConflict(false);
+  }));
+  const act = (kind: "next" | "skip", captured: PrayerSessionEntry, saved: PrayerSessionState) => guard.request(() => void perform(async () => {
+    const expected = { session: saved.session.revision, item: captured.item.revision, prayer: captured.prayer!.revision };
+    const result = kind === "next" ? await repository.next(id, captured.item.id, undefined, expected) : await repository.skip(id, captured.item.id, undefined, expected);
+    load.accept(result.state); setConflict(false);
+    setMessage(kind === "next" ? "Prayed action recorded." : "Request skipped. It was not marked prayed.");
+  }));
+  const saveAnswer = () => void perform(async () => {
+    const captured = draftRef.current;
+    if (!captured || captured.committed || !state) return;
+    const item = state.entries.find(entry => entry.item.id === captured.itemId);
+    if (!item) throw new Error("This request is no longer pending in your session.");
+    const result = await repository.answer(id, captured.itemId, captured.body, undefined, { session: state.session.revision, item: item.item.revision, prayer: captured.revision });
+    load.accept(result.state); setConflict(false);
+    if (draftRef.current?.body !== captured.body) {
+      const remaining = { ...draftRef.current!, committed: true };
+      draftRef.current = remaining; setDraft(remaining); setMessage("The answer was recorded. Newer writing is not saved; copy it before continuing.");
+    } else { discard(); setMessage("Answer recorded."); }
+  });
+  const end = () => void perform(async () => {
+    if (!state) return;
+    const result = await repository.endSession(id, undefined, state.session.revision);
+    if (!result) { load.retry(); throw new Error("This session is no longer available."); }
+    load.accept(result.state); setEndOpen(false); setMessage("Session ended. Remaining requests were not marked prayed.");
+  });
+
+  const anchor = draft ? state?.entries.find(entry => entry.item.id === draft.itemId) : null;
+  const detached = Boolean(draft && (draft.committed || !state || state.session.endedAt || !anchor || anchor.item.outcome !== null || !anchor.prayer || anchor.prayer.status !== "ACTIVE"));
+  const changed = Boolean(draft && anchor?.prayer && draft.revision !== anchor.prayer.revision);
+  const valid = Boolean(state && !state.session.endedAt && current && prayer?.status === "ACTIVE");
+  const latest = valid ? context.data?.latest : null;
+  const pendingAnswer = draft && !detached;
+  const notice = <>{message ? <p className="journal-status" role="status">{message}</p> : null}{load.error ? <div className="journal-notice" role="alert"><p>{load.error}</p><button disabled={busy} onClick={load.retry}>{state === undefined ? "Retry" : "Retry refresh"}</button></div> : null}</>;
+  const recovery = detached && draft ? <section className="journal-notice session-retained"><h2>Your unsaved answer note</h2><p>{draft.committed ? "The answer is already recorded. This newer writing has not been saved." : "This request changed or is no longer available for an answer. Your writing is still here to copy."}</p><textarea aria-label="Unsaved answer note" readOnly value={draft.body}/><button disabled={busy} onClick={continueSession}>Continue session</button></section> : null;
+
+  return <main className={`journal-workspace session-journal${valid && !detached ? " session-is-active" : ""}`}>
+    <header className="journal-heading session-heading">
+      <div className="session-heading-top"><Link id="session-pause" className="quiet-back-link" to={returnTo}>{state?.session.endedAt ? "Back" : "Pause and return"}</Link>{view?.position && !detached ? <span>Request {view.position} of {view.total}</span> : null}</div>
+      <div className="journal-heading-line"><div><p className="journal-date">{state ? dateLabel(state.session.localDate) : "A quiet moment with God"}</p><h1>Focused prayer</h1></div><MorningGraceArtwork variant="botanical"/></div>
+    </header>
+    {notice}
+    {state && state.session.localDate !== localDate && !state.session.endedAt ? <aside className="session-date-notice"><p>You are continuing your {dateLabel(state.session.localDate)} session. Prayed actions will keep that devotional date.</p><Link id="session-new-day" to={prayerSessionUrl({ depth: state.session.depth, returnTo })}>Start today’s session</Link></aside> : null}
+    {recovery}
+    {state === undefined ? !load.error && <p role="status">Opening your saved session…</p>
+      : !state ? <div className="session-state"><h2 id="session-state-heading" tabIndex={-1}>Session unavailable</h2><p>This session was removed or is no longer available. Your other saved requests are unchanged.</p><Link to={returnTo}>{returnTo.startsWith("/today") ? "Return to Today" : "Return to Prayer"}</Link></div>
+      : view?.closed && !detached ? <div className="session-state journal-paper"><MorningGraceArtwork variant="botanical"/><h2 id="session-state-heading" tabIndex={-1}>{view.closed === "finished" ? "Session finished" : "Session ended"}</h2><p>{view.closed === "finished" ? "You can return whenever you are ready to pray again." : "Remaining requests were not marked prayed. They remain in your Prayer list."}</p><Link className="grace-primary" to={returnTo}>{returnTo.startsWith("/today") ? "Return to Today" : "Return to Prayer"}</Link></div>
+      : !valid && !detached ? <div className="journal-notice"><h2 id="session-state-heading" tabIndex={-1}>This request has changed</h2><p>It is no longer active or available. Continue to the next available request without recording a prayed action.</p><button className="grace-primary" disabled={busy} onClick={continueSession}>Continue session</button></div>
+      : valid && !detached && prayer && current ? <>
+        <article className="journal-paper session-request-paper">
+          {person.data ? <div className="prayer-record-person"><span className="prayer-record-initials" aria-hidden="true">{personInitials(person.data.name)}</span><div><strong>{person.data.name}</strong>{person.data.relationship ? <small>{person.data.relationship}</small> : null}</div></div> : <p className="session-kicker">Bring it to Him</p>}
+          {person.error ? <p className="journal-help">Person details could not load. <button onClick={person.retry}>Retry person</button></p> : null}
+          <p id="session-request" tabIndex={-1} className="session-request-text">{prayer.body}</p>
+          <p className="session-reason">{sessionReason(creationReasons?.[current.item.id])}</p>
+          {latest ? <section className="session-latest"><div><span>Latest {latest.type}</span><time dateTime={latest.occurredAt}>{instantLabel(latest.occurredAt)}</time></div><p>{latest.body.length > 320 && !updateExpanded ? `${latest.body.slice(0, 320)}…` : latest.body}</p>{latest.body.length > 320 ? <button id="session-update-more" aria-expanded={updateExpanded} onClick={() => setUpdateExpanded(value => !value)}>{updateExpanded ? "Read less" : "Read more"}</button> : null}</section> : null}
+          {context.error ? <p className="journal-help">Saved context could not load. Your request is still available. <button onClick={context.retry}>Retry context</button></p> : null}
+          {context.data?.links.length ? <details className="session-scripture"><summary id="session-scripture-toggle">Linked Scripture <span>{context.data.links.length} {context.data.links.length === 1 ? "passage" : "passages"}</span></summary>{context.data.links.map(link => <ScriptureContext key={link.id} linkId={`session-scripture-${link.id}`} reference={link} returnTo={url}/>)}</details> : null}
+        </article>
+        {pendingAnswer && draft ? <section className="journal-paper session-answer" aria-labelledby="session-answer-heading"><div className="prayer-editor-heading"><h2 id="session-answer-heading">Record an answer</h2><span className="save-state" role="status">{busy ? "Saving…" : "Not recorded yet"}</span></div><label htmlFor="session-answer-note">What happened? <span>optional</span></label><textarea ref={answerInput} id="session-answer-note" className="journal-textarea" disabled={busy} value={draft.body} onChange={event => { const next = { ...draft, body: event.target.value }; draftRef.current = next; setDraft(next); }}/>
+          {changed || conflict ? <div className="journal-notice"><h3>Review the changed request</h3><p>Your answer note is unchanged. Review the saved wording before recording it.</p><details><summary>Compare request wording</summary><h4>Previously opened</h4><p>{draft.request}</p><h4>Saved version</h4><p>{anchor?.prayer?.body}</p></details><button disabled={busy || !anchor?.prayer} onClick={() => { if (!anchor?.prayer) return; const next = { ...draft, revision: anchor.prayer.revision, request: anchor.prayer.body }; draftRef.current = next; setDraft(next); setConflict(false); setMessage(""); }}>Use saved request</button></div> : null}
+          <div className="journal-actions"><button className="grace-primary" disabled={busy || changed || conflict} onClick={saveAnswer}>Mark answered</button><button disabled={busy} onClick={() => guard.request(discard)}>Cancel editing</button></div><p className="journal-help">Only Mark answered records the answer. Unsaved notes are lost when the app closes.</p>
+        </section> : null}
+        <div className="session-devotional-actions"><button id="session-prayed" className={draft ? "" : "grace-primary"} disabled={busy} onClick={() => act("next", current, state)}>Prayed · {view?.last ? "Finish" : "Next"}<DevotionalIcon name="arrow"/></button><div className="session-secondary-actions"><button id="session-skip" disabled={busy} onClick={() => act("skip", current, state)}>Skip this request</button><Link id="session-open-prayer" to={prayerDetailUrl(prayer.id, url)}>Open prayer</Link>{!draft ? <button id="session-open-answer" disabled={busy} onClick={() => { const next = { itemId: current.item.id, revision: prayer.revision, request: prayer.body, body: "", committed: false }; draftRef.current = next; setDraft(next); setConflict(false); setMessage(""); }}>Mark answered</button> : null}</div></div>
+        <details className="session-options"><summary id="session-options-toggle">Session options</summary><p>Pausing keeps this session ready to resume. Ending leaves remaining requests unmarked.</p><button id="session-end" disabled={busy} onClick={() => guard.request(() => setEndOpen(true))}>End session</button></details>
+      </> : null}
+    {endOpen ? <JournalDialog title="End this session?" close={() => { if (!busy) setEndOpen(false); }} busy={busy}><p>Remaining requests will not be marked prayed. You can begin a new session from Prayer whenever you are ready.</p>{message ? <p role="alert">{message}</p> : null}<div className="journal-dialog-actions"><button disabled={busy} onClick={end}>End session</button><button disabled={busy} data-initial-focus onClick={() => setEndOpen(false)}>Keep praying</button></div></JournalDialog> : null}
+    {guard.dialog}
+  </main>;
 }

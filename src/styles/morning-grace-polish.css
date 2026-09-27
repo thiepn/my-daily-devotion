@@ -87,7 +87,6 @@ h3,
 
 .primary-editorial-action,
 .future-action,
-.focused-next-button,
 .global-search-form > button {
   transition:
     color var(--transition-fast),
@@ -99,7 +98,6 @@ h3,
 
 .primary-editorial-action:hover:not(:disabled),
 .future-action:hover:not(:disabled),
-.focused-next-button:hover:not(:disabled),
 .global-search-form > button:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(48, 43, 35, .08);
@@ -107,7 +105,6 @@ h3,
 
 .primary-editorial-action:active:not(:disabled),
 .future-action:active:not(:disabled),
-.focused-next-button:active:not(:disabled),
 .global-search-form > button:active:not(:disabled) {
   transform: translateY(0);
   box-shadow: none;
@@ -381,28 +378,6 @@ textarea:focus-visible {
 }
 
 /* Focused Prayer needs stronger contrast than secondary metadata elsewhere. */
-.mg-focused-prayer-workspace {
-  --mg-prayer-action: #8f4a34;
-  --mg-prayer-action-on: #fffaf1;
-}
-
-.mg-focused-prayer-workspace .focused-prayer-header,
-.mg-focused-prayer-workspace .focused-prayer-header > a,
-.mg-focused-prayer-workspace .focused-prayer-header > span,
-.mg-focused-prayer-workspace .end-session-button,
-.mg-focused-prayer-workspace .focused-prayer-secondary,
-.mg-focused-prayer-workspace .focused-prayer-secondary > a,
-.mg-focused-prayer-workspace .focused-prayer-secondary > button {
-  color: var(--color-ink-soft);
-}
-
-.mg-focused-prayer-workspace .focused-next-button,
-.mg-focused-prayer-workspace .focused-next-button:hover:not(:disabled),
-.mg-focused-prayer-workspace .focused-next-button:active:not(:disabled) {
-  color: var(--mg-prayer-action-on);
-  border-color: var(--mg-prayer-action);
-  background: var(--mg-prayer-action);
-}
 
 /* Dark mode: keep artwork and rules visible rather than muddy. */
 :root[data-theme="dark"] {
@@ -424,10 +399,6 @@ textarea:focus-visible {
 
 :root[data-theme="dark"] .mg-landscape-front {
   fill: color-mix(in srgb, var(--color-accent) 45%, var(--color-canvas));
-}
-
-:root[data-theme="dark"] .mg-focused-prayer-workspace .focused-prayer-card {
-  box-shadow: 0 12px 38px rgba(0, 0, 0, .18);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -547,7 +518,6 @@ textarea:focus-visible {
 
   .primary-editorial-action:hover,
   .future-action:hover,
-  .focused-next-button:hover,
   .global-search-form > button:hover {
     transform: none;
   }

@@ -172,72 +172,6 @@
 }
 
 /* Focused prayer — sanctuary mode */
-.mg-focused-prayer-workspace {
-  width: min(calc(100% - 36px), 900px);
-  min-height: calc(100vh - 90px);
-  display: grid;
-  align-content: start;
-  padding-top: 26px;
-}
-
-.mg-focused-prayer-workspace .focused-prayer-header {
-  padding: 12px 0 18px;
-  border-bottom: 1px solid var(--color-line);
-}
-
-.mg-focused-prayer-workspace .focused-prayer-card {
-  position: relative;
-  max-width: 760px;
-  margin: clamp(48px, 8vh, 82px) auto 0;
-  padding: clamp(28px, 5vw, 54px);
-  border: 1px solid var(--color-line);
-  border-top: 3px solid var(--color-prayer);
-  border-radius: var(--radius-lg);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-paper);
-  overflow: hidden;
-}
-
-.mg-focused-prayer-workspace .focused-prayer-card > h1 {
-  position: relative;
-  z-index: 1;
-  max-width: 24ch;
-  margin: 14px 0 30px;
-  font-family: var(--font-reading);
-  font-size: clamp(1.8rem, 4vw, 3.15rem);
-  font-weight: 400;
-  line-height: 1.3;
-}
-
-.mg-focused-prayer-workspace .mg-focused-prayer-sprig {
-  position: absolute;
-  right: -18px;
-  bottom: -30px;
-  width: 132px;
-  opacity: .19;
-}
-
-.mg-focused-prayer-workspace .focused-latest,
-.mg-focused-prayer-workspace .focused-scripture {
-  position: relative;
-  z-index: 1;
-}
-
-.mg-focused-prayer-workspace .focused-next-button {
-  width: 100%;
-  min-height: 54px;
-  margin-top: 30px;
-  border-color: var(--color-prayer);
-  border-radius: var(--radius-md);
-  color: var(--color-action-on);
-  background: var(--color-prayer);
-}
-
-.mg-focused-prayer-workspace .focused-prayer-secondary {
-  margin-top: 26px;
-  padding-top: 18px;
-  border-top: 1px solid var(--color-line);
-}
 
 /* Scripture Collections — library index */
 .mg-collections-workspace .collections-layout {
@@ -477,20 +411,6 @@
     grid-template-columns: 1fr;
   }
 
-  .mg-focused-prayer-workspace {
-    width: min(calc(100% - 28px), 900px);
-    min-height: auto;
-  }
-
-  .mg-focused-prayer-workspace .focused-prayer-card {
-    margin-top: 30px;
-    padding: 24px 20px;
-  }
-
-  .mg-focused-prayer-workspace .focused-prayer-card > h1 {
-    font-size: clamp(1.75rem, 8vw, 2.35rem);
-  }
-
   .mg-search-workspace .global-search-form {
     grid-template-columns: 1fr;
   }
@@ -521,11 +441,6 @@
   .mg-plan-workspace .plan-day.is-current {
     margin-inline: -10px;
     padding-inline: 10px;
-  }
-
-  .mg-focused-prayer-workspace .focused-prayer-header {
-    align-items: flex-start;
-    flex-wrap: wrap;
   }
 }
 
