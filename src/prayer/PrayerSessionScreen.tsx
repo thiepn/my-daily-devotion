@@ -69,7 +69,7 @@ function SessionJournal({ id, returnTo, reasons }: { id: string; returnTo: strin
   const draftRef = useRef(draft); draftRef.current = draft;
   const acting = useRef(false), previousItem = useRef<string | null>(null), answerInput = useRef<HTMLTextAreaElement>(null);
   const discard = () => { draftRef.current = null; setDraft(null); setConflict(false); };
-  const guard = usePrayerDraftGuard({ dirty: Boolean(draft), save: async () => {}, discard, answer: true, pending: busy });
+  const guard = usePrayerDraftGuard({ dirty: Boolean(draft), save: async () => {}, discard, answer: true, answerRecorded: Boolean(draft?.committed), pending: busy });
   usePrayerPosition(url, state === null || Boolean(state && (state.session.endedAt || !prayer || context.data !== undefined || context.error)), null, ".session-journal");
   useEffect(() => { pendingCreationReasons.delete(id); }, [id]);
 

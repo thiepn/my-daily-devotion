@@ -224,6 +224,18 @@ test("optional person and update failures retain the request and retry independe
   await page.getByRole("button", { name: "Retry person", exact: true }).click(); await page.getByRole("button", { name: "Retry context", exact: true }).click(); await expect(page.getByRole("button", { name: /^Retry (person|context)$/ })).toHaveCount(0); expect(await writingSnapshot(page)).toEqual(before);
 });
 
+test("late input after answer commitment stays copyable and cannot create another resolution", async ({ page }) => {
+  await seedFocusedPrayer(page); await page.getByRole("button", { name: "Mark answered", exact: true }).click(); await page.getByLabel("What happened?", { exact: false }).fill("The submitted answer.");
+  await holdSessionWrites(page); await page.locator(".session-answer").getByRole("button", { name: "Mark answered", exact: true }).click(); await expect(page.getByLabel("What happened?", { exact: false })).toBeDisabled();
+  // Model a queued composition/input event; normal typing is disabled during commit.
+  await page.getByLabel("What happened?", { exact: false }).evaluate((input: HTMLTextAreaElement) => { Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!.set!.call(input, "The submitted answer. Newer writing."); input.dispatchEvent(new Event("input", { bubbles: true })); });
+  await page.evaluate(() => { (window as any).releaseSessionLock = true; });
+  await expect(page.getByLabel("Unsaved answer note")).toHaveValue("The submitted answer. Newer writing."); await expect(page.getByRole("button", { name: "Mark answered", exact: true })).toHaveCount(0);
+  await page.getByRole("button", { name: "Continue session", exact: true }).click(); await expect(page.getByRole("dialog")).toContainText("The answer is already recorded"); await page.getByRole("button", { name: "Keep note", exact: true }).click(); await expect(page.getByLabel("Unsaved answer note")).toBeVisible();
+  await page.getByRole("button", { name: "Continue session", exact: true }).click(); await page.getByRole("button", { name: "Discard and continue" }).click(); await expect(page.locator(".session-heading-top")).toContainText("Request 2 of 3");
+  const saved = rows(await writingSnapshot(page), "prayerResolutions"); expect(saved).toHaveLength(1); expect(saved[0].reflectionMd).toBe("The submitted answer.");
+});
+
 test("late session reads cannot replace a different session route", async ({ page, context }) => {
   await seedFocusedPrayer(page); await openRoute(page, "/today");
   const other = await context.newPage(); await openRoute(other, "/today"); await holdSessionWrites(other);
