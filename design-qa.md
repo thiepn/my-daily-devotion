@@ -1,40 +1,43 @@
-# Focused Prayer — visual review
+# People & Categories — visual review
 
-The canonical board does not depict a focused session. This release extends the integrated Prayer Detail and Reflection journal, with the primary Prayer screen providing the palette, botanical character and action language.
+These screens are not directly depicted in the canonical four-phone board. The implementation extends the integrated Prayer, Prayer Detail and Reflection family; the board remains the visual authority for palette, type, natural materials and botanical character.
 
 ## Evidence
 
-- Direct visual sources: `tests/visual/baselines/prayer-light-390.png`, `writing-reflection-390.png`, and `prayer-detail-390.png` from the integrated Prayer Detail branch.
-- [Combined source and implementation](docs/visual/morning-grace-v2/focused-prayer/focused-prayer-visual-family.png): four 390 × 844 application captures at density 1. Different screen purposes and fixture content are intentional; this is a family comparison, not a pixel-identical claim.
-- [Before and after](docs/visual/morning-grace-v2/focused-prayer/focused-prayer-comparison.png): the same request, date and 390 × 844 viewport. The old oversized request heading and primitive branch are replaced with a journal heading, full literary request and bundled botanical asset. Full before/after desktop captures are also retained in this directory.
-- [Responsive comparison](docs/visual/morning-grace-v2/focused-prayer/focused-prayer-responsive.png): 320 × 568, 360 × 800, 390 × 844 and 430 × 932; thumbnails preserve aspect ratio. Original pixels are in `tests/visual/baselines/focused-prayer-*.png`.
-- [Dark, editor, dialog and closing states](docs/visual/morning-grace-v2/focused-prayer/focused-prayer-states.png), and [Scripture, enlarged text and an earlier session date](docs/visual/morning-grace-v2/focused-prayer/focused-prayer-context-enlarged.png). The enlarged contact-sheet panel shows its first 2,000 source pixels; the complete 320px image was independently inspected.
-- Additional original-size inspection: 768 × 1024 and 1440 × 900, long requests, empty queue, unavailable session, read failure and changed request. All deterministic captures load bundled fonts, disable animation and use real fixture records rather than production hard-coding.
-- The in-app browser was used to open a saved session, open an answer editor, leave through the shared discard/keep-editing dialog, open Prayer Detail and return to the same session/control. No application error was logged. One router warning came from direct hash navigation during preview setup; ordinary links and return actions were tested separately.
+- Direct sources: `tests/visual/baselines/prayer-light-390.png`, `prayer-detail-390.png`, and `writing-reflection-390.png`.
+- [Source and implementation together](docs/visual/morning-grace-v2/people-categories/metadata-visual-family.png): Prayer, Detail, Reflection, People and Categories at 390 × 844, density 1. The sheet resizes each to 320px while preserving its aspect ratio. Different fixture content and screen purposes are intentional.
+- [Before and after](docs/visual/morning-grace-v2/people-categories/people-categories-comparison.png): matching one-person and seven-category fixtures at 390 × 844, density 1. Before screens used permanently open forms and utility headings; after screens lead with the saved directory and on-demand editing.
+- [Responsive comparison](docs/visual/morning-grace-v2/people-categories/metadata-responsive.png): original 320 × 568, 360 × 800, 390 × 844 and 430 × 932 captures; thumbnails preserve aspect ratio.
+- [Dark, editor, expanded, confirmation and error states](docs/visual/morning-grace-v2/people-categories/metadata-states.png), and [200% text at 320px](docs/visual/morning-grace-v2/people-categories/metadata-enlarged.png).
+- Original-size baseline inspection additionally covered 768 × 1024 and 1440 × 900, conflict comparisons and long names/notes. Full before/after desktop captures are included in this directory. Original candidate pixels live in `tests/visual/baselines/metadata-*.png`.
+- Captures use bundled fonts, frozen dates, local fixture records, disabled animations and a consistent top scroll position. Full-page captures draw fixed navigation at the initial viewport's bottom; content beneath it remains reachable by scrolling.
+- The in-app preview verified on-demand editor opening without field autofocus, dirty Cancel, the shared discard/keep dialog and focus restored to Add person. No application warning or error appeared in that interaction.
 
 ## Findings and corrections
 
-1. **P2, fixed — enlarged heading/art overlap.** At 320px and 200% root text size, the first candidate kept the botanical asset beside a word wider than its available column. The session heading now wraps its artwork onto a separate row when enlarged text needs the space. The revised full enlarged image shows clear separation, visible artwork and usable controls with natural vertical scrolling.
-2. **P2, fixed — competing actions while answering.** The answer editor initially left two forest primary actions. While an answer is open, Mark answered receives the primary treatment and Prayed remains a quieter guarded action. The revised answer capture shows the change.
-3. **Interaction, corrected — contextual focus.** Returning to Scripture reopens its containing disclosure and restores the exact reference link. The shared position helper also handles Back that cancels a lazy route before the session unmounts. Shell announcements yield to a specific restored target. Behavioral results are recorded with release verification, separately from the visual assessment.
-4. **Test maintenance.** Legacy selectors were updated to the journal composition without removing navigation, contrast, touch-target, backup or overflow assertions. Session-owned rules were removed from seven legacy stylesheets; one new stylesheet owns the composition in the existing screens layer.
+1. **P2, fixed — navigation spacing.** The first mobile candidate used flex when re-enabling the approved navigation, bunching tabs together. The screen now restores its shared four-column grid. Fresh captures show evenly distributed tabs.
+2. **P2, fixed — enlarged text.** At 320px/200%, fixed identity circles and the heading/art row constrained text. Circles now grow with text, artwork wraps onto its own row, and the narrow heading scale preserves a readable Categories title.
+3. **P2, fixed — terracotta initials contrast.** The inherited clay text color did not meet the normal-text threshold on this surface. A scoped token blend darkens the initials appropriately in light and dark modes. Independent axe checks pass.
+4. **Interaction, fixed — return readiness and counts.** Focus restoration waits for linked requests. Selected entries outside the current page/search receive an explicit label, preserving truthful matching counts and stable ordering.
+5. **Capture correction.** Early full-page images retained scroll offsets after field focus. The existing long History Day comparison also exposed a font-dependent offset of the off-screen skip link; that one baseline was recaptured with an explicit top scroll position, preserving selected-entry focus and unchanged History content. The suite now resets capture scroll consistently; this does not change application focus behavior.
+6. **Cascade cleanup.** Seventy-six superseded metadata selectors were removed from six legacy files. One screens-layer stylesheet owns the replacement; shared components used elsewhere remain intact.
 
-## Required fidelity surfaces
+## Visual assessment
 
-- **Fonts and typography:** the integrated Caslon display face, literary reading face and Inter metadata are retained. Requests preserve paragraphs and are not headings. Date and saved-queue position are subordinate. Long writing wraps without truncating the request; the latest update has an explicit expansion action.
-- **Spacing and layout:** the column is capped at 760px. Warm paper, restrained borders, quiet separators and in-flow actions match the secondary journal family. The representative three-request fixture shows the primary action at 390 × 844. At 320/360px the heading wraps; long text and 200% text scroll naturally. Mobile has no bottom navigation; desktop retains the integrated side rail.
-- **Colors and tokens:** cream paper, forest actions, sage identity and terracotta metadata use the current shared system. Dark mode is warm olive/charcoal with cream type. Contrast, hover/touch behavior, focus and disabled controls are checked independently of screenshot approval.
-- **Image quality:** the locally bundled olive sprig is reused through `MorningGraceArtwork`. No new landscape, logo, photograph, remote dependency, generated lettering or illustration inversion was added. The accent remains visible on mobile and moves when text needs more space.
-- **Copy and content:** dates, names, updates, requests and Scripture come from existing records/corpus. Position describes the saved queue, never a spiritual score. Creation-time reasons are transient; resumed sessions truthfully say “Part of your saved session.” Finished and ended states differ. Answer wording and dialogs make explicit commitment and memory-only unsaved writing clear.
+- **Typography:** integrated Caslon editorial headings and row names, literary notes, restrained Inter labels and counts. Relationships are subordinate; absent relationships leave no placeholder. Notes preserve paragraphs.
+- **Composition:** the saved directory follows a compact heading, Add action and labeled search. Warm panels are reserved for notes, editors, suggestions and recoverable states. Quiet separators replace nested utility cards. The desktop journal is capped at 760px.
+- **Color and control treatment:** cream paper, forest primary actions, sage/terracotta identities and discreet management actions match the family. Dark mode uses the existing warm olive palette. Keyboard outlines and 44px control assertions remain.
+- **Assets:** the bundled botanical remains visible on mobile. No landscape, logo, photograph, generated lettering, external art generation or remote asset dependency was introduced.
+- **Density and reflow:** the standard five-person directory extends slightly beyond 390 × 844; Categories is more compact because there are no relationship lines. At 320px, long content or 200% text, natural scrolling preserves readability and controls. Editors and actions remain in document flow.
+- **Content:** all names, notes, counts, links and statuses derive from live records. Suggested category names appear before activation; unknown counts never become false zeroes. Removal restrictions explain all statuses accurately.
 
 ## Remaining differences and limits
 
-- Focused Prayer has no direct phone in the reference board. Its paper reading card is an intentional extension of Prayer Detail, not a reproduction of the Prayer library list.
-- The integrated display font is not an exact match for the concept lettering. Dedicated evening artwork remains later work; current artwork uses the existing warm dark treatment.
-- At 200% text, the artwork occupies its own row and the main action may appear far below a long request. Nothing is hidden to force a compact viewport.
-- Automated keyboard, contrast and reflow checks do not constitute physical-device keyboard or manual screen-reader certification. Those remain review limitations.
-- Screenshot baselines are reviewed implementation candidates, not a claim of user design approval. No new external artwork is needed for this release.
+- This is a secondary-screen extension of the approved journal, not a claim that the concept board contains these exact layouts. The integrated font differs slightly from the concept lettering.
+- Dedicated evening artwork remains future work; the existing dark botanical treatment is retained without inversion.
+- The screenshots are reviewed implementation candidates awaiting user design review. Passing image comparisons alone is not visual approval.
+- Physical-device virtual-keyboard and manual screen-reader certification were not performed. Automated keyboard, contrast, overflow, safe-area and enlarged-text checks are reported separately.
 
-No actionable P0/P1/P2 visual finding remains after the recaptured corrections. Functional certification is reported independently on the draft PR and in the generated verification evidence.
+No actionable P0/P1/P2 visual finding remains in the inspected replacement. Functional exact-commit certification is reported separately in the draft PR.
 
 final result: passed

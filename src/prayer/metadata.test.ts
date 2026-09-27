@@ -8,8 +8,10 @@ function testDb(): MddDatabase { const database = new MddDatabase(`mdd-metadata-
 afterEach(async () => { for (const database of databases.splice(0)) { database.close(); await database.delete(); } });
 
 describe("prayer people and categories", () => {
-  it("seeds the restrained default category set once", async () => {
+  it("adds the suggested category set once only after an explicit command", async () => {
     const database = testDb(); await prepareDatabase(database); const categories = new CategoryRepository(database);
+    expect(await categories.list()).toEqual([]);
+    await categories.ensureDefaults();
     expect((await categories.list()).map((item) => item.name)).toEqual(["Personal", "Family", "Friends", "Church", "Mission", "Study/Work", "World"]);
     expect(await database.categories.count()).toBe(7);
     await categories.list(); expect(await database.categories.count()).toBe(7);

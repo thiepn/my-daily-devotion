@@ -137,6 +137,7 @@ export function App() {
     location.pathname === "/bible" || /^\/bible\/[^/]+\/\d+$/.test(location.pathname) ? "bible-reader-route" : "",
     location.pathname === "/prayer/session" ? "mobile-immersive-route focused-journal-route writing-journal-route" : "",
     location.pathname === "/prayer" ? "prayer-journal-route" : "",
+    ["/prayer/people", "/prayer/categories"].includes(location.pathname) ? "writing-journal-route metadata-journal-route" : "",
     location.pathname.startsWith("/history") ? "history-journal-route" : "",
     location.pathname.startsWith("/today/reflection/") || location.pathname === "/prayer/new" || (/^\/prayer\/[^/]+(?:\/settings)?$/.test(location.pathname) && !["/prayer/people", "/prayer/categories", "/prayer/session"].includes(location.pathname)) ? "writing-journal-route" : "",
   ].filter(Boolean).join(" ");

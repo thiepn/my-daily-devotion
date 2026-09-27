@@ -16,18 +16,4 @@
 .field-help { margin: -6px 0 0; line-height: 1.55; }
 .metadata-manage-links { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 10px; }
 .metadata-manage-links a { color: var(--color-ink-faint); font-size: .7rem; }
-.metadata-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(280px, .6fr); gap: clamp(42px, 7vw, 84px); }
-.metadata-list, .metadata-editor { border-top: 1px solid var(--color-line-strong); padding-top: 20px; }
-.metadata-row { min-height: 70px; display: flex; justify-content: space-between; gap: 20px; align-items: center; border-bottom: 1px solid var(--color-line); }
-.metadata-row > div:first-child { display: grid; gap: 3px; }
-.metadata-row strong { font-family: var(--font-editorial); font-size: 1rem; }
-.metadata-row span { color: var(--color-ink-faint); font-size: .7rem; }
-.metadata-row > div:last-child { display: flex; gap: 10px; }
-.metadata-row button, .metadata-editor button { min-height: 34px; padding: 0 9px; border: 1px solid var(--color-line); border-radius: var(--radius-small); color: var(--color-ink-soft); background: transparent; cursor: pointer; font-size: .68rem; }
-.metadata-editor { display: grid; align-content: start; gap: 14px; }
-.metadata-editor label { display: grid; gap: 6px; font-size: .72rem; }
-.metadata-editor label span { font-weight: 600; }
-.metadata-editor input, .metadata-editor textarea { width: 100%; padding: 9px 10px; border: 1px solid var(--color-line); border-radius: var(--radius-small); color: var(--color-ink); background: var(--color-surface); }
-.metadata-editor textarea { min-height: 100px; resize: vertical; }
-.metadata-editor > div { display: flex; gap: 8px; }
-@media (max-width: 760px) { .prayer-field-grid, .metadata-layout { grid-template-columns: 1fr; } .metadata-row { align-items: start; padding: 14px 0; } }
+@media (max-width: 760px) { .prayer-field-grid { grid-template-columns: 1fr; } }

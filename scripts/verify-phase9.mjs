@@ -31,7 +31,6 @@ for (const selector of [
   ".utility-context",
   ".visual-screen",
   ".setup-options",
-  ".metadata-layout",
   ".global-search-form",
   ".collections-layout",
   ".data-panel",
@@ -71,3 +70,5 @@ console.log("  controls, forms, action groups, density and empty states share on
 console.log("  phone, tablet, desktop, wide master/detail and short-landscape compositions are explicitly covered");
 
 assert.match(await read("src/styles/writing.css"), /\.journal-prompts button/);
+
+assert.match(await read("src/styles/prayer-metadata.css"), /\.directory-list/);

@@ -11,7 +11,6 @@
 .workspace,
 .visual-screen,
 .visual-screen > *,
-.metadata-layout > *,
 .collections-layout > * {
   min-width: 0;
 }
@@ -133,9 +132,7 @@
 .reflection-excerpt,
 .search-hit p,
 .collection-items p,
-.data-panel p,
-.metadata-row strong,
-.metadata-row span {
+.data-panel p {
   overflow-wrap: anywhere;
 }
 
@@ -144,7 +141,6 @@
 .plan-month-heading select,
 .prayer-administration-fields input,
 .prayer-administration-fields select,
-.metadata-editor input,
 .data-password input,
 .import-panel > input[type="file"],
 .global-search-form > input,
@@ -165,8 +161,6 @@ select {
 
 .primary-editorial-action.compact-action,
 .quiet-button,
-.metadata-row button,
-.metadata-editor button,
 .weekday-picker span,
 .global-search-form > button,
 .data-panel > button,
@@ -195,8 +189,6 @@ select {
 }
 
 .quiet-button,
-.metadata-row button,
-.metadata-editor button,
 .collection-sidebar form button {
   padding-inline: 12px;
   border: 1px solid var(--color-line-strong);
@@ -303,24 +295,6 @@ button:disabled,
 
 .weekday-picker span {
   min-width: 48px;
-}
-
-.metadata-editor textarea {
-  padding: 12px 14px;
-  line-height: 1.58;
-}
-
-.metadata-row {
-  min-height: 76px;
-}
-
-.metadata-row > div:last-child {
-  flex-wrap: wrap;
-  justify-content: flex-end;
-}
-
-.metadata-editor {
-  gap: 16px;
 }
 
 /* History */
@@ -443,7 +417,6 @@ button:disabled,
 
 /* Wide-screen master/detail composition */
 @media (min-width: 1100px) {
-  .metadata-editor,
   .collection-sidebar {
     position: sticky;
     top: 88px;
@@ -451,10 +424,6 @@ button:disabled,
     max-height: calc(100vh - 112px);
     overflow: auto;
     scrollbar-width: thin;
-  }
-
-  .metadata-layout {
-    grid-template-columns: minmax(0, 1fr) minmax(300px, .56fr);
   }
 }
 
@@ -489,7 +458,6 @@ button:disabled,
     gap: 24px;
   }
 
-  .metadata-layout,
   .collections-layout {
     gap: 36px;
   }
@@ -570,16 +538,6 @@ button:disabled,
     min-height: 44px;
   }
 
-  .metadata-row {
-    align-items: flex-start;
-    gap: 14px;
-    padding-block: 12px;
-  }
-
-  .metadata-row > div:last-child {
-    gap: 6px;
-  }
-
   .import-mode label {
     min-height: 44px;
   }
@@ -630,14 +588,6 @@ button:disabled,
   .backup-preview button {
     width: 100%;
   }
-
-  .metadata-row {
-    flex-direction: column;
-  }
-
-  .metadata-row > div:last-child {
-    justify-content: flex-start;
-  }
 }
 
 /* Short landscape screens: preserve usable content height without shrinking controls. */
@@ -673,9 +623,9 @@ button:disabled,
 .setup-options .editorial-option { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 8px; text-align: left; }
 .today-lower-grid { margin-top: var(--section-rhythm); }
 .screen-heading h1 { letter-spacing: -.035em; }
-.quiet-button, .metadata-row button, .metadata-editor button, .collection-sidebar form button { font-size: .85rem; }
+.quiet-button, .collection-sidebar form button { font-size: .85rem; }
 .metadata-manage-links a, .quiet-back-link, .field-help, .prayer-administration-fields label small { font-size: .8rem; }
-.prayer-administration-fields label, .metadata-editor label { font-size: .875rem; }
+.prayer-administration-fields label { font-size: .875rem; }
 .recovery-screen > h1 { font-family: var(--font-editorial); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 500; line-height: 1.2; }
 .recovery-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
 .collection-manage, .collection-rename { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }

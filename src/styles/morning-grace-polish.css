@@ -57,8 +57,6 @@ h3,
 
 .quiet-button,
 .editorial-option,
-.metadata-row button,
-.metadata-editor button,
 .collection-sidebar form button,
 .collection-items button,
 .data-panel button,
@@ -74,8 +72,6 @@ h3,
 
 .quiet-button:hover:not(:disabled),
 .editorial-option:hover:not(:disabled),
-.metadata-row button:hover:not(:disabled),
-.metadata-editor button:hover:not(:disabled),
 .collection-sidebar form button:hover:not(:disabled),
 .collection-items button:hover:not(:disabled),
 .data-panel button:hover:not(:disabled),
@@ -364,8 +360,7 @@ textarea:focus-visible {
 
 /* Canonical screen micro-polish */
 .search-hit,
-.collection-items article,
-.metadata-row {
+.collection-items article {
   transition: background-color var(--transition-fast), border-color var(--transition-fast);
 }
 

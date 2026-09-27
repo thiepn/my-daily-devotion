@@ -35,10 +35,10 @@ test("visual record of populated devotional journeys and management screens", as
   await enrollCalendarPlan(page);
   await page.locator(".today-plan-card summary").click(); await page.locator(".today-reading-check").first().click();
   await expect(page.getByText("1 of 4", { exact: true })).toBeVisible();
-  await openRoute(page, "/prayer/people"); await page.getByLabel("Name", { exact: true }).fill("Anna"); await page.getByLabel("Relationship", { exact: false }).fill("Family");
-  await page.getByRole("button", { name: "Add person", exact: true }).click(); await expect(page.locator(".metadata-row").filter({ hasText: "Anna" })).toBeVisible();
+  await openRoute(page, "/prayer/people"); await page.getByRole("button", { name: "Add person", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill("Anna"); await page.getByLabel("Relationship", { exact: false }).fill("Family");
+  await page.getByRole("button", { name: "Save person", exact: true }).click(); await expect(page.locator(".directory-row").filter({ hasText: "Anna" })).toBeVisible();
   // Category management initializes its defaults; opening capture is read-only.
-  await openRoute(page, "/prayer/categories"); await expect(page.locator(".metadata-row").filter({ hasText: "Family" })).toBeVisible();
+  await openRoute(page, "/prayer/categories"); await page.getByRole("button", { name: "Add suggested categories" }).click(); await expect(page.locator(".directory-row").filter({ hasText: "Family" })).toBeVisible();
   await openRoute(page, "/today/reflection/2026-09-17?translation=BSB&start=JHN.3.16&end=JHN.3.16");
   await page.getByLabel("Daily reflection").fill("God’s love invites a generous response.\n\nToday I want to listen carefully and show kindness to my family, especially when the day feels hurried.");
   await page.getByRole("button", { name: "Save reflection" }).click(); await expect(page.getByText("Reflection created and saved locally.")).toBeVisible();
