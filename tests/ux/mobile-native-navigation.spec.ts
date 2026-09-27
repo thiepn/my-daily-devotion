@@ -37,8 +37,8 @@ test.describe("native mobile stacked navigation", () => {
       await openRoute(page, route);
       await expect(page.locator(".app-shell")).toHaveClass(/mobile-detail-route/);
       await expect(page.locator(".utility-mobile-title")).toHaveText(title);
-      if (route.includes("reflection") || route === "/prayer/new") await expect(page.locator(".journal-heading .quiet-back-link")).toBeVisible(); else if (route.startsWith("/history")) await expect(page.locator(".history-back")).toBeVisible(); else await expect(page.getByRole("button", { name: "Back", exact: true })).toBeVisible();
-      await expect(page.locator(".mobile-nav")).toBeHidden();
+      if (route.includes("reflection") || ["/prayer/new","/prayer/people","/prayer/categories"].includes(route)) await expect(page.locator(".journal-heading .quiet-back-link")).toBeVisible(); else if (route.startsWith("/history")) await expect(page.locator(".history-back")).toBeVisible(); else await expect(page.getByRole("button", { name: "Back", exact: true })).toBeVisible();
+      if (["/prayer/people","/prayer/categories"].includes(route)) await expect(page.locator(".mobile-nav")).toBeVisible(); else await expect(page.locator(".mobile-nav")).toBeHidden();
       await expect(page.locator(".utility-actions")).toBeHidden();
       await expectNoHorizontalOverflow(page);
     }

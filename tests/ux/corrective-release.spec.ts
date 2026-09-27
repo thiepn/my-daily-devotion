@@ -3,10 +3,11 @@ import { readFile } from "node:fs/promises";
 import { openRoute, enrollCalendarPlan, expectNoAxeViolations, expectNoHorizontalOverflow } from "./helpers";
 
 async function person(page: Page, name: string, notes = "") {
+  await page.getByRole("button", { name: "Add person", exact: true }).click();
   await page.getByLabel("Name", { exact: true }).fill(name);
   await page.getByLabel("Notes", { exact: false }).fill(notes);
-  await page.getByRole("button", { name: "Add person", exact: true }).click();
-  await expect(page.locator(".metadata-row").filter({ hasText: name })).toBeVisible();
+  await page.getByRole("button", { name: "Save person", exact: true }).click();
+  await expect(page.locator(".directory-row").filter({ hasText: name })).toBeVisible();
 }
 async function prayer(page: Page) {
   await openRoute(page, "/prayer/new");
@@ -31,35 +32,27 @@ async function failNextWrite(page: Page, table: string, method: "add" | "put" = 
 
 test("People in-page switches offer save, discard and cancel without losing notes", async ({ page }, testInfo) => {
   await openRoute(page, "/prayer/people"); await person(page, "Anna", "Original"); await person(page, "Ben");
-  const edit = (name: string) => page.locator(".metadata-row").filter({ hasText: name }).getByRole("button", { name: "Edit", exact: true });
-  await edit("Anna").click(); await page.getByLabel("Notes", { exact: false }).fill("Keep these unsaved notes.");
-  await edit("Ben").click(); const dialog = page.getByRole("dialog"); await expect(dialog).toBeVisible();
-  await expectNoHorizontalOverflow(page); await expectNoAxeViolations(page);
-  await page.screenshot({ path: testInfo.outputPath("draft-resolution-dialog.png") });
-  await dialog.getByRole("button", { name: "Keep editing" }).click();
-  await expect(page.getByLabel("Notes", { exact: false })).toHaveValue("Keep these unsaved notes.");
-  await edit("Ben").click(); await dialog.getByRole("button", { name: "Save and continue" }).click();
-  await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Ben");
-  await edit("Anna").click(); await expect(page.getByLabel("Notes", { exact: false })).toHaveValue("Keep these unsaved notes.");
-  await page.getByLabel("Notes", { exact: false }).fill("Discard only this draft."); await edit("Ben").click();
-  await dialog.getByRole("button", { name: "Discard and continue" }).click(); await edit("Anna").click();
-  await expect(page.getByLabel("Notes", { exact: false })).toHaveValue("Keep these unsaved notes.");
+  const row = (name: string) => page.locator(".directory-row").filter({ has: page.locator(".directory-row-copy strong", { hasText: name }) });
+  await row("Anna").locator(".directory-row-toggle").click(); await page.getByRole("button", {name:"Edit person",exact:true}).click(); await page.getByLabel("Notes", { exact: false }).fill("Keep these unsaved notes.");
+  await row("Ben").locator(".directory-row-toggle").click(); const dialog = page.getByRole("dialog"); await expect(dialog).toBeVisible();
+  await expectNoHorizontalOverflow(page); await expectNoAxeViolations(page); await page.screenshot({ path:testInfo.outputPath("draft-resolution-dialog.png") });
+  await dialog.getByRole("button", {name:"Keep editing"}).click(); await expect(page.getByLabel("Notes", {exact:false})).toHaveValue("Keep these unsaved notes.");
+  await row("Ben").locator(".directory-row-toggle").click(); await dialog.getByRole("button", {name:"Save and continue"}).click();
+  await row("Anna").locator(".directory-row-toggle").click(); await page.getByRole("button", {name:"Edit person",exact:true}).click();
+  await expect(page.getByLabel("Notes", {exact:false})).toHaveValue("Keep these unsaved notes.");
+  await page.getByLabel("Notes", {exact:false}).fill("Discard only this draft."); await row("Ben").locator(".directory-row-toggle").click(); await dialog.getByRole("button", {name:"Discard and continue"}).click();
+  await row("Anna").locator(".directory-row-toggle").click(); await page.getByRole("button", {name:"Edit person",exact:true}).click(); await expect(page.getByLabel("Notes", {exact:false})).toHaveValue("Keep these unsaved notes.");
 });
 
 test("stale People notes can be compared without replacing the unsaved draft", async ({ page, context }, testInfo) => {
   await openRoute(page, "/prayer/people"); await person(page, "Anna", "Original");
-  await page.getByRole("button", { name: "Edit", exact: true }).click();
-  const other = await context.newPage(); await openRoute(other, "/prayer/people"); await other.getByRole("button", { name: "Edit", exact: true }).click();
-  await other.getByLabel("Notes", { exact: false }).fill("Newer notes from another tab."); await other.getByRole("button", { name: "Save changes" }).click();
-  await expect(other.getByLabel("Name", { exact: true })).toHaveValue("");
-  await page.getByLabel("Name", { exact: true }).fill("Anne"); await page.getByRole("button", { name: "Save changes" }).click();
-  await expect(page.locator(".prayer-form-status")).toContainText("another tab");
-  await page.getByRole("button", { name: "Review latest saved version" }).click();
-  await expect(page.getByLabel("Latest saved version")).toHaveValue(/Newer notes from another tab\./);
-  await page.screenshot({ path: testInfo.outputPath("conflict-version-review.png") });
-  await expect(page.getByLabel("Name", { exact: true })).toHaveValue("Anne");
-  await page.getByRole("button", { name: "Use saved version" }).click();
-  await expect(page.getByLabel("Notes", { exact: false })).toHaveValue("Newer notes from another tab.");
+  await page.getByRole("button", { name:"Edit person",exact:true }).click(); await page.getByLabel("Name",{exact:true}).fill("Anne");
+  const other=await context.newPage(); await openRoute(other,"/prayer/people"); await other.locator(".directory-row-toggle").click(); await other.getByRole("button",{name:"Edit person",exact:true}).click();
+  await other.getByLabel("Notes",{exact:false}).fill("Newer notes from another tab."); await other.getByRole("button",{name:"Save changes"}).click(); await expect(other.locator(".directory-notes")).toContainText("Newer notes");
+  await page.getByRole("button",{name:"Save changes"}).click(); await expect(page.locator(".journal-status")).toContainText("another tab");
+  await page.getByRole("button",{name:"Compare versions"}).click(); await expect(page.locator(".directory-versions")).toContainText("Newer notes from another tab.");
+  await page.screenshot({path:testInfo.outputPath("conflict-version-review.png")}); await expect(page.getByLabel("Name",{exact:true})).toHaveValue("Anne");
+  await page.getByRole("button",{name:"Use saved version"}).click(); await expect(page.getByLabel("Notes",{exact:false})).toHaveValue("Newer notes from another tab.");
 });
 
 test("stale prayer settings preserve a newer schedule and event date", async ({ page, context }) => {

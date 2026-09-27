@@ -8,28 +8,11 @@ test.describe("dense secondary mobile workflows", () => {
     await page.emulateMedia({ reducedMotion: "reduce" });
   });
 
-  test("People and Categories put the editor before the saved list", async ({ page }) => {
-    for (const route of ["/prayer/people", "/prayer/categories"]) {
-      await openRoute(page, route);
-      const editor = page.locator(".metadata-editor");
-      const list = page.locator(".metadata-list");
-      await expect(editor).toBeVisible();
-      await expect(list).toBeVisible();
-      const editorBox = await editor.boundingBox();
-      const listBox = await list.boundingBox();
-      expect(editorBox?.y ?? Infinity).toBeLessThan(listBox?.y ?? -Infinity);
-      await expectNoHorizontalOverflow(page);
-    }
-
-    await openRoute(page, "/prayer/people");
-    await page.getByLabel("Name", { exact: true }).fill("Anna");
-    await page.getByLabel(/Relationship/).fill("Family");
-    await page.getByRole("button", { name: "Add person", exact: true }).click();
-    const row = page.locator(".metadata-row").filter({ hasText: "Anna" });
-    await expect(row).toBeVisible();
-    for (const name of ["Edit", "Remove"]) {
-      const box = await row.getByRole("button", { name, exact: true }).boundingBox();
-      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+  test("People and Categories open on the directory with editing on demand", async ({ page }) => {
+    for (const [kind,label] of [["people","person"],["categories","category"]]) {
+      await openRoute(page,"/prayer/"+kind); await expect(page.locator(".directory-list")).toBeVisible(); await expect(page.locator(".directory-editor")).toHaveCount(0);
+      await page.getByRole("button",{name:"Add "+label,exact:true}).click(); await expect(page.locator(".directory-editor")).toBeVisible();
+      const box=await page.getByRole("button",{name:"Save "+label,exact:true}).boundingBox(); expect(box?.height??0).toBeGreaterThanOrEqual(44); await expectNoHorizontalOverflow(page);
     }
   });
 
@@ -107,13 +90,9 @@ test.describe("dense secondary mobile workflows", () => {
     }
   });
 
-  test("desktop secondary workflow composition remains unchanged", async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await openRoute(page, "/prayer/people");
-    const editor = page.locator(".metadata-editor");
-    const list = page.locator(".metadata-list");
-    const editorBox = await editor.boundingBox();
-    const listBox = await list.boundingBox();
-    expect(editorBox?.x ?? 0).toBeGreaterThan(listBox?.x ?? Infinity);
+  test("desktop directories use a centered journal column", async ({ page }) => {
+    await page.setViewportSize({width:1440,height:900}); await openRoute(page,"/prayer/people");
+    await expect(page.locator(".directory-list")).toBeVisible(); const box=await page.locator(".metadata-journal").boundingBox(); expect(box?.width??Infinity).toBeLessThanOrEqual(760);
+    await page.getByRole("button",{name:"Add person",exact:true}).click(); await expect(page.locator(".directory-editor")).toBeVisible(); await expectNoHorizontalOverflow(page);
   });
 });

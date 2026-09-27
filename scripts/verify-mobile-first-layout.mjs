@@ -89,11 +89,11 @@ assert.match(navigationTest,/pushed screens survive 320px width with 200 percent
 assert.match(navigationTest,/phone landscape keeps secondary routes in stacked-app mode/);
 assert.match(navigationTest,/Search and Data return to the root context that opened them/);
 assert.match(navigationTest,/in-content Search entry points preserve their source screen/);
-assert.match(stackedCss,/People\/Categories: editor first/);
+assert.match(await read("src/styles/prayer-metadata.css"), /\.directory-row-toggle/);
 assert.match(await read("src/styles/prayer-detail.css"), /\.prayer-story-entry/);
 assert.match(styles, /prayer-detail\.css/);
 assert.match(stackedCss,/History detail views use compact timeline rows/);
-assert.match(denseSecondaryTest,/People and Categories put the editor before the saved list/);
+assert.match(denseSecondaryTest,/People and Categories open on the directory with editing on demand/);
 assert.match(denseSecondaryTest,/Prayer detail is a readable journal story with visible status context/);
 assert.match(denseSecondaryTest,/History Day keeps its date visible/);
 assert.match(denseSecondaryTest,/dense management screens remain usable at 320px and 200 percent text/);

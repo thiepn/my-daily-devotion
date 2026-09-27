@@ -5,10 +5,10 @@ These screens are not directly depicted in the canonical four-phone board. The i
 ## Evidence
 
 - Direct sources: `tests/visual/baselines/prayer-light-390.png`, `prayer-detail-390.png`, and `writing-reflection-390.png`.
-- [Source and implementation together](docs/visual/morning-grace-v2/people-categories/metadata-visual-family.png): Prayer, Detail, Reflection, People and Categories at 390 × 844, density 1. The sheet resizes each to 320px while preserving its aspect ratio. Different fixture content and screen purposes are intentional.
-- [Before and after](docs/visual/morning-grace-v2/people-categories/people-categories-comparison.png): matching one-person and seven-category fixtures at 390 × 844, density 1. Before screens used permanently open forms and utility headings; after screens lead with the saved directory and on-demand editing.
-- [Responsive comparison](docs/visual/morning-grace-v2/people-categories/metadata-responsive.png): original 320 × 568, 360 × 800, 390 × 844 and 430 × 932 captures; thumbnails preserve aspect ratio.
-- [Dark, editor, expanded, confirmation and error states](docs/visual/morning-grace-v2/people-categories/metadata-states.png), and [200% text at 320px](docs/visual/morning-grace-v2/people-categories/metadata-enlarged.png).
+- [Source and implementation together](people-categories/metadata-visual-family.png): Prayer, Detail, Reflection, People and Categories at 390 × 844, density 1. The sheet resizes each to 320px while preserving its aspect ratio. Different fixture content and screen purposes are intentional.
+- [Before and after](people-categories/people-categories-comparison.png): matching one-person and seven-category fixtures at 390 × 844, density 1. Before screens used permanently open forms and utility headings; after screens lead with the saved directory and on-demand editing.
+- [Responsive comparison](people-categories/metadata-responsive.png): original 320 × 568, 360 × 800, 390 × 844 and 430 × 932 captures; thumbnails preserve aspect ratio.
+- [Dark, editor, expanded, confirmation and error states](people-categories/metadata-states.png), and [200% text at 320px](people-categories/metadata-enlarged.png).
 - Original-size baseline inspection additionally covered 768 × 1024 and 1440 × 900, conflict comparisons and long names/notes. Full before/after desktop captures are included in this directory. Original candidate pixels live in `tests/visual/baselines/metadata-*.png`.
 - Captures use bundled fonts, frozen dates, local fixture records, disabled animations and a consistent top scroll position. Full-page captures draw fixed navigation at the initial viewport's bottom; content beneath it remains reachable by scrolling.
 - The in-app preview verified on-demand editor opening without field autofocus, dirty Cancel, the shared discard/keep dialog and focus restored to Add person. No application warning or error appeared in that interaction.
@@ -41,3 +41,4 @@ These screens are not directly depicted in the canonical four-phone board. The i
 No actionable P0/P1/P2 visual finding remains in the inspected replacement. Functional exact-commit certification is reported separately in the draft PR.
 
 final result: passed
+
