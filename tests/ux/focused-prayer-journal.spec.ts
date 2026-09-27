@@ -87,9 +87,10 @@ test("failed answers retain writing and retry commits one resolution", async ({ 
 });
 
 test("ending confirms remaining requests and ended URLs never start another session", async ({ page }) => {
-  await seedFocusedPrayer(page); await page.getByText("Session options", { exact: true }).click(); await page.getByRole("button", { name: "End session", exact: true }).click();
+  await seedFocusedPrayer(page); await openRoute(page, "/prayer/session?session=focus-session&return=%2Ftoday"); await page.getByText("Session options", { exact: true }).click(); await page.getByRole("button", { name: "End session", exact: true }).click();
   await expect(page.getByRole("dialog")).toContainText("will not be marked prayed"); await expect(page.getByRole("button", { name: "Keep praying" })).toBeFocused();
   await page.getByRole("dialog").getByRole("button", { name: "End session", exact: true }).click(); await expect(page.getByRole("heading", { name: "Session ended", exact: true })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Return to Prayer", exact: true })).toHaveAttribute("href", "#/prayer"); await expect(page.getByRole("link", { name: "Back", exact: true })).toHaveAttribute("href", "#/today");
   const snapshot = await writingSnapshot(page); expect(rows(snapshot, "prayerSessionItems").every(item => item.outcome === null)).toBe(true); expect(rows(snapshot, "activityEvents")).toHaveLength(0);
   await page.reload(); await expect(page.getByRole("heading", { name: "Session ended", exact: true })).toBeVisible(); expect(await writingSnapshot(page)).toEqual(snapshot);
 });
