@@ -207,8 +207,7 @@ h3,
 
 .editorial-section,
 .prayer-list-panel,
-.history-timeline,
-.storage-resilience {
+.history-timeline {
   border-color: var(--color-line-strong);
 }
 
@@ -313,16 +312,9 @@ textarea:focus {
 }
 
 /* Restrained surface hierarchy for utility panels already present in the product. */
-.data-panel,
-.backup-preview,
 .search-hit,
 .history-summary {
   border-color: var(--color-line);
-}
-
-.data-panel,
-.backup-preview {
-  background: color-mix(in srgb, var(--color-surface) 72%, var(--color-canvas));
 }
 
 /* Dark mode is warm and authored, not an inversion. */

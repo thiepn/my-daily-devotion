@@ -33,7 +33,6 @@ for (const selector of [
   ".setup-options",
   ".global-search-form",
   ".collections-layout",
-  ".data-panel",
 ]) assert.ok(css.includes(selector), `Missing Phase 9 refinement for ${selector}`);
 assert.match(await read("src/styles/prayer.css"), /\.prayer-journal-tabs/);
 assert.match(await read("src/styles/history.css"), /\.history-journal-tabs/);
@@ -55,8 +54,9 @@ const version = /^(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/.exec(pkg.version);
 assert.ok(version, `Expected semantic package version, got ${pkg.version}`);
 assert.ok(Number(version[1]) > 0 || Number(version[2]) >= 9, `Phase 9 requires app version >=0.9.0, got ${pkg.version}`);
 assert.equal(pkg.scripts["verify:phase9"], "npm run verify:phase8 && node scripts/verify-phase9.mjs");
-assert.match(dataScreen, /createMddBackup\(db, APP_VERSION\)/);
-assert.match(dataScreen, /createMddBackup\(db, APP_VERSION, exportPassword\)/);
+assert.match(dataScreen, /generateMddBackup\(db, APP_VERSION, password\)/);
+assert.match(dataScreen, /commitMddRestore/);
+assert.match(await read("src/styles/data.css"), /\.data-panel/);
 
 assert.match(phase9Doc, /Status:\s*\*\*implemented\*\*/i);
 assert.match(phase9Doc, /Phase 10/i);

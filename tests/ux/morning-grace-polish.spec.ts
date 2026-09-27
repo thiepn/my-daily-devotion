@@ -21,6 +21,7 @@ test.describe("Morning Grace final visual polish",()=>{
 
     await openRoute(page,"/data");
     await expect(page.locator(".mobile-appearance-panel")).toBeVisible();
+    await page.getByText("Appearance", { exact: true }).click();
     await expect(page.getByRole("button",{name:"Light theme"})).toBeVisible();
     await expect(page.getByRole("button",{name:"System theme"})).toBeVisible();
     await expect(page.getByRole("button",{name:"Dark theme"})).toBeVisible();

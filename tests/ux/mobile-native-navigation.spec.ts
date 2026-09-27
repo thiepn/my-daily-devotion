@@ -37,8 +37,8 @@ test.describe("native mobile stacked navigation", () => {
       await openRoute(page, route);
       await expect(page.locator(".app-shell")).toHaveClass(/mobile-detail-route/);
       await expect(page.locator(".utility-mobile-title")).toHaveText(title);
-      if (route.includes("reflection") || ["/prayer/new","/prayer/people","/prayer/categories"].includes(route)) await expect(page.locator(".journal-heading .quiet-back-link")).toBeVisible(); else if (route.startsWith("/history")) await expect(page.locator(".history-back")).toBeVisible(); else await expect(page.getByRole("button", { name: "Back", exact: true })).toBeVisible();
-      if (["/prayer/people","/prayer/categories"].includes(route)) await expect(page.locator(".mobile-nav")).toBeVisible(); else await expect(page.locator(".mobile-nav")).toBeHidden();
+      if (route.includes("reflection") || ["/prayer/new","/prayer/people","/prayer/categories","/data"].includes(route)) await expect(page.locator(".journal-heading .quiet-back-link")).toBeVisible(); else if (route.startsWith("/history")) await expect(page.locator(".history-back")).toBeVisible(); else await expect(page.getByRole("button", { name: "Back", exact: true })).toBeVisible();
+      if (["/prayer/people","/prayer/categories","/data"].includes(route)) await expect(page.locator(".mobile-nav")).toBeVisible(); else await expect(page.locator(".mobile-nav")).toBeHidden();
       await expect(page.locator(".utility-actions")).toBeHidden();
       await expectNoHorizontalOverflow(page);
     }
@@ -63,7 +63,7 @@ test.describe("native mobile stacked navigation", () => {
     await page.getByRole("link", { name: "Data", exact: true }).click();
     await expect(page.locator(".utility-mobile-title")).toHaveText("Data and privacy");
     await expect(page).toHaveURL(/return=%2Fprayer%3Fstatus%3DWAITING/);
-    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await page.locator(".journal-heading .quiet-back-link").click();
     await expect(page).toHaveURL(/#\/prayer\?status=WAITING$/);
   });
 
@@ -148,7 +148,7 @@ test.describe("native mobile stacked navigation", () => {
     }));
     await openRoute(page, "/data");
     await expect(page.locator("html")).toHaveCSS("font-size", "32px");
-    const back = page.getByRole("button", { name: "Back", exact: true });
+    const back = page.locator(".journal-heading .quiet-back-link");
     await expect(back).toBeVisible();
     const box = await back.boundingBox();
     expect(box?.width ?? 0).toBeGreaterThanOrEqual(44);

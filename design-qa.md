@@ -1,43 +1,45 @@
-# People & Categories — visual review
+# Data & Backup — visual and implementation review
 
-These screens are not directly depicted in the canonical four-phone board. The implementation extends the integrated Prayer, Prayer Detail and Reflection family; the board remains the visual authority for palette, type, natural materials and botanical character.
+Data has no dedicated phone in the canonical board. This release extends integrated Prayer Detail, Reflection and People/Categories: Caslon headings, literary body text, warm paper, forest actions, restrained terracotta and the bundled botanical. The canonical board remains the visual authority; older Data CSS is historical material.
 
-## Evidence
+## Evidence inspected
 
-- Direct sources: `tests/visual/baselines/prayer-light-390.png`, `prayer-detail-390.png`, and `writing-reflection-390.png`.
-- [Source and implementation together](docs/visual/morning-grace-v2/people-categories/metadata-visual-family.png): Prayer, Detail, Reflection, People and Categories at 390 × 844, density 1. The sheet resizes each to 320px while preserving its aspect ratio. Different fixture content and screen purposes are intentional.
-- [Before and after](docs/visual/morning-grace-v2/people-categories/people-categories-comparison.png): matching one-person and seven-category fixtures at 390 × 844, density 1. Before screens used permanently open forms and utility headings; after screens lead with the saved directory and on-demand editing.
-- [Responsive comparison](docs/visual/morning-grace-v2/people-categories/metadata-responsive.png): original 320 × 568, 360 × 800, 390 × 844 and 430 × 932 captures; thumbnails preserve aspect ratio.
-- [Dark, editor, expanded, confirmation and error states](docs/visual/morning-grace-v2/people-categories/metadata-states.png), and [200% text at 320px](docs/visual/morning-grace-v2/people-categories/metadata-enlarged.png).
-- Original-size baseline inspection additionally covered 768 × 1024 and 1440 × 900, conflict comparisons and long names/notes. Full before/after desktop captures are included in this directory. Original candidate pixels live in `tests/visual/baselines/metadata-*.png`.
-- Captures use bundled fonts, frozen dates, local fixture records, disabled animations and a consistent top scroll position. Full-page captures draw fixed navigation at the initial viewport's bottom; content beneath it remains reachable by scrolling.
-- The in-app preview verified on-demand editor opening without field autofocus, dirty Cancel, the shared discard/keep dialog and focus restored to Add person. No application warning or error appeared in that interaction.
+- [Before and after](docs/visual/morning-grace-v2/data-backup/data-before-after.png): the same 390 × 844 application viewport. The previous screen led with schema, technical privacy detail and historical corrections; the replacement leads with protecting the journal.
+- [Source family and implementation](docs/visual/morning-grace-v2/data-backup/data-visual-family.png): Prayer Detail, Reflection, People and Your data at 390 × 844. Thumbnails preserve aspect ratio. These are synthetic fixture records, never personal data.
+- [Responsive layouts](docs/visual/morning-grace-v2/data-backup/data-responsive.png): 320, 360, 390 and 430px, with original heights 568, 800, 844 and 932. Additional original-size inspection covered 768 × 1024 and [1440px desktop](docs/visual/morning-grace-v2/data-backup/after-1440.png); the [old desktop](docs/visual/morning-grace-v2/data-backup/before-1440.png) is retained.
+- [Dark, export, review, confirmation and result](docs/visual/morning-grace-v2/data-backup/data-states.png), plus [320px at 200% text](docs/visual/morning-grace-v2/data-backup/data-enlarged.png). Individual baseline images also cover long filenames, mismatch/errors, replacement backup, Appearance, Privacy and Advanced.
+- Captures use bundled fonts, fixed fixture dates, reduced motion and top scroll reset. Full-page screenshots paint fixed bottom navigation at the initial viewport bottom; subsequent content is accessible by scrolling.
+- The in-app preview verified the encrypted form opens with container focus, Tab enters its first field, and Other export options exposes explicit unencrypted/retained-record explanations. No field autofocus opens a mobile keyboard.
 
-## Findings and corrections
+## Corrections made during review
 
-1. **P2, fixed — navigation spacing.** The first mobile candidate used flex when re-enabling the approved navigation, bunching tabs together. The screen now restores its shared four-column grid. Fresh captures show evenly distributed tabs.
-2. **P2, fixed — enlarged text.** At 320px/200%, fixed identity circles and the heading/art row constrained text. Circles now grow with text, artwork wraps onto its own row, and the narrow heading scale preserves a readable Categories title.
-3. **P2, fixed — terracotta initials contrast.** The inherited clay text color did not meet the normal-text threshold on this surface. A scoped token blend darkens the initials appropriately in light and dark modes. Independent axe checks pass.
-4. **Interaction, fixed — return readiness and counts.** Focus restoration waits for linked requests. Selected entries outside the current page/search receive an explicit label, preserving truthful matching counts and stable ordering.
-5. **Capture correction.** Early full-page images retained scroll offsets after field focus. The existing long History Day comparison also exposed a font-dependent offset of the off-screen skip link; that one baseline was recaptured with an explicit top scroll position, preserving selected-entry focus and unchanged History content. The suite now resets capture scroll consistently; this does not change application focus behavior.
-6. **Cascade cleanup.** Seventy-six superseded metadata selectors were removed from six legacy files. One screens-layer stylesheet owns the replacement; shared components used elsewhere remain intact.
+1. **P2, fixed — mobile return focus.** Duplicate shell links allowed focus restoration to choose a hidden desktop control. Restoration now selects a visible matching control, preserving the complete originating URL and scroll position.
+2. **P2, fixed — enlarged actions.** A primary export button could become a narrow column beside Cancel. Intrinsic flex sizing now gives it a full row at narrow widths or enlarged text, keeping Cancel in document flow.
+3. **P2, fixed — typography and control spacing.** A generic paragraph selector overrode heading metadata, and the initial file/preview controls touched. Specific metadata styles and an explicit control gap restore the journal hierarchy.
+4. **Keyboard, fixed.** Opening an export form moves focus to its labeled container without focusing an input. Closing it restores the initiating action. The shared confirmation retains focus trapping, Escape cancellation and a safe initial focus.
+5. **Cascade cleanup.** Data-owned selectors were removed from nine legacy stylesheets, retaining selectors shared by other workflows. One screens-layer composition file owns Data, reusing existing tokens and journal primitives. No new override layer or illustration was added.
 
 ## Visual assessment
 
-- **Typography:** integrated Caslon editorial headings and row names, literary notes, restrained Inter labels and counts. Relationships are subordinate; absent relationships leave no placeholder. Notes preserve paragraphs.
-- **Composition:** the saved directory follows a compact heading, Add action and labeled search. Warm panels are reserved for notes, editors, suggestions and recoverable states. Quiet separators replace nested utility cards. The desktop journal is capped at 760px.
-- **Color and control treatment:** cream paper, forest primary actions, sage/terracotta identities and discreet management actions match the family. Dark mode uses the existing warm olive palette. Keyboard outlines and 44px control assertions remain.
-- **Assets:** the bundled botanical remains visible on mobile. No landscape, logo, photograph, generated lettering, external art generation or remote asset dependency was introduced.
-- **Density and reflow:** the standard five-person directory extends slightly beyond 390 × 844; Categories is more compact because there are no relationship lines. At 320px, long content or 200% text, natural scrolling preserves readability and controls. Editors and actions remain in document flow.
-- **Content:** all names, notes, counts, links and statuses derive from live records. Suggested category names appear before activation; unknown counts never become false zeroes. Removal restrictions explain all statuses accurately.
+The new page has one editorial heading, a small mobile-visible botanical, two warm functional paper sections and quiet disclosures. The forest encrypted-backup action is dominant. Restore uses subordinate terracotta, a compact four-step indicator, readable counts and reviewed effects, then the existing journal confirmation. Technical details move to Advanced. The 760px desktop column and approved mobile navigation remain consistent with the integrated family.
+
+The warm dark palette uses explicit shared surface/text colors and the existing botanical treatment, with no inversion. Plain export remains readable. Enlarged text, long filenames and expanded review details reflow vertically instead of compressing controls or hiding artwork.
+
+## Data safety and verification design
+
+Schema and archive format remain v1; encryption parameters, password minimum, revision/tombstone merge rules, UUIDs and devotional event types are unchanged. Preview and import share a candidate builder. A memory-only review is bound to the exact local snapshot and database; commitment checks it inside the write transaction. A committed result is returned directly and retained separately from optional appearance refresh. Temporary validation databases are cleaned up. Export receipts contain only generation time/type in browser-local storage and never enter portable records.
+
+Coverage exercises live versus removed counts, equal-revision differences, merge/replace effects, cancelled/stale reviews, cross-tab writes, rollback, duplicate submission, restored preferences, failed refresh, receipt failure, Markdown retained data, historical-format restoration, malformed/oversized archives and invalid relationships. Database snapshots prove browsing, preview/export/cancel do not mutate live records. Exact clean-commit test/build/browser/image results are reported in the draft PR, not inferred from screenshots.
 
 ## Remaining differences and limits
 
-- This is a secondary-screen extension of the approved journal, not a claim that the concept board contains these exact layouts. The integrated font differs slightly from the concept lettering.
-- Dedicated evening artwork remains future work; the existing dark botanical treatment is retained without inversion.
-- The screenshots are reviewed implementation candidates awaiting user design review. Passing image comparisons alone is not visual approval.
-- Physical-device virtual-keyboard and manual screen-reader certification were not performed. Automated keyboard, contrast, overflow, safe-area and enlarged-text checks are reported separately.
+- This is an extension of the approved family, not a pixel-identical reproduction of a nonexistent Data mockup. Integrated Caslon lettering differs slightly from the concept board.
+- At 390 × 844, the full primary backup section is visible; Restore follows below the fold. A reviewed restore, long filenames or enlarged text naturally require scrolling.
+- Dedicated evening artwork remains later work. No external artwork is needed for this release.
+- The screenshot candidates are manually reviewed implementation evidence awaiting user design review. Automated pixel comparisons do not substitute for that approval.
+- Physical-device virtual keyboards and manual screen-reader certification were not performed. Automated keyboard, contrast, reflow and 44px target checks are separate evidence.
+- Browser downloads cannot prove file retention; the UI deliberately reports generation and a download request only. Browser storage remains separate from an external backup.
 
-No actionable P0/P1/P2 visual finding remains in the inspected replacement. Functional exact-commit certification is reported separately in the draft PR.
+No actionable P0/P1/P2 visual finding remains in the inspected replacement. Functional release certification and hosted infrastructure status are reported separately.
 
 final result: passed

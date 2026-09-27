@@ -131,8 +131,7 @@
 .screen-intro,
 .reflection-excerpt,
 .search-hit p,
-.collection-items p,
-.data-panel p {
+.collection-items p {
   overflow-wrap: anywhere;
 }
 
@@ -141,8 +140,6 @@
 .plan-month-heading select,
 .prayer-administration-fields input,
 .prayer-administration-fields select,
-.data-password input,
-.import-panel > input[type="file"],
 .global-search-form > input,
 .search-filters select,
 .collection-sidebar input {
@@ -163,9 +160,6 @@ select {
 .quiet-button,
 .weekday-picker span,
 .global-search-form > button,
-.data-panel > button,
-.data-actions button,
-.backup-preview button,
 .collection-sidebar form button {
   min-height: 44px;
 }
@@ -209,8 +203,7 @@ button:disabled,
 }
 
 /* Action groups */
-.prayer-handoff-actions,
-.data-actions {
+.prayer-handoff-actions {
   row-gap: 10px;
 }
 
@@ -369,50 +362,10 @@ button:disabled,
 }
 
 /* Data portability */
-.data-sections {
-  gap: var(--section-rhythm);
-}
 
-.data-panel {
-  padding-top: 22px;
-}
-
-.data-actions {
-  display: flex;
-  flex-wrap: wrap;
-  margin-block: 20px;
-}
-
-.data-panel > button,
-.data-actions button,
-.backup-preview button,
 .global-search-form > button {
   padding-inline: 16px;
   border-radius: var(--radius-small);
-}
-
-.data-password {
-  gap: 8px;
-}
-
-.import-panel > input[type="file"] {
-  width: min(100%, 620px);
-  padding: 8px 10px;
-}
-
-.import-mode {
-  gap: 10px 14px;
-}
-
-.import-mode label {
-  min-height: 40px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.backup-preview {
-  padding-block: 20px;
 }
 
 /* Wide-screen master/detail composition */
@@ -462,7 +415,6 @@ button:disabled,
     gap: 36px;
   }
 
-  .data-sections,
   .search-groups {
     gap: 36px;
   }
@@ -538,10 +490,6 @@ button:disabled,
     min-height: 44px;
   }
 
-  .import-mode label {
-    min-height: 44px;
-  }
-
   .mobile-nav {
     padding-inline: 6px;
   }
@@ -582,10 +530,7 @@ button:disabled,
     flex-direction: column;
   }
 
-  .global-search-form > button,
-  .data-panel > button,
-  .data-actions button,
-  .backup-preview button {
+  .global-search-form > button {
     width: 100%;
   }
 }
@@ -642,14 +587,7 @@ button:disabled,
 .collection-items a { flex: 1; }
 .collection-items p { flex-basis: 100%; }
 .collection-items button { font-size: .85rem; min-height: 44px; padding-inline: 12px; }
-.data-status:empty, .prayer-form-status:empty { display: none; }
-.data-status { max-width: 70ch; padding: 12px 0; overflow-wrap: anywhere; }
-.data-status:not(:empty) { position: sticky; top: 72px; z-index: 13; padding: 12px 16px; background: var(--color-surface); border: 1px solid var(--color-line-strong); font-size: .9rem; }
-.backup-counts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 20px; }
-.backup-counts div { display: flex; justify-content: space-between; gap: 12px; }
-.backup-counts dd { margin: 0; font-variant-numeric: tabular-nums; }
-.replace-confirmation { display: flex; align-items: flex-start; gap: 10px; margin-block: 18px; }
-.replace-confirmation input { flex: 0 0 auto; margin-top: 4px; }
+.prayer-form-status:empty { display: none; }
 input, select, textarea { max-width: 100%; }
 .utility-mobile-title { display: none; font-family: var(--font-editorial); font-weight: 600; }
 @media (max-width: 760px) { .collections-layout { grid-template-columns: minmax(0, 1fr); } }

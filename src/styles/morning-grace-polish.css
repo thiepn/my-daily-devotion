@@ -58,9 +58,7 @@ h3,
 .quiet-button,
 .editorial-option,
 .collection-sidebar form button,
-.collection-items button,
-.data-panel button,
-.backup-preview button {
+.collection-items button {
   border-color: var(--color-line-strong);
   border-radius: var(--radius-sm);
   transition:
@@ -73,9 +71,7 @@ h3,
 .quiet-button:hover:not(:disabled),
 .editorial-option:hover:not(:disabled),
 .collection-sidebar form button:hover:not(:disabled),
-.collection-items button:hover:not(:disabled),
-.data-panel button:hover:not(:disabled),
-.backup-preview button:hover:not(:disabled) {
+.collection-items button:hover:not(:disabled) {
   color: var(--color-ink);
   border-color: var(--color-accent);
   background: var(--mg-hover);
@@ -345,12 +341,6 @@ textarea:focus-visible {
 /* History calendar text must remain subdued without dropping below normal-text contrast. */
 
 /* Release acceptance: small Prayer and Data text must remain readable on warm paper. */
-
-.mg-data-workspace .data-password span,
-.mg-data-workspace .import-mode legend,
-.mg-data-workspace dt {
-  color: var(--color-ink-soft);
-}
 
 .mg-search-workspace .search-filters label {
   color: var(--color-ink-soft);

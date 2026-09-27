@@ -41,7 +41,7 @@ test.describe("Morning Grace secondary workflows",()=>{
     await expect(page.locator(".mg-search-workspace")).toBeVisible();
 
     await openRoute(page,"/data");
-    await expect(page.locator(".mg-data-workspace")).toBeVisible();
+    await expect(page.locator(".data-journal")).toBeVisible();
     await expectNoAxeViolations(page);
   });
 
