@@ -33,6 +33,35 @@ export interface BackupArchiveManifest {
 export interface BackupPreview { manifest: BackupArchiveManifest; counts: Record<string, number>; encrypted: boolean; }
 export type ImportMode = "merge" | "replace";
 
+export interface BackupExportResult { bytes: Uint8Array; generatedAt: string; kind: "encrypted" | "plain"; }
+export interface BackupContentCount { live: number; deletionMarkers: number; }
+export interface RestoreEffects {
+  additions: number; replacements: number; retained: number; removals: number;
+  newlyRemoved: number; restored: number;
+}
+export interface RestoreReview {
+  readonly manifest: BackupArchiveManifest;
+  readonly encrypted: boolean;
+  readonly mode: ImportMode;
+  readonly contents: Readonly<Record<string, BackupContentCount>>;
+  readonly effects: Readonly<RestoreEffects>;
+  readonly tables: Readonly<Record<string, RestoreEffects>>;
+  readonly equalRevisionDifferences: ReadonlyArray<{ table: string; key: string }>;
+  readonly hasLocalDevotionalRecords: boolean;
+}
+export interface CommittedRestoreResult { kind: "committed"; mode: ImportMode; effects: Readonly<RestoreEffects>; }
+interface PreparedRestore {
+  database: MddDatabase; localJson: string; candidate: BackupSnapshot;
+  mode: ImportMode; effects: RestoreEffects; result?: CommittedRestoreResult;
+  committing?: Promise<CommittedRestoreResult>;
+}
+// Candidates and decrypted records are never part of the public review, storage,
+// URLs or diagnostics. A review is an opaque, memory-only capability.
+const preparedRestores = new WeakMap<RestoreReview, PreparedRestore>();
+export class StaleRestoreReviewError extends Error {
+  constructor() { super("Local data changed after this review. Review the backup again before restoring."); this.name = "StaleRestoreReviewError"; }
+}
+
 function stableDataJson(data: Record<string, unknown[]>): string {
   const ordered = Object.fromEntries(Object.entries(data).sort(([a], [b]) => a.localeCompare(b)).map(([name, rows]) => [name, [...rows].sort((a, b) => {
     const aId = typeof a === "object" && a !== null && "id" in a ? String((a as { id: unknown }).id) : typeof a === "object" && a !== null && "key" in a ? String((a as { key: unknown }).key) : JSON.stringify(a);
@@ -138,7 +167,7 @@ async function verifyArchiveFiles(files: Record<string, Uint8Array>, manifest: B
   }
 }
 
-export async function createMddBackup(database: MddDatabase, appVersion: string = APP_VERSION, password?: string): Promise<Uint8Array> {
+export async function generateMddBackup(database: MddDatabase, appVersion: string = APP_VERSION, password?: string): Promise<BackupExportResult> {
   const snapshot = await createBackupSnapshot(database, appVersion);
   const plain = strToU8(stableDataJson(snapshot.data));
   const encrypted = password ? await encryptBytes(plain, password) : null;
@@ -147,10 +176,14 @@ export async function createMddBackup(database: MddDatabase, appVersion: string 
     format: FORMAT, formatVersion: FORMAT_VERSION, appVersion, schemaVersion: snapshot.manifest.schemaVersion, exportedAt: snapshot.manifest.exportedAt,
     files: [{ path: "data.json", sha256: await sha256Bytes(dataBytes), bytes: dataBytes.byteLength }], encryption: encrypted?.encryption ?? null,
   };
-  return zipSync({ "manifest.json": strToU8(JSON.stringify(manifest, null, 2)), "data.json": dataBytes }, { level: 6 });
+  return { bytes: zipSync({ "manifest.json": strToU8(JSON.stringify(manifest, null, 2)), "data.json": dataBytes }, { level: 6 }), generatedAt: manifest.exportedAt, kind: encrypted ? "encrypted" : "plain" };
 }
 
-async function readArchive(bytes: Uint8Array, password: string, database: MddDatabase): Promise<{ manifest: BackupArchiveManifest; snapshot: BackupSnapshot }> {
+export async function createMddBackup(database: MddDatabase, appVersion: string = APP_VERSION, password?: string): Promise<Uint8Array> {
+  return (await generateMddBackup(database, appVersion, password)).bytes;
+}
+
+function inspectArchive(bytes: Uint8Array): { files: Record<string, Uint8Array>; manifest: BackupArchiveManifest } {
   let files: Record<string, Uint8Array>;
   try {
     if (bytes.byteLength > 64 * 1024 * 1024) throw new Error("Archive too large");
@@ -166,7 +199,17 @@ async function readArchive(bytes: Uint8Array, password: string, database: MddDat
   let manifestValue: unknown;
   try { manifestValue = JSON.parse(strFromU8(manifestBytes)) as unknown; } catch { throw new Error("Backup manifest.json is invalid."); }
   validateArchiveManifest(manifestValue);
-  const manifest = manifestValue;
+  return { files, manifest: manifestValue };
+}
+
+/** Provisional header inspection only. This is not checksum or content validation. */
+export function inspectMddBackup(bytes: Uint8Array): { encrypted: boolean } {
+  return { encrypted: Boolean(inspectArchive(bytes).manifest.encryption) };
+}
+
+async function readArchive(bytes: Uint8Array, password: string, database: MddDatabase): Promise<{ manifest: BackupArchiveManifest; snapshot: BackupSnapshot }> {
+  const { files, manifest } = inspectArchive(bytes);
+  const dataBytes = files["data.json"]!;
   await verifyArchiveFiles(files, manifest);
   const plain = manifest.encryption ? await decryptBytes(dataBytes, password, manifest.encryption) : dataBytes;
   let data: Record<string, unknown[]>;
@@ -221,25 +264,87 @@ export async function previewMddBackup(bytes: Uint8Array, password: string, data
   return { manifest, counts: Object.fromEntries(Object.entries(snapshot.data).map(([name, rows]) => [name, rows.length])), encrypted: Boolean(manifest.encryption) };
 }
 
-export async function importMddBackup(bytes: Uint8Array, password: string, mode: ImportMode, database: MddDatabase): Promise<void> {
+function emptyEffects(): RestoreEffects { return { additions: 0, replacements: 0, retained: 0, removals: 0, newlyRemoved: 0, restored: 0 }; }
+function deleted(row: unknown): boolean { return record(row) && typeof row.deletedAt === "string"; }
+function canonical(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(canonical).join(",")}]`;
+  if (record(value)) return `{${Object.keys(value).sort().map(key => `${JSON.stringify(key)}:${canonical(value[key])}`).join(",")}}`;
+  return JSON.stringify(value) ?? "null";
+}
+
+export async function prepareMddRestore(bytes: Uint8Array, password: string, mode: ImportMode, database: MddDatabase): Promise<RestoreReview> {
   if (mode !== "merge" && mode !== "replace") throw new Error("Choose a valid restore mode.");
-  const { snapshot } = await readArchive(bytes, password, database);
+  const { manifest, snapshot } = await readArchive(bytes, password, database);
   const local = await createBackupSnapshot(database);
+  await validateInTemporaryDatabase(snapshot);
   const candidate = mode === "merge" ? await mergedSnapshot(snapshot, local) : snapshot;
-  await validateInTemporaryDatabase(candidate);
-  // Validation is intentionally outside the live transaction. Before committing,
-  // reject a stale candidate rather than erasing writes made in another tab.
+  if (mode === "merge") await validateInTemporaryDatabase(candidate);
+  const effects = emptyEffects();
+  const tables: Record<string, RestoreEffects> = {};
+  const equalRevisionDifferences: Array<{ table: string; key: string }> = [];
+  for (const name of Object.keys(local.data)) {
+    const before = new Map(local.data[name]!.map(row => [rowKey(row), row]));
+    const after = new Map(candidate.data[name]!.map(row => [rowKey(row), row]));
+    const table = emptyEffects();
+    for (const [key, row] of after) {
+      const previous = before.get(key);
+      if (previous === undefined) table.additions++;
+      else if (canonical(previous) === canonical(row)) table.retained++;
+      else { table.replacements++; if (!deleted(previous) && deleted(row)) table.newlyRemoved++; if (deleted(previous) && !deleted(row)) table.restored++; }
+    }
+    for (const key of before.keys()) if (!after.has(key)) table.removals++;
+    for (const incoming of snapshot.data[name]!) {
+      const previous = before.get(rowKey(incoming));
+      if (record(previous) && record(incoming) && typeof previous.revision === "number" && previous.revision === incoming.revision && canonical(previous) !== canonical(incoming)) {
+        equalRevisionDifferences.push({ table: name, key: rowKey(incoming).replace(/^id:/, "") });
+      }
+    }
+    tables[name] = Object.freeze(table);
+    for (const key of Object.keys(effects) as Array<keyof RestoreEffects>) effects[key] += table[key];
+  }
+  const contents = Object.fromEntries(Object.entries(snapshot.data).map(([name, rows]) => [name, Object.freeze({ live: rows.filter(row => !deleted(row)).length, deletionMarkers: rows.filter(deleted).length })]));
+  const review: RestoreReview = Object.freeze({ manifest, encrypted: Boolean(manifest.encryption), mode, contents: Object.freeze(contents), effects: Object.freeze({ ...effects }), tables: Object.freeze(tables), equalRevisionDifferences: Object.freeze(equalRevisionDifferences), hasLocalDevotionalRecords: Object.entries(local.data).some(([name, rows]) => name !== "preferences" && rows.length > 0) });
+  preparedRestores.set(review, { database, localJson: stableDataJson(local.data), candidate, mode, effects });
+  return review;
+}
+
+export function discardMddRestore(review: RestoreReview): void { preparedRestores.delete(review); }
+
+export async function commitMddRestore(review: RestoreReview, database: MddDatabase): Promise<CommittedRestoreResult> {
+  const prepared = preparedRestores.get(review);
+  if (!prepared || prepared.database !== database) throw new Error("This review is no longer available. Review the backup again.");
+  if (prepared.result) return prepared.result;
+  if (prepared.committing) return prepared.committing;
+  prepared.committing = commitPreparedRestore(prepared, database);
+  try { return await prepared.committing; }
+  finally { delete prepared.committing; }
+}
+
+async function commitPreparedRestore(prepared: PreparedRestore, database: MddDatabase): Promise<CommittedRestoreResult> {
+  // The whole review/confirmation interval is protected, not just validation.
+  const { candidate, localJson } = prepared;
   const tables = database.tables.filter((table) => table.name !== "schemaMetadata");
   await database.transaction("rw", tables, async () => {
     const current: Record<string, unknown[]> = {};
     for (const table of tables) current[table.name] = await table.toArray();
-    if (stableDataJson(current) !== stableDataJson(local.data)) throw new Error("Local data changed during validation. Preview the backup again before restoring.");
+    if (stableDataJson(current) !== localJson) throw new StaleRestoreReviewError();
     await Dexie.waitFor(validateBackupSnapshot(candidate, database));
     for (const table of tables) {
       await table.clear();
       if (candidate.data[table.name]?.length) await table.bulkAdd(candidate.data[table.name]!);
     }
   });
+  const result: CommittedRestoreResult = { kind: "committed", mode: prepared.mode, effects: Object.freeze({ ...prepared.effects }) };
+  prepared.result = result;
+  // Release the decrypted bodies immediately, retaining only the idempotent result.
+  prepared.candidate = { ...candidate, data: {} }; prepared.localJson = "";
+  return result;
+}
+
+export async function importMddBackup(bytes: Uint8Array, password: string, mode: ImportMode, database: MddDatabase): Promise<void> {
+  const review = await prepareMddRestore(bytes, password, mode, database);
+  try { await commitMddRestore(review, database); }
+  finally { discardMddRestore(review); }
 }
 
 function safeMarkdown(value: string): string { return value.replace(/\r\n/g, "\n").trim(); }

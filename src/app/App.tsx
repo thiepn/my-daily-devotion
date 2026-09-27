@@ -6,6 +6,8 @@ import { BrandMark } from "./visual/BrandMark";
 import { DevotionalIcon, type DevotionalIconName } from "./visual/DevotionalIcon";
 import { Icon } from "./visual/Icon";
 import { ThemeSwitcher } from "./visual/ThemeSwitcher";
+import { useDataReturnPosition } from "../data/useDataReturnPosition";
+import { safeDataReturn } from "../data/data-context";
 
 const TodayScreen = lazy(() => import("../mcheyne/TodayScreen").then((module) => ({ default: module.TodayScreen })));
 const PlanScreen = lazy(() => import("../mcheyne/PlanScreen").then((module) => ({ default: module.PlanScreen })));
@@ -52,10 +54,7 @@ function safeReturnTarget(search: string): string | null {
 }
 
 function utilityReturnTarget(pathname: string, search: string): string {
-  if (pathname === "/today" || pathname.startsWith("/prayer") || pathname.startsWith("/history") || pathname === "/bible" || /^\/bible\/[^/]+\/\d+$/.test(pathname)) {
-    return `${pathname}${search}`;
-  }
-  return "/today";
+  return pathname === "/data" ? safeDataReturn(new URLSearchParams(search).get("return")) : safeDataReturn(`${pathname}${search}`);
 }
 
 function withReturn(pathname: string, returnTo: string): string {
@@ -124,6 +123,7 @@ function RouteLoading() { return <div className="route-loading mg-route-loading"
 export function App() {
   const location = useLocation();
   const navigate = useNavigate();
+  useDataReturnPosition(location.pathname + location.search);
   const currentLabel = routeLabel(location.pathname);
   const mobileBack = mobileBackTarget(location.pathname, location.search);
   const utilityReturn = utilityReturnTarget(location.pathname, location.search);
@@ -138,6 +138,7 @@ export function App() {
     location.pathname === "/prayer/session" ? "mobile-immersive-route focused-journal-route writing-journal-route" : "",
     location.pathname === "/prayer" ? "prayer-journal-route" : "",
     ["/prayer/people", "/prayer/categories"].includes(location.pathname) ? "writing-journal-route metadata-journal-route" : "",
+    location.pathname === "/data" ? "writing-journal-route data-journal-route" : "",
     location.pathname.startsWith("/history") ? "history-journal-route" : "",
     location.pathname.startsWith("/today/reflection/") || location.pathname === "/prayer/new" || (/^\/prayer\/[^/]+(?:\/settings)?$/.test(location.pathname) && !["/prayer/people", "/prayer/categories", "/prayer/session"].includes(location.pathname)) ? "writing-journal-route" : "",
   ].filter(Boolean).join(" ");
