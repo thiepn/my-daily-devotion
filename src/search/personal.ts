@@ -32,13 +32,14 @@ export async function searchPersonalPages(database: MddDatabase, rawQuery: strin
     const [book, chapter, verse] = ref.startVerseKey.split('.'), [endBook, endChapter, endVerse] = ref.endVerseKey.split('.');
     return book === endBook && (matchedVerses.get(book!) ?? []).some(value => value >= Number(chapter) * 1000 + Number(verse) && value <= Number(endChapter) * 1000 + Number(endVerse));
   };
+  // Bulk reads avoid a native cursor round trip for every row, especially expensive in WebKit.
   const [prayers, updates, resolutions, reflections, people, notes, collections, collectionItems, categories, bookmarks, highlights] = await database.transaction("r", [database.prayers, database.prayerUpdates, database.prayerResolutions, database.reflections, database.people, database.verseNotes, database.collections, database.collectionItems, database.categories, database.bookmarks, database.highlights], () => Promise.all([
-    database.prayers.filter(item => !item.deletedAt).toArray(), database.prayerUpdates.filter(item => !item.deletedAt).toArray(),
-    database.prayerResolutions.filter(item => !item.deletedAt).toArray(), database.reflections.filter(item => !item.deletedAt).toArray(),
-    database.people.filter(item => !item.deletedAt).toArray(), database.verseNotes.filter(item => !item.deletedAt).toArray(),
-    database.collections.filter(item => !item.deletedAt).toArray(), database.collectionItems.filter(item => !item.deletedAt).toArray(),
-    database.categories.filter(item => !item.deletedAt).toArray(), database.bookmarks.filter(item => !item.deletedAt).toArray(),
-    database.highlights.filter(item => !item.deletedAt).toArray(),
+    database.prayers.toArray().then(items => items.filter(item => !item.deletedAt)), database.prayerUpdates.toArray().then(items => items.filter(item => !item.deletedAt)),
+    database.prayerResolutions.toArray().then(items => items.filter(item => !item.deletedAt)), database.reflections.toArray().then(items => items.filter(item => !item.deletedAt)),
+    database.people.toArray().then(items => items.filter(item => !item.deletedAt)), database.verseNotes.toArray().then(items => items.filter(item => !item.deletedAt)),
+    database.collections.toArray().then(items => items.filter(item => !item.deletedAt)), database.collectionItems.toArray().then(items => items.filter(item => !item.deletedAt)),
+    database.categories.toArray().then(items => items.filter(item => !item.deletedAt)), database.bookmarks.toArray().then(items => items.filter(item => !item.deletedAt)),
+    database.highlights.toArray().then(items => items.filter(item => !item.deletedAt)),
   ]));
   const peopleById = new Map(people.map(item => [item.id, item])), categoriesById = new Map(categories.map(item => [item.id, item]));
   const prayersById = new Map(prayers.map(item => [item.id, item])), collectionsById = new Map(collections.map(item => [item.id, item]));
@@ -69,3 +70,4 @@ export async function searchPersonal(database: MddDatabase, rawQuery: string, li
   const pages = await searchPersonalPages(database, rawQuery, { shown: Object.fromEntries(groups.map(key => [key, limitPerGroup])) });
   return Object.fromEntries(groups.map(key => [key, pages[key].items])) as unknown as PersonalSearchResults;
 }
+

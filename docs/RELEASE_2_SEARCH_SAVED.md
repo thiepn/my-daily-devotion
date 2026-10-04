@@ -27,7 +27,7 @@ Reviewed qualities: warm paper, literary hierarchy, restrained row separators, s
 
 ## Verification
 
-The release adds readonly/pagination/context/revision tests and Chromium/Firefox/WebKit journeys, including a 10,000-request fixture. Image comparisons cover 320, 360, 390, 430, 768, and 1440px; dark, enlarged text, empty/long content, expanded filters, editors, confirmations, conflicts, unavailable sources, and optional/required read failures. Database snapshots check zero writes from archive browsing/search and unchanged saves. Existing offline, backup, and devotional journeys remain required.
+The release adds readonly/pagination/context/revision tests and Chromium/Firefox/WebKit journeys, including a 10,000-request fixture. Bulk readonly reads replace per-record cursor filtering; live-record filtering and parent tombstone checks remain intact. The fixture reports synthetic insertion time separately from cold and warm search latency. Image comparisons cover 320, 360, 390, 430, 768, and 1440px; dark, enlarged text, empty/long content, expanded filters, editors, confirmations, conflicts, unavailable sources, and optional/required read failures. Database snapshots check zero writes from archive browsing/search and unchanged saves. Existing offline, backup, and devotional journeys remain required.
 
 Final exact-commit certification results belong to the draft PR and generated `verification-summary.json`, not this source document: recording a commit hash in the commit itself would invalidate its identity. No security/backend or durable-recovery work is represented as delivered.
 
