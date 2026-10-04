@@ -45,12 +45,16 @@ for (const theme of ['light', 'dark'] as const) {
       ['/search', '.global-search-form', 'search'],
       ['/prayer/new', 'textarea', 'new-prayer'],
       ['/today/reflection/2026-04-24', '.reflection-textarea', 'reflection'],
-      ['/bible/collections', '.collection-sidebar', 'collections'],
+      ['/bible/collections', '.collections-journal', 'collections'],
     ];
     for (const [route, ready, name] of surfaces) {
       await page.setViewportSize({ width: 390, height: 844 });
       await openRoute(page, route!);
       await expect(page.locator(ready!).first()).toBeVisible();
+      if (name === 'collections') {
+        await page.getByRole('button', { name: 'Add collection', exact: true }).click();
+        await expect(page.getByLabel('New collection', { exact: true })).toBeVisible();
+      }
       await expectNoAxeViolations(page);
       await page.screenshot({ path: info.outputPath(`${name}-${theme}-390.png`), animations: 'disabled' });
       await page.setViewportSize({ width: 320, height: 720 });
