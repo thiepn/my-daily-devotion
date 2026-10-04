@@ -42,7 +42,7 @@
 
 @media(max-width:380px){
  .plan-journal .journal-heading-line{position:relative;display:block}
- .plan-journal .journal-heading .grace-art{position:absolute;right:0;top:0;width:44px}
+ .plan-journal .journal-heading .grace-art{position:absolute;right:0;top:-10px;width:32px}
  .plan-journal .journal-date{padding-right:52px}
  .plan-journal .journal-heading h1{font-size:2.1rem}
 }
