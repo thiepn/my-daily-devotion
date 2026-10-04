@@ -25,7 +25,9 @@ assert.match(responsive, /320px mobile/); assert.match(responsive, /200% text re
 for (const token of ["setOffline(true)", "navigator.serviceWorker.controller", "missingBuildAssets", "caches.match(url, { ignoreVary: true })", "John 3:16"]) assert.ok(pwa.includes(token), `Offline UX suite missing ${token}`);
 
 assert.match(app, /main-content/); assert.match(app, /focus\(\{ preventScroll: true \}\)/);
-assert.match(today, /<label>Completed through date<input/); assert.match(plan, /aria-label="Completed through date"/);
+assert.match(today, /<PlanSetup/); assert.match(plan, /<PlanSetup/);
+const planSetup = await read("src/mcheyne/PlanSetup.tsx");
+assert.match(planSetup, /<label>Completed through date<input/); assert.match(plan, /<label>Completed through date<input type="date"/);
 assert.match(history, /aria-label="Previous month"/); assert.match(history, /aria-label="Next month"/); assert.match(history, /Open history for/); assert.match(history, /aria-current=/); assert.match(history, /Opening your history…/); assert.match(await read("src/history/hooks.ts"), /liveQuery/);
 assert.match(schema, /DATABASE_SCHEMA_VERSION = 1/);
 assert.match(tokens, /--color-ink-faint:\s*#5e625a/); assert.match(tokens, /--color-warning-text:\s*#7a4f2f/);

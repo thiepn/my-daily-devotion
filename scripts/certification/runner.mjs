@@ -39,7 +39,7 @@ export async function buildStage() {
   for (const file of ["verification/unit.json", "verification/browser.json", "verification/visual.json", "verification/build/build.json"]) await rm(file, { force: true });
   node(["scripts/verify-phase0.mjs"]);
   for (const name of ["typecheck", "test:report", "build"]) npm(name);
-  for (let phase = 2; phase <= 10; phase += 1) node([`scripts/verify-phase${phase}.mjs`]);
+  for (let phase = 2; phase <= 11; phase += 1) node([`scripts/verify-phase${phase}.mjs`]);
   const browserInventory = list(), visualInventory = list(["--config=playwright.visual.config.ts"]);
   const partitions = Object.fromEntries(browserShards.map(({ id, project, shard }) => [id, list([`--project=${project}`, `--shard=${shard}`])]));
   validatePartitions(browserInventory, partitions);
