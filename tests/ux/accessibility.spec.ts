@@ -13,7 +13,7 @@ test.describe("accessibility and keyboard UX", () => {
     ];
     for (const [route, heading] of routes) {
       await openRoute(page, route);
-      await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1, name: route === "/today" ? /^Good (morning|afternoon|evening), Friend\.$/ : heading })).toBeVisible();
       await expectNoAxeViolations(page);
     }
   });

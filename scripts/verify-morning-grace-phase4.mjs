@@ -34,7 +34,8 @@ assert.equal(contract.name,"Morning Grace Secondary Workflows");
 assert.equal(contract.status,"phase-4-frozen");
 for(const key of ["reflection","readingPlan","prayerDetail","prayerAdministration","focusedPrayer","collections","search","data"]) assert.ok(contract.workspaces[key],"Missing Phase 4 workspace "+key);
 
-for(const screen of [screens[1]]) assert.ok(screen.includes("mg-secondary-screen"),"A retained Phase 4 screen is missing mg-secondary-screen");
+assert.match(screens[1], /journal-workspace plan-journal/);
+assert.ok(styles.includes("plan.css"));
 assert.match(screens[0], /journal-workspace journal-reflection/);
 assert.match(await read("src/styles/writing.css"), /\.journal-paper/);
 assert.ok(screens[1].includes("mg-plan-workspace"));
@@ -53,12 +54,11 @@ assert.ok(screens[8].includes("mg-search-workspace"));
 assert.ok(screens[9].includes("data-journal"));
 assert.match(await read("src/styles/data.css"), /\.data-journal/);
 
-for(const selector of [
-  ".mg-plan-workspace"
-]) assert.ok(css.includes(selector),"Secondary CSS missing "+selector);
+assert.match(await read("src/styles/plan.css"), /\.plan-journal/);
 
 assert.match(css,/@media\s*\(max-width:\s*700px\)/);
-assert.match(css,/font-size:\s*200%/);
+// Enlarged-text reflow is certified by rendered browser journeys, not a legacy override.
+assert.match(await read("tests/ux/reading-plan-journal.spec.ts"), /200%/);
 assert.doesNotMatch(css,/(?:linear|radial|conic)-gradient\s*\(/i);
 assert.doesNotMatch(css,/url\(\s*["']?https?:\/\//i);
 

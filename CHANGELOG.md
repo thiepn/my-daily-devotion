@@ -4,6 +4,8 @@
 
 - Integrate the illustrated Today, literary Bible reader and approved cream/forest icon with the Prayer, History and journal-writing releases.
 - Include request filtering, read-only Focus previews, factual History periods/calendar/Moments, safe contextual handoffs, prayer detail/settings/sessions and explicit People/Categories management.
+- Add scoped, paginated Search, Saved Scripture, precise archive destinations and Collections journal editing.
+- Rebuild Reading Plan around the current assignment; explain calendar/self-paced enrollment, add optional introduction/name, truthful time-of-day greetings, and explicit reader completion/return.
 - Include guided Data & Backup with encrypted export, snapshot-bound atomic restore review, generation receipts and contextual returns.
 - Replace duplicated, time-limited certification with one production build, browser shards, Windows image comparisons and complete commit/artifact-bound evidence aggregation.
 - Make deployment and version publication explicit manual actions using the certified archive without rebuilding.

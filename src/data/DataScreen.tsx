@@ -161,6 +161,3 @@ export function DataScreen() {
     {blocker.state === "blocked" && !confirm ? <JournalDialog title="Restore in progress" close={() => { if (!committing.current) blocker.reset(); }} busy={committing.current}><p>Please keep this page open until the current restore finishes.</p></JournalDialog> : null}
   </main>;
 }
-
-
-

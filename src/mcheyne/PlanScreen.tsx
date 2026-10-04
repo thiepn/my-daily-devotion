@@ -37,4 +37,3 @@ export function PlanScreen(){
  <p role={mutation.failed?'alert':'status'}>{mutation.busy?'Saving…':mutation.status}</p></>}
  </main>;
 }
-

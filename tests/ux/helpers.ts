@@ -37,9 +37,9 @@ export async function expectRouteTitle(page: Page, heading: string, mobileTitle 
     await expect(page.getByRole("heading", { level: 1, name: "Prayer", exact: true })).toBeVisible(); return;
   }
   if (new URL(page.url()).hash.startsWith("#/history")) { await expect(page.getByRole("heading", { level: 1, name: heading, exact: true })).toBeVisible(); return; }
-  if (["People", "Categories", "Your data", "Search", "Collections", "Saved Scripture"].includes(heading)) { await expect(page.getByRole("heading", { level: 1, name: heading, exact: true })).toBeVisible(); return; }
+  if (["People", "Categories", "Your data", "Search", "Collections", "Saved Scripture", "Reading plan", "A gentle beginning"].includes(heading)) { await expect(page.getByRole("heading", { level: 1, name: heading, exact: true })).toBeVisible(); return; }
   if (heading === "Today") {
-    await expect(page.getByRole("heading", { level: 1, name: "Good morning, Friend." })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: /^Good (morning|afternoon|evening), Friend\.$/ })).toBeVisible();
     return;
   }
   if (usesMobileAppLayout(page)) {

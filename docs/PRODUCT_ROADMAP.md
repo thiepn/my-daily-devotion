@@ -6,9 +6,9 @@ Approved direction: Read → Reflect → Pray → Remember, canonical Morning Gr
 
 | Release | Deliverable | State |
 |---|---|---|
-| 1 | Integrate PRs #12–#21, certify one artifact, manual release operations, version 1.3.0 | In implementation; certification/review pending |
-| 2 | Search scopes/pagination/excerpts, precise destinations, Saved Scripture hub and Collections journal | Planned |
-| 3 | Reading Plan journal, skippable onboarding, mode education, optional name and appropriate greeting | Planned |
+| 1 | Integrate PRs #12–#21, certify one artifact, manual release operations, version 1.3.0 | Draft integration PR #22; certification passed, owner review/merge pending |
+| 2 | Search scopes/pagination/excerpts, precise destinations, Saved Scripture hub and Collections journal | Draft PR #23; hosted certification passed, unmerged |
+| 3 | Reading Plan journal, skippable onboarding, mode education, optional name and appropriate greeting | Implemented on dedicated branch; final certification/review pending |
 | 4 | CSS consolidation, complete states, evening artwork, accessibility/usability and performance | Planned |
 | 5 | Durable device-local drafts and Recovery view | Requires reviewed migration |
 | 6 | Twenty saved versions, thirty-day removal recovery, optional recovery backup payloads | Requires reviewed migration/portability spec |

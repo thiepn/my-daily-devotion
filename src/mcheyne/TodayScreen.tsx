@@ -110,4 +110,3 @@ export function TodayScreen() {
     </div>
   </main>;
 }
-

@@ -83,10 +83,12 @@ for (const anchor of source.verificationAnchors) {
 assert.match(app, /TodayScreen/);
 assert.match(app, /PlanScreen/);
 assert.match(app, /\/today\/plan/);
-assert.match(today, /Follow today’s calendar/);
-assert.match(today, /Start self-paced at Day 1/);
+const setup = await read("src/mcheyne/PlanSetup.tsx");
+assert.match(today, /PlanSetup/);
+assert.match(setup, /Follow today’s calendar/);
+assert.match(setup, /Start self-paced at Day 1/);
 assert.match(today, /earlier unread/i);
-assert.match(planScreen, /1,460 readings marked complete/);
+assert.match(planScreen, /1,460 readings explicitly marked complete/);
 assert.match(reader, /plan-reading-context/);
 assert.match(reader, /togglePlanCompletion/);
 assert.match(reader, /Mark reading complete/);

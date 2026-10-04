@@ -72,8 +72,8 @@ test.describe("offline PWA UX", () => {
     await coldPage.reload(); await expect(coldPage.getByText("A request saved while completely offline.")).toBeVisible();
     for (const theme of ["Light", "Dark"]) {
       await coldPage.getByRole("button", { name: `${theme} theme` }).click();
-      for (const [name, route, heading] of [["today", "/today", "Good morning, Friend."], ["bible", "/bible/JHN/3", "Bible"], ["search", "/search?q=John+3%3A16", "Search"], ["prayer", "/prayer", "Prayer"], ["history", "/history", "History"]]) {
-        await coldPage.goto(`/#${route}`); await expect(coldPage.getByRole("heading", { name: heading!, exact: true, level: 1 })).toBeVisible();
+      for (const [name, route, heading] of [["plan", "/today/plan", "Reading plan"], ["welcome", "/welcome", "A gentle beginning"], ["today", "/today", "Good morning, Friend."], ["bible", "/bible/JHN/3", "Bible"], ["search", "/search?q=John+3%3A16", "Search"], ["prayer", "/prayer", "Prayer"], ["history", "/history", "History"]]) {
+        await coldPage.goto(`/#${route}`); await expect(coldPage.getByRole("heading", { name: name === "today" ? /^Good (morning|afternoon|evening), Friend\.$/ : heading!, exact: true, level: 1 })).toBeVisible();
         if (name === "bible") await expect(coldPage.locator(".scripture-copy")).toBeVisible();
         if (name === "today") {
           await expect(coldPage.locator(".grace-art img")).toBeVisible();
@@ -140,7 +140,7 @@ test.describe("offline PWA UX", () => {
         });
       });
       await expect.poll(() => page.evaluate(() => caches.keys())).toEqual([`mdd-app-v${APP_VERSION}-fixture-old`]);
-      await context.setOffline(true); await page.reload(); await expect(page.getByRole("heading", { name: "Good morning, Friend.", exact: true })).toBeVisible();
+      await context.setOffline(true); await page.reload(); await expect(page.getByRole("heading", { name: /^Good (morning|afternoon|evening), Friend\.$/, exact: true })).toBeVisible();
       // Publish the complete generation before the online event automatically checks for updates.
       generation = "new";
       await context.setOffline(false);
