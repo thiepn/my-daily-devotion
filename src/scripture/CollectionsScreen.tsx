@@ -7,7 +7,8 @@ import { isEditConflict } from '../data/conflicts';
 import type { Collection, CollectionItem } from '../domain/types';
 import { JournalDialog, JournalHeading } from '../writing/JournalPrimitives';
 import { usePrayerDraftGuard } from '../prayer/usePrayerDraftGuard';
-import { usePrayerPosition, usePrayerRead } from '../prayer/detail-hooks';
+import { usePrayerPosition } from '../prayer/detail-hooks';
+import { useMetadataRead } from '../prayer/metadata-hooks';
 import { parsePendingScripture } from '../reflection/context';
 import { loadBibleManifest } from './loader';
 import type { BibleManifest } from './types';
@@ -23,13 +24,14 @@ export function CollectionsScreen() {
   const selectedId = params.get('collection'), targetItem = params.get('item'), pending = parsePendingScripture(params);
   const returnTo = safeDataReturn(params.get('return') ?? '/bible/saved?view=collections');
   const shown = shownCount(params.get('shown'), 20);
-  const read = usePrayerRead(selectedId ?? '', () => readCollection(db, selectedId));
+  const read = useMetadataRead(selectedId ?? '', () => readCollection(db, selectedId));
   const [manifest, setManifest] = useState<BibleManifest | null>(null);
   const [editor, setEditor] = useState<Editor | null>(null), [busy, setBusy] = useState(false), [status, setStatus] = useState('');
   const [error, setError] = useState(''), [conflict, setConflict] = useState(false), [latest, setLatest] = useState<Collection | CollectionItem | null>(null);
   const [remove, setRemove] = useState<Collection | CollectionItem | null>(null);
   const lock = useRef(false), draft = useRef(editor); draft.current = editor;
   const selected = read.data?.selected ?? null, items = read.data?.items ?? [];
+  const editorUnavailable = Boolean(read.data && editor && editor.kind !== 'create' && (editor.kind === 'rename' ? !read.data.collections.some(item => item.id === editor.base.id) : !items.some(item => item.id === editor.base.id)));
   const dirty = Boolean(editor && (editor.kind === 'create' ? editor.value.trim() : editor.value !== (editor.kind === 'rename' ? editor.base.name : editor.base.note ?? '')));
   useEffect(() => { let active = true; void loadBibleManifest().then(value => { if (active) setManifest(value); }).catch(() => {}); return () => { active = false; }; }, []);
   useEffect(() => {
@@ -61,7 +63,7 @@ export function CollectionsScreen() {
     } catch (reason) { if (isEditConflict(reason)) setConflict(true); setError(reason instanceof Error ? reason.message : 'Could not save. Your writing is still here.'); throw reason; }
     finally { lock.current = false; setBusy(false); }
   };
-  const guard = usePrayerDraftGuard({dirty, save: async () => { await save(); }, discard: clear, canSave: Boolean(editor?.value.trim()) || editor?.kind === 'note', pending: busy});
+  const guard = usePrayerDraftGuard({dirty, save: async () => { await save(); }, discard: clear, canSave: !editorUnavailable && (Boolean(editor?.value.trim()) || editor?.kind === 'note'), pending: busy});
   const choose = (id: string) => guard.request(() => { clear(); const next = new URLSearchParams(params); next.set('collection', id); next.delete('item'); next.delete('shown'); setParams(next); });
   const openEditor = (next: Editor) => guard.request(() => { clear(); setEditor(next); });
   const submit = (event: FormEvent) => { event.preventDefault(); void save().then(result => { if (result && 'name' in result) { guard.allowNavigation(); const next = new URLSearchParams(params); next.set('collection', result.id); setParams(next); } }).catch(() => {}); };
@@ -83,7 +85,7 @@ export function CollectionsScreen() {
     <label htmlFor="collection-editor">{editor.kind === 'create' ? 'New collection' : editor.kind === 'rename' ? 'Collection name' : 'Passage note'}</label>
     {editor.kind === 'note' ? <textarea id="collection-editor" className="journal-textarea" disabled={busy} value={editor.value} onChange={event => setEditor({...editor, value: event.target.value})} /> : <input id="collection-editor" disabled={busy} value={editor.value} onChange={event => setEditor({...editor, value: event.target.value})} placeholder="Promises, Wisdom, Family…" />}
     <p className="journal-help">{dirty ? 'Unsaved changes' : 'No unsaved changes'} · Unsaved writing stays in memory until you save.</p>
-    <div className="journal-actions"><button className="grace-primary" disabled={busy || (!editor.value.trim() && editor.kind !== 'note')} type="submit">{busy ? 'Saving…' : editor.kind === 'create' ? 'Save collection' : editor.kind === 'rename' ? 'Save name' : 'Save note'}</button><button type="button" disabled={busy} onClick={() => guard.request(clear)}>Cancel</button></div>
+    <div className="journal-actions"><button className="grace-primary" disabled={busy || editorUnavailable || (!editor.value.trim() && editor.kind !== 'note')} type="submit">{busy ? 'Saving…' : editor.kind === 'create' ? 'Save collection' : editor.kind === 'rename' ? 'Save name' : 'Save note'}</button><button type="button" disabled={busy} onClick={() => guard.request(clear)}>Cancel</button></div>
     {conflict && <div className="journal-conflict"><h3>Review this change</h3><p>Your writing has not been replaced.</p><button type="button" onClick={async () => { try { const current = editor.kind === 'note' ? await db.collectionItems.get(editor.base.id) : editor.kind === 'rename' ? await db.collections.get(editor.base.id) : null; if (!current || current.deletedAt) throw new Error('This record was removed. Copy your writing before closing.'); setLatest(current); } catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not load the saved version.'); } }}>Review latest saved version</button>{latest && <><label>Your changes<textarea readOnly value={editor.value} /></label><label>Saved version<textarea readOnly value={'name' in latest ? latest.name : latest.note ?? ''} /></label><div className="journal-actions"><button type="button" onClick={() => { if (editor.kind !== 'create') setEditor({...editor, base: latest, value: 'name' in latest ? latest.name : latest.note ?? ''} as Editor); setConflict(false); setLatest(null); }}>Use saved version</button><button type="button" onClick={() => { if (editor.kind !== 'create') setEditor({...editor, base: latest} as Editor); setConflict(false); setLatest(null); }}>Keep my changes for explicit save</button></div></>}</div>}
   </form>;
   return <main className="journal-workspace collections-journal mg-collections-workspace">
@@ -95,6 +97,7 @@ export function CollectionsScreen() {
     {read.error && <div role="alert" className="journal-notice">{read.error}<button onClick={read.retry}>Retry refresh</button></div>}
     {!read.data && !read.error && <p role="status">Opening collections…</p>}
     {editor?.kind === 'create' && editorForm}
+    {editorUnavailable && <><p className="journal-notice">This saved record was removed. Your unsaved writing is still here to copy. Saving cannot recreate it.</p>{editorForm}</>}
     <aside className="collection-sidebar"><nav className="collection-directory" aria-label="Scripture collections">{read.data?.collections.map(collection => <div className="collection-directory-row" key={collection.id}><button id={'collection-' + collection.id} className={selected?.id === collection.id ? 'is-active' : ''} disabled={busy} onClick={() => choose(collection.id)} aria-pressed={selected?.id === collection.id}>{collection.name}</button>{pending && <button className="collection-add-here" disabled={busy} aria-label={'Add selected passage to ' + collection.name} onClick={() => void addPending(collection.id)}>Add here</button>}</div>)}</nav></aside>
     {read.data && !read.data.collections.length && <div className="archive-empty mg-empty-state"><h2>No collections yet.</h2><p>Create a collection to gather meaningful Scripture.</p></div>}
     {read.data && selectedId && !selected && <p className="journal-notice">This collection is no longer available. Choose another collection or add a new one.</p>}

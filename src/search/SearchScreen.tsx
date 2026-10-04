@@ -28,21 +28,22 @@ export function SearchScreen() {
   useEffect(() => { if (location.search !== query.search) setParams(new URLSearchParams(query.search), { replace: true }); }, [location.search, query.search, setParams]);
   useEffect(() => setDraft(query.q), [query.q]);
   useEffect(() => setIncludeNotes(query.notes), [query.notes]);
-  const corpusKey = JSON.stringify([query.q, query.book, query.testament]);
+  const corpusEnabled = ['all', 'scripture', 'saved'].includes(query.scope);
+  const corpusKey = JSON.stringify([query.q, query.book, query.testament, corpusEnabled]);
   const bible = corpus.key === corpusKey ? corpus.data : null, scriptureError = corpus.key === corpusKey ? corpus.error : "";
-  const personal = usePrayerRead(query.q + ':' + query.notes + ':' + JSON.stringify(query.shown) + ':' + (bible ? corpusKey : ''), () => searchPersonalPages(db, query.q, { includePersonNotes: query.notes, shown: query.shown, matchingVerseKeys: bible?.items.map(item => item.verseKey) ?? [] }));
+  const personal = usePrayerRead(query.q + ':' + query.notes + ':' + JSON.stringify(query.shown) + ':' + (corpusEnabled && bible ? corpusKey : ''), () => searchPersonalPages(db, query.q, { includePersonNotes: query.notes, shown: query.shown, matchingVerseKeys: corpusEnabled ? bible?.items.map(item => item.verseKey) ?? [] : [] }));
   useEffect(() => {
     let active = true;
     const load = async () => {
       try {
-        const [bible, nextManifest] = await Promise.all([searchBiblePage(query.q, { bookId: query.book, testament: query.testament, limit: Number.MAX_SAFE_INTEGER }), loadBibleManifest()]);
+        const [bible, nextManifest] = await Promise.all([corpusEnabled ? searchBiblePage(query.q, { bookId: query.book, testament: query.testament, limit: Number.MAX_SAFE_INTEGER }) : Promise.resolve({items: [], total: 0}), loadBibleManifest()]);
         if (active) { setCorpus({key: corpusKey, data: bible, error: ""}); setManifest(nextManifest); }
       } catch { if (active) setCorpus({key: corpusKey, data: null, error: "Could not open Scripture search. Your personal results remain available."}); }
     };
     void load(); return () => { active = false; };
   }, [corpusKey, attempt]);
   const visibleBible = bible ? {total: bible.total, items: bible.items.slice(0, query.shown.scripture)} : null;
-  usePrayerPosition(url, Boolean(personal.data) && (Boolean(bible) || Boolean(scriptureError)), null, '.search-journal');
+  usePrayerPosition(url, Boolean(personal.data) && (!corpusEnabled || Boolean(bible) || Boolean(scriptureError)), null, '.search-journal');
   const change = (changes: Record<string, string>, reset = false) => {
     const next = new URLSearchParams(params);
     if (reset) for (const scope of SEARCH_SCOPES) next.delete(`${scope}Shown`);

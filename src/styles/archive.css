@@ -39,6 +39,7 @@
 .archive-empty a { display:inline-flex; align-items:center; min-height:44px; color:var(--color-accent-strong); }
 .collections-journal .collection-sidebar { margin:18px 0; }
 .collection-directory { display:grid; gap:4px; padding:8px; border:1px solid var(--color-line); border-radius:12px; background:var(--color-surface); }
+.collection-directory:empty { display:none; }
 .collection-directory-row { display:flex; flex-wrap:wrap; align-items:center; gap:6px; }
 .collection-directory-row > button:first-child { flex:1; text-align:left; overflow-wrap:anywhere; }
 .collection-directory-row .is-active { background:var(--color-accent-soft); }

@@ -1,7 +1,7 @@
 import type { ScriptureReference } from "../domain/types";
 import type { MddDatabase } from "../data/database";
 import { savedPassageUrl } from "./context";
-import { matchExcerpt, searchText } from "./text";
+import { matchExcerpt, normalizeSearch } from "./text";
 
 export interface PersonalSearchHit {
   id: string; title: string; excerpt: string; href: string; kind: string; updatedAt: string; reference?: ScriptureReference;
@@ -17,10 +17,10 @@ export function newestHit(a: PersonalSearchHit, b: PersonalSearchHit) { return b
 
 /** One readonly snapshot; parent tombstones are checked before exposing child writing. */
 export async function searchPersonalPages(database: MddDatabase, rawQuery: string, options: PersonalSearchOptions = {}): Promise<PersonalSearchPages> {
-  const query = searchText(rawQuery.trim()).normalized;
+  const query = normalizeSearch(rawQuery.trim());
   const empty: PersonalSearchResults = { prayers: [], reflections: [], people: [], saved: [] };
   if (!query) return { prayers: {items: [], total: 0}, reflections: {items: [], total: 0}, people: {items: [], total: 0}, saved: {items: [], total: 0} };
-  const matches = (value: string | null | undefined) => Boolean(value && searchText(value).normalized.includes(query));
+  const matches = (value: string | null | undefined) => Boolean(value && normalizeSearch(value).includes(query));
   const excerpt = (value: string) => matchExcerpt(value, rawQuery);
   const matchedVerses = new Map<string, number[]>();
   for (const key of options.matchingVerseKeys ?? []) {

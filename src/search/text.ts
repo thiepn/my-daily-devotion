@@ -1,10 +1,13 @@
 /** Map normalized characters back to the original text, including composed accents. */
+export function normalizeSearch(value: string) {
+  return value.normalize("NFKD").replace(/\p{M}/gu, "").toLocaleLowerCase().replace(/[’]/g, "'").replace(/[“”]/g, '"');
+}
 export function searchText(value: string) {
   let normalized = "";
   const offsets: number[] = [];
   let offset = 0;
   for (const char of value) {
-    const folded = char.normalize("NFKD").replace(/\p{M}/gu, "").toLocaleLowerCase().replace(/[’]/g, "'").replace(/[“”]/g, '"');
+    const folded = normalizeSearch(char);
     for (const unit of folded) { normalized += unit; offsets.push(offset); }
     offset += char.length;
   }
