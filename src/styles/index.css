@@ -39,3 +39,4 @@
 @import "./prayer-metadata.css" layer(screens);
 @import "./data.css" layer(screens);
 @import "./archive.css" layer(screens);
+@import "./plan.css" layer(screens);

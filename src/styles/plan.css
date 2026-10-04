@@ -1,0 +1,48 @@
+/* Reading Plan and introduction own their responsive journal composition. */
+.plan-journal-route .mobile-nav{display:grid}
+.plan-journal{min-width:0;overflow-wrap:anywhere}
+.plan-journal h2,.plan-setup h3{font-family:var(--font-display);line-height:1.4}
+.plan-intro{font-family:var(--font-reading);font-size:1.12rem;line-height:1.7;margin:1rem 0 1.5rem}
+.plan-current,.welcome-name,.welcome-paths>.grace-paper{padding:1.25rem;margin:1rem 0}
+.plan-current h2{font-size:1.2rem;margin:.3rem 0 1rem}
+.plan-current> a{display:inline-flex;align-items:center;min-height:44px}
+.plan-section-heading{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.plan-section-heading label{display:grid;gap:.4rem;max-width:100%}
+.plan-journal select,.plan-journal input{max-width:100%;min-width:0;min-height:44px;background:var(--color-surface);color:var(--color-ink);border:1px solid var(--color-line-strong);border-radius:8px;padding:.65rem;font:inherit}
+.plan-calendar{margin-top:1.75rem}
+.plan-journal .plan-day-list{display:block}
+.plan-journal-day{margin:1.5rem 0;border-bottom:1px solid var(--color-line);padding-bottom:1rem}
+.plan-journal-day.is-current{border-left:3px solid var(--color-accent);padding-left:.75rem}
+.plan-journal-day header{display:flex;align-items:baseline;justify-content:space-between;gap:.5rem;flex-wrap:wrap}
+.plan-journal-day h3{font-family:var(--font-display);font-size:1.1rem;margin:0}
+.plan-journal-day header span,.plan-journal-readings small{font-family:var(--font-ui);font-size:.78rem;color:var(--color-ink-soft)}
+.plan-journal-readings>a{display:grid;grid-template-columns:44px minmax(0,1fr) 16px;align-items:center;gap:.75rem;min-height:60px;padding:.6rem 0;text-decoration:none;border-bottom:1px solid var(--color-line);color:var(--color-ink)}
+.plan-journal-readings strong,.plan-journal-readings small{display:block}
+.plan-journal-readings strong{font-family:var(--font-reading);font-weight:400;line-height:1.5}
+.plan-journal-readings>a>.devotional-icon{width:16px;height:22px}
+.plan-journal-readings .grace-icon-circle .devotional-icon{width:22px;height:22px}
+.plan-explanations summary,.plan-journal button,.plan-journal .journal-actions>a,.plan-setup button,.plan-setup>a,.plan-setup summary{min-height:44px}
+.plan-explanations{margin-top:2rem;border-top:1px solid var(--color-line);padding-top:.5rem}
+.plan-explanations summary{display:flex;align-items:center;cursor:pointer}
+.plan-explanations p,.plan-setup p,.welcome-paths p{line-height:1.7}
+.plan-journal button:not(.grace-primary),.plan-setup button:not(.grace-primary){background:var(--color-accent-soft);border:1px solid transparent;color:var(--color-ink);padding:.65rem 1rem;border-radius:8px;font:inherit;cursor:pointer}
+.plan-journal button:disabled,.plan-setup button:disabled{opacity:.6;cursor:default}
+.plan-journal button:focus-visible,.plan-setup button:focus-visible{outline:2px solid var(--color-focus-ring);outline-offset:3px}
+.plan-setup .plan-mode{padding:.5rem 0 1rem;border-bottom:1px solid var(--color-line)}
+.plan-setup h3{font-size:1rem;margin:.7rem 0 .35rem}
+.plan-setup .grace-primary{width:100%;white-space:normal}
+.plan-setup .journal-actions{display:flex;gap:.5rem;flex-wrap:wrap}
+.plan-setup .journal-actions a{display:inline-flex;align-items:center;min-height:44px}
+.plan-journal .plan-import{display:block;margin:1rem 0}
+.plan-import label,.welcome-name label{display:grid;gap:.5rem;margin:1rem 0}
+.welcome-name input{width:100%}
+.welcome-paths>a{text-decoration:none;display:block;color:var(--color-ink)}
+.welcome-paths h2{font-size:1.2rem;margin:.5rem 0}
+.welcome-paths small{color:var(--color-ink-soft);letter-spacing:.08em}
+
+@media(max-width:380px){
+ .plan-journal .journal-heading-line{position:relative;display:block}
+ .plan-journal .journal-heading .grace-art{position:absolute;right:0;top:0;width:44px}
+ .plan-journal .journal-date{padding-right:52px}
+ .plan-journal .journal-heading h1{font-size:2.1rem}
+}

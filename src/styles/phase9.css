@@ -133,10 +133,7 @@
 }
 
 /* Common control language */
-.import-controls input,
-.plan-month-heading select,
-.prayer-administration-fields input,
-.prayer-administration-fields select{
+.prayer-administration-fields input, .prayer-administration-fields select{
   min-height: var(--control-height);
   border-color: var(--color-line-strong);
   border-radius: var(--radius-small);
@@ -243,18 +240,6 @@ button:disabled,
   min-height: 30px;
 }
 
-.plan-links-row {
-  margin-top: 26px;
-}
-
-.plan-day {
-  padding-block: 20px;
-}
-
-.plan-day-readings a {
-  min-height: 48px;
-}
-
 .earlier-list a {
   min-height: 62px;
 }
@@ -302,8 +287,7 @@ button:disabled,
     border-top: 1px solid var(--color-line);
   }
 
-  .existing-progress,
-  .plan-import {
+  .existing-progress {
     gap: 24px;
   }
 }
@@ -399,10 +383,6 @@ button:disabled,
   .reading-row,
   .live-reading-list .reading-row {
     grid-template-columns: 30px minmax(0, 1fr) 28px;
-  }
-
-  .plan-summary {
-    gap: 20px 14px;
   }
 
   .today-prayer-actions {

@@ -305,28 +305,9 @@
     line-height: 1.4;
   }
 
-  .import-controls {
-    gap: 6px;
-  }
-
-  .import-controls input,
-  .import-controls button {
-    min-height: 40px;
-  }
-
   /* TODAY — compact daily agenda */
 
   /* Four desktop cards become one grouped mobile list. */
-
-  .plan-links-row {
-    gap: 8px;
-    margin-top: 9px;
-    font-size: .68rem;
-  }
-
-  .plan-links-row > span {
-    display: none;
-  }
 
   .earlier-unread {
     margin-top: 18px;
@@ -358,76 +339,8 @@
   /* HISTORY — compact summary + calendar app screen */
 
   /* Secondary phone headers collapse to app-style context rows. */
-  .mg-plan-workspace .mg-secondary-header{
-    margin-bottom: 10px;
-    padding: 0 0 8px;
-  }
-
-  .mg-plan-workspace .mg-secondary-header h1{
-    margin: 2px 0 3px;
-    font-family: var(--font-ui);
-    font-size: 1.05rem;
-    font-weight: 700;
-    letter-spacing: -.015em;
-  }
-
-  .mg-plan-workspace .mg-secondary-header .screen-intro,
-  .mg-plan-workspace .mg-secondary-header .muted-copy{
-    display: none;
-  }
 
   /* Reading plan: stats become a slim status strip instead of a large summary card. */
-  .mg-plan-workspace .plan-summary {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0;
-    margin: 0 0 14px;
-    border: 1px solid var(--color-line);
-    border-radius: 11px;
-    background: var(--color-surface);
-  }
-
-  .mg-plan-workspace .plan-summary > div {
-    min-height: 54px;
-    padding: 8px 10px;
-  }
-
-  .mg-plan-workspace .plan-summary > div + div {
-    border-left: 1px solid var(--color-line);
-    border-top: 0;
-  }
-
-  .mg-plan-workspace .plan-summary strong {
-    font-size: 1.2rem;
-  }
-
-  .mg-plan-workspace .plan-summary span {
-    font-size: .58rem;
-    line-height: 1.2;
-  }
-
-  .mg-plan-workspace .plan-summary > a {
-    display: none;
-  }
-
-  .mg-plan-workspace .plan-calendar {
-    padding-top: 10px;
-  }
-
-  .mg-plan-workspace .plan-month-heading {
-    align-items: center;
-    margin-bottom: 8px;
-  }
-
-  .mg-plan-workspace .plan-month-heading h2 {
-    font-size: 1.35rem;
-  }
-
-  .mg-plan-workspace .plan-month-heading select {
-    min-height: 38px;
-    max-width: 132px;
-    padding-block: 4px;
-  }
 
   /* Data keeps warnings intact but removes desktop-scale spacing. */
 
@@ -443,30 +356,6 @@
 
   .mg-secondary-header .screen-intro {
     font-size: .82rem;
-  }
-
-  .mg-plan-workspace .plan-summary {
-    margin-bottom: 18px;
-    border-radius: 12px;
-    overflow: hidden;
-  }
-
-  .mg-plan-workspace .plan-summary > div {
-    min-height: 62px;
-    padding: 9px 10px;
-  }
-
-  .mg-plan-workspace .plan-summary strong {
-    font-size: 1.35rem;
-  }
-
-  .mg-plan-workspace .plan-day {
-    gap: 6px;
-    padding: 12px 0;
-  }
-
-  .mg-plan-workspace .plan-day-readings a {
-    min-height: 46px;
   }
 
   .mg-route-loading {

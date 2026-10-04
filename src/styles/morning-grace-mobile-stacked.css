@@ -117,9 +117,6 @@
   .mobile-detail-route .mg-state-screen .quiet-back-link {
     display: inline-flex !important;
   }
-  .mobile-detail-route .mg-plan-workspace .plan-summary > a[href="/today"] {
-    display: none;
-  }
 
   .mobile-detail-route .mg-secondary-screen {
     padding-top: 8px;

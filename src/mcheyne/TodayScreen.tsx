@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
 import { DevotionalIcon } from "../app/visual/DevotionalIcon";
 import { TodayVerse } from "./TodayVerse";
 import { MorningGraceArtwork } from "../app/visual/MorningGraceArtwork";
 import { useLocalClock } from "../app/useLocalClock";
 import { useMutation } from "../app/useMutation";
-import { validateCompletedThroughDate } from "./import-date";
+import { PlanSetup } from "./PlanSetup";
+import { readPlanJournal, readJourneyPreference, greeting } from "./journal-model";
+import { usePrayerRead } from "../prayer/detail-hooks";
 import type { LocalDate, PlanEnrollment, ReadingProgress } from "../domain/types";
 import { TodayPrayerPanel } from "../prayer/TodayPrayerPanel";
 import { TodayReflectionPanel } from "../reflection/TodayReflectionPanel";
-import { assignmentForCalendarDate, calendarYear, sequenceOnOrAfter, sequenceOnOrBefore } from "./calendar";
+import { assignmentForCalendarDate } from "./calendar";
 import { buildPlanReadingUrl } from "./context";
 import { loadMcheynePlan } from "./loader";
 import { McheyneRepository } from "./repository";
@@ -22,51 +24,16 @@ function key(sequence: number, readingIndex: number): string {
 }
 
 export function TodayScreen() {
-  const { localDate: today } = useLocalClock();
+  const { localDate: today, hour } = useLocalClock();
   const { busy, status, failed, run } = useMutation();
-  const [plan, setPlan] = useState<McheynePlan | null>(null);
-  const [enrollment, setEnrollment] = useState<PlanEnrollment | null>(null);
-  const [assignment, setAssignment] = useState<McheyneAssignment | null>(null);
-  const [progress, setProgress] = useState<Map<string, ReadingProgress>>(new Map());
-  const [earlierUnread, setEarlierUnread] = useState<AssignmentProgressSummary[]>([]);
-  const [importDate, setImportDate] = useState<LocalDate>(today);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const refresh = useCallback(async () => {
-    setError(null);
-    try {
-      const nextPlan = await loadMcheynePlan();
-      const nextEnrollment = await repository.getActiveEnrollment(today);
-      setPlan(nextPlan);
-      setEnrollment(nextEnrollment ?? null);
-      if (!nextEnrollment) {
-        setAssignment(null);
-        setProgress(new Map());
-        setEarlierUnread([]);
-        return;
-      }
-      const nextProgress = await repository.completionMap(nextEnrollment.id);
-      setProgress(nextProgress);
-      if (nextEnrollment.mode === "CALENDAR") {
-        const current = assignmentForCalendarDate(nextPlan, today);
-        setAssignment(current);
-        const before = current?.sequence ?? sequenceOnOrAfter(nextPlan, today) ?? 366;
-        setEarlierUnread(await repository.getEarlierUnreadAssignments(nextPlan, nextEnrollment, before));
-      } else {
-        const sequence = await repository.getCurrentSelfPacedSequence(nextPlan, nextEnrollment);
-        setAssignment(sequence ? nextPlan.assignments[sequence - 1] ?? null : null);
-        setEarlierUnread([]);
-      }
-      setError(null);
-    } catch (reason) {
-      setError(reason instanceof Error ? reason.message : "Could not load today's reading plan.");
-    } finally {
-      setLoading(false);
-    }
-  }, [today]);
-
-  useEffect(() => { void refresh(); }, [refresh]);
+  const read = usePrayerRead('today-plan:' + today, () => readPlanJournal(today));
+  const preference = usePrayerRead('journey-preference', readJourneyPreference);
+  const plan = read.data?.plan ?? null, enrollment = read.data?.enrollment ?? null;
+  const assignment = enrollment ? read.data?.assignment ?? null : null;
+  const progress = read.data?.progress ?? new Map();
+  const earlierUnread = read.data?.earlierUnread ?? [];
+  const loading = !read.data && !read.error, error = read.error;
+  const refresh = async () => read.retry();
 
   const completedCount = assignment
     ? [0, 1, 2, 3].filter((index) => progress.get(key(assignment.sequence, index))?.completedAt).length
@@ -78,26 +45,6 @@ export function TodayScreen() {
     () => earlierUnread.reduce((sum, item) => sum + (4 - item.completedCount), 0),
     [earlierUnread],
   );
-
-  const followCalendar = async () => {
-    if (!plan) return;
-    await repository.enrollCalendar(today, sequenceOnOrAfter(plan, today) ?? 365);
-    await refresh();
-  };
-
-  const startSelfPaced = async () => {
-    await repository.enrollSelfPaced(today);
-    await refresh();
-  };
-
-  const importExistingProgress = async () => {
-    if (!plan) return;
-    validateCompletedThroughDate(importDate, today);
-    const through = sequenceOnOrBefore(plan, importDate);
-    if (!through) throw new Error("No reading assignment exists for this date.");
-    await repository.enrollCalendarWithProgress(today, through);
-    await refresh();
-  };
 
   const toggleReading = async (readingIndex: number) => {
     if (!enrollment || !assignment) return;
@@ -122,24 +69,14 @@ export function TodayScreen() {
   return <main className="grace-today">
     <header className="today-opening">
       <MorningGraceArtwork />
-      <h1>Good morning,<br />Friend.</h1>
-      <p>A new day. A fresh opportunity<br />to walk with God.</p>
+      <h1>{greeting(hour)},<br />{preference.data?.name || "Friend"}.</h1>
+      <p>{hour < 12 ? "A new day. A fresh opportunity" : "A quiet moment. A fresh opportunity"}<br />to walk with God.</p>
       <Link className="today-profile" to="/data?return=%2Ftoday" aria-label="Data and settings"><DevotionalIcon name="profile" /></Link>
     </header>
     <div className="today-journal">
       <TodayVerse reference={previewReading?.references[0]} today={today} />
       <p className="today-status" role={failed ? "alert" : "status"}>{busy ? "Saving…" : status}</p>
-      {!plan || !enrollment ? <section className="today-setup" aria-labelledby="setup-heading">
-        <h2 id="setup-heading">Begin a daily rhythm.</h2>
-        <p>Read through Scripture with the M’Cheyne reading plan.</p>
-        <button type="button" disabled={busy} className="grace-primary" onClick={() => void run(followCalendar)}>Follow today’s calendar <DevotionalIcon name="arrow" /></button>
-        <button type="button" disabled={busy} className="today-setup-choice" onClick={() => void run(startSelfPaced)}>Start self-paced at Day 1</button>
-        <details className="today-import"><summary>Already following this year?</summary>
-          <p>Import the readings you’ve completed through a date. Earlier readings are never marked missed when you start today.</p>
-          <label>Completed through date<input type="date" disabled={busy} min={`${calendarYear(today)}-01-01`} max={today} value={importDate} onChange={event => setImportDate(event.target.value as LocalDate)} /></label>
-          <button type="button" className="today-setup-choice" disabled={busy} onClick={() => void run(importExistingProgress)}>Import through this date</button>
-        </details>
-      </section> : <section className="today-plan" aria-labelledby="reading-heading">
+      {!enrollment ? plan && <PlanSetup plan={plan} today={today} onSaved={read.retry} introduction={!preference.data?.dismissed} /> : <section className="today-plan" aria-labelledby="reading-heading">
         <div className="today-section-heading"><h2 id="reading-heading">Today’s Reading Plan</h2><span>{assignment ? `Day ${assignment.sequence}` : "M’Cheyne"}</span></div>
         {assignment ? <details className="today-plan-card grace-paper">
           <summary aria-label={`View Day ${assignment.sequence} readings`}>
@@ -173,3 +110,4 @@ export function TodayScreen() {
     </div>
   </main>;
 }
+

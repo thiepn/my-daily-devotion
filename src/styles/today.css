@@ -4,7 +4,7 @@
 .today-opening { position: relative; isolation: isolate; min-height: 260px; padding: 20px var(--today-gutter) clamp(117px, 6rem, 180px); }
 .today-opening .grace-art { position: absolute; z-index: -1; inset: 0; height: 100%; width: 100%; aspect-ratio: auto; mask-image: linear-gradient(to bottom, transparent 0%, #000 24%, #000 85%, transparent); }
 .today-opening .grace-art img { object-position: 53% 50%; }
-.today-opening h1 { max-width: calc(100% - 48px); margin: 0 0 8px; color: var(--color-ink); font-family: var(--font-display); font-size: 2rem; line-height: 1.13; font-weight: 700; letter-spacing: -.04em; }
+.today-opening h1 { overflow-wrap:anywhere; max-width: calc(100% - 48px); margin: 0 0 8px; color: var(--color-ink); font-family: var(--font-display); font-size: 2rem; line-height: 1.13; font-weight: 700; letter-spacing: -.04em; }
 .today-opening p { max-width: 25ch; margin: 0; font-family: var(--font-reading); color: var(--color-ink-soft); font-size: .96rem; line-height: 1.45; }
 .today-profile { position: absolute; right: var(--today-gutter); top: 25px; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--color-accent-soft); color: var(--color-nav-active); }
 .today-profile .devotional-icon { width: 24px; height: 24px; }

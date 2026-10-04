@@ -38,11 +38,7 @@ h3,
 }
 
 /* Consistent interactive finish */
-.utility-link,
-.quiet-back-link,
-.future-text-link,
-.metadata-manage-links a,
-.plan-links-row a {
+.utility-link, .quiet-back-link, .future-text-link, .metadata-manage-links a {
   text-underline-offset: 3px;
   text-decoration-thickness: 1px;
 }
@@ -321,10 +317,6 @@ textarea:focus-visible {
   font-family: var(--font-reading);
 }
 
-.mg-plan-workspace .plan-summary > div {
-  min-height: 92px;
-}
-
 /* Focused Prayer needs stronger contrast than secondary metadata elsewhere. */
 
 /* Dark mode: keep artwork and rules visible rather than muddy. */
@@ -452,10 +444,6 @@ textarea:focus-visible {
 
   .theme-option {
     min-width: 31px;
-  }
-
-  .mg-plan-workspace .plan-summary > div {
-    min-height: 72px;
   }
 }
 

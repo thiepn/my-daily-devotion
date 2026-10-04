@@ -81,3 +81,4 @@
 @media (max-width:350px) { .data-journal .data-panel { padding:18px 14px; } .backup-counts, .restore-effects { grid-template-columns:1fr; } .data-journal h1 { font-size:2rem; } }
 @media (min-width:861px) { .data-journal .data-panel { padding:28px 32px; } }
 @media (min-resolution:1dppx) { html[style*="font-size: 200%"] .data-journal :is(.backup-counts,.restore-effects) { grid-template-columns:1fr; } }
+#data-greeting{display:inline-flex;align-items:center;min-height:44px;margin-top:.4rem;color:var(--color-accent-strong)}

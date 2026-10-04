@@ -7,18 +7,12 @@
   color: var(--color-ink-soft);
 }
 
-.mcheyne-setup,
-.plan-calendar,
-.earlier-unread,
-.plan-import {
+.mcheyne-setup, .earlier-unread {
   border-top: 1px solid var(--color-line-strong);
   padding-top: 22px;
 }
 
-.mcheyne-setup > h2,
-.earlier-unread h2,
-.plan-import h2,
-.plan-calendar h2 {
+.mcheyne-setup > h2, .earlier-unread h2 {
   margin: 6px 0 14px;
   font-family: var(--font-editorial);
   font-size: clamp(1.8rem, 3.5vw, 2.7rem);
@@ -77,8 +71,7 @@
   line-height: 1.55;
 }
 
-.existing-progress,
-.plan-import {
+.existing-progress {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   gap: 36px;
@@ -92,38 +85,11 @@
   font-size: 1.3rem;
 }
 
-.existing-progress p,
-.plan-import p {
+.existing-progress p {
   max-width: 58ch;
   margin-bottom: 0;
   color: var(--color-ink-soft);
   line-height: 1.65;
-}
-
-.import-controls {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.import-controls input,
-.plan-month-heading select {
-  min-height: 42px;
-  padding: 0 11px;
-  border: 1px solid var(--color-line-strong);
-  border-radius: var(--radius-small);
-  color: var(--color-ink);
-  background: var(--color-surface);
-}
-
-.import-controls button {
-  min-height: 42px;
-  padding: 0 14px;
-  border: 1px solid var(--color-ink);
-  border-radius: var(--radius-small);
-  color: var(--color-surface);
-  background: var(--color-ink);
-  cursor: pointer;
 }
 
 .live-reading-list .reading-row {
@@ -150,24 +116,6 @@
   color: var(--color-accent-strong);
   font-family: var(--font-editorial);
   font-size: 1.05rem;
-}
-
-.plan-links-row {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 14px 28px;
-  margin-top: 30px;
-  padding-top: 16px;
-  border-top: 1px solid var(--color-line);
-  color: var(--color-ink-soft);
-  font-size: .78rem;
-}
-
-.plan-links-row a {
-  color: var(--color-accent-strong);
-  font-weight: 650;
-  text-decoration: none;
 }
 
 .leap-note,
@@ -229,128 +177,9 @@
   margin-top: 84px;
 }
 
-.plan-summary {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(150px, 220px)) 1fr;
-  gap: 28px;
-  align-items: end;
-  margin-bottom: 58px;
-  padding-bottom: 22px;
-  border-bottom: 1px solid var(--color-line);
-}
-
-.plan-summary div {
-  display: grid;
-  gap: 4px;
-}
-
-.plan-summary strong {
-  font-family: var(--font-editorial);
-  font-size: 2.25rem;
-  font-weight: 500;
-}
-
-.plan-summary span {
-  color: var(--color-ink-faint);
-  font-size: .72rem;
-}
-
-.plan-summary a {
-  justify-self: end;
-  color: var(--color-accent-strong);
-  font-size: .8rem;
-  text-decoration: none;
-}
-
-.plan-month-heading {
-  align-items: center;
-}
-
-.plan-day-list {
-  border-bottom: 1px solid var(--color-line);
-}
-
-.plan-day {
-  display: grid;
-  grid-template-columns: 100px minmax(0, 1fr);
-  gap: 26px;
-  padding: 22px 0;
-  border-top: 1px solid var(--color-line);
-}
-
-.plan-day.is-current {
-  border-top-color: var(--color-accent);
-}
-
-.plan-day-meta {
-  display: grid;
-  align-content: start;
-  gap: 3px;
-}
-
-.plan-day-meta span,
-.plan-day-meta small {
-  color: var(--color-ink-faint);
-  font-size: .68rem;
-}
-
-.plan-day-meta strong {
-  font-family: var(--font-editorial);
-  font-size: 1.1rem;
-}
-
-.plan-day-readings {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 1px 24px;
-}
-
-.plan-day-readings a {
-  min-height: 44px;
-  display: grid;
-  grid-template-columns: 58px 1fr 18px;
-  align-items: center;
-  gap: 9px;
-  border-bottom: 1px solid var(--color-line);
-  color: inherit;
-  text-decoration: none;
-}
-
-.plan-day-readings a span {
-  color: var(--color-ink-faint);
-  font-size: .65rem;
-}
-
-.plan-day-readings a strong {
-  font-family: var(--font-editorial);
-  font-size: .95rem;
-  font-weight: 500;
-}
-
-.plan-day-readings a.is-complete {
-  color: var(--color-ink-soft);
-}
-
-.plan-day-readings a.is-complete .icon {
-  color: var(--color-accent);
-}
-
-.plan-import {
-  margin-top: 72px;
-}
-
 @media (max-width: 760px) {
-  .setup-options,
-  .existing-progress,
-  .earlier-unread,
-  .plan-import,
-  .plan-day {
+  .setup-options, .existing-progress, .earlier-unread {
     grid-template-columns: 1fr;
-  }
-
-  .import-controls {
-    align-items: stretch;
-    flex-direction: column;
   }
 
   .live-reading-list .reading-row {
@@ -359,18 +188,5 @@
 
   .live-reading-list .reading-group {
     display: none;
-  }
-
-  .plan-summary {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .plan-summary a {
-    grid-column: 1 / -1;
-    justify-self: start;
-  }
-
-  .plan-day-readings {
-    grid-template-columns: 1fr;
   }
 }
