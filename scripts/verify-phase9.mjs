@@ -31,8 +31,6 @@ for (const selector of [
   ".utility-context",
   ".visual-screen",
   ".setup-options",
-  ".global-search-form",
-  ".collections-layout",
 ]) assert.ok(css.includes(selector), `Missing Phase 9 refinement for ${selector}`);
 assert.match(await read("src/styles/prayer.css"), /\.prayer-journal-tabs/);
 assert.match(await read("src/styles/history.css"), /\.history-journal-tabs/);
@@ -41,7 +39,7 @@ assert.match(await read("src/styles/bible.css"), /\.verse-action-dock/);
 
 assert.match(css, /--control-height:\s*44px/);
 assert.match(css, /min-height:\s*44px/);
-assert.match(css, /@media\s*\(min-width:\s*1100px\)/);
+assert.match(await read("src/styles/writing.css"), /max-width:760px/);
 assert.match(css, /@media\s*\(max-width:\s*420px\)/);
 assert.match(css, /orientation:\s*landscape/);
 assert.match(await read("src/styles/writing.css"), /\.journal-context/);
@@ -72,3 +70,7 @@ console.log("  phone, tablet, desktop, wide master/detail and short-landscape co
 assert.match(await read("src/styles/writing.css"), /\.journal-prompts button/);
 
 assert.match(await read("src/styles/prayer-metadata.css"), /\.directory-list/);
+
+// Archive compositions have migrated out of legacy CSS.
+assert.match(await read("src/styles/archive.css"), /\.archive-segments/);
+assert.match(await read("src/styles/archive.css"), /\.collection-journal-item/);

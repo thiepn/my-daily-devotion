@@ -34,7 +34,7 @@ assert.equal(contract.name,"Morning Grace Secondary Workflows");
 assert.equal(contract.status,"phase-4-frozen");
 for(const key of ["reflection","readingPlan","prayerDetail","prayerAdministration","focusedPrayer","collections","search","data"]) assert.ok(contract.workspaces[key],"Missing Phase 4 workspace "+key);
 
-for(const screen of [screens[1],...screens.slice(7,9)]) assert.ok(screen.includes("mg-secondary-screen"),"A retained Phase 4 screen is missing mg-secondary-screen");
+for(const screen of [screens[1]]) assert.ok(screen.includes("mg-secondary-screen"),"A retained Phase 4 screen is missing mg-secondary-screen");
 assert.match(screens[0], /journal-workspace journal-reflection/);
 assert.match(await read("src/styles/writing.css"), /\.journal-paper/);
 assert.ok(screens[1].includes("mg-plan-workspace"));
@@ -54,9 +54,7 @@ assert.ok(screens[9].includes("data-journal"));
 assert.match(await read("src/styles/data.css"), /\.data-journal/);
 
 for(const selector of [
-  ".mg-plan-workspace",
-  ".mg-collections-workspace",
-  ".mg-search-workspace"
+  ".mg-plan-workspace"
 ]) assert.ok(css.includes(selector),"Secondary CSS missing "+selector);
 
 assert.match(css,/@media\s*\(max-width:\s*700px\)/);
@@ -79,3 +77,7 @@ console.log("  Reflection, Plan, Prayer administration/session, Collections, Sea
 console.log("  secondary workflows use quieter editorial composition than canonical screens");
 console.log("  destructive data and restore safety language preserved");
 console.log("  phone and 200% text reflow rules installed");
+
+// Archive compositions have migrated out of legacy CSS.
+assert.match(await read("src/styles/archive.css"), /\.archive-segments/);
+assert.match(await read("src/styles/archive.css"), /\.collection-journal-item/);

@@ -37,8 +37,8 @@ test.describe("native mobile stacked navigation", () => {
       await openRoute(page, route);
       await expect(page.locator(".app-shell")).toHaveClass(/mobile-detail-route/);
       await expect(page.locator(".utility-mobile-title")).toHaveText(title);
-      if (route.includes("reflection") || ["/prayer/new","/prayer/people","/prayer/categories","/data"].includes(route)) await expect(page.locator(".journal-heading .quiet-back-link")).toBeVisible(); else if (route.startsWith("/history")) await expect(page.locator(".history-back")).toBeVisible(); else await expect(page.getByRole("button", { name: "Back", exact: true })).toBeVisible();
-      if (["/prayer/people","/prayer/categories","/data"].includes(route)) await expect(page.locator(".mobile-nav")).toBeVisible(); else await expect(page.locator(".mobile-nav")).toBeHidden();
+      if (route.includes("reflection") || ["/prayer/new","/prayer/people","/prayer/categories","/data","/search","/bible/collections"].includes(route)) await expect(page.locator(".journal-heading .quiet-back-link")).toBeVisible(); else if (route.startsWith("/history")) await expect(page.locator(".history-back")).toBeVisible(); else await expect(page.getByRole("button", { name: "Back", exact: true })).toBeVisible();
+      if (["/prayer/people","/prayer/categories","/data","/search","/bible/collections"].includes(route)) await expect(page.locator(".mobile-nav")).toBeVisible(); else await expect(page.locator(".mobile-nav")).toBeHidden();
       await expect(page.locator(".utility-actions")).toBeHidden();
       await expectNoHorizontalOverflow(page);
     }
@@ -55,7 +55,7 @@ test.describe("native mobile stacked navigation", () => {
     await page.getByRole("button", { name: "Search", exact: true }).click();
     await expect(page).toHaveURL(/q=faith/);
     await expect(page).toHaveURL(/return=%2Fbible%2FJHN%2F3%3Fverse%3D16/);
-    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await page.getByRole("link", { name: "← Back", exact: true }).click();
     await expect(page).toHaveURL(/#\/bible\/JHN\/3\?verse=16$/);
     await expect(page.getByRole("button", { name: "Select John 3:16", exact: true })).toHaveAttribute("aria-pressed", "true");
 
@@ -71,20 +71,20 @@ test.describe("native mobile stacked navigation", () => {
     await openRoute(page, "/bible/JHN/3?verse=16");
     await page.getByRole("link", { name: "Search Bible", exact: true }).click();
     await expect(page).toHaveURL(/return=%2Fbible%2FJHN%2F3%3Fverse%3D16/);
-    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await page.getByRole("link", { name: "← Back", exact: true }).click();
     await expect(page).toHaveURL(/#\/bible\/JHN\/3\?verse=16$/);
 
     await openRoute(page, "/history/moments");
     await page.getByRole("link", { name: "Search history and Scripture", exact: true }).click();
     await expect(page).toHaveURL(/return=%2Fhistory%2Fmoments/);
-    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await page.getByRole("link", { name: "← Back", exact: true }).click();
     await expect(page).toHaveURL(/#\/history\/moments$/);
 
     const collectionsRoute = "/bible/collections?translation=BSB&start=JHN.3.16&end=JHN.3.16&return=%2Fbible%2FJHN%2F3%3Fverse%3D16";
     await openRoute(page, collectionsRoute);
-    await page.locator(".quiet-link-row").getByRole("link", { name: "Search", exact: true }).click();
+    await page.locator(".collections-journal").getByRole("link", { name: "Search", exact: true }).click();
     await expect(page).toHaveURL(/return=%2Fbible%2Fcollections/);
-    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await page.getByRole("link", { name: "← Back", exact: true }).click();
     await expect(page).toHaveURL(/#\/bible\/collections\?/);
     await expect(page).toHaveURL(/start=JHN\.3\.16/);
     await expect(page).toHaveURL(/return=%2Fbible%2FJHN%2F3%3Fverse%3D16/);

@@ -122,7 +122,7 @@ test("scheduled prayer session resumes after exit and reload", async ({ page }) 
 
 test("collections can be renamed, reject collisions, and remove passages", async ({ page }) => {
   await openRoute(page, "/bible/collections?translation=BSB&start=JHN.3.16&end=JHN.3.16");
-  await page.getByLabel("New collection").fill("Promises"); await page.getByRole("button", { name: "Add", exact: true }).click();
+  await page.getByRole("button", { name: "Add collection", exact: true }).click(); await page.getByLabel("New collection").fill("Promises"); await page.getByRole("button", { name: "Save collection", exact: true }).click();
   await page.getByRole("button", { name: "Add selected passage to Promises" }).click();
   await expect(page.getByRole("link", { name: "John 3:16", exact: true })).toHaveCount(1);
   await page.getByRole("button", { name: "Add selected passage to Promises" }).click();
@@ -133,9 +133,9 @@ test("collections can be renamed, reject collisions, and remove passages", async
   await expect(page.getByRole("heading", { name: "God’s promises", exact: true })).toBeVisible();
   await page.getByRole("link", { name: "John 3:16", exact: true }).click();
   await expect(page.getByRole("button", { name: "Select John 3:16", exact: true })).toHaveAttribute("aria-pressed", "true");
-  await page.goBack(); await page.getByRole("button", { name: "Remove John 3:16" }).click();
+  await page.goBack(); await page.getByRole("button", { name: "Remove John 3:16" }).click(); await page.getByRole("dialog").getByRole("button", { name: "Remove", exact: true }).click();
   await expect(page.getByText(/No passages saved here yet/)).toBeVisible();
-  page.once("dialog", (dialog) => dialog.accept()); await page.getByRole("button", { name: "Delete collection" }).click();
+  await page.getByRole("button", { name: "Delete collection" }).click(); await page.getByRole("dialog").getByRole("button", { name: "Remove", exact: true }).click();
   await expect(page.getByRole("heading", { name: "No collections yet." })).toBeVisible();
 });
 
@@ -146,7 +146,7 @@ test("search restores query and filters with browser back and opens exact verse"
   await expect(page.getByRole("button", { name: "Select John 3:16", exact: true })).toHaveAttribute("aria-pressed", "true");
   await page.goBack(); await expect(page.getByLabel("Search MDD")).toHaveValue("Jn 3:16");
   await page.getByLabel("Search MDD").fill("faith"); await page.getByRole("button", { name: "Search", exact: true }).click();
-  await page.getByRole("combobox", { name: "Book", exact: true }).selectOption("ROM");
+  await page.getByText("Scripture filters", { exact: true }).click(); await page.getByRole("combobox", { name: "Book", exact: true }).selectOption("ROM");
   await expect(page).toHaveURL(/book=ROM/);
   await page.goBack(); await expect(page.getByRole("combobox", { name: "Book", exact: true })).toHaveValue("");
   await page.goBack(); await expect(page.getByLabel("Search MDD")).toHaveValue("Jn 3:16");

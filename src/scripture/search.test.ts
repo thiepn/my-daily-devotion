@@ -72,3 +72,11 @@ describe("Bible search", () => {
     expect((await searchBible("God")).map((item) => item.verseKey)).toEqual(["GEN.1.1", "JHN.3.16", "JHN.3.17"]);
   });
 });
+
+// Totals are independent of the visible window, including reference ranges.
+it('reports exact Scripture totals independently of paging offsets', async () => {
+ const {searchBiblePage} = await import('./search');
+ expect(await searchBiblePage('God',{limit:1})).toMatchObject({total:3,items:[{verseKey:'GEN.1.1'}]});
+ expect(await searchBiblePage('God',{limit:1,offset:2})).toMatchObject({total:3,items:[{verseKey:'JHN.3.17'}]});
+ expect(await searchBiblePage('John 3:16-17',{limit:1})).toMatchObject({total:2,items:[{verseKey:'JHN.3.16'}]});
+});

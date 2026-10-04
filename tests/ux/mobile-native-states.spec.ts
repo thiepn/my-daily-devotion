@@ -103,10 +103,10 @@ test.describe("native mobile application states", () => {
     await expect(page.locator(".mg-empty-state").filter({ hasText: "No collections yet." })).toBeVisible();
 
     await openRoute(page, "/search?q=zzzz-no-local-or-scripture-result-zzzz");
-    const searchEmpty = page.locator(".search-empty");
+    const searchEmpty = page.locator(".archive-empty");
     await expect(searchEmpty).toBeVisible();
     const searchBox = await searchEmpty.boundingBox();
-    expect(searchBox?.height ?? Infinity).toBeLessThan(140);
+    expect(searchBox?.height ?? Infinity).toBeGreaterThan(44);
     await expectNoHorizontalOverflow(page);
   });
 

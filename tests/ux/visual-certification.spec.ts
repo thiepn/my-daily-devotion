@@ -54,8 +54,8 @@ test("visual record of populated devotional journeys and management screens", as
   await expect(page.getByText("Prayed now recorded.")).toBeVisible();
   await openRoute(page, "/prayer/new"); await page.getByLabel("What do you want to pray about?").fill("Help me listen with patience and speak with kindness today.");
   await page.getByRole("button", { name: "Save prayer" }).click(); await expect(page.locator(".prayer-request-text")).toBeVisible();
-  await openRoute(page, "/bible/collections?translation=BSB&start=JHN.3.16&end=JHN.3.16"); await page.getByLabel("New collection").fill("Promises to remember");
-  await page.getByRole("button", { name: "Add", exact: true }).click(); await page.getByRole("button", { name: "Add selected passage to Promises to remember" }).click();
+  await openRoute(page, "/bible/collections?translation=BSB&start=JHN.3.16&end=JHN.3.16"); await page.getByRole("button", { name: "Add collection", exact: true }).click(); await page.getByLabel("New collection").fill("Promises to remember");
+  await page.getByRole("button", { name: "Save collection", exact: true }).click(); await page.getByRole("button", { name: "Add selected passage to Promises to remember" }).click();
   await expect(page.getByRole("link", { name: "John 3:16", exact: true })).toBeVisible();
   await openRoute(page, "/bible/JHN/3?verse=16");
   await page.getByRole("button", { name: "Highlight", exact: true }).click();
