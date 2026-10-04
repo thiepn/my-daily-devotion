@@ -42,6 +42,7 @@ test.describe("accessibility and keyboard UX", () => {
     await page.locator(".today-plan-card summary").click();
     await page.getByRole("link", { name: "Open full plan" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Reading plan" })).toBeVisible();
+    await page.getByText("Plan details & progress", { exact: true }).click();
     await expect(page.getByLabel("Completed through date")).toBeVisible();
 
     await openRoute(page, "/history/calendar");
