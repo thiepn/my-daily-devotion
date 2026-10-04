@@ -52,7 +52,7 @@ export function SearchScreen() {
   };
   const submit = (event: FormEvent) => { event.preventDefault(); change({ q: draft.trim() }, true); };
   const total = query.scope === 'all' ? (bible?.total ?? 0) + Object.values(personal.data ?? {}).reduce((sum, page) => sum + page.total, 0) : query.scope === 'scripture' ? bible?.total ?? 0 : personal.data?.[query.scope].total ?? 0;
-  const loading = !personal.data || ((query.scope === 'all' || query.scope === 'scripture') && !bible && !scriptureError);
+  const loading = (!personal.data && !personal.error) || (corpusEnabled && !bible && !scriptureError);
   return <main className="journal-workspace search-journal mg-search-workspace">
     <JournalHeading title="Search" subtitle="Scripture & your journal" back={query.returnTo} />
     <form className="global-search-form archive-search" onSubmit={submit}>
@@ -64,7 +64,7 @@ export function SearchScreen() {
     {(query.scope === 'all' || query.scope === 'people') && <label className="archive-checkbox"><input type="checkbox" checked={includeNotes} onChange={event => { setIncludeNotes(event.target.checked); change({notes: event.target.checked ? '1' : ''}, true); }} /> Include private person notes</label>}
     {!query.q ? <section className="archive-empty mg-empty-state"><DevotionalIcon name="search" /><h2>Find what matters</h2><p>Search the bundled Bible, your prayers, reflections, people, and saved passages. Everything stays on this device.</p><Link to={withSearchReturn('/bible/saved', url)}>Browse saved Scripture →</Link></section> : <>
       {personal.error && <div className="journal-notice" role="alert">{personal.error}<button onClick={personal.retry}>Retry personal search</button></div>}
-      {(query.scope === 'all' || query.scope === 'scripture') && scriptureError && <div className="journal-notice" role="alert">{scriptureError}<button onClick={() => setAttempt(value => value + 1)}>Retry Scripture search</button></div>}
+      {corpusEnabled && scriptureError && <div className="journal-notice" role="alert">{scriptureError}<button onClick={() => setAttempt(value => value + 1)}>Retry Scripture search</button></div>}
       {loading && <p className="journal-help" role="status">Searching local data…</p>}
       {!loading && !total && !personal.error && !scriptureError && <p className="archive-empty mg-empty-state">No results for “{query.q}”{query.scope !== 'all' ? ` in ${SEARCH_LABELS[query.scope].toLowerCase()}` : ''}.</p>}
       <div className="search-groups">
