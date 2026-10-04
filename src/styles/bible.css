@@ -95,3 +95,4 @@ html[data-theme="dark"] .grace-bible .mg-bible-chapter-art img { opacity: .38; }
 .reader-saved-range { padding:16px; margin-bottom:16px; border:1px solid var(--color-line); border-radius:10px; background:var(--color-surface); font:.8rem/1.7 var(--font-ui); overflow-wrap:anywhere; }
 .reader-saved-range p { margin:8px 0; }
 .reader-saved-range a { display:inline-flex; align-items:center; min-height:44px; margin-right:16px; color:var(--color-accent-strong); }
+.reader-plan-finish { margin: 1.5rem 0; padding: 1rem; border-top: 1px solid var(--color-line); font-family: var(--font-ui); font-size: .9rem; }
