@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.3.0 — Morning Grace integration candidate
+
+- Integrate the illustrated Today, literary Bible reader and approved cream/forest icon with the Prayer, History and journal-writing releases.
+- Include request filtering, read-only Focus previews, factual History periods/calendar/Moments, safe contextual handoffs, prayer detail/settings/sessions and explicit People/Categories management.
+- Include guided Data & Backup with encrypted export, snapshot-bound atomic restore review, generation receipts and contextual returns.
+- Replace duplicated, time-limited certification with one production build, browser shards, Windows image comparisons and complete commit/artifact-bound evidence aggregation.
+- Make deployment and version publication explicit manual actions using the certified archive without rebuilding.
+- Preserve database schema 1, backup format 1, offline assets and existing devotional semantics. Durable drafts, accounts, sync and native apps are not part of this release.
+- This version is a candidate until the integrated commit passes hosted certification and receives release approval.
+
 ## 1.2.5 — 2026-09-22
 
 ### Native mobile application states

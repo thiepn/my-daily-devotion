@@ -1,75 +1,38 @@
-# MDD 1.2.5 Release Checklist
+# Morning Grace 1.3.0 release checklist
 
-This checklist is operational. Automated gates remain authoritative where they exist.
+This is an operational gate, not a historical assertion that every item has passed. Complete it for the exact proposed release commit and retain the resulting evidence in the integration PR. Merge, deployment and publication require explicit owner authorization.
 
-## Source and version
+Ship only from a commit whose complete hosted certification and manual visual review succeed. Local results support that decision; they do not substitute for it.
 
-- [x] Product version is `1.2.5` in `package.json` and `src/app/version.ts`.
-- [x] Service-worker cache generation is `mdd-app-v1.2.5`.
-- [x] Database schema remains version 1.
-- [x] Direct dependency versions are exact and `package-lock.json` is committed.
-- [x] Morning Grace changes presentation only; schema 1 and existing domain semantics remain unchanged.
+## Candidate and compatibility
 
-## Data safety
+- [ ] Review constituent PRs #12–#21 in the integration PR against `main`.
+- [ ] Record the source commit, package version 1.3.0 and known discrepancies.
+- [ ] Verify package, application and service-worker versions agree.
+- [ ] Confirm database schema and portable backup format remain v1.
+- [ ] Review old PRs #9–#11 for necessary scoped fixes; do not import their global navigation/CSS changes wholesale. Close superseded PRs only after approved integration.
+- [ ] Inspect the canonical application crops, approved icon and current screenshots together using `docs/VISUAL_AUTHORITY.md`.
 
-- [x] Backup creation and validated restore remain covered by automated tests.
-- [x] Destructive backup → database deletion → restore recovery remains covered.
-- [x] Unsupported newer database schemas are rejected without destructive clearing.
-- [x] Restore validation occurs before live data modification.
-- [x] Privacy/data ownership behavior is documented.
+## Exact-commit certification
 
-## PWA and offline
+- [ ] Worktree is clean. Run `npm run verify:phase12` on Windows for complete local supporting evidence.
+- [ ] Hosted Release Certification CI succeeds for the integrated commit. Its build job runs static/domain checks, inventories all cases and builds the production artifact once.
+- [ ] All eight browser shards and the Windows image job pass without skips, failures or retries. Aggregation rejects missing coverage, stale reports and differing artifact hashes.
+- [ ] Review Chromium, mobile, Firefox, WebKit and offline journeys, including cold cached Bible/search, explicit completion/prayed behavior and service-worker update handling.
+- [ ] Review encrypted/plain backups, validation, reviewed merge/replace, rollback and fresh-install recovery.
+- [ ] Inspect mobile widths 320/360/390/430, tablet/desktop, dark mode and 200% text. Passing baselines alone do not certify fidelity.
+- [ ] Check keyboard/focus, 44px controls, contrast, safe areas, long content and unavailable-source/error states.
+- [ ] Retain content-free test reports, SHA-256 package manifest, coverage inventory and visual discrepancy report.
 
-- [x] Manifest, icons and install metadata are present.
-- [x] Complete application lazy-route graph is precached.
-- [x] All 66 BSB book assets, the Scripture search index and M’Cheyne plan are cached.
-- [x] Cold offline Bible and Scripture search journey is browser-tested.
-- [x] Service-worker update activation remains user-controlled.
+## Explicit release actions
 
-## UX and accessibility
+- [ ] Obtain authorization to merge. Re-run hosted certification on the resulting `main` commit; a PR merge ref is not the deployed commit.
+- [ ] Obtain authorization to deploy. Manually dispatch **Deploy certified release** on that exact `main` commit with its successful certification run ID. Leave **publish_release** disabled unless publication is also authorized.
+- [ ] Deployment validates the completed main run, archive checksum, every asset hash and build identity. It extracts the certified artifact without rebuilding.
+- [ ] Verify deployed identity and every asset; retain deployment proof. A failed verification requires investigation and an explicit recovery decision.
+- [ ] If publication is authorized, publish the immutable versioned package and current 1.3.0 notes. Existing version tags/releases must not be overwritten.
+- [ ] Close superseded stack PRs only after successful approved integration, with a link to the integration PR.
 
-- [x] Desktop and touch/mobile devotional journeys are browser-tested.
-- [x] Automated WCAG A/AA checks are green.
-- [x] Keyboard route focus and skip navigation are green.
-- [x] 320px reflow and 200% text resizing are green.
-- [x] Primary routes cold-load without runtime errors.
-- [x] Invalid routes recover to Today instead of rendering a blank shell.
+## Operational limits
 
-## Security and build hygiene
-
-- [x] Production CSP limits resources and network connections to self.
-- [x] Referrer transmission is disabled.
-- [x] CI runs a high/critical production dependency vulnerability gate.
-- [x] Production build contains no source maps.
-- [x] Release verifier rejects obvious development residue in shipped text assets.
-- [x] Generated browser/build/release output is excluded from source control.
-
-## Packaging
-
-- [x] `npm run release:package` generates a versioned web/PWA ZIP.
-- [x] SHA-256 is emitted in `SHA256SUMS`.
-- [x] `release-manifest.json` records version, schema, archive size and checksum.
-- [x] Final verifier opens the archive and confirms mandatory app, Scripture, search and M’Cheyne files.
-- [x] Release CI uploads the checksummed package as an Actions artifact.
-
-## Ship rule
-
-Ship only from a commit where the independent Phase 0 contract and cumulative Phase 12 Release Certification workflow both conclude successfully. Do not waive a failed gate by checking this document manually.
-
-- [x] Mobile-first layout contract passes, including 320px, phone landscape and desktop-preservation checks.
-
-- [x] Mobile-native Back navigation remains phone-only and desktop in-content navigation remains available.
-- [x] Root bottom tabs and Search/Data utilities are hidden on pushed mobile routes.
-- [x] Pushed mobile Back targets are at least 44×44 CSS pixels and preserve validated devotional return context.
-- [x] Active Focused Prayer may become immersive without removing Back navigation from empty or finished states.
-
-- [x] Search and Data preserve their mobile source route and query state through Back navigation.
-- [x] Search query/filter mutations retain the validated return target.
-
-- [x] Prayer Detail/Settings and People/Categories use dense phone compositions without changing desktop layout.
-- [x] History Day/Moments preserve visible context and compact timeline navigation on phone.
-- [x] Dense secondary workflows pass 320px and 200% text reflow coverage.
-
-- [x] Unsaved-change confirmation is a safe-area-aware mobile bottom sheet with 44px+ actions.
-- [x] Conflict review, recovery/error and empty states use compact mobile-native compositions.
-- [x] Offline/update status uses a slim mobile system strip and reflows at 200% text.
+No automatic deployment on `main` push. This release introduces no accounts, cloud services, schema migration, durable drafts or sync. Unsaved writing remains memory-only. Search, Collections, Reading Plan and dedicated evening artwork remain later roadmap work; record their limitations rather than claiming the entire visual rebuild is complete.
