@@ -147,7 +147,7 @@ test.describe("offline PWA UX", () => {
       await page.evaluate(async () => { await (await navigator.serviceWorker.ready).update(); });
       await page.waitForFunction(async () => Boolean((await navigator.serviceWorker.getRegistration())?.waiting));
       await Promise.all([page.waitForEvent("load"), page.getByRole("button", { name: "Reload to update" }).click()]);
-      await expect(page.getByRole("heading", { name: "Good morning, Friend.", exact: true })).toBeVisible();
+      await expect(page.getByRole("heading", { name: /^Good (morning|afternoon|evening), Friend\.$/, exact: true })).toBeVisible();
       expect(await oldTab.evaluate(async () => (await fetch("./assets/old-only.js")).text())).toBe("old tab lazy asset");
       await oldTab.close(); await page.reload();
       await expect.poll(() => page.evaluate(() => caches.keys())).toEqual([`mdd-app-v${APP_VERSION}-fixture-new`]);
