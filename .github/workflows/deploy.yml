@@ -1,0 +1,102 @@
+name: Deploy certified release
+
+on:
+  workflow_dispatch:
+    inputs:
+      certification_run_id:
+        description: Successful Release Certification CI run for the selected main commit
+        required: true
+        type: string
+      publish_release:
+        description: Also publish the immutable versioned GitHub release
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Validate the completed certification run
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CERTIFICATION_RUN_ID: ${{ inputs.certification_run_id }}
+        run: node scripts/deploy-certified.mjs validate "$CERTIFICATION_RUN_ID"
+      - uses: actions/download-artifact@v4
+        with:
+          name: mdd-certified-release
+          run-id: ${{ inputs.certification_run_id }}
+          github-token: ${{ github.token }}
+          path: release/
+      - name: Stage the certified archive without rebuilding
+        run: node scripts/deploy-certified.mjs stage
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+      - id: deployment
+        uses: actions/deploy-pages@v4
+      - name: Verify deployed identity and every asset
+        run: node scripts/verify-deployment.mjs "${{ steps.deployment.outputs.page_url }}"
+      - name: Retain deployment and certification identity
+        uses: actions/upload-artifact@v4
+        with:
+          name: mdd-deployment-verification
+          path: |
+            release/deployment-verification.json
+            release/certified-run.json
+          retention-days: 90
+
+  publish:
+    if: inputs.publish_release && github.ref == 'refs/heads/main'
+    needs: deploy
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/download-artifact@v4
+        with:
+          name: mdd-certified-release
+          run-id: ${{ inputs.certification_run_id }}
+          github-token: ${{ github.token }}
+          path: release/
+      - uses: actions/download-artifact@v4
+        with:
+          name: mdd-deployment-verification
+          path: release/
+      - name: Publish without overwriting an existing version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          if gh release view "v$VERSION" >/dev/null 2>&1; then
+            echo "Version already published; refusing to overwrite it."
+            exit 1
+          fi
+          gh release create "v$VERSION" release/* --target "$GITHUB_SHA" --title "My Daily Devotion $VERSION" --notes-file docs/RELEASE_1.3.0_MORNING_GRACE.md

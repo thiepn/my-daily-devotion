@@ -8,7 +8,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : 2,
   retries: process.env.CI ? 1 : 0,
   failOnFlakyTests: Boolean(process.env.CI),
-  reporter: [["list"], ["json", { outputFile: "verification/browser.json" }], ...(process.env.CI ? [["html", { open: "never", outputFolder: "playwright-report" }] as const] : [])],
+  reporter: [["list"], ["json", { outputFile: process.env.MDD_TEST_REPORT ?? "verification/browser.json" }], ...(process.env.CI ? [["html", { open: "never", outputFolder: "playwright-report" }] as const] : [])],
   use: {
     baseURL: "http://127.0.0.1:4173",
     locale: "en-US",

@@ -3,8 +3,11 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { readFile, writeFile, readdir, copyFile } from "node:fs/promises";
 import { join } from "node:path";
+import { validateReport } from "./certification/evidence.mjs";
 const unit = JSON.parse(await readFile("verification/unit.json", "utf8"));
 const browser = JSON.parse(await readFile("verification/browser.json", "utf8"));
+const visual = JSON.parse(await readFile("verification/visual.json", "utf8"));
+const build = JSON.parse(await readFile("verification/build/build.json", "utf8"));
 const release = JSON.parse(await readFile("release/release-manifest.json", "utf8"));
 const sourceCommit = execFileSync("git", ["rev-parse", "HEAD"], { encoding: "utf8" }).trim();
 const startedAt = Number(process.env.MDD_CERTIFICATION_STARTED_AT);
@@ -14,6 +17,9 @@ assert.equal(execFileSync("git", ["status", "--porcelain"], { encoding: "utf8" }
 assert.ok(unit.startTime >= startedAt, "Unit evidence is stale.");
 assert.ok(Date.parse(browser.stats.startTime) >= startedAt, "Browser evidence is stale.");
 assert.equal(release.sourceCommit, sourceCommit);
+assert.equal(build.sourceCommit, sourceCommit);
+validateReport(browser, build.browserInventory, startedAt);
+validateReport(visual, build.visualInventory, startedAt);
 assert.ok(unit.numPassedTests > 0); assert.equal(unit.numFailedTests, 0); assert.equal(unit.numPendingTests, 0); assert.equal(unit.numTodoTests ?? 0, 0);
 assert.ok(browser.stats.expected > 0); for (const key of ["unexpected", "flaky", "skipped"]) assert.equal(browser.stats[key], 0, `Browser ${key} must be zero`);
 const hashes = {};
@@ -25,11 +31,15 @@ async function collect(directory, prefix = "") {
   }
 }
 await collect("dist");
+assert.deepEqual(hashes, build.files, "Packaged assets differ from the certified build");
 await writeFile("release/deployment-hashes.json", JSON.stringify(hashes, null, 2) + "\n");
 const report = {
   sourceCommit, version: release.version, databaseSchema: release.databaseSchemaVersion,
   unit: { passed: unit.numPassedTests, failed: unit.numFailedTests, skipped: unit.numPendingTests },
   browser: browser.stats,
+  visual: visual.stats,
+  artifactDigest: build.artifactDigest,
+  coverage: { browserCases: build.browserInventory.length, visualCases: build.visualInventory.length, browserShards: Object.keys(build.partitions).length },
   engines: browser.config.projects.map(p => ({ name: p.name, browser: p.use?.browserName ?? "see project configuration" })),
   scripture: { verses: 31086, assignments: 365, quotationRegressions: 28, omittedNoteRegressions: 112, coverage: "full corpus verified during build" },
   packageSha256: release.sha256, deploymentFileCount: Object.keys(hashes).length,
@@ -38,4 +48,6 @@ const report = {
 await writeFile("release/verification-summary.json", JSON.stringify(report, null, 2) + "\n");
 await copyFile("verification/unit.json", "release/unit-results.json");
 await copyFile("verification/browser.json", "release/browser-results.json");
+await copyFile("verification/visual.json", "release/visual-results.json");
+await copyFile("verification/build/build.json", "release/build-evidence.json");
 console.log(`✓ Commit ${sourceCommit}: ${unit.numPassedTests} unit tests, ${browser.stats.expected} browser tests, no failures/skips/flaky tests`);

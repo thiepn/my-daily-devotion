@@ -31,7 +31,7 @@ assert.match(pkg.scripts.build, /npm run notices:build/);
 assert.equal(pkg.scripts["release:package"], "npm run build && node scripts/package-release.mjs");
 assert.equal(pkg.scripts["audit:prod"], "npm audit --omit=dev --audit-level=high");
 assert.equal(pkg.scripts["verify:phase12"], "node scripts/certify.mjs");
-const certification = await read("scripts/certify.mjs");
+const certification = await read("scripts/certify.mjs") + await read("scripts/certification/runner.mjs");
 for (const gate of ["verify-phase0.mjs", "typecheck", '"test:report"', '"build"', "test:ux", "verify-phase11.mjs", "package-release.mjs", "verify-phase12.mjs"]) assert.ok(certification.includes(gate), `Certification missing ${gate}`);
 assert.match(certification, /phase = 2; phase <= 10/);
 
