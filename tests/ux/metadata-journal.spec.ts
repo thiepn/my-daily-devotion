@@ -100,6 +100,28 @@ test("all widths, dark colors, keyboard targets and enlarged text remain usable"
   await page.setViewportSize({ width: 320, height: 844 }); await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; }); await expectNoHorizontalOverflow(page); await expectNoAxeViolations(page);
 });
 
+test("delayed editor focus does not interrupt writing already begun", async ({ page }) => {
+  await seedMetadata(page, "categories");
+  await page.evaluate(() => {
+    const state = window as unknown as { releaseEditorFrames: () => void };
+    const original = window.requestAnimationFrame;
+    const callbacks: FrameRequestCallback[] = [];
+    window.requestAnimationFrame = callback => { callbacks.push(callback); return callbacks.length; };
+    state.releaseEditorFrames = () => {
+      window.requestAnimationFrame = original;
+      for (const callback of callbacks) callback(performance.now());
+    };
+  });
+  await page.getByRole("button", { name: "Add category", exact: true }).click();
+  const name = page.getByLabel("Name", { exact: true });
+  await name.fill("New");
+  await page.evaluate(() => (window as unknown as { releaseEditorFrames: () => void }).releaseEditorFrames());
+  await expect(name).toBeFocused();
+  await page.keyboard.type(" category");
+  await expect(name).toHaveValue("New category");
+  await expect(page.getByRole("button", { name: "Save category", exact: true })).toBeEnabled();
+});
+
 test("committed creation survives failed refresh without repeating", async ({ page }) => {
   await openRoute(page, "/prayer/people"); await page.getByRole("button", {name:"Add person",exact:true}).click();
   await page.getByLabel("Name", {exact:true}).fill("Committed person");

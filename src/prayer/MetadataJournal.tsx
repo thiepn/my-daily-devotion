@@ -92,7 +92,11 @@ export function MetadataJournal({ kind }: { kind: MetadataKind }) {
   const select = (id: string) => guard.request(() => { discard(); guard.allowNavigation(); setQuery({ entry: query.entry === id ? null : id, prayersShown: null }); });
   const begin = (record: MetadataRecord | null) => guard.request(() => {
     discard(); changeEditor({ record, baseline: fields(record), value: fields(record) });
-    requestAnimationFrame(() => document.getElementById("metadata-editor-heading")?.focus());
+    requestAnimationFrame(() => {
+      const heading = document.getElementById("metadata-editor-heading");
+      // A quick typist may already be in a field before this frame arrives.
+      if (!heading?.parentElement?.contains(document.activeElement)) heading?.focus();
+    });
   });
   const reveal = (record: MetadataRecord) => {
     guard.allowNavigation(); setQuery({ q: null, entry: record.id, prayersShown: null });
