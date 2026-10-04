@@ -78,7 +78,9 @@ assert.match(app,/Prayer settings/);
 assert.match(app,/utilityReturnTarget/);
 assert.match(app,/withReturn/);
 assert.match(app,/pathname === "\/search" \|\| pathname === "\/data"\) return returnTo \?\? "\/today"/);
-assert.match(search,/if\(returnTo\)next\.set\("return",returnTo\)/);
+assert.match(search,/parseSearchQuery\(location\.search\)/);
+assert.match(search,/withSearchReturn\(item\.href, returnTo\)/);
+assert.match(await read("src/search/context.ts"),/params\.set\("return", safeDataReturn\(returnTo\)\)/);
 
 assert.match(data,/mobile-appearance-panel/);
 assert.match(data,/ThemeSwitcher/);
