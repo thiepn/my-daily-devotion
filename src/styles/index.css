@@ -38,3 +38,4 @@
 @import "./focused-prayer.css" layer(screens);
 @import "./prayer-metadata.css" layer(screens);
 @import "./data.css" layer(screens);
+@import "./archive.css" layer(screens);

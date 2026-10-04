@@ -10,8 +10,7 @@
 /* Application chrome */
 .workspace,
 .visual-screen,
-.visual-screen > *,
-.collections-layout > * {
+.visual-screen > *{
   min-width: 0;
 }
 
@@ -129,9 +128,7 @@
 
 .muted-copy,
 .screen-intro,
-.reflection-excerpt,
-.search-hit p,
-.collection-items p {
+.reflection-excerpt{
   overflow-wrap: anywhere;
 }
 
@@ -139,10 +136,7 @@
 .import-controls input,
 .plan-month-heading select,
 .prayer-administration-fields input,
-.prayer-administration-fields select,
-.global-search-form > input,
-.search-filters select,
-.collection-sidebar input {
+.prayer-administration-fields select{
   min-height: var(--control-height);
   border-color: var(--color-line-strong);
   border-radius: var(--radius-small);
@@ -158,9 +152,7 @@ select {
 
 .primary-editorial-action.compact-action,
 .quiet-button,
-.weekday-picker span,
-.global-search-form > button,
-.collection-sidebar form button {
+.weekday-picker span{
   min-height: 44px;
 }
 
@@ -182,8 +174,7 @@ select {
   background: color-mix(in srgb, var(--color-ink) 90%, var(--color-accent));
 }
 
-.quiet-button,
-.collection-sidebar form button {
+.quiet-button{
   padding-inline: 12px;
   border: 1px solid var(--color-line-strong);
   border-radius: var(--radius-small);
@@ -277,107 +268,12 @@ button:disabled,
   margin-bottom: 40px;
 }
 
-.search-empty {
-  padding: clamp(36px, 6vw, 56px) 0;
-  border-bottom: 1px solid var(--color-line);
-}
-
 .prayer-field-grid {
   gap: 18px;
 }
 
 .weekday-picker span {
   min-width: 48px;
-}
-
-/* History */
-
-/* Search */
-.global-search-form {
-  gap: 10px;
-  margin-bottom: 32px;
-}
-
-.global-search-form > input {
-  min-height: 54px;
-  padding-inline: 16px;
-}
-
-.global-search-form > button {
-  min-width: 94px;
-}
-
-.search-filters {
-  gap: 18px;
-  padding-top: 8px;
-}
-
-.search-filters label {
-  gap: 9px;
-}
-
-.search-filters select {
-  min-height: 40px;
-}
-
-.search-groups {
-  gap: var(--section-rhythm);
-}
-
-.search-hit {
-  padding-block: 18px;
-  transition: background-color var(--transition-fast);
-}
-
-.search-hit:hover {
-  background: color-mix(in srgb, var(--color-surface-subtle) 44%, transparent);
-}
-
-/* Collections */
-.collections-layout {
-  grid-template-columns: minmax(240px, .38fr) minmax(0, 1fr);
-}
-
-.collection-sidebar form > div {
-  gap: 8px;
-}
-
-.collection-sidebar nav > button {
-  min-height: 58px;
-}
-
-.collection-sidebar nav em {
-  min-height: 32px;
-  display: inline-flex;
-  align-items: center;
-}
-
-.collection-items article {
-  padding-block: 20px;
-}
-
-.collection-items button {
-  min-height: 40px;
-  padding-inline: 4px;
-}
-
-/* Data portability */
-
-.global-search-form > button {
-  padding-inline: 16px;
-  border-radius: var(--radius-small);
-}
-
-/* Wide-screen master/detail composition */
-@media (min-width: 1100px) {
-  .collection-sidebar {
-    position: sticky;
-    top: 88px;
-    align-self: start;
-    max-height: calc(100vh - 112px);
-    overflow: auto;
-    scrollbar-width: thin;
-  }
 }
 
 /* Tablet and small desktop */
@@ -409,14 +305,6 @@ button:disabled,
   .existing-progress,
   .plan-import {
     gap: 24px;
-  }
-
-  .collections-layout {
-    gap: 36px;
-  }
-
-  .search-groups {
-    gap: 36px;
   }
 }
 
@@ -482,14 +370,6 @@ button:disabled,
     min-height: 64px;
   }
 
-  .global-search-form {
-    margin-bottom: 28px;
-  }
-
-  .search-filters select {
-    min-height: 44px;
-  }
-
   .mobile-nav {
     padding-inline: 6px;
   }
@@ -529,10 +409,6 @@ button:disabled,
     align-items: flex-start;
     flex-direction: column;
   }
-
-  .global-search-form > button {
-    width: 100%;
-  }
 }
 
 /* Short landscape screens: preserve usable content height without shrinking controls. */
@@ -568,29 +444,14 @@ button:disabled,
 .setup-options .editorial-option { display: flex; flex-direction: column; align-items: flex-start; justify-content: center; gap: 8px; text-align: left; }
 .today-lower-grid { margin-top: var(--section-rhythm); }
 .screen-heading h1 { letter-spacing: -.035em; }
-.quiet-button, .collection-sidebar form button { font-size: .85rem; }
+.quiet-button{ font-size: .85rem; }
 .metadata-manage-links a, .quiet-back-link, .field-help, .prayer-administration-fields label small { font-size: .8rem; }
 .prayer-administration-fields label { font-size: .875rem; }
 .recovery-screen > h1 { font-family: var(--font-editorial); font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 500; line-height: 1.2; }
-.recovery-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
-.collection-manage, .collection-rename { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
-.collection-rename { padding-bottom: 20px; align-items: end; }
-.collection-rename label { display: grid; gap: 8px; }
-.collection-rename input { min-height: 44px; max-width: 100%; padding: 8px; color: var(--color-ink); background: var(--color-surface); border: 1px solid var(--color-line-strong); border-radius: var(--radius-small); }
-.collection-nav-row { min-width: 0; }
-.collection-sidebar form > div { min-width: 0; }
-.collection-sidebar form input { min-width: 0; flex: 1; }
-.collection-sidebar form button { flex: 0 0 auto; }
-.collection-nav-row button, .section-heading-line h2 { overflow-wrap: anywhere; }
-.search-group, .search-hit { min-width: 0; overflow-wrap: anywhere; }
-.collection-items article { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
-.collection-items a { flex: 1; }
-.collection-items p { flex-basis: 100%; }
-.collection-items button { font-size: .85rem; min-height: 44px; padding-inline: 12px; }
+.recovery-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; } .section-heading-line h2 { overflow-wrap: anywhere; }
 .prayer-form-status:empty { display: none; }
 input, select, textarea { max-width: 100%; }
 .utility-mobile-title { display: none; font-family: var(--font-editorial); font-weight: 600; }
-@media (max-width: 760px) { .collections-layout { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 620px) {
   .utility-bar { flex-wrap: wrap; gap: 4px 8px; }
   .utility-context-title { display: none; }
@@ -599,6 +460,5 @@ input, select, textarea { max-width: 100%; }
   .utility-actions > a { display: inline-flex; padding-inline: 6px; min-width: 44px; justify-content: center; }
   input:not([type="checkbox"]):not([type="radio"]), select, textarea { font-size: max(1rem, 16px); }
   .prayer-main-heading { margin-bottom: 28px; }
-  .collection-content .section-heading-line { align-items: flex-start; }
   .section-heading-line h2 { font-size: 1.6rem; }
 }

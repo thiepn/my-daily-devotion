@@ -19,8 +19,7 @@ h3,
 }
 
 .screen-intro,
-.muted-copy,
-.search-hit p {
+.muted-copy{
   text-wrap: pretty;
 }
 
@@ -56,9 +55,7 @@ h3,
 }
 
 .quiet-button,
-.editorial-option,
-.collection-sidebar form button,
-.collection-items button {
+.editorial-option{
   border-color: var(--color-line-strong);
   border-radius: var(--radius-sm);
   transition:
@@ -69,17 +66,14 @@ h3,
 }
 
 .quiet-button:hover:not(:disabled),
-.editorial-option:hover:not(:disabled),
-.collection-sidebar form button:hover:not(:disabled),
-.collection-items button:hover:not(:disabled) {
+.editorial-option:hover:not(:disabled){
   color: var(--color-ink);
   border-color: var(--color-accent);
   background: var(--mg-hover);
 }
 
 .primary-editorial-action,
-.future-action,
-.global-search-form > button {
+.future-action{
   transition:
     color var(--transition-fast),
     background-color var(--transition-fast),
@@ -89,15 +83,13 @@ h3,
 }
 
 .primary-editorial-action:hover:not(:disabled),
-.future-action:hover:not(:disabled),
-.global-search-form > button:hover:not(:disabled) {
+.future-action:hover:not(:disabled){
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(48, 43, 35, .08);
 }
 
 .primary-editorial-action:active:not(:disabled),
-.future-action:active:not(:disabled),
-.global-search-form > button:active:not(:disabled) {
+.future-action:active:not(:disabled){
   transform: translateY(0);
   box-shadow: none;
 }
@@ -250,15 +242,6 @@ textarea:focus-visible {
   border-radius: var(--radius-sm);
 }
 
-.search-empty {
-  border-top: 1px solid var(--color-line);
-  border-bottom: 1px solid var(--color-line);
-}
-
-.search-empty {
-  font-family: var(--font-display);
-}
-
 /* Dialogs and conflict states */
 .draft-dialog {
   width: min(36rem, calc(100vw - 2rem));
@@ -336,26 +319,6 @@ textarea:focus-visible {
   margin-top: 7px;
   border-radius: var(--radius-sm);
   font-family: var(--font-reading);
-}
-
-/* History calendar text must remain subdued without dropping below normal-text contrast. */
-
-/* Release acceptance: small Prayer and Data text must remain readable on warm paper. */
-
-.mg-search-workspace .search-filters label {
-  color: var(--color-ink-soft);
-}
-
-/* Residual secondary routes */
-
-/* Canonical screen micro-polish */
-.search-hit,
-.collection-items article {
-  transition: background-color var(--transition-fast), border-color var(--transition-fast);
-}
-
-.search-hit:hover {
-  background: var(--mg-paper-hover);
 }
 
 .mg-plan-workspace .plan-summary > div {
@@ -502,8 +465,7 @@ textarea:focus-visible {
   }
 
   .primary-editorial-action:hover,
-  .future-action:hover,
-  .global-search-form > button:hover {
+  .future-action:hover{
     transform: none;
   }
 }

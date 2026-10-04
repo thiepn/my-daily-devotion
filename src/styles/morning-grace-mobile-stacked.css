@@ -117,10 +117,6 @@
   .mobile-detail-route .mg-state-screen .quiet-back-link {
     display: inline-flex !important;
   }
-
-  /* Parent-navigation links are redundant once the app-bar Back control owns
-     that job. Contextual links such as Search and Back to passage remain. */
-  .mobile-detail-route .mg-collections-workspace .quiet-link-row > a:first-child,
   .mobile-detail-route .mg-plan-workspace .plan-summary > a[href="/today"] {
     display: none;
   }
@@ -128,10 +124,6 @@
   .mobile-detail-route .mg-secondary-screen {
     padding-top: 8px;
     padding-bottom: calc(18px + env(safe-area-inset-bottom));
-  }
-
-  .mobile-detail-route .mg-search-workspace {
-    padding-top: 8px;
   }
 
   /* Focused Prayer owns its own session header. Remove outer shell chrome only
@@ -315,8 +307,7 @@
   }
 
   /* Empty results are quiet inline app states, not decorative empty cards. */
-  .mg-empty-state,
-  .search-empty {
+  .mg-empty-state{
     margin: 0;
     padding: 14px 0;
     border-top: 1px solid var(--color-line);
@@ -337,8 +328,7 @@
   }
 
   .mg-empty-state,
-  .mg-empty-state p,
-  .search-empty {
+  .mg-empty-state p{
     font-family: var(--font-ui);
     font-size: .71rem;
     line-height: 1.42;

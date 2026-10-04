@@ -43,7 +43,7 @@ export function BibleReaderControls(props: Props) {
       <button className="reader-passage-button" type="button" onClick={openPassage} aria-label="Choose book and chapter" aria-haspopup="dialog">
         <span>{props.book.name} {props.chapter}</span><DevotionalIcon name="down" />
       </button>
-      <Link className="reader-icon-button" to={`/bible/collections?${returnQuery}`} aria-label="Collections"><DevotionalIcon name="bookmark" /></Link>
+      <Link className="reader-icon-button" to={`/bible/saved?${returnQuery}`} aria-label="Saved Scripture"><DevotionalIcon name="bookmark" /></Link>
       <button className="reader-icon-button reader-type-button" type="button" aria-label="Reading appearance" aria-haspopup="dialog" onClick={event => { trigger.current = event.currentTarget; setPanel('appearance'); }}>Aa</button>
     </header>
     <dialog ref={dialog} className="grace-reader-dialog" aria-labelledby="reader-dialog-title" onCancel={() => setPanel(null)} onClose={event => { if (!event.currentTarget.open) { setPanel(null); trigger.current?.focus(); } }}>

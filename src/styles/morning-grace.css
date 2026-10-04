@@ -310,9 +310,6 @@ textarea:focus {
 .focus-preview blockquote {
   border-left-color: var(--color-line-strong);
 }
-
-/* Restrained surface hierarchy for utility panels already present in the product. */
-.search-hit,
 .history-summary {
   border-color: var(--color-line);
 }

@@ -358,16 +358,12 @@
   /* HISTORY — compact summary + calendar app screen */
 
   /* Secondary phone headers collapse to app-style context rows. */
-  .mg-plan-workspace .mg-secondary-header,
-  .mg-search-workspace .mg-secondary-header,
-  .mg-collections-workspace .mg-secondary-header {
+  .mg-plan-workspace .mg-secondary-header{
     margin-bottom: 10px;
     padding: 0 0 8px;
   }
 
-  .mg-plan-workspace .mg-secondary-header h1,
-  .mg-search-workspace .mg-secondary-header h1,
-  .mg-collections-workspace .mg-secondary-header h1 {
+  .mg-plan-workspace .mg-secondary-header h1{
     margin: 2px 0 3px;
     font-family: var(--font-ui);
     font-size: 1.05rem;
@@ -376,19 +372,8 @@
   }
 
   .mg-plan-workspace .mg-secondary-header .screen-intro,
-  .mg-plan-workspace .mg-secondary-header .muted-copy,
-  .mg-search-workspace .mg-secondary-header .screen-intro,
-  .mg-collections-workspace .mg-secondary-header .screen-intro {
+  .mg-plan-workspace .mg-secondary-header .muted-copy{
     display: none;
-  }
-
-  .mg-search-workspace .mg-secondary-header .eyebrow,
-  .mg-collections-workspace .mg-secondary-header .eyebrow {
-    display: none;
-  }
-
-  .mg-collections-workspace .mg-secondary-header .quiet-link-row {
-    margin-top: 5px !important;
   }
 
   /* Reading plan: stats become a slim status strip instead of a large summary card. */
@@ -444,95 +429,6 @@
     padding-block: 4px;
   }
 
-  /* Search: input + action share one row; filters become two compact controls. */
-  .mg-search-workspace .global-search-form {
-    grid-template-columns: minmax(0, 1fr) max-content;
-    gap: 6px;
-    margin-bottom: 14px;
-    padding-bottom: 12px;
-  }
-
-  .mg-search-workspace .global-search-form > input {
-    min-height: 44px;
-    padding-inline: 12px;
-  }
-
-  .mg-search-workspace .global-search-form > button {
-    min-width: 0;
-    width: auto;
-    min-height: 44px;
-    padding-inline: 9px;
-    border-radius: 10px;
-    font-size: .72rem;
-  }
-
-  .mg-search-workspace .search-filters {
-    grid-column: 1 / -1;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px;
-    margin-top: 2px;
-  }
-
-  .mg-search-workspace .search-filters label {
-    display: grid;
-    gap: 3px;
-    font-size: .56rem;
-  }
-
-  .mg-search-workspace .search-filters select {
-    width: 100%;
-    min-height: 44px;
-    padding: 4px 26px 4px 8px;
-    font-size: .72rem;
-  }
-
-  .mg-search-workspace .search-group {
-    padding-top: 12px;
-  }
-
-  .mg-search-workspace .search-group h2 {
-    font-size: 1.22rem;
-  }
-
-  /* Add Prayer: the keyboard task comes first; empty source context disappears. */
-
-  /* Collections becomes a compact library list on phone. */
-  .mg-collections-workspace .collection-sidebar form {
-    padding: 10px 0 12px;
-  }
-
-  .mg-collections-workspace .collection-sidebar form label {
-    font-size: .61rem;
-  }
-
-  .mg-collections-workspace .collection-sidebar form input,
-  .mg-collections-workspace .collection-sidebar form button {
-    min-height: 40px;
-  }
-
-  .mg-collections-workspace .collection-sidebar nav > .collection-nav-row > button:first-child {
-    min-height: 46px;
-  }
-
-  .mg-collections-workspace .collection-content {
-    padding-top: 12px;
-  }
-
-  .mg-collections-workspace .collection-content h2 {
-    font-size: 1.35rem;
-  }
-
-  .mg-collections-workspace .collection-manage {
-    gap: 5px;
-  }
-
-  .mg-collections-workspace .collection-manage button {
-    min-height: 38px;
-    padding: 0 10px;
-    font-size: .68rem;
-  }
-
   /* Data keeps warnings intact but removes desktop-scale spacing. */
 
   /* SECONDARY ROUTES — compact app screens, not desktop forms. */
@@ -547,10 +443,6 @@
 
   .mg-secondary-header .screen-intro {
     font-size: .82rem;
-  }
-
-  .mg-collections-workspace .collections-layout {
-    gap: 14px;
   }
 
   .mg-plan-workspace .plan-summary {
@@ -575,25 +467,6 @@
 
   .mg-plan-workspace .plan-day-readings a {
     min-height: 46px;
-  }
-
-  .mg-collections-workspace .collection-sidebar {
-    margin-inline: calc(var(--mobile-gutter) * -1);
-    padding-inline: var(--mobile-gutter);
-  }
-
-  .mg-search-workspace .global-search-form {
-    gap: 7px;
-    margin-bottom: 18px;
-    padding-bottom: 14px;
-  }
-
-  .mg-search-workspace .global-search-form > input {
-    min-height: 44px;
-  }
-
-  .mg-search-workspace .search-hit {
-    padding: 13px 0;
   }
 
   .mg-route-loading {

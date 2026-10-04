@@ -18,7 +18,7 @@ export function usePrayerRead<T>(key:string,read:()=>Promise<T>) {
  accept:(change:(data:T|undefined)=>T)=>setState(old=>old.key===key?{key,data:change(old.data),error:""}:old)};
 }
 const positions=new Map<string,{y:number;focus:string}>();
-export function usePrayerPosition(url:string,ready:boolean,entry:string|null,scope=".prayer-record") {
+export function usePrayerPosition(url:string,ready:boolean,entry:string|null,scope=".prayer-record",entryPrefix="prayer-entry-") {
  const restored=useRef("");
  const [returnVersion,setReturnVersion]=useState(0);
  useEffect(()=>{
@@ -35,7 +35,7 @@ export function usePrayerPosition(url:string,ready:boolean,entry:string|null,sco
   if(!ready||restored.current===url)return;
   let focusFrame=0;
   const frame=requestAnimationFrame(()=>{
-   const saved=positions.get(url);const target=document.getElementById(saved?.focus||(entry?"prayer-entry-"+entry:""));
+   const saved=positions.get(url);const target=document.getElementById(saved?.focus||(entry?entryPrefix+entry:""));
    if(target){let parent=target.parentElement;while(parent){if(parent instanceof HTMLDetailsElement)parent.open=true;parent=parent.parentElement;}}
    // WebKit needs the opened disclosure to be laid out before its link can focus.
    focusFrame=requestAnimationFrame(()=>{
@@ -45,5 +45,5 @@ export function usePrayerPosition(url:string,ready:boolean,entry:string|null,sco
    });
   });
   return()=>{cancelAnimationFrame(frame);cancelAnimationFrame(focusFrame);};
- },[url,ready,entry,returnVersion]);
+ },[url,ready,entry,entryPrefix,returnVersion]);
 }

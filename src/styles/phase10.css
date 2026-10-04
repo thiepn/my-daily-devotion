@@ -76,37 +76,6 @@ html {
   background: var(--color-surface);
 }
 
-.collection-nav-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  align-items: stretch;
-  border-bottom: 1px solid var(--color-line);
-}
-
-.collection-nav-row > button {
-  min-height: 58px;
-  border: 0;
-  background: transparent;
-  color: var(--color-ink-soft);
-  text-align: left;
-}
-
-.collection-nav-row > button.is-active {
-  color: var(--color-ink);
-}
-
-.collection-add-here {
-  min-width: 72px;
-  min-height: 44px;
-  align-self: center;
-  padding: 0 8px;
-  border: 0;
-  border-left: 1px solid var(--color-line);
-  color: var(--color-accent-strong);
-  background: transparent;
-  font-size: .68rem;
-}
-
 @media (prefers-contrast: more) {
   :root {
     --color-line: var(--color-line-strong);

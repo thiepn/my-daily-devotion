@@ -10,7 +10,9 @@ import { db } from "../data/database";
 import { VerseNoteRepository } from "../data/repositories/verse-notes";
 import { todayLocalDate } from "../domain/time";
 import { buildPrayerFromScriptureUrl } from "../prayer/context";
-import { buildReflectionUrl } from "../reflection/context";
+import { buildReflectionUrl, parsePendingScripture } from "../reflection/context";
+import { prayerReferenceLabel } from "../prayer/references";
+import { savedPassageUrl } from "../search/context";
 import { appendPlanQuery, buildPlanReadingUrl, chapterWithinReference, parsePlanReadingLocator, resolveReading, type PlanReadingLocator } from "../mcheyne/context";
 import { loadMcheynePlan } from "../mcheyne/loader";
 import { McheyneRepository } from "../mcheyne/repository";
@@ -75,6 +77,15 @@ export function BibleScreen() {
         </> : <span className="scripture-text">{segment.text}</span>}
       </span>;});if(block.kind==="heading")return <h3 className={`scripture-heading level-${block.level}`} key={blockIndex}>{content}</h3>;if(block.kind==="superscription")return <p className="scripture-superscription" key={blockIndex}>{content}</p>;if(block.kind==="poetry")return <p className={`scripture-block scripture-poetry level-${block.level}`} key={blockIndex}>{content}</p>;return <p className="scripture-block" key={blockIndex}>{content}</p>;};
   const firstChapter=currentIndex===0&&routeChapter===1;const lastBook=currentIndex===manifest.books.length-1&&routeChapter===activeBook.chapterCount;const currentSegment=planContext?.reading.references[planContext.locator.segmentIndex]??null;const segmentCount=planContext?.reading.references.length??0;const requestedReturn=new URLSearchParams(searchKey).get("return");const backTarget=requestedReturn?.startsWith("/")&&!requestedReturn.startsWith("//")?requestedReturn:planContext?.locator.origin==="plan"?"/today/plan":"/today";
+  const savedRange = parsePendingScripture(searchParams);
+  const savedEnd = savedRange ? parseVerseKey(savedRange.endVerseKey) : null;
+  const savedStart = savedRange ? parseVerseKey(savedRange.startVerseKey) : null;
+  const crossChapterRange = savedStart && savedEnd && (savedStart.chapter !== savedEnd.chapter || savedStart.bookId !== savedEnd.bookId);
+  const nextSavedBook = routeChapter < activeBook.chapterCount ? activeBook.id : manifest.books[currentIndex + 1]?.id;
+  const nextSavedChapter = routeChapter < activeBook.chapterCount ? routeChapter + 1 : 1;
+  const rangeCanContinue = savedEnd && (currentIndex < manifest.books.findIndex(book => book.id === savedEnd.bookId) || activeBook.id === savedEnd.bookId && routeChapter < savedEnd.chapter);
+  const nextSavedParams = savedRange ? new URLSearchParams({translation:savedRange.translationId,start:savedRange.startVerseKey,end:savedRange.endVerseKey,verse:'1',return:backTarget}) : null;
+  if (nextSavedParams && savedEnd && savedEnd.bookId === nextSavedBook && savedEnd.chapter === nextSavedChapter) nextSavedParams.set('endVerse', String(savedEnd.verse));
   const readerStyle = {
     '--scripture-scale': readerAppearance.appearance.scale,
     '--scripture-leading': { close: 1.45, comfortable: 1.65, generous: 1.85 }[readerAppearance.appearance.leading],
@@ -87,6 +98,7 @@ export function BibleScreen() {
         onAppearance={readerAppearance.update} onNavigate={navigateToChapter} />
 
       <article className="reader-page scripture-reader mg-scripture-page" aria-label={`${activeBook.name} ${routeChapter}, Berean Standard Bible`}>
+        {crossChapterRange && savedRange && <aside className="reader-saved-range" aria-label="Saved passage context"><strong>{prayerReferenceLabel(savedRange, manifest)} · {savedRange.translationId}</strong><p>This saved passage continues across chapters. You are reading {activeBook.name} {routeChapter}.</p><Link to={savedPassageUrl(savedRange, backTarget)}>Start of saved passage</Link>{rangeCanContinue && nextSavedBook && <Link to={`/bible/${nextSavedBook}/${nextSavedChapter}?${nextSavedParams}`}>Continue saved passage →</Link>}</aside>}
         <MorningGraceArtwork variant="context" className="mg-bible-chapter-art" />
         <header className="reader-heading scripture-reader-heading mg-reader-heading">
           <h2>{activeBook.name} {routeChapter}</h2>
