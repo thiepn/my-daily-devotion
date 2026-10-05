@@ -9,8 +9,8 @@ Approved direction: Read → Reflect → Pray → Remember, canonical Morning Gr
 | 1 | Integrate PRs #12–#21, certify one artifact, manual release operations, version 1.3.0 | Draft integration PR #22; certification passed, owner review/merge pending |
 | 2 | Search scopes/pagination/excerpts, precise destinations, Saved Scripture hub and Collections journal | Draft PR #23; hosted certification passed, unmerged |
 | 3 | Reading Plan journal, skippable onboarding, mode education, optional name and appropriate greeting | Draft PR #24; hosted certification passed, unmerged |
-| 4 | CSS consolidation, complete states, evening artwork, accessibility/usability and performance | Implemented on dedicated branch; final certification and participant rounds pending |
-| 5 | Durable device-local drafts and Recovery view | Requires reviewed migration |
+| 4 | CSS consolidation, complete states, evening artwork, accessibility/usability and performance | Draft PR #25; hosted certification passed (223 unit/integration, 794 browser, 309 images), unmerged; human/physical-device gates outstanding |
+| 5 | Durable device-local drafts and Recovery view | [Technical specification](specs/DURABLE_LOCAL_DRAFTS.md) proposed for review; no migration or recovery implementation yet |
 | 6 | Twenty saved versions, thirty-day removal recovery, optional recovery backup payloads | Requires reviewed migration/portability spec |
 | 7 | Manual weekly review, opt-in resurfacing/backup reminders, backup checks and period exports | Planned |
 | 8 | Repository/platform boundaries, thiepn-platform, isolated domains/environments and origin transfer | Infrastructure inventory required |

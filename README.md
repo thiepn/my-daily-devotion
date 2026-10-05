@@ -18,6 +18,8 @@ Search, Collections, Saved Scripture, Reading Plan, and optional first-run intro
 
 Certification builds once, checks the same artifact across desktop Chromium/Firefox/WebKit, mobile, offline and Windows image comparisons, then validates complete fresh evidence before packaging. Deployment is a separate manual workflow; a successful push does not publish the app.
 
+The [durable local drafts specification](docs/specs/DURABLE_LOCAL_DRAFTS.md) is proposed for review. It defines recovery and an additive migration; no draft persistence or schema change is implemented yet.
+
 - Phase 0 contract: [`docs/PHASE_0_IMPLEMENTATION_CONTRACT.md`](docs/PHASE_0_IMPLEMENTATION_CONTRACT.md)
 - Phase 1 foundation: [`docs/PHASE_1_LOCAL_FOUNDATION.md`](docs/PHASE_1_LOCAL_FOUNDATION.md)
 - Phase 2 visual design: [`docs/PHASE_2_VISUAL_DESIGN.md`](docs/PHASE_2_VISUAL_DESIGN.md)
