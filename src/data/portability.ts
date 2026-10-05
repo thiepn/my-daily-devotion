@@ -5,7 +5,7 @@ import { createBackupSnapshot, restoreBackupSnapshot, sha256Hex, validateBackupS
 import type { Reflection, Prayer, PrayerUpdate, PrayerResolution, Highlight, VerseNote } from "../domain/types";
 import { MddDatabase, prepareDatabase } from "./database";
 import { auditDatabase } from "./integrity";
-import { DATABASE_SCHEMA_VERSION, DOMAIN_CONTRACT_VERSION } from "./schema";
+import { PORTABLE_SCHEMA_VERSION, PORTABLE_CONTRACT_VERSION, portableTables } from "./portable-tables";
 
 const FORMAT = "mdd-backup" as const;
 const FORMAT_VERSION = 1 as const;
@@ -126,7 +126,7 @@ function validateArchiveManifest(value: unknown): asserts value is BackupArchive
   if (value.format !== FORMAT || value.formatVersion !== FORMAT_VERSION) throw new Error("Unsupported MDD backup format.");
   if (typeof value.appVersion !== "string" || !value.appVersion.trim()) throw new Error("Backup manifest has an invalid app version.");
   if (typeof value.schemaVersion !== "number" || !Number.isInteger(value.schemaVersion) || value.schemaVersion < 1) throw new Error("Backup manifest has an invalid database schema version.");
-  if (value.schemaVersion > DATABASE_SCHEMA_VERSION) throw new Error("Backup uses a newer database schema.");
+  if (value.schemaVersion > PORTABLE_SCHEMA_VERSION) throw new Error("Backup uses a newer database schema.");
   if (typeof value.exportedAt !== "string" || !Number.isFinite(Date.parse(value.exportedAt))) throw new Error("Backup manifest has an invalid export timestamp.");
   if (!Array.isArray(value.files) || value.files.length === 0) throw new Error("Backup manifest does not describe payload files.");
 
@@ -216,7 +216,7 @@ async function readArchive(bytes: Uint8Array, password: string, database: MddDat
   try { data = JSON.parse(strFromU8(plain)) as Record<string, unknown[]>; } catch { throw new Error("Backup data.json is invalid."); }
   if (!record(data) || Object.values(data).some((rows) => !Array.isArray(rows))) throw new Error("Backup data.json must contain tables of records.");
   const snapshot: BackupSnapshot = {
-    manifest: { formatId: FORMAT, formatVersion: FORMAT_VERSION, schemaVersion: manifest.schemaVersion, contractVersion: DOMAIN_CONTRACT_VERSION, appVersion: manifest.appVersion, exportedAt: manifest.exportedAt, checksums: { dataSha256: await sha256Hex(stableDataJson(data)) } }, data,
+    manifest: { formatId: FORMAT, formatVersion: FORMAT_VERSION, schemaVersion: manifest.schemaVersion, contractVersion: PORTABLE_CONTRACT_VERSION, appVersion: manifest.appVersion, exportedAt: manifest.exportedAt, checksums: { dataSha256: await sha256Hex(stableDataJson(data)) } }, data,
   };
   await validateBackupSnapshot(snapshot, database);
   return { manifest, snapshot };
@@ -323,7 +323,7 @@ export async function commitMddRestore(review: RestoreReview, database: MddDatab
 async function commitPreparedRestore(prepared: PreparedRestore, database: MddDatabase): Promise<CommittedRestoreResult> {
   // The whole review/confirmation interval is protected, not just validation.
   const { candidate, localJson } = prepared;
-  const tables = database.tables.filter((table) => table.name !== "schemaMetadata");
+  const tables = portableTables(database);
   await database.transaction("rw", tables, async () => {
     const current: Record<string, unknown[]> = {};
     for (const table of tables) current[table.name] = await table.toArray();

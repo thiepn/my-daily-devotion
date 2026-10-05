@@ -1,5 +1,5 @@
 import type { MddDatabase } from "./database";
-import { DATABASE_SCHEMA_VERSION, DOMAIN_CONTRACT_VERSION } from "./schema";
+import { PORTABLE_SCHEMA_VERSION, PORTABLE_CONTRACT_VERSION, PORTABLE_TABLE_NAMES, portableTables } from "./portable-tables";
 import { APP_VERSION } from "../app/version";
 import { validateBackupRecords } from "./validation";
 
@@ -20,8 +20,6 @@ export interface BackupSnapshot {
   manifest: BackupManifest;
   data: Record<string, unknown[]>;
 }
-
-const EXCLUDED_TABLES = new Set(["schemaMetadata"]);
 
 export function stableDataJson(data: Record<string, unknown[]>): string {
   const ordered = Object.fromEntries(
@@ -47,7 +45,7 @@ export async function sha256Hex(text: string): Promise<string> {
 
 export async function createBackupSnapshot(database: MddDatabase, appVersion: string = APP_VERSION): Promise<BackupSnapshot> {
   const data: Record<string, unknown[]> = {};
-  const tables = database.tables.filter((table) => !EXCLUDED_TABLES.has(table.name));
+  const tables = portableTables(database);
   await database.transaction("r", tables, async () => {
     for (const table of tables) data[table.name] = await table.toArray();
   });
@@ -56,8 +54,8 @@ export async function createBackupSnapshot(database: MddDatabase, appVersion: st
     manifest: {
       formatId: BACKUP_FORMAT_ID,
       formatVersion: BACKUP_FORMAT_VERSION,
-      schemaVersion: DATABASE_SCHEMA_VERSION,
-      contractVersion: DOMAIN_CONTRACT_VERSION,
+      schemaVersion: PORTABLE_SCHEMA_VERSION,
+      contractVersion: PORTABLE_CONTRACT_VERSION,
       appVersion,
       exportedAt: new Date().toISOString(),
       checksums: { dataSha256 },
@@ -70,11 +68,11 @@ export async function validateBackupSnapshot(snapshot: BackupSnapshot, database:
   if (!snapshot || typeof snapshot !== "object" || !snapshot.manifest || !snapshot.data || typeof snapshot.data !== "object" || Array.isArray(snapshot.data)) throw new Error("Invalid backup snapshot.");
   if (snapshot.manifest.formatId !== BACKUP_FORMAT_ID) throw new Error("Unsupported backup format.");
   if (snapshot.manifest.formatVersion !== BACKUP_FORMAT_VERSION) throw new Error("Unsupported backup version.");
-  if (snapshot.manifest.schemaVersion > DATABASE_SCHEMA_VERSION) throw new Error("Backup was created by a newer database schema.");
-  if (snapshot.manifest.schemaVersion !== DATABASE_SCHEMA_VERSION) throw new Error("Unsupported backup database schema.");
-  if (snapshot.manifest.contractVersion !== DOMAIN_CONTRACT_VERSION) throw new Error("Backup domain contract does not match this app.");
+  if (snapshot.manifest.schemaVersion > PORTABLE_SCHEMA_VERSION) throw new Error("Backup was created by a newer database schema.");
+  if (snapshot.manifest.schemaVersion !== PORTABLE_SCHEMA_VERSION) throw new Error("Unsupported backup database schema.");
+  if (snapshot.manifest.contractVersion !== PORTABLE_CONTRACT_VERSION) throw new Error("Backup domain contract does not match this app.");
 
-  const expectedTables = new Set(database.tables.map((table) => table.name).filter((name) => !EXCLUDED_TABLES.has(name)));
+  const expectedTables: ReadonlySet<string> = new Set(PORTABLE_TABLE_NAMES);
   for (const name of expectedTables) {
     if (!(name in snapshot.data)) throw new Error(`Backup is missing required table: ${name}`);
   }
@@ -90,7 +88,7 @@ export async function validateBackupSnapshot(snapshot: BackupSnapshot, database:
 
 export async function restoreBackupSnapshot(snapshot: BackupSnapshot, database: MddDatabase): Promise<void> {
   await validateBackupSnapshot(snapshot, database);
-  const tables = database.tables.filter((table) => !EXCLUDED_TABLES.has(table.name));
+  const tables = portableTables(database);
   await database.transaction("rw", tables, async () => {
     for (const table of tables) {
       await table.clear();
