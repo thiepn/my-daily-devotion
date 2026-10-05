@@ -21,4 +21,3 @@ Local Libre Caslon Text (Fontsource 5.3.0) uses the SIL Open Font License. Phosp
 The light and evening scenes are implemented assets rather than placeholders requiring external generation. Dark compositions use deliberate shading over warm olive-charcoal surfaces and retain visible artwork. Rendered comparisons are recorded in the Release 4 report; participant review remains outstanding.
 
 The unused geometric `MorningGraceMotifs` component and demonstration screens have been removed.
-

@@ -46,6 +46,13 @@ test.describe("offline PWA UX", () => {
     });
     expect(offlineBrandAssets.every(asset => asset.ok), JSON.stringify(offlineBrandAssets)).toBe(true);
 
+    await coldPage.emulateMedia({ colorScheme: 'dark' });
+    for (const [route, selector, asset] of [['/today', '.grace-art--morning img', 'evening-valley'], ['/bible/JHN/3', '.grace-art--context img', 'evening-context'], ['/history', '.grace-art--reflection img', 'evening-reflection']]) {
+      await coldPage.goto('/#' + route);
+      await expect(coldPage.locator(selector)).toHaveAttribute('src', new RegExp(asset));
+      await expect.poll(() => coldPage.locator(selector).evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth === 1200)).toBe(true);
+    }
+    await coldPage.goto('/#/bible/JHN/3');
     await coldPage.getByRole("link", { name: "Search", exact: true }).click();
     await expect(coldPage.getByRole("heading", { level: 1, name: "Search" })).toBeVisible();
     await coldPage.getByLabel("Search MDD").fill("John 3:16");
