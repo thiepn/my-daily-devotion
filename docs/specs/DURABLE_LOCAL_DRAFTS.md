@@ -1,6 +1,6 @@
 # Durable local drafts — Release 5 technical specification
 
-Status: proposed for review, not implemented or approved. Parent: certified presentation PR #25, branch commit `0b07df1bdcee29ce2be36b16088a3f274520be23`. This document authorizes no deployment. The implementation starts only after this migration specification is approved, as required by the product roadmap.
+Status: approved by the owner on 2026-10-05 with “approve and continue”; implementation proceeds through the ordered slices below. Parent: certified presentation PR #25, branch commit `0b07df1bdcee29ce2be36b16088a3f274520be23`. Approval authorizes implementation, not merging or deployment. Slice 5B introduces the portability boundary while retaining schema v1; recovery and the migration remain later slices.
 
 ## Outcome and boundary
 
@@ -8,9 +8,11 @@ Recover unfinished writing after reload or application termination, without trea
 
 Cover reflection writing, reader verse notes, new prayers, prayer wording, updates, encouragement, answer notes in Detail and Focused Prayer, Prayer Settings, collection creation/renaming/item notes, and People/Category creation/editing. Preserve invalid or incomplete field values so recovery does not erase unfinished work. This release does not implement saved versions, recently removed records, recovery backup payloads, accounts, encryption, sync, or native storage.
 
-The current specification change leaves running code and schema v1 unchanged. The later implementation proposes additive database schema **2**, while domain contract **1** and portable format/schema **1** remain separate.
+The approved specification permits additive database schema **2** in slice 5C, while domain contract **1** and portable format/schema **1** remain separate. Slice 5B leaves the running database at schema v1.
 
 ## Current implementation and gaps
+
+This source audit describes the specification baseline. Slice 5B addresses the table-enumeration gaps in backup/portability; the migration and editor/recovery requirements remain unimplemented until their respective slices.
 
 | Source | Current behavior | Integration requirement |
 |---|---|---|
@@ -201,7 +203,7 @@ Required test matrix:
 
 ## Review decision and limitations
 
-Approval is requested for: additive schema 2; three internal recovery stores separating directory metadata, private contents and journal epoch; 500 ms/2 s persistence timing; explicit fork recovery and generation-bound retirement; atomic domain-save markers; ordinary portable-v1 exclusion; preserving/reviewing drafts across replacement; and the staged implementation above. There are no unresolved design choices being silently delegated to code.
+The owner's approval covers: additive schema 2; three internal recovery stores separating directory metadata, private contents and journal epoch; 500 ms/2 s persistence timing; explicit fork recovery and generation-bound retirement; atomic domain-save markers; ordinary portable-v1 exclusion; preserving/reviewing drafts across replacement; and the staged implementation above. No additional migration approval is required for the agreed slices. Material changes to that contract require a revised review.
 
 Until the implementation ships, all unsaved writing remains memory-only. After it ships, acknowledged drafts can still be lost through browser eviction, cleared site data, device loss or storage failure. Drafts are not external backups, secure storage, saved versions, removal recovery or cloud sync.
 

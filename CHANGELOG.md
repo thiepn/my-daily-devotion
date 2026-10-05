@@ -8,6 +8,7 @@
 - Rebuild Reading Plan around the current assignment; explain calendar/self-paced enrollment, add optional introduction/name, truthful time-of-day greetings, and explicit reader completion/return.
 - Consolidate presentation into owned styles; bundle dedicated evening landscapes with live Light/System/Dark adaptation and expanded contrast/reflow coverage. Human usability and physical-device review remain separate gates.
 - Include guided Data & Backup with encrypted export, snapshot-bound atomic restore review, generation receipts and contextual returns.
+- Define an explicit portable-table boundary before durable recovery: ordinary backups and Markdown omit future private stores, and domain restore preserves them; portable contracts remain v1 independently of database metadata.
 - Replace duplicated, time-limited certification with one production build, browser shards, Windows image comparisons and complete commit/artifact-bound evidence aggregation.
 - Make deployment and version publication explicit manual actions using the certified archive without rebuilding.
 - Preserve database schema 1, backup format 1, offline assets and existing devotional semantics. Durable drafts, accounts, sync and native apps are not part of this release.
