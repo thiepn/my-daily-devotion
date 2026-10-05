@@ -39,9 +39,7 @@ assert.match(css, /@container\s*\(max-width:\s*13rem\)/);
 assert.doesNotMatch(css, /(?:linear|radial|conic)-gradient\s*\(/i);
 assert.doesNotMatch(css, /url\(\s*["\']?https?:\/\//i);
 
-const brandIndex=styles.indexOf('"./morning-grace-brand.css"');
-const screenIndex=styles.indexOf('"./morning-grace-screens.css"');
-assert.ok(brandIndex>=0 && screenIndex>brandIndex,"Canonical screen layer must load after Morning Grace brand assets");
+assert.ok(styles.includes("components.css") && styles.includes("history.css"));
 
 const todayCss = await read("src/styles/today.css");
 const bibleCss = await read("src/styles/bible.css");

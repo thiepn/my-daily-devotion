@@ -141,3 +141,62 @@
   --color-focus-ring: #a8cdb5;
   --color-action-on: #151915;
 }
+
+/* Shared domain and responsive layout aliases. */
+
+
+:root {
+  --control-height: 44px;
+  --screen-gutter: clamp(22px, 4.5vw, 64px);
+  --section-rhythm: clamp(32px, 4vw, 48px);
+}
+@media (max-width: 980px) {
+  :root {
+    --screen-gutter: clamp(20px, 4vw, 42px);
+  }
+}
+@media (max-width: 620px) {
+  :root {
+    --screen-gutter: 18px;
+  }
+}
+@media (max-width: 420px) {
+  :root {
+    --screen-gutter: 16px;
+  }
+}
+
+:root {
+  --domain-accent: var(--color-accent);
+  --domain-accent-strong: var(--color-accent-strong);
+}
+
+:root {
+  --icon-stroke-width: 1.55;
+}
+
+:root {
+  --mg-control-height: 44px;
+  --mg-rule: var(--color-line);
+  --mg-rule-strong: var(--color-line-strong);
+  --mg-hover: color-mix(in srgb, var(--color-surface-muted) 56%, transparent);
+  --mg-paper-hover: color-mix(in srgb, var(--color-surface) 86%, var(--color-accent-soft));
+}
+:root[data-theme="dark"] {
+  --mg-hover: color-mix(in srgb, var(--color-surface-muted) 68%, transparent);
+  --mg-paper-hover: color-mix(in srgb, var(--color-surface) 90%, var(--color-accent-soft));
+}
+@media (max-width: 760px), (max-height: 500px) and (max-width: 900px) {
+  :root {
+    --mobile-appbar-height: 48px;
+    --mobile-tabbar-height: 60px;
+    --mobile-gutter: 12px;
+    --mobile-section-gap: 18px;
+    --mobile-row-height: 54px;
+  }
+}
+@media (max-width: 430px) {
+  :root {
+    --mobile-gutter: 10px;
+  }
+}

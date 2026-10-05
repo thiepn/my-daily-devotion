@@ -6,13 +6,19 @@
 | --- | --- | --- |
 | `src/assets/morning-grace/dawn.webp` | 1200 × 800 | Final light Today illustration: ivory/peach dawn, layered sage mountains, detailed botanical foreground |
 | `src/assets/morning-grace/olive-sprig.webp` | 480 × 505, alpha | Reusable editorial botanical ornament |
+| `src/assets/morning-grace/bible-context.webp` | 1200 × 470 | Dedicated Bible countryside band |
+| `src/assets/morning-grace/history-reflection.webp` | 1200 × 500 | Dedicated History reflection band |
+| `src/assets/morning-grace/evening-valley.webp` | 1200 × 800 | Evening Today valley |
+| `src/assets/morning-grace/evening-context.webp` | 1200 × 470 | Evening Bible countryside |
+| `src/assets/morning-grace/evening-reflection.webp` | 1200 × 500 | Evening History reflection band |
 
-Both images were originally generated for this task using OpenAI image generation. No third-party stock artwork was copied or downloaded, and neither asset contains text. Generation prompts and editing provenance are recorded beside this file. The softened landscape supersedes the original more golden candidate; the original prompt remains as provenance.
+The original dawn and botanical assets were generated using OpenAI image generation. Dedicated Bible, History, and evening assets extend that locally bundled collection. No third-party stock artwork was copied or downloaded, and the assets contain no lettering. Generation prompts and editing provenance are recorded with the artwork.
 
-The `morning` variant is used on Today. `context` and `reflection` provide art-band crop architecture for future Bible/History work; they currently reuse the dawn image and are not final contextual art for those screens. `botanical` uses the transparent sprig. Decorative images use empty alt text and `aria-hidden`; Scripture, labels and controls remain live HTML.
+The `morning`, `context`, and `reflection` variants own the dedicated Today, Bible and History scenes. Each selects its authored light/evening asset from the applied appearance, including System changes and restored preferences. They never invert a daytime image. `botanical` uses the approved transparent sprig in both themes. Decorative images use empty alt text and `aria-hidden`; Scripture, labels and controls remain live HTML. [Evening provenance and exact prompts](../../src/assets/morning-grace/EVENING_PROVENANCE.md) record the built-in generation and delivery process.
 
 Local Libre Caslon Text (Fontsource 5.3.0) uses the SIL Open Font License. Phosphor React 2.1.10 supplies consistent semantic devotional/navigation icons under MIT. The normal third-party notice generator includes both packages. See the upstream licenses in the installed packages and generated release notices.
 
-The Today light illustration is a finished asset for this implementation, not a placeholder requiring external generation. Dark presentation currently uses low opacity over a warm olive-charcoal surface, without filter inversion. A separately art-directed evening illustration and final Bible/History contextual images remain work for later phases.
+The light and evening scenes are implemented assets rather than placeholders requiring external generation. Dark compositions use deliberate shading over warm olive-charcoal surfaces and retain visible artwork. Rendered comparisons are recorded in the Release 4 report; participant review remains outstanding.
 
-The SVG `MorningGraceMotifs` component remains only for unreconstructed screens. Do not use those old geometric landscapes for new canonical screen rebuilds.
+The unused geometric `MorningGraceMotifs` component and demonstration screens have been removed.
+

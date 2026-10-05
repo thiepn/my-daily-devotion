@@ -88,9 +88,9 @@
   .grace-reader-dialog .bible-toolbar { grid-template-columns: 1fr; }
 }
 /* Low-light treatment preserves the authored image; no color inversion. */
-html[data-theme="dark"] .grace-bible .mg-bible-chapter-art img { opacity: .38; }
+html[data-theme="dark"] .grace-bible .mg-bible-chapter-art img { opacity: 1; }
 @media (prefers-color-scheme: dark) {
-  html:not([data-theme="light"]) .grace-bible .mg-bible-chapter-art img { opacity: .38; }
+  html:not([data-theme="light"]) .grace-bible .mg-bible-chapter-art img { opacity: 1; }
 }
 .reader-saved-range { padding:16px; margin-bottom:16px; border:1px solid var(--color-line); border-radius:10px; background:var(--color-surface); font:.8rem/1.7 var(--font-ui); overflow-wrap:anywhere; }
 .reader-saved-range p { margin:8px 0; }

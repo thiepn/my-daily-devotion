@@ -7,7 +7,7 @@ const read = (path) => readFile(new URL(path, root), "utf8");
 const [contractRaw, tokens, morning, app, main, doc] = await Promise.all([
   read("canonical/morning-grace-design-language.v1.json"),
   read("src/styles/tokens.css"),
-  read("src/styles/morning-grace.css"),
+  read("src/styles/shell.css"),
   read("src/app/App.tsx"),
   read("src/main.tsx"),
   read("docs/PHASE_1_MORNING_GRACE_DESIGN_LANGUAGE.md"),
@@ -49,32 +49,8 @@ for (const token of [
   "--reading-max: 700px",
 ]) assert.ok(tokens.includes(token), `Morning Grace token missing: ${token}`);
 
-for (const selector of [
-  '.workspace[data-domain="today"]',
-  '.workspace[data-domain="bible"]',
-  '.workspace[data-domain="reflection"]',
-  '.workspace[data-domain="prayer"]',
-  '.workspace[data-domain="history"]',
-  ".mobile-nav",
-  ".primary-editorial-action",
-]) assert.ok(morning.includes(selector), `Morning Grace foundation missing ${selector}`);
-
-assert.match(morning, /backdrop-filter:\s*none/);
-assert.match(morning, /box-shadow:\s*var\(--shadow-soft\)/);
-assert.doesNotMatch(morning, /(?:linear|radial|conic)-gradient\s*\(/i);
-assert.doesNotMatch(morning, /url\(\s*["']?https?:\/\//i);
-assert.doesNotMatch(morning, /#[a-f0-9]{0,2}(?:7c3aed|8b5cf6|a855f7)/i);
-
-const correctiveIndex = styles.indexOf('"./corrective.css"');
-const morningIndex = styles.indexOf('"./morning-grace.css"');
-assert.ok(correctiveIndex >= 0 && morningIndex > correctiveIndex, "Retained legacy import order must remain stable");
-
-assert.match(styles, /@layer legacy, foundation, components, screens/);
-assert.match(styles, /tokens\.css" layer\(foundation\)/);
-assert.match(styles, /components\.css" layer\(components\)/);
-assert.match(styles, /today\.css" layer\(screens\)/);
-assert.match(styles, /@fontsource\/libre-caslon-text/);
-
+const {verifyPresentation} = await import('./verify-presentation.mjs');
+await verifyPresentation();
 assert.match(app, /data-domain=\{routeDomain\(location\.pathname\)\}/);
 assert.match(app, /Scripture · Prayer · Reflection/);
 assert.match(app, /A quieter life\. A stronger faith\./);

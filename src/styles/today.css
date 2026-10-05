@@ -86,7 +86,7 @@
   .today-responses { gap: 10px; }
   .today-response { padding-inline: 12px; }
 }
-:root[data-theme="dark"] .today-opening .grace-art { opacity: .24; }
+:root[data-theme="dark"] .today-opening .grace-art { opacity: .8; }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) .today-opening .grace-art { opacity: .24; }
+  :root:not([data-theme]) .today-opening .grace-art { opacity: .8; }
 }

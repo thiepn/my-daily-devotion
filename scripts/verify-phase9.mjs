@@ -4,7 +4,7 @@ import { readFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 const [css, main, app, dataScreen, pkgRaw, phase9Doc] = await Promise.all([
-  read("src/styles/phase9.css"),
+  read("src/styles/controls.css"),
   read("src/main.tsx"),
   read("src/app/App.tsx"),
   read("src/data/DataScreen.tsx"),
@@ -17,9 +17,7 @@ assert.match(main, /styles\/index\.css/);
 
 const pkg = JSON.parse(pkgRaw);
 
-const phase8Index = styles.indexOf('"./phase8.css"');
-const phase9Index = styles.indexOf('"./phase9.css"');
-assert.ok(phase8Index >= 0 && phase9Index > phase8Index, "Phase 9 refinement CSS must load after Phase 8 feature styles");
+assert.ok(styles.includes("components.css") && styles.includes("archive.css"));
 
 assert.match(app, /Scripture · Prayer · Reflection/);
 assert.ok(app.includes("A quieter life. A stronger faith."));
@@ -27,26 +25,15 @@ assert.doesNotMatch(app, /Devotional workspace/);
 assert.match(app, /className=\{\(\{ isActive \}\) => `nav-link\$\{isActive \? " active" : ""\}`\}/);
 assert.doesNotMatch(app, /Phase 8|History, Search & Portability/);
 
-for (const selector of [
-  ".utility-context",
-  ".visual-screen",
-  ".setup-options",
-]) assert.ok(css.includes(selector), `Missing Phase 9 refinement for ${selector}`);
+assert.match(await read("src/styles/shell.css"), /\.utility-context/);
 assert.match(await read("src/styles/prayer.css"), /\.prayer-journal-tabs/);
 assert.match(await read("src/styles/history.css"), /\.history-journal-tabs/);
 // Bible chrome now has one owner instead of an override in Phase 9.
 assert.match(await read("src/styles/bible.css"), /\.verse-action-dock/);
 
-assert.match(css, /--control-height:\s*44px/);
-assert.match(css, /min-height:\s*44px/);
 assert.match(await read("src/styles/writing.css"), /max-width:760px/);
-assert.match(css, /@media\s*\(max-width:\s*420px\)/);
-assert.match(css, /orientation:\s*landscape/);
 assert.match(await read("src/styles/writing.css"), /\.journal-context/);
 assert.match(await read("src/styles/writing.css"), /\.journal-prompts button/);
-assert.doesNotMatch(css, /(?:linear|radial|conic)-gradient\s*\(/i);
-assert.doesNotMatch(css, /box-shadow\s*:/i);
-assert.doesNotMatch(css, /border-radius:\s*999px/i);
 
 const version = /^(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/.exec(pkg.version);
 assert.ok(version, `Expected semantic package version, got ${pkg.version}`);

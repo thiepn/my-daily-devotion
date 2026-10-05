@@ -9,8 +9,8 @@ const [contractRaw, brandMark, icons, motifs, css, publicMark, publicSprig, publ
   read("canonical/morning-grace-brand-assets.v1.json"),
   read("src/app/visual/BrandMark.tsx"),
   read("src/app/visual/Icon.tsx"),
-  read("src/app/visual/MorningGraceMotifs.tsx"),
-  read("src/styles/morning-grace-brand.css"),
+  read("src/app/visual/MorningGraceArtwork.tsx"),
+  read("src/styles/components.css"),
   read("public/brand-mark.svg"),
   read("public/brand/morning-grace-sprig.svg"),
   read("public/brand/morning-grace-sunrise.svg"),
@@ -48,13 +48,8 @@ for (const token of ["cream-forest-master.png", "icons/icon-192.png", "import.me
 for (const icon of ["today","bible","prayer","history","leaf","sprig","reflection","answered","people","highlight","share","more","settings"]) {
   assert.ok(icons.includes(`"${icon}"`), `Icon family missing ${icon}`);
 }
-for (const component of ["BotanicalSprig","SunriseOrnament","MorningLandscape","EditorialFlourish"]) {
-  assert.ok(motifs.includes(`function ${component}`), `Motif library missing ${component}`);
-}
-for (const selector of [".mg-sprig",".mg-sunrise",".mg-landscape",".mg-flourish",".nav-link.active .icon-prayer"]) {
-  assert.ok(css.includes(selector), `Brand CSS missing ${selector}`);
-}
-
+for(const asset of ['dawn.webp','bible-context.webp','history-reflection.webp','olive-sprig.webp','evening-valley.webp','evening-context.webp','evening-reflection.webp']) assert.ok(motifs.includes(asset), 'Missing bundled artwork '+asset);
+assert.match(css, /\.grace-art/);
 for (const svg of [publicMark, publicSprig, publicSunrise, publicLandscape]) {
   assert.doesNotMatch(svg, /(?:linear|radial|conic)-gradient/i);
   assert.doesNotMatch(svg, /(?:href|src)\s*=\s*["']https?:\/\//i);
@@ -87,9 +82,7 @@ for (const [path, width, height] of [
   assert.deepEqual(pngDimensions(bytes), { width, height }, `Unexpected Morning Grace icon dimensions for ${path}`);
 }
 
-const phase1Index = styles.indexOf('"./morning-grace.css"');
-const phase2Index = styles.indexOf('"./morning-grace-brand.css"');
-assert.ok(phase1Index >= 0 && phase2Index > phase1Index, "Morning Grace brand assets must load after the Phase 1 foundation");
+assert.ok(styles.includes("components.css"));
 
 assert.match(doc, /Status:\s*\*\*implemented on redesign branch\*\*/i);
 assert.match(doc, /Morning Sprig Book/);

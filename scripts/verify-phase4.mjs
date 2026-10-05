@@ -98,7 +98,7 @@ assert.match(repository, /bulkImportThrough/);
 assert.match(repository, /getCurrentSelfPacedSequence/);
 assert.ok(pkg.scripts["mcheyne:build"]);
 assert.ok(pkg.scripts["verify:phase4"]);
-assert.ok(styles.includes("phase4.css"));
+assert.ok(styles.includes("plan.css"));
 
 console.log("✓ Phase 4 M’Cheyne & Today verification passed");
 console.log(`  ${plan.assignments.length} assignments · 1,460 readings · ${rangeCount} structural ranges`);

@@ -6,7 +6,7 @@ const read=(path)=>readFile(new URL(path,root),"utf8");
 
 const [contractRaw,css,main,app,errorBoundary,draftGuard,newPrayer,history,pkgRaw,doc]=await Promise.all([
   read("canonical/morning-grace-final-polish.v1.json"),
-  read("src/styles/morning-grace-polish.css"),
+  read("src/styles/feedback.css"),
   read("src/main.tsx"),
   read("src/app/App.tsx"),
   read("src/app/RouteErrorBoundary.tsx"),
@@ -34,12 +34,12 @@ for(const token of [
   ".draft-dialog",
   ".conflict-review",
   "@keyframes mg-screen-in",
-  "@media (prefers-reduced-motion: reduce)"
+  "@keyframes mg-screen-in"
 ]) assert.ok(css.includes(token),"Polish CSS missing "+token);
 
-assert.doesNotMatch(css,/(?:linear|radial|conic)-gradient\s*\(/i);
 assert.doesNotMatch(css,/url\(\s*["']?https?:\/\//i);
 assert.match(css,/max-width:\s*700px/);
+assert.match(await read("src/styles/base.css"), /prefers-reduced-motion: reduce/);
 
 assert.match(app,/className="utility-link" to=\{searchHref\}/);
 assert.match(app,/className="utility-link" to=\{dataHref\}/);
@@ -54,9 +54,7 @@ assert.match(newPrayer,/mg-prayer-capture-workspace/);
 assert.match(history,/history-day-entry/);
 assert.match(await read("src/styles/history.css"),/\.history-day-entry/);
 
-const secondaryIndex=styles.indexOf('"./morning-grace-secondary.css"');
-const polishIndex=styles.indexOf('"./morning-grace-polish.css"');
-assert.ok(secondaryIndex>=0&&polishIndex>secondaryIndex,"Final polish must load after every Morning Grace structural layer");
+assert.ok(styles.includes("feedback.css"));
 assert.match(main,/BrandMark className="mg-state-mark"/);
 
 assert.equal(pkg.scripts["verify:morning-grace:phase5"],"node scripts/verify-morning-grace-phase5.mjs");

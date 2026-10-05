@@ -106,7 +106,7 @@
   .history-reflection-band { margin-inline: -18px; }
 }
 @media (max-width: 350px) { .history-journal-route .workspace-content { padding-inline: 12px; }.history-reflection-band { margin-inline: -12px; padding-inline: 20px; }.history-activity-heading h2 { width: 100%; }.history-journal-row { gap: 8px; } }
-:root[data-theme="dark"] .history-reflection-band .grace-art { opacity: .22; }
+:root[data-theme="dark"] .history-reflection-band .grace-art { opacity: .65; }
 :root[data-theme="dark"] .history-reflection-band :is(blockquote,p,a) { color: var(--color-ink); }
-@media (prefers-color-scheme: dark) { :root:not([data-theme]) .history-reflection-band .grace-art { opacity: .22; } :root:not([data-theme]) .history-reflection-band :is(blockquote,p,a) { color: var(--color-ink); } }
+@media (prefers-color-scheme: dark) { :root:not([data-theme]) .history-reflection-band .grace-art { opacity: .65; } :root:not([data-theme]) .history-reflection-band :is(blockquote,p,a) { color: var(--color-ink); } }
 @media (prefers-reduced-motion: reduce) { .grace-history *, .grace-history *::before { animation: none; transition: none; scroll-behavior: auto; } }

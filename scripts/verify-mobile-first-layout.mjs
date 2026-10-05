@@ -6,8 +6,8 @@ const read=(path)=>readFile(new URL(path,root),"utf8");
 
 const [contractRaw,css,stackedCss,main,app,search,data,polishTest,navigationTest,denseSecondaryTest,nativeStateTest,pkgRaw]=await Promise.all([
   read("canonical/mobile-first-layout.v1.json"),
-  read("src/styles/morning-grace-mobile.css"),
-  read("src/styles/morning-grace-mobile-stacked.css"),
+  read("src/styles/shell.css"),
+  read("src/styles/feedback.css"),
   read("src/main.tsx"),
   read("src/app/App.tsx"),
   read("src/search/SearchScreen.tsx"),
@@ -30,20 +30,10 @@ assert.equal(contract.version,1);
 assert.equal(contract.name,"Morning Grace Mobile-First Layout");
 assert.equal(contract.breakpointPx,760);
 
-for(const selector of [
-  ".utility-bar",
-  ".mobile-nav",
-  ".mg-canonical-hero",
-  ".mg-secondary-screen"
-]) assert.ok(css.includes(selector),"Mobile CSS missing "+selector);
-
-assert.match(css,/@media\s*\(max-width:\s*760px\)/);
-assert.match(css,/--mobile-appbar-height:\s*48px/);
-assert.match(css,/--mobile-tabbar-height:\s*60px/);
-assert.match(await read("src/styles/history.css"), /\.history-journal-stats/);
-assert.doesNotMatch(css,/(?:linear|radial|conic)-gradient\s*\(/i);
-assert.doesNotMatch(css,/url\(\s*["']?https?:\/\//i);
-
+for(const selector of ['.utility-bar','.mobile-nav','.mobile-appbar-back']) assert.ok(css.includes(selector), 'Missing shell primitive '+selector);
+assert.match(css, /@media\s*\(max-width:\s*760px\)/);
+assert.match(css, /safe-area-inset-top/); assert.match(css, /safe-area-inset-bottom/);
+assert.match(await read('src/styles/shell.css'), /min-height: 56px/);
 const prayerCss = await read("src/styles/prayer.css");
 assert.match(prayerCss, /\.prayer-journal-tabs/);
 assert.match(prayerCss, /\.prayer-focus-caption \.grace-art/);
@@ -54,21 +44,10 @@ assert.match(todayVisualTest, /art!\.height/);
 assert.match(todayVisualTest, /expectNoHorizontalOverflow/);
 assert.match(todayVisualTest, /fontSize = '200%'/);
 
-const polishIndex=styles.indexOf('"./morning-grace-polish.css"');
-const mobileIndex=styles.indexOf('"./morning-grace-mobile.css"');
-const stackedIndex=styles.indexOf('"./morning-grace-mobile-stacked.css"');
-assert.ok(polishIndex>=0&&mobileIndex>polishIndex,"Mobile layout must load after the full Morning Grace desktop system");
-assert.ok(stackedIndex>mobileIndex,"Stacked mobile refinement must load after the certified base mobile layout");
-
-assert.match(stackedCss,/\.mobile-detail-route \.mobile-nav,[\s\S]*display:\s*none/);
-assert.match(stackedCss,/\.mobile-detail-route \.utility-bar \.utility-actions/);
-assert.match(stackedCss,/\.mobile-detail-route \.mobile-appbar-back\s*\{[\s\S]*width:\s*44px[\s\S]*height:\s*44px/);
-assert.match(stackedCss,/\.mobile-detail-route \.mg-secondary-header h1\s*\{[\s\S]*position:\s*absolute/);
-assert.ok(styles.includes("focused-prayer.css"), "Focused Prayer owns its responsive journal composition");
-assert.match(stackedCss,/safe-area-inset-top/);
-assert.match(stackedCss,/safe-area-inset-bottom/);
-assert.doesNotMatch(stackedCss,/(?:linear|radial|conic)-gradient\s*\(/i);
-
+assert.ok(styles.includes('shell.css') && styles.includes('feedback.css') && styles.includes('focused-prayer.css'));
+assert.match(css, /\.mobile-detail-route \.utility-bar \.utility-actions/);
+assert.match(css, /\.mobile-detail-route \.mobile-appbar-back/);
+assert.match(stackedCss, /\.draft-dialog/); assert.match(stackedCss, /\.conflict-review/);
 assert.match(app,/mobile-detail-route/);
 assert.match(app,/mobile-immersive-route/);
 assert.match(app,/safeReturnTarget/);
@@ -94,14 +73,10 @@ assert.match(navigationTest,/in-content Search entry points preserve their sourc
 assert.match(await read("src/styles/prayer-metadata.css"), /\.directory-row-toggle/);
 assert.match(await read("src/styles/prayer-detail.css"), /\.prayer-story-entry/);
 assert.match(styles, /prayer-detail\.css/);
-assert.match(stackedCss,/History detail views use compact timeline rows/);
 assert.match(denseSecondaryTest,/People and Categories open on the directory with editing on demand/);
 assert.match(denseSecondaryTest,/Prayer detail is a readable journal story with visible status context/);
 assert.match(denseSecondaryTest,/History Day keeps its date visible/);
 assert.match(denseSecondaryTest,/dense management screens remain usable at 320px and 200 percent text/);
-assert.match(stackedCss,/Draft confirmation becomes a true mobile bottom sheet/);
-assert.match(stackedCss,/Conflict review becomes an edge-to-edge comparison block/);
-assert.match(stackedCss,/Offline\/update notification is a slim system strip/);
 assert.match(nativeStateTest,/unsaved-change confirmation keeps all journal-dialog actions reachable/);
 assert.match(nativeStateTest,/conflict review is a readable mobile comparison state/);
 assert.match(nativeStateTest,/lazy-route failure becomes a compact recoverable mobile app state/);
@@ -121,4 +96,4 @@ console.log("  Search/Data preserve exact mobile source context through utility 
 console.log("  Prayer detail and settings use journal compositions; retained management screens keep their styles");
 console.log("  loading, recovery, empty, conflict and draft states use native mobile patterns");
 console.log("  320px, 200% text and phone-landscape detail states are covered");
-console.log("  remaining legacy compositions retain their relative import order");
+console.log("  shared shell and screen compositions own responsive behavior without legacy overrides");

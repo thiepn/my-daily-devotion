@@ -24,22 +24,3 @@
   font-family: var(--font-reading); font-size: 1rem; line-height: 1.4;
 }
 .grace-primary:hover { background: #385a4d; }
-.side-nav .nav-link { font-size: .9rem; }
-.nav-link .devotional-icon { width: 1.6rem; height: 1.6rem; }
-@media (max-width: 860px) {
-  .app-shell { --mobile-nav-height: max(72px, 4rem); --mobile-tabbar-height: var(--mobile-nav-height); padding-bottom: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom)); }
-  .mobile-nav {
-    height: auto; min-height: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom));
-    padding: .35rem .5rem calc(.35rem + env(safe-area-inset-bottom));
-    background: var(--color-surface); border-top: 1px solid var(--color-line);
-    box-shadow: none; backdrop-filter: none;
-  }
-  .mobile-nav .nav-link { min-height: 56px; gap: .15rem; border-radius: 0; padding: .15rem 0; color: var(--color-ink-soft); font-size: .68rem; font-weight: 400; line-height: 1.4; }
-  .mobile-nav .nav-link.active { background: transparent; color: var(--color-nav-active); font-weight: 650; }
-  .mobile-nav .nav-link .devotional-icon { width: 1.65rem; height: 1.65rem; }
-  .mobile-detail-route .mobile-nav { display: none; }
-}
-@media (max-width: 350px) {
-  /* Keep enlarged labels separate without shrinking the user's text. */
-  html[style*="font-size: 200%"] .mobile-nav { padding-inline: 0; }
-}

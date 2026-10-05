@@ -14,4 +14,4 @@ Priority: canonical mockup; current domain/data contracts; accessibility/respons
 
 Check the rendered mobile family at 320, 360, 390 and 430px plus tablet/desktop, dark and enlarged-text states. Inspect hierarchy, artwork/crop, card treatment, typography, actions and navigation independently of functional tests. Retain honest discrepancy reports.
 
-Image comparisons lock reviewed candidates, not an assertion that every screen is user-approved. A baseline change requires rendered inspection and a stated reason. Existing historical design contracts remain useful for retained legacy workflows but are not a second visual source of truth.
+Image comparisons lock reviewed candidates, not an assertion that every screen is user-approved. A baseline change requires rendered inspection and a stated reason. Historical design contracts are records of earlier implementation, not a second visual source of truth. Runtime styling now has explicit owners; see [Release 4](RELEASE_4_PRESENTATION.md).

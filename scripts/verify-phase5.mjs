@@ -16,7 +16,7 @@ assert.match(reflectionScreen, /Optional prompts/); assert.match(reflectionScree
 assert.match(context, /sourceReflectionId/); assert.match(context, /sourceDevotionDate/);
 assert.match(reader, /buildReflectionUrl/); assert.match(reader, /> Reflect</); assert.match(reader, /Add verse note|Edit verse note/); assert.match(reader, /Verse note saved locally/); assert.doesNotMatch(reader, /Reflection linkage arrives in Phase 5/);
 assert.match(today, /TodayReflectionPanel/); assert.match(app, /\/today\/reflection\/:localDate/); assert.match(app, /\/prayer\/new/); assert.doesNotMatch(app, /label: "Journal"/);
-assert.ok(styles.includes("phase5.css")); assert.ok(pkg.scripts["verify:phase5"]);
+assert.ok(styles.includes("writing.css")); assert.ok(pkg.scripts["verify:phase5"]);
 const [major, minor] = pkg.version.split(".").map(Number); assert.ok(major > 0 || minor >= 5, `Expected app version >= 0.5.0, got ${pkg.version}`);
 console.log("✓ Phase 5 Reflection & Scripture Capture verification passed");
 console.log("  one dated reflection model with meaningful creation history");

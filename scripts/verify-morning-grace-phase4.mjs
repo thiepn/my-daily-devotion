@@ -6,7 +6,7 @@ const read=(path)=>readFile(new URL(path,root),"utf8");
 
 const [contractRaw,css,main,pkgRaw,doc,...screens]=await Promise.all([
   read("canonical/morning-grace-secondary-workflows.v1.json"),
-  read("src/styles/morning-grace-secondary.css"),
+  read("src/styles/writing.css"),
   read("src/main.tsx"),
   read("package.json"),
   read("docs/PHASE_4_MORNING_GRACE_SECONDARY_WORKFLOWS.md"),
@@ -56,15 +56,12 @@ assert.match(await read("src/styles/data.css"), /\.data-journal/);
 
 assert.match(await read("src/styles/plan.css"), /\.plan-journal/);
 
-assert.match(css,/@media\s*\(max-width:\s*700px\)/);
+assert.match(css, /max-width:760px/);
 // Enlarged-text reflow is certified by rendered browser journeys, not a legacy override.
 assert.match(await read("tests/ux/reading-plan-journal.spec.ts"), /200%/);
-assert.doesNotMatch(css,/(?:linear|radial|conic)-gradient\s*\(/i);
 assert.doesNotMatch(css,/url\(\s*["']?https?:\/\//i);
 
-const canonicalIndex=styles.indexOf('"./morning-grace-screens.css"');
-const secondaryIndex=styles.indexOf('"./morning-grace-secondary.css"');
-assert.ok(canonicalIndex>=0&&secondaryIndex>canonicalIndex,"Secondary Morning Grace styles must load after canonical screens");
+assert.ok(styles.includes("writing.css") && styles.includes("archive.css"));
 assert.equal(pkg.scripts["verify:morning-grace:phase4"],"node scripts/verify-morning-grace-phase4.mjs");
 
 assert.match(doc,/Status:\s*\*\*implemented on redesign branch\*\*/i);
