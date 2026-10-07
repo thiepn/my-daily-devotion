@@ -33,8 +33,11 @@ function ReflectionEditor({ localDate }: { localDate: LocalDate }) {
   const location = useLocation(); const navigate = useNavigate(); const [params] = useSearchParams();
   const [pendingDismissed, setPendingDismissed] = useState(false);
   const pending = pendingDismissed ? null : parsePendingScripture(params);
-  const self = location.pathname + location.search;
-  const returnParam = params.get("return");
+  const [recoveredReturn, setRecoveredReturn] = useState<string | null>(null);
+  const selfParams = new URLSearchParams(location.search);
+  if (recoveredReturn) selfParams.set("return", recoveredReturn);
+  const self = location.pathname + (selfParams.size ? `?${selfParams}` : "");
+  const returnParam = recoveredReturn ?? params.get("return");
   const back = isDraftReturnRoute(returnParam) ? returnParam : "/today";
   const [edited, setEdited] = useState(false);
   const [recoveredReferences, setRecoveredReferences] = useState<ScriptureReference[]>([]);
@@ -212,7 +215,7 @@ function ReflectionEditor({ localDate }: { localDate: LocalDate }) {
         if (!alive.current || payload.kind !== "reflection") return;
         const existing = current.current;
         const changed = payload.baseline ? existing?.id !== payload.baseline.id || existing?.revision !== payload.baseline.revision : Boolean(existing);
-        setRecoveredBaseline(payload.baseline); baseline.current = payload.baseline?.bodyMd ?? ""; changeBody(payload.bodyMd); setPendingDismissed(payload.dismissedReferences); setRecoveredReferences(payload.pendingReferences); setEdited(true);
+        setRecoveredReturn(review.snapshot.metadata.context.returnTo); setRecoveredBaseline(payload.baseline); baseline.current = payload.baseline?.bodyMd ?? ""; changeBody(payload.bodyMd); setPendingDismissed(payload.dismissedReferences); setRecoveredReferences(payload.pendingReferences); setEdited(true);
         if (changed) setConflict({ latest: existing ?? undefined });
         setReview(null); setStatus("Draft recovered on this device. No reflection has been saved."); setOffers(previous => previous.filter(item => item.id !== review.snapshot.metadata.id));
       } catch (reason) { if (alive.current) setRecoveryError(message(reason)); }

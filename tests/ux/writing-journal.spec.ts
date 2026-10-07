@@ -295,3 +295,16 @@ test("a recovered reflection removed in another tab stays copyable without recre
   await expect(page.getByRole("button", { name: "Save reflection", exact: true })).toBeDisabled();
   expect(await writingDomainSnapshot(page)).toEqual(before);
 });
+
+test("recovering from a different entry route restores the draft's original return chain", async ({ page }) => {
+  await seedWriting(page, "reflection"); await page.getByLabel("Daily reflection").fill("Remember my original History destination.");
+  await expect(page.locator(".draft-status")).toHaveText("Draft kept on this device");
+  await openRoute(page, "/today/reflection/2026-04-24?return=%2Ftoday");
+  await page.getByText("Kept drafts for this date", { exact: false }).click(); await page.getByRole("button", { name: /Review draft kept/ }).click();
+  await page.getByRole("button", { name: "Recover for review" }).click();
+  await expect(page.locator(".journal-heading .quiet-back-link")).toHaveAttribute("href", "#/history?period=this-year&shown=15");
+  await page.getByRole("button", { name: "Save and continue to prayer" }).click();
+  await expect(page.getByRole("heading", { name: "Add prayer", exact: true })).toBeVisible();
+  const returned = new URLSearchParams(new URL(page.url()).hash.split("?")[1]).get("return")!;
+  expect(new URLSearchParams(returned.split("?")[1]).get("return")).toBe("/history?period=this-year&shown=15");
+});
