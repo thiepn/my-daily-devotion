@@ -49,16 +49,18 @@ test("navigation dialog keeps, saves and discards deliberately",async({page})=>{
   await expect(page.getByRole("link",{name:/Reflect —/})).toBeVisible();
   await openRoute(page,"/today/reflection/2026-04-24");await expect(page.getByLabel("Daily reflection")).toHaveValue("Keep this writing.");
 });
-test("capture navigation dialog discards request and details without writes",async({page})=>{
-  await openRoute(page,"/prayer/new");const before=await writingSnapshot(page);
+test("capture navigation dialog retires its kept draft without domain writes",async({page})=>{
+  await openRoute(page,"/prayer/new");const before=await writingDomainSnapshot(page);
   await page.getByLabel("What do you want to pray about?").fill("A temporary request.");
   await page.getByRole("button",{name:"Add details",exact:true}).click();await page.getByRole("combobox",{name:"Schedule",exact:true}).selectOption("MANUAL_ONLY");
+  await expect(page.locator(".draft-status")).toHaveText("Draft kept on this device");
   await page.getByRole("link",{name:"Cancel",exact:true}).click();await page.getByRole("button",{name:"Keep editing"}).click();
   await expect(page.getByLabel("What do you want to pray about?")).toHaveValue("A temporary request.");
   await page.getByRole("link",{name:"Cancel",exact:true}).click();await page.getByRole("button",{name:"Discard and continue"}).click();
   await expect(page.locator(".grace-prayer")).toBeVisible();await openRoute(page,"/prayer/new");
   await expect(page.getByLabel("What do you want to pray about?")).toBeEmpty();await page.getByRole("button",{name:"Add details",exact:true}).click();
-  await expect(page.getByRole("combobox",{name:"Schedule",exact:true})).toHaveValue("ROTATION");expect(await writingSnapshot(page)).toEqual(before);
+  await expect(page.getByRole("combobox",{name:"Schedule",exact:true})).toHaveValue("ROTATION");expect(await writingDomainSnapshot(page)).toEqual(before);
+  const recovery = await writingSnapshot(page); expect((recovery.find((row:any)=>row[0]==="editorDraftContents") as any)[1]).toHaveLength(0); expect((recovery.find((row:any)=>row[0]==="editorDrafts") as any)[1]).toEqual([expect.objectContaining({state:"discarded"})]);
 });
 
 test("conflicting or removed reflections retain unsaved writing",async({page,context})=>{

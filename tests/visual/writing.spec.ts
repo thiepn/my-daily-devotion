@@ -6,6 +6,7 @@ test.beforeEach(async({page})=>{await page.clock.setFixedTime(new Date("2026-04-
 for(const screen of ["reflection","prayer"] as const) {
   for(const [width,height] of [[320,568],[360,800],[390,844],[430,932],[768,1024],[1440,900]])test(`Writing ${screen} ${width}`,async({page})=>{
     await page.setViewportSize({width,height});await seedWriting(page,screen);await page.evaluate(()=>document.fonts.ready);await page.mouse.move(0,0);
+    if(screen === "prayer") await expect(page.locator(".draft-status")).toHaveText("Draft kept on this device");
     await expect(page).toHaveScreenshot(`writing-${screen}-${width}.png`);
   });
   for(const state of ["empty","dark","enlarged","long","context","dialog","error"])test(`Writing ${screen} ${state}`,async({page})=>{
@@ -13,6 +14,7 @@ for(const screen of ["reflection","prayer"] as const) {
     if(state==="dark")await page.emulateMedia({colorScheme:"dark"});
     if(state==="empty") {await openRoute(page,screen==="reflection"?"/today/reflection/2026-04-24":"/prayer/new");await expect(page.locator(".journal-textarea")).toBeVisible();}
     else await seedWriting(page,screen,state==="long");
+    if(screen === "prayer" && state !== "empty") await expect(page.locator(".draft-status")).toHaveText("Draft kept on this device");
     if(state==="enlarged")await page.evaluate(()=>{document.documentElement.style.fontSize="200%";});
     if(state==="context"){await page.locator(".journal-context summary").click();await expect(page.locator(".journal-scripture blockquote")).toContainText("For God so loved the world");}
     if(state==="dialog"){if(screen==="reflection")await page.getByLabel("Daily reflection").fill("Keep this unsaved writing.");await page.locator(".journal-heading .quiet-back-link").click();await expect(page.getByRole("dialog")).toBeVisible();}
@@ -28,6 +30,7 @@ test("Reflection preview and formatting",async({page})=>{
 });
 test("Prayer expanded details",async({page})=>{
   await page.setViewportSize({width:390,height:844});await seedWriting(page,"prayer");await page.getByRole("button",{name:"Add details",exact:true}).click();await expect(page.getByRole("combobox",{name:"Schedule",exact:true})).toBeVisible();
+  await expect(page.locator(".draft-status")).toHaveText("Draft kept on this device");
   await expect(page).toHaveScreenshot("writing-prayer-details.png",{fullPage:true});
 });
 test("Reflection conflict",async({page,context})=>{
