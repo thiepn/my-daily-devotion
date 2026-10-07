@@ -21,13 +21,13 @@ afterEach(async () => {
 });
 
 describe("local database foundation", () => {
-  it("registers schema v1 and initializes metadata exactly once", async () => {
-    expect(REGISTERED_SCHEMA_VERSIONS).toEqual([1]);
+  it("retains v1, registers additive v2 and initializes metadata exactly once", async () => {
+    expect(REGISTERED_SCHEMA_VERSIONS).toEqual([1, 2]);
     const database = testDb();
     await prepareDatabase(database);
     await prepareDatabase(database);
     expect(await database.schemaMetadata.count()).toBe(1);
-    expect(await database.schemaMetadata.get("database")).toMatchObject({ schemaVersion: 1, contractVersion: 1 });
+    expect(await database.schemaMetadata.get("database")).toMatchObject({ schemaVersion: 2, contractVersion: 1 });
   });
 
   it("keeps one primary reflection per devotional date", async () => {

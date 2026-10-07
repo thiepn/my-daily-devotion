@@ -1,5 +1,5 @@
 export const DATABASE_NAME = "my-daily-devotion";
-export const DATABASE_SCHEMA_VERSION = 1;
+export const DATABASE_SCHEMA_VERSION = 2;
 export const DOMAIN_CONTRACT_VERSION = 1;
 
 export const schemaV1 = {
@@ -25,4 +25,11 @@ export const schemaV1 = {
   activityEvents: "&id,type,localDate,occurredAt,[subjectType+subjectId],subjectId",
   preferences: "&key,updatedAt",
   schemaMetadata: "&key,schemaVersion,contractVersion",
+} as const;
+
+// Additive recovery stores. The original v1 domain indexes stay immutable.
+export const recoverySchemaV2 = {
+  editorDrafts: "&id,kind,targetKey,updatedAt,journalEpoch,[targetKey+updatedAt]",
+  editorDraftContents: "&id",
+  draftJournalState: "&key",
 } as const;

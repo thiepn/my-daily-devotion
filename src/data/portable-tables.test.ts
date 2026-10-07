@@ -11,12 +11,12 @@ const databases: MddDatabase[] = [];
 const privateNames = ['editorDrafts','editorDraftContents','draftJournalState','syncOutbox'] as const;
 async function setup(extended = false) {
   const db = new MddDatabase(`mdd-portable-boundary-${crypto.randomUUID()}`);
-  // A test-only future database: production still registers only schema v1.
-  if (extended) db.version(2).stores({editorDrafts:'&id',editorDraftContents:'&id',draftJournalState:'&key',syncOutbox:'&id'});
+  // A test-only future database: production registers additive recovery schema v2.
+  if (extended) db.version(3).stores({editorDrafts:'&id',editorDraftContents:'&id',draftJournalState:'&key',syncOutbox:'&id'});
   databases.push(db); await prepareDatabase(db);
   if (extended) {
     for (const name of privateNames) await db.table(name).put(name==='draftJournalState'
-      ? {key:'journal',epoch:'private-epoch'} : {id:'private',body:'UNSAVED PRIVATE WRITING',secret:'NOT PORTABLE'});
+      ? {key:'journal',formatVersion:1,epoch:crypto.randomUUID()} : {id:'private',body:'UNSAVED PRIVATE WRITING',secret:'NOT PORTABLE'});
     const metadata = (await db.schemaMetadata.get('database'))!;
     await db.schemaMetadata.put({...metadata,schemaVersion:2});
   }
@@ -41,7 +41,7 @@ describe('explicit portable data boundary',()=>{
     expect((await db.schemaMetadata.get('database'))!.schemaVersion).toBe(2);
   });
 
-  it('plain, encrypted and Markdown exports omit private content and restore into an ordinary v1 installation',async()=>{
+  it('plain, encrypted and Markdown exports omit private content and restore into an ordinary v2 installation with portable v1',async()=>{
     const source=await setup(true),target=await setup();
     const prayer=await new PrayerRepository(source).createPrayer({body:'Portable saved wording'});
     const before=(await createBackupSnapshot(source)).data,internal=await privateRows(source);
@@ -69,7 +69,7 @@ describe('explicit portable data boundary',()=>{
     const snapshot=await createBackupSnapshot(source,'0.8.0');
     await validateBackupSnapshot(snapshot,target);await restoreBackupSnapshot(snapshot,target);
     expect(await target.prayers.get(incoming.id)).toEqual(incoming);expect(await target.prayers.get(local.id)).toBeUndefined();
-    expect(await privateRows(target)).toEqual(internal);expect(await target.schemaMetadata.toArray()).toEqual(metadata);
+    const afterPrivate=await privateRows(target); expect({...afterPrivate,draftJournalState:internal.draftJournalState}).toEqual(internal); expect(afterPrivate.draftJournalState).not.toEqual(internal.draftJournalState); expect(await target.schemaMetadata.toArray()).toEqual(metadata);
   });
 
   it.each(['merge','replace'] as const)('%s review ignores private-store changes and commits without clearing them',async mode=>{
@@ -84,7 +84,9 @@ describe('explicit portable data boundary',()=>{
     const result=await commitMddRestore(review,target);
     expect(result.kind).toBe('committed');expect(await target.prayers.get(incoming.id)).toEqual(incoming);
     expect(Boolean(await target.prayers.get(local.id))).toBe(mode==='merge');
-    expect(await privateRows(target)).toEqual(internal);expect(await target.schemaMetadata.toArray()).toEqual(metadata);
+    const afterPrivate=await privateRows(target); expect({...afterPrivate,draftJournalState:internal.draftJournalState}).toEqual(internal);
+    if(mode==='replace')expect(afterPrivate.draftJournalState).not.toEqual(internal.draftJournalState);else expect(afterPrivate.draftJournalState).toEqual(internal.draftJournalState);
+    expect(await target.schemaMetadata.toArray()).toEqual(metadata);
     expect(await commitMddRestore(review,target)).toBe(result);
   });
 

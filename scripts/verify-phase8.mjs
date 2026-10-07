@@ -1,3 +1,4 @@
+import { assertReviewedDatabaseContract } from "./reviewed-database-contract.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url); const read = (path) => readFile(new URL(path, root), "utf8");
@@ -9,7 +10,7 @@ const styles = await read("src/styles/index.css");
 assert.match(main, /styles\/index\.css/);
 
 const pkg = JSON.parse(pkgRaw); const manifest = JSON.parse(manifestRaw); const searchDocs = JSON.parse(searchRaw);
-assert.match(schema, /DATABASE_SCHEMA_VERSION = 1/); for (const store of ["activityEvents", "collections", "collectionItems", "reflections", "prayers"]) assert.match(schema, new RegExp(`${store}:`));
+await assertReviewedDatabaseContract(); for (const store of ["activityEvents", "collections", "collectionItems", "reflections", "prayers"]) assert.match(schema, new RegExp(`${store}:`));
 assert.match(historyRepo, /listDaySummaries/); assert.match(historyRepo, /listMoments/); assert.match(historyRepo, /PRAYER_ANSWERED/); assert.match(historyScreens, /Calendar/); assert.match(historyScreens, /Moments/);
 assert.doesNotMatch(historyScreens, /\b(?:streak|streakCount|currentStreak|longestStreak|spiritualScore|spiritualScorecard|xpPoints|leaderboard)\b\s*[:=]/i);
 assert.doesNotMatch(historyScreens, /className\s*=\s*["'`][^"'`]*(?:streak|spiritual-score|xp|leaderboard|achievement)/i);

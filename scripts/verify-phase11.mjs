@@ -1,3 +1,4 @@
+import { assertReviewedDatabaseContract } from "./reviewed-database-contract.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 
@@ -29,7 +30,7 @@ assert.match(today, /<PlanSetup/); assert.match(plan, /<PlanSetup/);
 const planSetup = await read("src/mcheyne/PlanSetup.tsx");
 assert.match(planSetup, /<label>Completed through date<input/); assert.match(plan, /<label>Completed through date<input type="date"/);
 assert.match(history, /aria-label="Previous month"/); assert.match(history, /aria-label="Next month"/); assert.match(history, /Open history for/); assert.match(history, /aria-current=/); assert.match(history, /Opening your history…/); assert.match(await read("src/history/hooks.ts"), /liveQuery/);
-assert.match(schema, /DATABASE_SCHEMA_VERSION = 1/);
+await assertReviewedDatabaseContract();
 assert.match(tokens, /--color-ink-faint:\s*#5e625a/); assert.match(tokens, /--color-warning-text:\s*#7a4f2f/);
 assert.match(vite, /manifest:\s*true/);
 assert.match(sw, /\.vite\/manifest\.json/); assert.match(sw, /Object\.values\(buildManifest\)/); assert.match(sw, /entry\.file/); assert.match(sw, /ignoreVary:\s*true/); assert.match(sw, /matchCached\(request\)/);

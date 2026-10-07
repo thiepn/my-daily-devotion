@@ -1,7 +1,8 @@
 import { strFromU8, strToU8, unzipSync, zipSync } from "fflate";
 import Dexie from "dexie";
 import { APP_VERSION } from "../app/version";
-import { createBackupSnapshot, restoreBackupSnapshot, sha256Hex, validateBackupSnapshot, type BackupSnapshot } from "./backup";
+import { createBackupSnapshot, createBoundBackupSnapshot, restoreBackupSnapshot, sha256Hex, validateBackupSnapshot, type BackupSnapshot } from "./backup";
+import { newJournalState, readJournalEpoch } from "../recovery/journal";
 import type { Reflection, Prayer, PrayerUpdate, PrayerResolution, Highlight, VerseNote } from "../domain/types";
 import { MddDatabase, prepareDatabase } from "./database";
 import { auditDatabase } from "./integrity";
@@ -51,7 +52,7 @@ export interface RestoreReview {
 }
 export interface CommittedRestoreResult { kind: "committed"; mode: ImportMode; effects: Readonly<RestoreEffects>; }
 interface PreparedRestore {
-  database: MddDatabase; localJson: string; candidate: BackupSnapshot;
+  database: MddDatabase; localJson: string; epoch: string; candidate: BackupSnapshot;
   mode: ImportMode; effects: RestoreEffects; result?: CommittedRestoreResult;
   committing?: Promise<CommittedRestoreResult>;
 }
@@ -275,7 +276,7 @@ function canonical(value: unknown): string {
 export async function prepareMddRestore(bytes: Uint8Array, password: string, mode: ImportMode, database: MddDatabase): Promise<RestoreReview> {
   if (mode !== "merge" && mode !== "replace") throw new Error("Choose a valid restore mode.");
   const { manifest, snapshot } = await readArchive(bytes, password, database);
-  const local = await createBackupSnapshot(database);
+  const { snapshot: local, epoch } = await createBoundBackupSnapshot(database);
   await validateInTemporaryDatabase(snapshot);
   const candidate = mode === "merge" ? await mergedSnapshot(snapshot, local) : snapshot;
   if (mode === "merge") await validateInTemporaryDatabase(candidate);
@@ -304,7 +305,7 @@ export async function prepareMddRestore(bytes: Uint8Array, password: string, mod
   }
   const contents = Object.fromEntries(Object.entries(snapshot.data).map(([name, rows]) => [name, Object.freeze({ live: rows.filter(row => !deleted(row)).length, deletionMarkers: rows.filter(deleted).length })]));
   const review: RestoreReview = Object.freeze({ manifest, encrypted: Boolean(manifest.encryption), mode, contents: Object.freeze(contents), effects: Object.freeze({ ...effects }), tables: Object.freeze(tables), equalRevisionDifferences: Object.freeze(equalRevisionDifferences), hasLocalDevotionalRecords: Object.entries(local.data).some(([name, rows]) => name !== "preferences" && rows.length > 0) });
-  preparedRestores.set(review, { database, localJson: stableDataJson(local.data), candidate, mode, effects });
+  preparedRestores.set(review, { database, localJson: stableDataJson(local.data), epoch, candidate, mode, effects });
   return review;
 }
 
@@ -324,15 +325,17 @@ async function commitPreparedRestore(prepared: PreparedRestore, database: MddDat
   // The whole review/confirmation interval is protected, not just validation.
   const { candidate, localJson } = prepared;
   const tables = portableTables(database);
-  await database.transaction("rw", tables, async () => {
+  const nextJournal = newJournalState();
+  await database.transaction("rw", [...tables, database.draftJournalState], async () => {
     const current: Record<string, unknown[]> = {};
     for (const table of tables) current[table.name] = await table.toArray();
-    if (stableDataJson(current) !== localJson) throw new StaleRestoreReviewError();
+    if (stableDataJson(current) !== localJson || await readJournalEpoch(database) !== prepared.epoch) throw new StaleRestoreReviewError();
     await Dexie.waitFor(validateBackupSnapshot(candidate, database));
     for (const table of tables) {
       await table.clear();
       if (candidate.data[table.name]?.length) await table.bulkAdd(candidate.data[table.name]!);
     }
+    if (prepared.mode === "replace") await database.draftJournalState.put(nextJournal);
   });
   const result: CommittedRestoreResult = { kind: "committed", mode: prepared.mode, effects: Object.freeze({ ...prepared.effects }) };
   prepared.result = result;

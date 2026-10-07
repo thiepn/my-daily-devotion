@@ -1,3 +1,4 @@
+import { assertReviewedDatabaseContract } from "./reviewed-database-contract.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url); const read = (path) => readFile(new URL(path, root), "utf8");
@@ -9,7 +10,7 @@ const styles = await read("src/styles/index.css");
 assert.match(main, /styles\/index\.css/);
 
 const contract = JSON.parse(contractRaw); const pkg = JSON.parse(pkgRaw);
-assert.equal(contract.prayer.missedRecurrenceCreatesDebt, false); assert.deepEqual(contract.prayer.queue.precedence, ["FOCUS_OR_EVENT", "FIXED_DUE", "NEVER_PRAYED", "ROTATION"]); assert.match(schema, /DATABASE_SCHEMA_VERSION = 1/); for (const store of ["prayerSchedules", "prayerSessions", "prayerSessionItems", "people", "categories"]) assert.match(schema, new RegExp(`${store}:`)); assert.doesNotMatch(types, /priority\s*:/i);
+assert.equal(contract.prayer.missedRecurrenceCreatesDebt, false); assert.deepEqual(contract.prayer.queue.precedence, ["FOCUS_OR_EVENT", "FIXED_DUE", "NEVER_PRAYED", "ROTATION"]); await assertReviewedDatabaseContract(); for (const store of ["prayerSchedules", "prayerSessions", "prayerSessionItems", "people", "categories"]) assert.match(schema, new RegExp(`${store}:`)); assert.doesNotMatch(types, /priority\s*:/i);
 for (const mode of ["ROTATION", "DAILY", "WEEKDAYS", "INTERVAL_DAYS", "MONTHLY", "ON_DATE", "MANUAL_ONLY"]) assert.match(schedules, new RegExp(mode)); assert.match(schedules, /event-follow-up/); assert.match(schedules, /localDate/);
 for (const band of ["FOCUS_OR_EVENT", "FIXED_DUE", "NEVER_PRAYED", "ROTATION"]) assert.match(queue, new RegExp(band)); assert.match(queue, /MANUAL_ONLY/); assert.match(queue, /prayedOnDate/); assert.match(queue, /seen\.has/);
 assert.match(sessions, /startOrResume/); assert.match(sessions, /PrayerSessionItem/); assert.match(sessions, /outcome: "NEXT"/); assert.match(sessions, /outcome: "SKIP"/); assert.match(sessions, /endSession/); assert.match(sessions, /localDate/);

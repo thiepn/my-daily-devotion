@@ -1,3 +1,4 @@
+import { assertReviewedDatabaseContract } from "./reviewed-database-contract.mjs";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { access, readFile, readdir, stat } from "node:fs/promises";
@@ -63,7 +64,7 @@ assert.match(ci, /path:\s*release\//);
 assert.doesNotMatch(ci, /npm install --ignore-scripts/);
 
 for (const token of ["release/", "playwright-report/", "test-results/", "/public/THIRD_PARTY_NOTICES.txt"]) assert.ok(gitignore.includes(token), `.gitignore missing ${token}`);
-assert.match(schema, /DATABASE_SCHEMA_VERSION\s*=\s*1/);
+await assertReviewedDatabaseContract();
 assert.match(changelog, /## 1\.0\.0 — 2026-09-17/);
 assert.match(privacyDoc, /local-first/i);
 assert.match(privacyDoc, /does not include analytics, advertising, social tracking/i);

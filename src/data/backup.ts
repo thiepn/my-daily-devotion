@@ -2,6 +2,7 @@ import type { MddDatabase } from "./database";
 import { PORTABLE_SCHEMA_VERSION, PORTABLE_CONTRACT_VERSION, PORTABLE_TABLE_NAMES, portableTables } from "./portable-tables";
 import { APP_VERSION } from "../app/version";
 import { validateBackupRecords } from "./validation";
+import { newJournalState, readJournalEpoch } from "../recovery/journal";
 
 export const BACKUP_FORMAT_ID = "mdd-backup";
 export const BACKUP_FORMAT_VERSION = 1;
@@ -44,13 +45,19 @@ export async function sha256Hex(text: string): Promise<string> {
 }
 
 export async function createBackupSnapshot(database: MddDatabase, appVersion: string = APP_VERSION): Promise<BackupSnapshot> {
+  return (await createBoundBackupSnapshot(database, appVersion)).snapshot;
+}
+
+/** Read the review binding in one transaction; hashing stays outside it. */
+export async function createBoundBackupSnapshot(database: MddDatabase, appVersion: string = APP_VERSION): Promise<{ snapshot: BackupSnapshot; epoch: string }> {
   const data: Record<string, unknown[]> = {};
   const tables = portableTables(database);
-  await database.transaction("r", tables, async () => {
+  const epoch = await database.transaction("r", [...tables, database.draftJournalState], async () => {
     for (const table of tables) data[table.name] = await table.toArray();
+    return readJournalEpoch(database);
   });
   const dataSha256 = await sha256Hex(stableDataJson(data));
-  return {
+  return { epoch, snapshot: {
     manifest: {
       formatId: BACKUP_FORMAT_ID,
       formatVersion: BACKUP_FORMAT_VERSION,
@@ -61,7 +68,7 @@ export async function createBackupSnapshot(database: MddDatabase, appVersion: st
       checksums: { dataSha256 },
     },
     data,
-  };
+  } };
 }
 
 export async function validateBackupSnapshot(snapshot: BackupSnapshot, database: MddDatabase): Promise<void> {
@@ -89,11 +96,14 @@ export async function validateBackupSnapshot(snapshot: BackupSnapshot, database:
 export async function restoreBackupSnapshot(snapshot: BackupSnapshot, database: MddDatabase): Promise<void> {
   await validateBackupSnapshot(snapshot, database);
   const tables = portableTables(database);
-  await database.transaction("rw", tables, async () => {
+  const nextJournal = newJournalState();
+  await database.transaction("rw", [...tables, database.draftJournalState], async () => {
+    await readJournalEpoch(database);
     for (const table of tables) {
       await table.clear();
       const rows = snapshot.data[table.name] ?? [];
       if (rows.length > 0) await table.bulkPut(rows);
     }
+    await database.draftJournalState.put(nextJournal);
   });
 }

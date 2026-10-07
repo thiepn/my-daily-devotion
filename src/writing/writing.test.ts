@@ -19,7 +19,7 @@ it("returns the committed reflection and links without additional writes on read
   expect(await Promise.all(db.tables.map(table => table.toArray()))).toEqual(before);
   const edited = await repo.saveDaily("2026-04-24", "Remember His grace.", saved.reflection.revision, reference);
   expect(edited.links).toHaveLength(1); expect(await db.activityEvents.count()).toBe(1);
-  expect(db.verno).toBe(1);
+  expect(db.verno).toBe(2);
 });
 it("retains both versions on stale save and prevents stale deletion", async () => {
   const db = database(); const repo = new ReflectionRepository(db);

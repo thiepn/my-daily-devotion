@@ -1,3 +1,4 @@
+import { assertReviewedDatabaseContract } from "./reviewed-database-contract.mjs";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 const root = new URL("../", import.meta.url); const read = (path) => readFile(new URL(path, root), "utf8");
@@ -9,7 +10,7 @@ const styles = await read("src/styles/index.css");
 assert.match(main, /styles\/index\.css/);
 
 const pkg = JSON.parse(pkgRaw);
-assert.match(schema, /DATABASE_SCHEMA_VERSION = 1/);
+await assertReviewedDatabaseContract();
 for (const store of ["reflections", "verseNotes", "scriptureLinks"]) assert.match(schema, new RegExp(`${store}:`));
 assert.match(reflections, /REFLECTION_CREATED/); assert.match(reflections, /attachScripture/); assert.match(reflections, /removeDaily/); assert.match(notes, /class VerseNoteRepository/); assert.match(notes, /deletedAt: nowInstant/);
 assert.match(reflectionScreen, /Optional prompts/); assert.match(reflectionScreen, /Save reflection/); assert.match(reflectionScreen, /From Scripture/); assert.match(reflectionScreen, /buildPrayerHandoffUrl/);
