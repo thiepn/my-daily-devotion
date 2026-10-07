@@ -30,6 +30,7 @@ export class DurableDraftController {
   private repository: DraftRepository;
   constructor(private database: MddDatabase, private context: DraftContext) { this.repository = new DraftRepository(database); }
   getState = () => this.state;
+  setContext(context: DraftContext) { this.context = structuredClone(context); }
   getId = () => this.snapshot?.metadata.id ?? this.identity?.id;
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   private report(status: DraftStatus, reason?: unknown) {
@@ -56,7 +57,7 @@ export class DurableDraftController {
   private async candidate(payload: DraftPayload, generation: number): Promise<DraftSnapshot> {
     this.identity ??= { id: crypto.randomUUID(), createdAt: new Date().toISOString() };
     const id = this.snapshot?.metadata.id ?? this.identity.id, now = new Date().toISOString();
-    return { metadata: this.snapshot ? { ...this.snapshot.metadata, state: "active", updatedAt: now, generation } : {
+    return { metadata: this.snapshot ? { ...this.snapshot.metadata, state: "active", updatedAt: now, generation, context: this.snapshot.metadata.lineage ? this.snapshot.metadata.context : structuredClone(this.context) } : {
       id, formatVersion: 1, kind: payload.kind, targetKey: draftTargetKey(payload, id), journalEpoch: await readJournalEpoch(this.database),
       createdAt: this.identity.createdAt, updatedAt: now, generation, state: "active", context: structuredClone(this.context), lineage: null, commitment: null,
     }, contents: { id, generation, payload: structuredClone(payload) } };
@@ -85,7 +86,9 @@ export class DurableDraftController {
   async recover(id: string, generation: number): Promise<DraftPayload> {
     return this.serial(async () => {
       if (this.pending || this.snapshot) throw new DraftError("stale", "Keep or discard your current writing before recovering another draft.");
+      const generationBeforeRead = this.generation;
       const fork = await this.repository.forkForRecovery(id, generation);
+      if (this.generation !== generationBeforeRead || this.pending || this.snapshot) throw new DraftError("stale", "Newer writing arrived during recovery. Your editor was not replaced; the recovery copy remains available.");
       this.snapshot = fork; this.pending = { payload: fork.contents.payload, generation: fork.metadata.generation }; this.generation = fork.metadata.generation;
       this.writer = new DraftWriter(this.repository, fork.metadata.id, fork.metadata.generation); this.report("kept");
       return structuredClone(fork.contents.payload);

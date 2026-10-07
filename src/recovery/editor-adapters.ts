@@ -1,6 +1,6 @@
 import type { MddDatabase } from "../data/database";
 import { ReflectionConflictError, ReflectionRepository } from "../data/repositories/reflections";
-import type { Reflection, ScriptureLink } from "../domain/types";
+import type { Prayer, Reflection, ScriptureLink } from "../domain/types";
 import { PrayerRepository } from "../data/repositories/prayers";
 import { administrationInputFromValue } from "../prayer/PrayerAdministrationFields";
 import { saveWithDraft, type DraftSaveContext, type DraftSaveOperation } from "./commit";
@@ -12,6 +12,7 @@ export function saveJournalDraft(database: MddDatabase, context: DraftSaveContex
   const submitted = context.snapshot.contents.payload;
   const reflections = new ReflectionRepository(database), prayers = new PrayerRepository(database);
   let reflection: Reflection | undefined, links: ScriptureLink[] | undefined;
+  let prayer: Prayer | undefined;
   let operation: DraftSaveOperation;
   if (submitted.kind === "reflection") {
     operation = {
@@ -44,13 +45,16 @@ export function saveJournalDraft(database: MddDatabase, context: DraftSaveContex
       if (current.status !== "ACTIVE" && current.status !== "WAITING") throw new DraftError("retired", "This prayer is read-only.");
     };
     operation = {
-      tables: ["prayers", "prayerUpdates", "prayerResolutions", "activityEvents", "scriptureLinks", "prayerSchedules", "people", "categories", "reflections"],
+      tables: submitted.kind === "prayer-create" ? ["prayers", "scriptureLinks", "activityEvents", "prayerSchedules", "people", "categories", "reflections"] : submitted.kind === "prayer-wording" ? ["prayers"] : submitted.kind === "prayer-answer" ? ["prayers", "prayerResolutions", "activityEvents"] : ["prayers", "prayerUpdates", "activityEvents"],
       validate: submitted.kind === "prayer-create" ? async () => undefined : checkPrayer,
       save: async payload => {
         if (payload.kind === "prayer-create") {
+          if (payload.sourceRequest && !payload.omitSource) throw new DraftError("stale", "Review the unresolved source reflection or continue without it before saving.");
           const administration = administrationInputFromValue(payload.administration);
           const source = payload.omitSource ? null : payload.sourceReflection;
-          const saved = await prayers.createPrayer({ ...administration, body: payload.body, sourceDevotionDate: payload.localDate, sourceReflectionId: source?.id ?? null, ...(source ? { expectedSourceReflectionRevision: source.revision } : {}), scriptureReferences: payload.omitReferences ? [] : payload.references });
+          const references = payload.omitReferences ? [] : payload.references;
+          const saved = await prayers.createPrayer({ ...administration, body: payload.body, sourceDevotionDate: source || references.length ? payload.localDate : null, sourceReflectionId: source?.id ?? null, ...(source ? { expectedSourceReflectionRevision: source.revision } : {}), scriptureReferences: references });
+          prayer = saved;
           return { records: [{ id: saved.id, revision: saved.revision }], disposition: "copy-only" };
         }
         if (payload.kind === "prayer-update" || payload.kind === "prayer-encouragement") {
@@ -70,5 +74,5 @@ export function saveJournalDraft(database: MddDatabase, context: DraftSaveContex
       },
     };
   } else throw new DraftError("invalid", "This editor adapter is not connected yet.");
-  return saveWithDraft(database, context, operation).then(result => ({ ...result, reflection, links }));
+  return saveWithDraft(database, context, operation).then(result => ({ ...result, reflection, links, prayer }));
 }

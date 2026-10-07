@@ -21,6 +21,32 @@ const rebase = (latest: DraftPayload, submitted: DraftPayload, result: Committed
 };
 
 describe("serialized durable editor controller", () => {
+  it("keeps asynchronously resolved navigation context while preserving a recovered source context", async () => {
+    const { database, controller } = await setup();
+    controller.stage(payload("Typed before source context loaded")); await controller.flush();
+    controller.setContext({ returnTo: "/history?shown=15", reading: null });
+    controller.stage(payload("Typed after source context loaded")); await controller.flush();
+    const read = await new DraftRepository(database).read(controller.getId()!);
+    expect(read).toMatchObject({ kind: "active", snapshot: { metadata: { context: { returnTo: "/history?shown=15" } } } });
+    const other = new DurableDraftController(database, { returnTo: "/today", reading: null }); controllers.push(other);
+    await other.recover(controller.getId()!, 2);
+    other.setContext({ returnTo: "/prayer", reading: null }); other.stage(payload("New recovered writing")); await other.flush();
+    expect(await new DraftRepository(database).read(other.getId()!)).toMatchObject({ kind: "active", snapshot: { metadata: { context: { returnTo: "/history?shown=15" } } } });
+  });
+  it("does not replace new typing that arrives while an explicit recovery fork is loading", async () => {
+    const { database, controller: source } = await setup(); source.stage(payload("Kept source")); await source.flush();
+    const editor = new DurableDraftController(database, { returnTo: "/today", reading: null }); controllers.push(editor);
+    let release!: () => void; const gate = new Promise<void>(resolve => { release = resolve; });
+    const original = DraftRepository.prototype.forkForRecovery;
+    vi.spyOn(DraftRepository.prototype, "forkForRecovery").mockImplementation(async function (this: DraftRepository, ...args) { const fork = await original.apply(this, args); await gate; return fork; });
+    const recovering = editor.recover(source.getId()!, 1);
+    await vi.waitFor(async () => expect(await database.editorDrafts.count()).toBe(2));
+    editor.stage(payload("New typing in the current editor")); release();
+    await expect(recovering).rejects.toMatchObject({ code: "stale" }); await editor.flush();
+    const contents = await database.editorDraftContents.toArray(); expect(contents.map(row => row.payload.kind === "reflection" ? row.payload.bodyMd : "")).toContain("New typing in the current editor");
+    expect(contents.filter(row => row.payload.kind === "reflection" && row.payload.bodyMd === "Kept source")).toHaveLength(2);
+    expect(await database.activityEvents.count()).toBe(0);
+  });
   it("keeps pristine editors write-free and flushes only changed private writing", async () => {
     const { database, controller } = await setup(); await controller.flush();
     expect(await database.editorDrafts.count()).toBe(0);

@@ -11,8 +11,8 @@ export class DraftRepository {
     if (!Number.isSafeInteger(offset) || offset < 0 || !Number.isSafeInteger(limit) || limit < 1 || limit > 100) throw new DraftError("invalid", "Invalid recovery page.");
     return this.database.transaction("r", this.database.editorDrafts, async () => {
       // Directory reads deliberately never touch editorDraftContents.
-      const collection = query.targetKey === undefined ? this.database.editorDrafts.toCollection() : this.database.editorDrafts.where("targetKey").equals(query.targetKey);
-      const rows = await collection.filter(row => row.state !== "discarded").toArray();
+      const collection = query.targetKey !== undefined ? this.database.editorDrafts.where("targetKey").equals(query.targetKey) : query.kind ? this.database.editorDrafts.where("kind").equals(query.kind) : this.database.editorDrafts.toCollection();
+      const rows = await collection.filter(row => row.state !== "discarded" && (!query.kind || row.kind === query.kind)).toArray();
       rows.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)) || String(a.id).localeCompare(String(b.id)));
       return { total: rows.length, rows: rows.slice(offset, offset + limit).map(row => ({ id: row.id, metadata: isDraftMetadata(row) ? row : null })) };
     });

@@ -20,10 +20,11 @@ const baseline = object({ id: uuid, revision: positive });
 const prayerBaseline = object({ id: uuid, revision: positive, status: oneOf("ACTIVE", "WAITING", "ANSWERED", "ARCHIVED"), body: string });
 const reference = object({ translationId: oneOf("BSB"), startVerseKey: value => string(value) && /^[a-zA-Z0-9]+\.[1-9]\d*\.[1-9]\d*$/.test(value as string), endVerseKey: value => string(value) && /^[a-zA-Z0-9]+\.[1-9]\d*\.[1-9]\d*$/.test(value as string) });
 const administration = object({ personId: nullable(uuid), categoryId: nullable(uuid), scheduleMode: oneOf("ROTATION", "DAILY", "WEEKDAYS", "INTERVAL_DAYS", "MONTHLY", "ON_DATE", "MANUAL_ONLY"), weekdays: array(value => integer(value) && (value as number) <= 7 && (value as number) >= 1), intervalDays: string, anchorDate: string, monthlyDay: string, onDate: string, eventDate: string, focusUntil: string });
+const prayerCaptureFields = { kind: oneOf("prayer-create"), localDate: date, body: string, administration, sourceReflection: nullable(baseline), references: array(reference), omitSource: boolean, omitReferences: boolean };
 const payloadChecks: { [K in DraftPayload["kind"]]: Check } = {
   reflection: object({ kind: oneOf("reflection"), localDate: date, bodyMd: string, baseline: nullable(object({ id: uuid, revision: positive, bodyMd: string })), pendingReferences: array(reference), dismissedReferences: boolean }),
   "verse-note": object({ kind: oneOf("verse-note"), reference, bodyMd: string, baseline: nullable(object({ id: uuid, revision: positive, bodyMd: string })) }),
-  "prayer-create": object({ kind: oneOf("prayer-create"), localDate: date, body: string, administration, sourceReflection: nullable(baseline), references: array(reference), omitSource: boolean, omitReferences: boolean }),
+  "prayer-create": value => object(prayerCaptureFields)(value) || object({ ...prayerCaptureFields, sourceRequest: object({ id: nullable(uuid) }) })(value),
   "prayer-wording": object({ kind: oneOf("prayer-wording"), body: string, baseline: prayerBaseline }),
   "prayer-update": object({ kind: oneOf("prayer-update"), body: string, baseline: prayerBaseline }),
   "prayer-encouragement": object({ kind: oneOf("prayer-encouragement"), body: string, baseline: prayerBaseline }),

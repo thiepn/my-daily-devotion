@@ -7,7 +7,7 @@ interface PrayerBaseline extends RecordBaseline { status: PrayerStatus; body: st
 export type DraftPayload =
   | { kind: "reflection"; localDate: LocalDate; bodyMd: string; baseline: (RecordBaseline & { bodyMd: string }) | null; pendingReferences: ScriptureReference[]; dismissedReferences: boolean }
   | { kind: "verse-note"; reference: ScriptureReference; bodyMd: string; baseline: (RecordBaseline & { bodyMd: string }) | null }
-  | { kind: "prayer-create"; localDate: LocalDate; body: string; administration: PrayerAdministrationValue; sourceReflection: RecordBaseline | null; references: ScriptureReference[]; omitSource: boolean; omitReferences: boolean }
+  | { kind: "prayer-create"; localDate: LocalDate; body: string; administration: PrayerAdministrationValue; sourceReflection: RecordBaseline | null; sourceRequest?: { id: string | null }; references: ScriptureReference[]; omitSource: boolean; omitReferences: boolean }
   | { kind: "prayer-wording" | "prayer-update" | "prayer-encouragement"; body: string; baseline: PrayerBaseline }
   | { kind: "prayer-answer"; body: string; baseline: PrayerBaseline; session: { id: string; itemId: string; localDate: LocalDate } | null }
   | { kind: "prayer-settings"; administration: PrayerAdministrationValue; baseline: PrayerBaseline; schedule: (RecordBaseline & { administration: PrayerAdministrationValue }) | null }
@@ -52,7 +52,7 @@ export type DraftReadResult =
   | { kind: "active"; snapshot: DraftSnapshot; previousJournal: boolean }
   | { kind: "committed"; metadata: DraftMetadata }
   | { kind: "missing" | "discarded" | "unsupported" | "invalid" };
-export interface DraftListQuery { targetKey?: string; offset?: number; limit?: number }
+export interface DraftListQuery { kind?: DraftPayload["kind"]; targetKey?: string; offset?: number; limit?: number }
 export interface DraftPage { rows: Array<{ id: string; metadata: DraftMetadata | null }>; total: number }
 export class DraftError extends Error {
   constructor(public readonly code: "invalid" | "missing" | "stale" | "retired" | "epoch" | "operation", message: string) { super(message); this.name = "DraftError"; }

@@ -29,6 +29,31 @@ function next(draft: DraftSnapshot, bodyMd = "Newer text"): DraftSnapshot {
 afterEach(async () => { for (const database of databases.splice(0)) { database.close(); await database.delete(); } });
 
 describe("approved additive recovery migration", () => {
+  it("preserves an unresolved capture source and requires an explicit omission before creating", async () => {
+    const database = await setup(), repository = new DraftRepository(database);
+    const payload: DraftPayload = { kind: "prayer-create", localDate: "2026-10-07", body: "Keep my pending-source writing", administration: blankPrayerAdministration("2026-10-07"), sourceReflection: null, sourceRequest: { id: crypto.randomUUID() }, references: [], omitSource: false, omitReferences: false };
+    const draft = await snapshot(database, payload);
+    await repository.persist(draft, null);
+    await expect(saveJournalDraft(database, { snapshot: draft, operationId: crypto.randomUUID() })).rejects.toMatchObject({ code: "stale" });
+    expect(await database.prayers.count()).toBe(0); expect(await database.activityEvents.count()).toBe(0);
+    expect(await repository.read(draft.metadata.id)).toMatchObject({ kind: "active", snapshot: { contents: { payload: { sourceRequest: payload.sourceRequest } } } });
+    const omitted = structuredClone(draft); omitted.metadata.generation = 2; omitted.contents.generation = 2;
+    if (omitted.contents.payload.kind !== "prayer-create") throw new Error("fixture");
+    omitted.contents.payload.omitSource = true;
+    await repository.persist(omitted, 1);
+    const result = await saveJournalDraft(database, { snapshot: omitted, operationId: crypto.randomUUID() });
+    expect(result.prayer).toMatchObject({ body: payload.body, sourceReflectionId: null, sourceDevotionDate: null });
+    expect(await database.prayers.count()).toBe(1); expect(await database.activityEvents.count()).toBe(1);
+  });
+  it("keeps incomplete hidden capture settings private without relaxing domain validation", async () => {
+    const database = await setup(), repository = new DraftRepository(database);
+    const payload: DraftPayload = { kind: "prayer-create", localDate: "2026-10-07", body: "Request", administration: { ...blankPrayerAdministration("2026-10-07"), scheduleMode: "INTERVAL_DAYS", intervalDays: "", anchorDate: "" }, sourceReflection: null, references: [], omitSource: false, omitReferences: false };
+    const draft = await snapshot(database, payload);
+    await repository.persist(draft, null);
+    expect(await repository.read(draft.metadata.id)).toMatchObject({ kind: "active", snapshot: { contents: { payload: { administration: payload.administration } } } });
+    await expect(saveJournalDraft(database, { snapshot: draft, operationId: crypto.randomUUID() })).rejects.toThrow();
+    expect(await database.prayers.count()).toBe(0); expect(await database.activityEvents.count()).toBe(0);
+  });
   it("initializes fresh schema 2 once without creating devotional activity", async () => {
     const database = await setup(), epoch = await readJournalEpoch(database);
     await prepareDatabase(database);
