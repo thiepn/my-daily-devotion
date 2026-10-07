@@ -10,7 +10,7 @@ Ship only from a commit whose complete hosted certification and manual visual re
 - [ ] Record the source commit, package version 1.3.0 and known discrepancies.
 - [ ] Verify package, application and service-worker versions agree.
 - [ ] Record the exact compatibility contracts: original presentation uses database v1; the approved recovery foundation/editor integration uses database v2; domain and ordinary portable backup format/schema remain v1. Do not treat a database downgrade as a safe rollback.
-- [ ] Check the current editor coverage reports: Reflection, prayer capture, verse notes, prayer wording/updates/encouragement/ordinary answers and settings have dedicated integration slices. Focused Prayer answers, collections and People/Categories remain pending. No editor may promise restart recovery before its integration is certified; Batch B is not complete yet.
+- [ ] Check the current editor coverage reports: Reflection, prayer capture, verse notes, prayer wording/updates/encouragement/ordinary answers, settings and Focused Prayer answers have dedicated integration slices. Collections and People/Categories remain pending. No editor may promise restart recovery before its integration is certified; Batch B is not complete yet.
 - [ ] Review old PRs #9–#11 for necessary scoped fixes; do not import their global navigation/CSS changes wholesale. Close superseded PRs only after approved integration.
 - [ ] Inspect the canonical application crops, approved icon and current screenshots together using `docs/VISUAL_AUTHORITY.md`.
 
