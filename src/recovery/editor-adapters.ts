@@ -1,5 +1,6 @@
 import type { MddDatabase } from "../data/database";
-import { ReflectionRepository } from "../data/repositories/reflections";
+import { ReflectionConflictError, ReflectionRepository } from "../data/repositories/reflections";
+import type { Reflection, ScriptureLink } from "../domain/types";
 import { PrayerRepository } from "../data/repositories/prayers";
 import { administrationInputFromValue } from "../prayer/PrayerAdministrationFields";
 import { saveWithDraft, type DraftSaveContext, type DraftSaveOperation } from "./commit";
@@ -10,6 +11,7 @@ import { DraftError, type DraftPayload } from "./types";
 export function saveJournalDraft(database: MddDatabase, context: DraftSaveContext) {
   const submitted = context.snapshot.contents.payload;
   const reflections = new ReflectionRepository(database), prayers = new PrayerRepository(database);
+  let reflection: Reflection | undefined, links: ScriptureLink[] | undefined;
   let operation: DraftSaveOperation;
   if (submitted.kind === "reflection") {
     operation = {
@@ -17,13 +19,14 @@ export function saveJournalDraft(database: MddDatabase, context: DraftSaveContex
       validate: async payload => {
         if (payload.kind !== "reflection") throw new DraftError("invalid", "Wrong editor kind.");
         const current = await reflections.getDaily(payload.localDate);
-        if (payload.baseline && (!current || current.id !== payload.baseline.id || current.revision !== payload.baseline.revision)) throw new DraftError("stale", "The reflection changed or was removed. Review both versions.");
-        if (!payload.baseline && await database.reflections.where("localDate").equals(payload.localDate).count()) throw new DraftError("stale", "A reflection already exists for this date. Review before saving.");
+        if (payload.baseline && (!current || current.id !== payload.baseline.id || current.revision !== payload.baseline.revision)) throw new ReflectionConflictError(current);
+        if (!payload.baseline && await database.reflections.where("localDate").equals(payload.localDate).count()) throw new ReflectionConflictError(current);
       },
       save: async payload => {
         if (payload.kind !== "reflection") throw new DraftError("invalid", "Wrong editor kind.");
         const saved = await reflections.saveDaily(payload.localDate, payload.bodyMd, payload.baseline?.revision ?? null);
         if (!payload.dismissedReferences) for (const reference of payload.pendingReferences) await reflections.attachScripture(saved.reflection.id, reference);
+        reflection = saved.reflection; links = await reflections.listScriptureLinks(saved.reflection.id);
         return { records: [{ id: saved.reflection.id, revision: saved.reflection.revision }], disposition: "editable" };
       },
       rebase: (newer, records) => {
@@ -67,5 +70,5 @@ export function saveJournalDraft(database: MddDatabase, context: DraftSaveContex
       },
     };
   } else throw new DraftError("invalid", "This editor adapter is not connected yet.");
-  return saveWithDraft(database, context, operation);
+  return saveWithDraft(database, context, operation).then(result => ({ ...result, reflection, links }));
 }
