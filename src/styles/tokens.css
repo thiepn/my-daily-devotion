@@ -28,6 +28,7 @@
   --color-reflection: #48706d;
   --color-reflection-soft: #dce8e6;
   --color-prayer: #9f563b;
+  --color-prayer-strong: #813e29;
   --color-prayer-soft: #f1ded6;
   --color-morning: #d29a3a;
   --color-morning-soft: #f2e5c5;
@@ -96,6 +97,7 @@
     --color-reflection: #86aba7;
     --color-reflection-soft: #263836;
     --color-prayer: #d58b6d;
+    --color-prayer-strong: #e3a084;
     --color-prayer-soft: #3c2d27;
     --color-morning: #e1b667;
     --color-morning-soft: #3d3423;
@@ -132,6 +134,7 @@
   --color-reflection: #86aba7;
   --color-reflection-soft: #263836;
   --color-prayer: #d58b6d;
+  --color-prayer-strong: #e3a084;
   --color-prayer-soft: #3c2d27;
   --color-morning: #e1b667;
   --color-morning-soft: #3d3423;

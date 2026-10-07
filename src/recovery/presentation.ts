@@ -42,7 +42,7 @@ export function draftFields(payload: DraftPayload): DraftField[] {
     case "reflection": return [{ label: "Your reflection", text: payload.bodyMd }];
     case "verse-note": return [{ label: "Your verse note", text: payload.bodyMd }, { label: "Scripture", text: `${payload.reference.translationId} · ${payload.reference.startVerseKey} – ${payload.reference.endVerseKey}` }];
     case "prayer-create": return [{ label: "Your writing", text: payload.body }, { label: "Source date", text: payload.localDate }, { label: "Source reflection", text: payload.omitSource ? "Continue without reflection" : payload.sourceReflection ? `${payload.sourceReflection.id} · reviewed revision ${payload.sourceReflection.revision}` : payload.sourceRequest ? "Source awaiting review" : "No reflection" }, { label: "Scripture", text: payload.omitReferences ? "Continue without linked passages" : payload.references.map(reference => `${reference.translationId} · ${reference.startVerseKey} – ${reference.endVerseKey}`).join("\n") }, ...administrationFields(payload)];
-    case "prayer-wording": case "prayer-update": case "prayer-encouragement": case "prayer-answer": return [{ label: "Your writing", text: payload.body }];
+    case "prayer-wording": case "prayer-update": case "prayer-encouragement": case "prayer-answer": return [{ label: "Your writing", text: payload.body }, {label:"Saved request when writing began",text:payload.baseline.body},{label:"Status then",text:payload.baseline.status.toLowerCase()},{label:"Reviewed revision",text:String(payload.baseline.revision)}];
     case "prayer-settings": return administrationFields(payload);
     case "person-create": case "person-edit": return [{ label: "Name", text: payload.name }, { label: "Relationship", text: payload.relationship }, { label: "Notes", text: payload.notes }];
     case "collection-item-note": return [{ label: "Collection note", text: payload.note }];
@@ -56,6 +56,23 @@ export async function reflectionRecoveryDestination(database: MddDatabase, resul
   if (result.kind !== "active" || result.previousJournal || result.snapshot.metadata.commitment?.disposition === "copy-only") return null;
   const payload = result.snapshot.contents.payload;
   if (payload.kind === "prayer-create") return `/prayer/new?${new URLSearchParams({ draft: result.snapshot.metadata.id, return: result.snapshot.metadata.context.returnTo })}`;
+  if (payload.kind === "prayer-settings") {
+    const prayer = await database.prayers.get(payload.baseline.id);
+    if (!prayer || prayer.deletedAt || prayer.status !== "ACTIVE" && prayer.status !== "WAITING") return null;
+    const origin = new URL(result.snapshot.metadata.context.returnTo,"https://mdd.invalid");
+    const params = origin.pathname === `/prayer/${prayer.id}/settings` ? new URLSearchParams(origin.search) : new URLSearchParams({return:result.snapshot.metadata.context.returnTo});
+    params.set("draft",result.snapshot.metadata.id);
+    return `/prayer/${prayer.id}/settings?${params}`;
+  }
+  if (["prayer-wording", "prayer-update", "prayer-encouragement", "prayer-answer"].includes(payload.kind) && "baseline" in payload && payload.baseline && "status" in payload.baseline) {
+    if (payload.kind === "prayer-answer" && payload.session) return null; // Session adapter ships separately.
+    const prayer = await database.prayers.get(payload.baseline.id);
+    if (!prayer || prayer.deletedAt || prayer.status !== "ACTIVE" && prayer.status !== "WAITING") return null;
+    const origin = new URL(result.snapshot.metadata.context.returnTo,"https://mdd.invalid");
+    const params = origin.pathname === `/prayer/${prayer.id}` ? new URLSearchParams(origin.search) : new URLSearchParams({return:result.snapshot.metadata.context.returnTo});
+    params.set("draft",result.snapshot.metadata.id);params.set("edit",payload.kind.slice(7));
+    return `/prayer/${prayer.id}?${params}`;
+  }
   if (payload.kind === "verse-note") {
     const current = await new VerseNoteRepository(database).getSavedRecord(payload.reference);
     if (current?.deletedAt || payload.baseline && (!current || current.id !== payload.baseline.id)) return null;

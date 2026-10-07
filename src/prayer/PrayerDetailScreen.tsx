@@ -12,8 +12,14 @@ import {usePrayerPosition,usePrayerRead} from "./detail-hooks";
 import {usePrayerDraftGuard} from "./usePrayerDraftGuard";
 import {scheduleLabel} from "./scheduling";
 import {personInitials} from "./journal";
+import {useDurableDraft} from "../recovery/useDurableDraft";
+import {DraftProtection,DraftRecovery} from "../recovery/DraftRecovery";
+import {saveJournalDraft} from "../recovery/editor-adapters";
+import {draftTargetKey} from "../recovery/validation";
+import {DraftError,type DraftPayload} from "../recovery/types";
 const repository=new PrayerRepository(db);
 type Editor="wording"|"update"|"encouragement"|"answer"|null;
+type PrayerWritingPayload=Extract<DraftPayload,{kind:"prayer-wording"|"prayer-update"|"prayer-encouragement"|"prayer-answer"}>;
 const date=(value:string)=>new Intl.DateTimeFormat(undefined,{dateStyle:"medium"}).format(new Date(value));
 export function PrayerDetailScreen(){const {prayerId=""}=useParams();return <PrayerRecord key={prayerId} prayerId={prayerId}/>;}
 function PrayerRecord({prayerId}:{prayerId:string}) {
@@ -27,10 +33,16 @@ function PrayerRecord({prayerId}:{prayerId:string}) {
  const [conflict,setConflict]=useState(false),[review,setReview]=useState<Prayer|null>(null),[reviewError,setReviewError]=useState("");
  const [removeOpen,setRemoveOpen]=useState(false),[expanded,setExpanded]=useState<Set<string>>(new Set());
  const draftRef=useRef(draft);draftRef.current=draft;
- const baseline=useRef<{body:string;revision:number}|null>(null),acting=useRef(false),editorRef=useRef<HTMLTextAreaElement>(null);
+ const baseline=useRef<PrayerWritingPayload["baseline"]|null>(null),acting=useRef(false),editorRef=useRef<HTMLTextAreaElement>(null);
+ const [actionRecorded,setActionRecorded]=useState(false);
+ const [draftOwner,setDraftOwner]=useState(0);
+ const requestedEditor=useRef("");
  const committed=useRef<{serial:number;prayer:Prayer|null}>({serial:0,prayer:null});
- const noteCommit=(saved:Prayer)=>{committed.current={serial:committed.current.serial+1,prayer:saved};if(baseline.current?.body===saved.body)baseline.current={body:saved.body,revision:saved.revision};};
+ const noteCommit=(saved:Prayer)=>{committed.current={serial:committed.current.serial+1,prayer:saved};};
  const dirty=editor==="wording"?draft!==baseline.current?.body:editor==="answer"||Boolean(editor&&draft.trim());
+ const materialDirty=Boolean(editor&&(editor==="wording"?draft!==baseline.current?.body:draft!==""));
+ const payload:PrayerWritingPayload|null=editor&&baseline.current?(editor==="answer"?{kind:"prayer-answer",body:draft,baseline:baseline.current,session:null}:{kind:editor==="wording"?"prayer-wording":editor==="update"?"prayer-update":"prayer-encouragement",body:draft,baseline:baseline.current}):null;
+ const recovery=useDurableDraft(db,{returnTo:url,reading:null},materialDirty?payload:null,materialDirty,String(draftOwner));
  const rows=model?prayerTimeline(model):[];
  const selectedIndex=rows.findIndex(row=>row.id===query.entry),shown=Math.max(query.shown,selectedIndex>=0?Math.ceil((selectedIndex+1)/20)*20:20);
  const selected=selectedIndex>=0?query.entry:null;
@@ -38,29 +50,38 @@ function PrayerRecord({prayerId}:{prayerId:string}) {
  useEffect(()=>{if(location.search!==query.search)navigate(location.pathname+query.search,{replace:true});},[location.pathname,location.search,query.search,navigate]);
  useEffect(()=>{if(selected)setExpanded(old=>new Set(old).add(selected));},[selected]);
  useEffect(()=>{if(editor)editorRef.current?.focus();},[editor]);
- useEffect(()=>{if(editor==="wording"&&prayer&&!dirty&&!acting.current){baseline.current={body:prayer.body,revision:prayer.revision};draftRef.current=prayer.body;setDraft(prayer.body);}},[prayer,editor,dirty]);
- const discard=()=>{draftRef.current="";setDraft("");setEditor(null);setConflict(false);setReview(null);setMessage("");};
+ useEffect(()=>{if(editor==="wording"&&prayer&&!dirty&&!acting.current){baseline.current={id:prayer.id,status:prayer.status,body:prayer.body,revision:prayer.revision};draftRef.current=prayer.body;setDraft(prayer.body);}},[prayer,editor,dirty]);
+ useEffect(()=>{if(editor&&materialDirty&&prayer&&baseline.current&&prayer.revision!==baseline.current.revision&&!acting.current&&!actionRecorded){setConflict(true);setReview(null);}},[prayer,editor,materialDirty,actionRecorded]);
+ useEffect(()=>{if(!query.draft||!query.edit||!prayer||requestedEditor.current===query.draft||editor)return;requestedEditor.current=query.draft;baseline.current={id:prayer.id,status:prayer.status,body:prayer.body,revision:prayer.revision};const text=query.edit==="wording"?prayer.body:"";draftRef.current=text;setDraft(text);setEditor(query.edit);},[query.draft,query.edit,prayer,editor]);
+ const discard=async()=>{await recovery.controller.discard();draftRef.current="";setDraft("");setEditor(null);setActionRecorded(false);setConflict(false);setReview(null);setMessage("");};
  const accept=(change:(current:PrayerDetailModel)=>PrayerDetailModel)=>load.accept(current=>current?change(current):current??null);
  const perform=async(action:()=>Promise<void>)=>{
   if(acting.current)throw new Error("Please wait for the current action to finish.");
   acting.current=true;setBusy(true);setMessage("");
-  try{await action();}catch(reason){if(isEditConflict(reason)){setConflict(true);setReview(null);}setMessage(reason instanceof Error?reason.message:"Could not save. Please try again.");throw reason;}finally{acting.current=false;setBusy(false);}
+  try{await action();}catch(reason){if(isEditConflict(reason)||reason instanceof DraftError&&reason.code==="stale"){setConflict(true);setReview(null);}setMessage(reason instanceof Error?reason.message:"Could not save. Please try again.");throw reason;}finally{acting.current=false;setBusy(false);}
  };
  const saveEditor=async()=>perform(async()=>{
-  if(!prayer||!editor)throw new Error("This prayer is no longer available.");
-  const captured=draftRef.current,revision=baseline.current?.revision??prayer.revision;
-  if(editor==="wording"){
-   const saved=await repository.updateBody(prayerId,captured,revision);baseline.current={body:saved.body,revision:saved.revision};noteCommit(saved);accept(current=>({...current,prayer:saved}));
-   if(draftRef.current!==captured)throw new Error("Your earlier wording was saved. Newer changes are still unsaved.");
-  }else if(editor==="answer"){
-   const saved=await repository.answer(prayerId,captured,undefined,revision);accept(current=>({...current,prayer:saved.prayer,resolution:saved.resolution}));
-  }else{
-   const saved=await db.transaction("rw",db.prayers,db.prayerUpdates,db.activityEvents,async()=>{const update=await repository.addUpdate(prayerId,captured,editor);const item=await repository.get(prayerId);if(!item)throw new Error("Prayer unavailable.");return {update,prayer:item};});noteCommit(saved.prayer);accept(current=>({...current,prayer:saved.prayer,updates:[...current.updates.filter(item=>item.id!==saved.update.id),saved.update]}));
-   if(draftRef.current!==captured)throw new Error("Your update was recorded. Newer writing is still unsaved.");
+  if(!prayer||!editor||!payload||actionRecorded)throw new Error("Review this prayer before saving. Your writing stays here.");
+  const captured=draftRef.current;
+  recovery.controller.stage({...payload,body:captured});
+  const saved=await recovery.controller.commit(context=>saveJournalDraft(db,context),(latest,submitted,result)=>{
+   if(latest.kind!=="prayer-wording"||submitted.kind!=="prayer-wording")return latest;
+   return {...latest,baseline:{...latest.baseline,...result.marker.records[0]!,body:submitted.body.trim()}};
+  });
+  if(!saved.prayer)throw new Error("The action was recorded. Retry the view without recording it again.");
+  const current=saved.prayer;noteCommit(current);
+  accept(model=>({...model,prayer:current,resolution:saved.resolution??model.resolution,updates:saved.update?[...model.updates.filter(item=>item.id!==saved.update!.id),saved.update]:model.updates}));
+  if(editor!=="wording")setActionRecorded(true);
+  if(draftRef.current!==captured||saved.newerWriting){
+   if(editor==="wording")baseline.current={id:current.id,status:current.status,body:current.body,revision:current.revision};
+   throw new Error(editor==="wording"?"Your earlier wording was saved. Newer changes are still unsaved.":"Your action was recorded. Copy your newer writing; it cannot record another update or answer.");
   }
-  setConflict(false);setReview(null);draftRef.current="";setDraft("");setEditor(null);setMessage("Saved locally.");load.retry();
+  // No await after the final newer-input check. The completed owner detaches
+  // through its serialized acknowledgement barrier; a new editor gets its own
+  // controller rather than removing a commitment marker during possible input.
+  setDraftOwner(value=>value+1);setActionRecorded(false);setConflict(false);setReview(null);draftRef.current="";setDraft("");setEditor(null);setMessage("Saved locally.");load.retry();
  });
- const guard=usePrayerDraftGuard({dirty,save:saveEditor,discard,answer:editor==="answer",canSave:Boolean(draft.trim())});
+ const guard=usePrayerDraftGuard({dirty,save:saveEditor,discard,answer:editor==="answer",answerRecorded:actionRecorded,canSave:Boolean(draft.trim())&&!conflict&&!actionRecorded,pending:busy});
  const startEditor=(next:Editor)=>{
   const serial=committed.current.serial;
   guard.request(()=>{
@@ -68,13 +89,15 @@ function PrayerRecord({prayerId}:{prayerId:string}) {
    // rather than the prayer captured before the confirmation dialog opened.
    const current=committed.current.serial!==serial?committed.current.prayer:prayer;
    if(!current)return;
-   baseline.current={body:current.body,revision:current.revision};
+   baseline.current={id:current.id,status:current.status,body:current.body,revision:current.revision};
    const text=next==="wording"?current.body:"";
-   draftRef.current=text;setDraft(text);setEditor(next);setConflict(false);setReview(null);setMessage("");
+   draftRef.current=text;setDraft(text);setEditor(next);setActionRecorded(false);setConflict(false);setReview(null);setMessage("");
   });
  };
  const run=(action:()=>Promise<void>)=>void perform(action).catch(()=>{});
- const transition=(status:PrayerStatus)=>{const serial=committed.current.serial;guard.request(()=>run(async()=>{if(!prayer)return;const revision=committed.current.serial!==serial?committed.current.prayer!.revision:prayer.revision;const saved=await repository.transition(prayerId,status,revision);accept(current=>({...current,prayer:saved}));discard();setMessage(status==="ARCHIVED"?"Prayer archived.":"Prayer status updated.");load.retry();}));};
+ const classifyUpdate=(next:"update"|"encouragement")=>run(async()=>{await recovery.controller.reclassifyUpdate(next==="update"?"prayer-update":"prayer-encouragement");setEditor(next);});
+ const useSavedWording=()=>run(async()=>{if(!review)return;await recovery.controller.discard();baseline.current={id:review.id,status:review.status,body:review.body,revision:review.revision};draftRef.current=review.body;setDraft(review.body);accept(current=>({...current,prayer:review}));setConflict(false);setReview(null);requestAnimationFrame(()=>editorRef.current?.focus());});
+ const transition=(status:PrayerStatus)=>{const serial=committed.current.serial;guard.request(()=>run(async()=>{if(!prayer)return;const revision=committed.current.serial!==serial?committed.current.prayer!.revision:prayer.revision;const saved=await repository.transition(prayerId,status,revision);accept(current=>({...current,prayer:saved}));await discard();setMessage(status==="ARCHIVED"?"Prayer archived.":"Prayer status updated.");load.retry();}));};
  const editorTitle=editor==="wording"?"Edit wording":editor==="answer"?"Record an answer":editor==="encouragement"?"Add encouragement":"Add update";
  const saveLabel=editor==="wording"?"Save wording":editor==="answer"?"Mark answered":editor==="encouragement"?"Add encouragement":"Add update";
  if(model===undefined)return <main className="journal-workspace prayer-record"><JournalHeading title="Prayer" subtitle="Your prayer journal" back={query.returnTo}/>{load.error?<div role="alert" className="journal-notice"><p>Could not open this prayer. Your saved records are unchanged.</p><button onClick={load.retry}>Retry</button></div>:<p role="status">Opening prayer…</p>}</main>;
@@ -97,19 +120,24 @@ function PrayerRecord({prayerId}:{prayerId:string}) {
    {prayer!.status==="ARCHIVED"?<button className="grace-primary" disabled={busy} onClick={()=>run(async()=>{const saved=await repository.restoreArchived(prayerId,prayer!.revision);accept(current=>({...current,prayer:saved}));setMessage("Prayer restored.");load.retry();})}>Restore to {model.resolution?"answered":"active"}</button>:null}
   </div>
   {editor?<section className="journal-paper prayer-record-editor" aria-label={editorTitle}>
+   {payload?<DraftRecovery key={payload.kind} controller={recovery.controller} kind={payload.kind} targetKey={draftTargetKey(payload,"")} current={payload} returnTo={url} canRecover={!materialDirty&&!busy&&!actionRecorded&&editable} validateRecovery={async source=>{const value=source.contents.payload;if(value.kind==="prayer-answer"&&value.session)throw new Error("This answer belongs to a saved session. Keep it for copying until session recovery is available.");if(!("baseline" in value)||!value.baseline||!("status" in value.baseline))throw new Error("Wrong editor.");const current=await repository.get(value.baseline.id);if(!current||current.status!=="ACTIVE"&&current.status!=="WAITING")throw new Error("This prayer is removed or read-only. Keep your writing for copying.");}} adopt={value=>{
+    if(value.kind!=="prayer-wording"&&value.kind!=="prayer-update"&&value.kind!=="prayer-encouragement"&&value.kind!=="prayer-answer")return;
+    baseline.current=value.baseline;draftRef.current=value.body;setDraft(value.body);setConflict(value.baseline.revision!==prayer!.revision||value.baseline.status!==prayer!.status);setReview(null);setMessage("Draft recovered on this device. No prayer action has been recorded.");
+   }}/>:null}
    <div className="prayer-editor-heading"><h2>{editorTitle}</h2><span className="save-state" role="status">{busy?"Saving…":dirty?"Unsaved changes":editor==="wording"?"Saved locally":"Not saved yet"}</span></div>
-   {(editor==="update"||editor==="encouragement")?<div className="journal-tabs"><button disabled={busy} aria-pressed={editor==="update"} onClick={()=>setEditor("update")}>Update</button><button disabled={busy} aria-pressed={editor==="encouragement"} onClick={()=>setEditor("encouragement")}>Encouragement</button></div>:null}
+   {(editor==="update"||editor==="encouragement")?<div className="journal-tabs"><button disabled={busy||actionRecorded} aria-pressed={editor==="update"} onClick={()=>{if(editor!=="update")classifyUpdate("update");}}>Update</button><button disabled={busy||actionRecorded} aria-pressed={editor==="encouragement"} onClick={()=>{if(editor!=="encouragement")classifyUpdate("encouragement");}}>Encouragement</button></div>:null}
    {!editable?<p className="journal-notice">This prayer is now read-only. Your unsaved writing is still here to copy or discard.</p>:null}
    <label htmlFor="prayer-record-writing">{editor==="answer"?"What happened? (optional)":editor==="wording"?"Request":"Prayer update"}</label>
-   <textarea ref={editorRef} id="prayer-record-writing" className="journal-textarea" disabled={busy&&editor==="answer"} value={draft} onChange={event=>{draftRef.current=event.target.value;setDraft(event.target.value);}}/>
-   <div className="journal-actions"><button className="grace-primary" disabled={!editable||busy||(editor!=="answer"&&!draft.trim())||(editor==="wording"&&!dirty)} onClick={()=>void saveEditor().catch(()=>{})}>{saveLabel}</button><button disabled={busy} onClick={()=>guard.request(discard)}>Cancel editing</button></div>
-   <p className="journal-help">Save to keep your writing on this device. Unsaved changes are lost when the app closes.</p>
+   <textarea ref={editorRef} id="prayer-record-writing" className="journal-textarea" readOnly={busy||actionRecorded} value={draft} onChange={event=>{draftRef.current=event.target.value;setDraft(event.target.value);}}/>
+   <DraftProtection controller={recovery.controller}/>
+   <div className="journal-actions"><button className="grace-primary" disabled={!editable||busy||conflict||actionRecorded||(editor!=="answer"&&!draft.trim())||(editor==="wording"&&!dirty)} onClick={()=>void saveEditor().catch(()=>{})}>{saveLabel}</button><button disabled={busy} onClick={()=>guard.request(discard)}>{actionRecorded?"Dismiss remaining writing":"Cancel editing"}</button></div>
+   <p className="journal-help">Kept drafts remain unfinished writing on this device. Save explicitly to record an update, wording change or answer.</p>
   </section>:null}
   {message?<p className="journal-status" role="status">{message}</p>:null}
   {conflict?<section className="journal-conflict"><h2>Review the saved prayer</h2><p>Your writing is still here. Review changes from another tab before continuing.</p>{reviewError?<p role="alert">{reviewError}</p>:null}
    {!review?<button onClick={()=>{void repository.get(prayerId).then(latest=>{if(!latest)throw new Error("This prayer is no longer available.");setReview(latest);}).catch(reason=>setReviewError(reason.message));}}>Compare versions</button>:<>
     {editor?<><label>Your changes<textarea aria-label="Your changes" readOnly value={draft}/></label><label>Saved version<textarea aria-label="Saved version" readOnly value={review.body}/></label><p>Status: {review.status.toLowerCase()}</p></>:<p className="prayer-request-text">{review.body}</p>}
-    {editor==="wording"&&(review.status==="ACTIVE"||review.status==="WAITING")?<><button onClick={()=>{baseline.current={body:review.body,revision:review.revision};draftRef.current=review.body;setDraft(review.body);accept(current=>({...current,prayer:review}));setConflict(false);setReview(null);requestAnimationFrame(()=>editorRef.current?.focus());}}>Use saved wording</button><button onClick={()=>{baseline.current={body:review.body,revision:review.revision};accept(current=>({...current,prayer:review}));setConflict(false);setReview(null);setMessage("Your wording is ready for an explicit save.");requestAnimationFrame(()=>editorRef.current?.focus());}}>Keep my wording for review</button></>:<button onClick={()=>{accept(current=>({...current,prayer:review}));if(editor)baseline.current={body:review.body,revision:review.revision};setConflict(false);setReview(null);load.retry();}}>I have reviewed the saved prayer</button>}
+    {editor==="wording"&&(review.status==="ACTIVE"||review.status==="WAITING")?<><button disabled={busy} onClick={useSavedWording}>Use saved wording</button><button onClick={()=>{baseline.current={id:review.id,status:review.status,body:review.body,revision:review.revision};accept(current=>({...current,prayer:review}));setConflict(false);setReview(null);setMessage("Your wording is ready for an explicit save.");requestAnimationFrame(()=>editorRef.current?.focus());}}>Keep my wording for review</button></>:<button onClick={()=>{accept(current=>({...current,prayer:review}));if(editor)baseline.current={id:review.id,status:review.status,body:review.body,revision:review.revision};setConflict(false);setReview(null);load.retry();}}>I have reviewed the saved prayer</button>}
    </>}
   </section>:null}
   {load.error?<div className="journal-notice" role="alert"><p>{load.error} Completed actions stay saved; Retry only reloads this view.</p><button onClick={load.retry}>Retry details</button></div>:null}
