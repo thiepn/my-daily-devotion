@@ -1,6 +1,7 @@
 import { afterEach, expect, it } from "vitest";
 import { MddDatabase, prepareDatabase } from "../data/database";
 import { ReflectionRepository } from "../data/repositories/reflections";
+import { VerseNoteRepository } from "../data/repositories/verse-notes";
 import { DurableDraftController } from "./controller";
 import { DraftRepository } from "./repository";
 import { DRAFT_LABELS, draftFields, draftTargetLabel, parseRecoveryContext, reflectionRecoveryDestination } from "./presentation";
@@ -56,4 +57,28 @@ it("a discard confirmed against an earlier generation cannot erase newer kept wr
   controller.stage({ ...read.snapshot.contents.payload, bodyMd: "Newer writing" } as DraftPayload); await controller.flush();
   await expect(repository.discard(id, read.snapshot.metadata.generation)).rejects.toMatchObject({ code: "stale" });
   const latest = await repository.read(id); expect(latest.kind === "active" && draftFields(latest.snapshot.contents.payload)[0]?.text).toBe("Newer writing");
+});
+
+it("verse-note handoffs preserve full ranges and nested return URLs without writes", async () => {
+  const { database } = await setup();
+  const returnTo = "/bible/JHN/3?translation=BSB&start=JHN.3.35&end=JHN.4.2&return=%2Fhistory%2Fday%2F2026-04-24%3Fentry%3Dselected";
+  const controller = new DurableDraftController(database, { returnTo, reading: null }); controllers.push(controller);
+  controller.stage({ kind: "verse-note", reference: { translationId: "BSB", startVerseKey: "JHN.3.35", endVerseKey: "JHN.4.2" }, bodyMd: "Private note", baseline: null }); await controller.flush();
+  const result = await new DraftRepository(database).read(controller.getId()!);
+  const before = await Promise.all(database.tables.map(table => table.toArray()));
+  const destination = await reflectionRecoveryDestination(database, result);
+  const query = new URLSearchParams(destination!.split("?")[1]);
+  expect(query.get("start")).toBe("JHN.3.35"); expect(query.get("end")).toBe("JHN.4.2"); expect(query.get("draft")).toBe(controller.getId()); expect(query.get("return")).toBe("/history/day/2026-04-24?entry=selected");
+  expect(await Promise.all(database.tables.map(table => table.toArray()))).toEqual(before);
+});
+
+it("a removed verse-note target remains copyable with no recreate handoff", async () => {
+  const { database } = await setup(), notes = new VerseNoteRepository(database);
+  const reference = { translationId: "BSB", startVerseKey: "JHN.3.16", endVerseKey: "JHN.3.18" } as const;
+  const saved = await notes.save(reference, "Saved note", null);
+  const controller = new DurableDraftController(database, { returnTo: "/today", reading: null }); controllers.push(controller);
+  controller.stage({ kind: "verse-note", reference, bodyMd: "Unfinished writing", baseline: { id: saved.id, revision: saved.revision, bodyMd: saved.bodyMd } }); await controller.flush();
+  await notes.remove(reference, saved.revision, saved.id);
+  const result = await new DraftRepository(database).read(controller.getId()!); expect(result.kind).toBe("active"); expect(await reflectionRecoveryDestination(database, result)).toBeNull();
+  expect(result.kind === "active" && draftFields(result.snapshot.contents.payload)[0]?.text).toBe("Unfinished writing");
 });

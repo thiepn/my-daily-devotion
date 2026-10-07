@@ -5,6 +5,7 @@ import { schemaV1 } from "../data/schema";
 import { createBackupSnapshot } from "../data/backup";
 import { PrayerRepository } from "../data/repositories/prayers";
 import { ReflectionRepository } from "../data/repositories/reflections";
+import { VerseNoteRepository } from "../data/repositories/verse-notes";
 import { DraftRepository } from "./repository";
 import { DraftWriter } from "./writer";
 import { readJournalEpoch } from "./journal";
@@ -29,6 +30,48 @@ function next(draft: DraftSnapshot, bodyMd = "Newer text"): DraftSnapshot {
 afterEach(async () => { for (const database of databases.splice(0)) { database.close(); await database.delete(); } });
 
 describe("approved additive recovery migration", () => {
+  it("commits a full-range verse note exactly once without activity events", async () => {
+    const database = await setup(), repository = new DraftRepository(database);
+    const reference = { translationId: "BSB", startVerseKey: "JHN.3.16", endVerseKey: "JHN.4.3" } as const;
+    const draft = await snapshot(database, { kind: "verse-note", reference, bodyMd: "A note across chapters", baseline: null });
+    await repository.persist(draft, null); const context = { snapshot: draft, operationId: crypto.randomUUID() };
+    const saved = await saveJournalDraft(database, context); expect(saved.verseNote).toMatchObject({ ...reference, bodyMd: "A note across chapters", revision: 1 });
+    const before = (await createBackupSnapshot(database)).data;
+    expect((await saveJournalDraft(database, context)).replayed).toBe(true);
+    expect((await createBackupSnapshot(database)).data).toEqual(before); expect(await database.activityEvents.count()).toBe(0);
+  });
+  it("retains note writing after concurrent edits and deletion without resurrection", async () => {
+    const database = await setup(), repository = new DraftRepository(database), notes = new VerseNoteRepository(database);
+    const reference = { translationId: "BSB", startVerseKey: "JHN.3.16", endVerseKey: "JHN.3.18" } as const;
+    const note = await notes.save(reference, "Saved note");
+    const draft = await snapshot(database, { kind: "verse-note", reference, bodyMd: "Keep my private note", baseline: { id: note.id, revision: note.revision, bodyMd: note.bodyMd } });
+    await repository.persist(draft, null); const changed = await notes.save(reference, "Other version", note.revision);
+    await expect(saveJournalDraft(database, { snapshot: draft, operationId: crypto.randomUUID() })).rejects.toMatchObject({ code: "stale" });
+    await notes.remove(reference, changed.revision, changed.id);
+    await expect(saveJournalDraft(database, { snapshot: draft, operationId: crypto.randomUUID() })).rejects.toMatchObject({ code: "stale" });
+    expect((await repository.read(draft.metadata.id)).kind).toBe("active"); expect(await notes.getExact(reference)).toBeUndefined(); expect(await database.activityEvents.count()).toBe(0);
+  });
+  it("does not revise unchanged notes or remove a concurrently changed note", async () => {
+    const database = await setup(), notes = new VerseNoteRepository(database), repository = new DraftRepository(database);
+    const reference = { translationId: "BSB", startVerseKey: "JHN.3.16", endVerseKey: "JHN.3.18" } as const;
+    const note = await notes.save(reference, "Same text");
+    const draft = await snapshot(database, { kind: "verse-note", reference, bodyMd: "Same text", baseline: { id: note.id, revision: note.revision, bodyMd: note.bodyMd } });
+    await repository.persist(draft, null); const before = (await createBackupSnapshot(database)).data;
+    const result = await saveJournalDraft(database, { snapshot: draft, operationId: crypto.randomUUID() });
+    expect(result.verseNote?.revision).toBe(note.revision); expect((await createBackupSnapshot(database)).data).toEqual(before);
+    const changed = await notes.save(reference, "Changed version", note.revision);
+    await expect(notes.remove(reference, note.revision, note.id)).rejects.toThrow("changed or was removed");
+    expect(await notes.getExact(reference)).toEqual(changed);
+  });
+  it("prefers the existing live note over a newer unrelated removal marker", async () => {
+    const database = await setup(), notes = new VerseNoteRepository(database);
+    const reference = { translationId: "BSB", startVerseKey: "JHN.3.16", endVerseKey: "JHN.3.18" } as const;
+    const live = await notes.save(reference, "Existing live note");
+    await database.verseNotes.add({ ...live, id: crypto.randomUUID(), updatedAt: "2099-01-01T00:00:00.000Z", deletedAt: "2099-01-01T00:00:00.000Z" });
+    expect((await notes.getSavedRecord(reference))?.id).toBe(live.id);
+    expect((await notes.save(reference, "Updated live note", live.revision)).id).toBe(live.id);
+    expect((await database.verseNotes.toArray()).filter(item => !item.deletedAt)).toHaveLength(1);
+  });
   it("preserves an unresolved capture source and requires an explicit omission before creating", async () => {
     const database = await setup(), repository = new DraftRepository(database);
     const payload: DraftPayload = { kind: "prayer-create", localDate: "2026-10-07", body: "Keep my pending-source writing", administration: blankPrayerAdministration("2026-10-07"), sourceReflection: null, sourceRequest: { id: crypto.randomUUID() }, references: [], omitSource: false, omitReferences: false };

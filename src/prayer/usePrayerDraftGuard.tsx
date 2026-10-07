@@ -2,7 +2,7 @@ import {useEffect,useRef,useState} from "react";
 import {useBlocker} from "react-router-dom";
 import {JournalDialog} from "../writing/JournalPrimitives";
 import {useUpdateProtection} from "../app/useUpdateProtection";
-export function usePrayerDraftGuard({dirty,save,discard,answer=false,answerRecorded=false,canSave=true,pending=false}:{dirty:boolean;save:()=>Promise<void>;discard:()=>void;answer?:boolean;answerRecorded?:boolean;canSave?:boolean;pending?:boolean}) {
+export function usePrayerDraftGuard({dirty,save,discard,answer=false,answerRecorded=false,canSave=true,pending=false}:{dirty:boolean;save:()=>Promise<void>;discard:()=>void|Promise<void>;answer?:boolean;answerRecorded?:boolean;canSave?:boolean;pending?:boolean}) {
  useUpdateProtection(dirty || pending);
  const [next,setNext]=useState<(()=>void)|null>(null),[error,setError]=useState(""),[busy,setBusy]=useState(false);
  const lock=useRef(false),bypass=useRef(false);
@@ -19,7 +19,7 @@ export function usePrayerDraftGuard({dirty,save,discard,answer=false,answerRecor
   {error?<p role="alert">{error}</p>:null}
   <div className="journal-dialog-actions">
    {!answer?<button className="grace-primary" disabled={busy||!canSave} onClick={async()=>{if(lock.current)return;lock.current=true;setBusy(true);try{await save();proceed();}catch(reason){setError(reason instanceof Error?reason.message:"Could not save. Your writing is still here.");}finally{lock.current=false;setBusy(false);}}}>{busy?"Saving…":"Save and continue"}</button>:null}
-   <button disabled={busy} onClick={()=>{discard();proceed();}}>Discard and continue</button><button disabled={busy} data-initial-focus onClick={close}>{answerRecorded?"Keep note":"Keep editing"}</button>
+   <button disabled={busy} onClick={async()=>{if(lock.current)return;lock.current=true;setBusy(true);setError("");try{await discard();proceed();}catch(reason){setError(reason instanceof Error?reason.message:"Could not discard. Keep this page open and retry.");}finally{lock.current=false;setBusy(false);}}}>Discard and continue</button><button disabled={busy} data-initial-focus onClick={close}>{answerRecorded?"Keep note":"Keep editing"}</button>
   </div>
  </JournalDialog>:null};
 }

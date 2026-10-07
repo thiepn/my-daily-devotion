@@ -1,5 +1,7 @@
 import type { MddDatabase } from "../data/database";
 import type { DraftMetadata, DraftPayload, DraftReadResult } from "./types";
+import { VerseNoteRepository } from "../data/repositories/verse-notes";
+import { parseVerseKey } from "../scripture/repository";
 import { isDraftReturnRoute } from "./validation";
 
 export const DRAFT_LABELS: Record<DraftPayload["kind"], string> = {
@@ -38,7 +40,7 @@ function administrationFields(payload: Extract<DraftPayload, { kind: "prayer-set
 export function draftFields(payload: DraftPayload): DraftField[] {
   switch (payload.kind) {
     case "reflection": return [{ label: "Your reflection", text: payload.bodyMd }];
-    case "verse-note": return [{ label: "Your verse note", text: payload.bodyMd }];
+    case "verse-note": return [{ label: "Your verse note", text: payload.bodyMd }, { label: "Scripture", text: `${payload.reference.translationId} · ${payload.reference.startVerseKey} – ${payload.reference.endVerseKey}` }];
     case "prayer-create": return [{ label: "Your writing", text: payload.body }, { label: "Source date", text: payload.localDate }, { label: "Source reflection", text: payload.omitSource ? "Continue without reflection" : payload.sourceReflection ? `${payload.sourceReflection.id} · reviewed revision ${payload.sourceReflection.revision}` : payload.sourceRequest ? "Source awaiting review" : "No reflection" }, { label: "Scripture", text: payload.omitReferences ? "Continue without linked passages" : payload.references.map(reference => `${reference.translationId} · ${reference.startVerseKey} – ${reference.endVerseKey}`).join("\n") }, ...administrationFields(payload)];
     case "prayer-wording": case "prayer-update": case "prayer-encouragement": case "prayer-answer": return [{ label: "Your writing", text: payload.body }];
     case "prayer-settings": return administrationFields(payload);
@@ -54,6 +56,16 @@ export async function reflectionRecoveryDestination(database: MddDatabase, resul
   if (result.kind !== "active" || result.previousJournal || result.snapshot.metadata.commitment?.disposition === "copy-only") return null;
   const payload = result.snapshot.contents.payload;
   if (payload.kind === "prayer-create") return `/prayer/new?${new URLSearchParams({ draft: result.snapshot.metadata.id, return: result.snapshot.metadata.context.returnTo })}`;
+  if (payload.kind === "verse-note") {
+    const current = await new VerseNoteRepository(database).getSavedRecord(payload.reference);
+    if (current?.deletedAt || payload.baseline && (!current || current.id !== payload.baseline.id)) return null;
+    const start = parseVerseKey(payload.reference.startVerseKey), end = parseVerseKey(payload.reference.endVerseKey);
+    const origin = new URL(result.snapshot.metadata.context.returnTo, "https://mdd.invalid");
+    const params = origin.pathname.startsWith("/bible/") ? new URLSearchParams(origin.search) : new URLSearchParams({ return: result.snapshot.metadata.context.returnTo });
+    params.set("draft", result.snapshot.metadata.id); params.set("translation", payload.reference.translationId); params.set("start", payload.reference.startVerseKey); params.set("end", payload.reference.endVerseKey);
+    params.set("verse", String(start.verse)); params.set("endVerse", String(start.bookId === end.bookId && start.chapter === end.chapter ? end.verse : start.verse));
+    return `/bible/${start.bookId}/${start.chapter}?${params}`;
+  }
   if (payload.kind !== "reflection") return null; // Other editors are integrated in separate slices.
   const rows = await database.reflections.where("localDate").equals(payload.localDate).toArray();
   if (payload.baseline ? !rows.some(row => row.id === payload.baseline!.id && !row.deletedAt) : rows.some(row => row.deletedAt)) return null;

@@ -1,6 +1,7 @@
 import type { MddDatabase } from "../data/database";
 import { ReflectionConflictError, ReflectionRepository } from "../data/repositories/reflections";
-import type { Prayer, Reflection, ScriptureLink } from "../domain/types";
+import type { Prayer, Reflection, ScriptureLink, VerseNote } from "../domain/types";
+import { VerseNoteRepository } from "../data/repositories/verse-notes";
 import { PrayerRepository } from "../data/repositories/prayers";
 import { administrationInputFromValue } from "../prayer/PrayerAdministrationFields";
 import { saveWithDraft, type DraftSaveContext, type DraftSaveOperation } from "./commit";
@@ -13,6 +14,7 @@ export function saveJournalDraft(database: MddDatabase, context: DraftSaveContex
   const reflections = new ReflectionRepository(database), prayers = new PrayerRepository(database);
   let reflection: Reflection | undefined, links: ScriptureLink[] | undefined;
   let prayer: Prayer | undefined;
+  let verseNote: VerseNote | undefined;
   let operation: DraftSaveOperation;
   if (submitted.kind === "reflection") {
     operation = {
@@ -35,6 +37,27 @@ export function saveJournalDraft(database: MddDatabase, context: DraftSaveContex
         // Keep references added after the submitted generation.
         const pendingReferences = submitted.dismissedReferences ? newer.pendingReferences : newer.pendingReferences.filter(reference => !submitted.pendingReferences.some(saved => JSON.stringify(saved) === JSON.stringify(reference)));
         return { ...newer, baseline: { ...records[0]!, bodyMd: submitted.bodyMd.replace(/\r\n/g, "\n").trimEnd() }, pendingReferences };
+      },
+    };
+  } else if (submitted.kind === "verse-note") {
+    const notes = new VerseNoteRepository(database);
+    operation = {
+      tables: ["verseNotes"],
+      validate: async payload => {
+        if (payload.kind !== "verse-note") throw new DraftError("invalid", "Wrong editor kind.");
+        const current = await notes.getSavedRecord(payload.reference);
+        if (payload.baseline ? !current || current.id !== payload.baseline.id || current.revision !== payload.baseline.revision : Boolean(current)) throw new DraftError("stale", "This verse note changed or was removed. Review both versions before saving.");
+      },
+      save: async payload => {
+        if (payload.kind !== "verse-note") throw new DraftError("invalid", "Wrong editor kind.");
+        const current = await notes.getSavedRecord(payload.reference), normalized = payload.bodyMd.replace(/\r\n/g, "\n").trimEnd();
+        if (!normalized.trim()) throw new DraftError("invalid", "Verse note text is required before saving.");
+        verseNote = current && !current.deletedAt && current.bodyMd === normalized ? current : await notes.save(payload.reference, payload.bodyMd);
+        return { records: [{ id: verseNote.id, revision: verseNote.revision }], disposition: "editable" };
+      },
+      rebase: (newer, records) => {
+        if (newer.kind !== "verse-note") throw new DraftError("invalid", "Wrong editor kind.");
+        return { ...newer, baseline: { ...records[0]!, bodyMd: submitted.bodyMd.replace(/\r\n/g, "\n").trimEnd() } };
       },
     };
   } else if (submitted.kind === "prayer-create" || submitted.kind === "prayer-update" || submitted.kind === "prayer-encouragement" || submitted.kind === "prayer-answer" || submitted.kind === "prayer-wording") {
@@ -74,5 +97,5 @@ export function saveJournalDraft(database: MddDatabase, context: DraftSaveContex
       },
     };
   } else throw new DraftError("invalid", "This editor adapter is not connected yet.");
-  return saveWithDraft(database, context, operation).then(result => ({ ...result, reflection, links, prayer }));
+  return saveWithDraft(database, context, operation).then(result => ({ ...result, reflection, links, prayer, verseNote }));
 }

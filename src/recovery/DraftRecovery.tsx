@@ -18,9 +18,10 @@ export function DraftProtection({ controller }: { controller: DurableDraftContro
   return <><p className="draft-status journal-help" role="status">{state.status === "keeping" ? "Keeping draft…" : state.status === "kept" ? "Draft kept on this device" : state.status === "copy-only" ? "Action already recorded. Remaining writing is kept for copying." : ""}</p>{state.status === "failed" ? <section className="journal-notice" role="alert"><p>Draft could not be kept — keep this page open. {state.error}</p><p>Copy your writing before leaving. A successful explicit save is separate from draft protection.</p><button onClick={() => void controller.flush().catch(() => undefined)}>Retry draft protection</button></section> : null}</>;
 }
 
-export function DraftRecovery({ controller, kind, targetKey, current, returnTo, canRecover, ready = true, adopt }: {
+export function DraftRecovery({ controller, kind, targetKey, current, returnTo, canRecover, ready = true, adopt, validateRecovery }: {
   controller: DurableDraftController; kind: DraftPayload["kind"]; targetKey?: string; current: DraftPayload; returnTo: string;
   canRecover: boolean; ready?: boolean; adopt: (payload: DraftPayload, source: DraftSnapshot) => void;
+  validateRecovery?: (source: DraftSnapshot) => Promise<void>;
 }) {
   const [params] = useSearchParams(), requested = params.get("draft");
   const [review, setReview] = useState<{ snapshot: DraftSnapshot; previousJournal: boolean } | null>(null);
@@ -69,7 +70,7 @@ export function DraftRecovery({ controller, kind, targetKey, current, returnTo, 
       {error ? <p role="alert">{error}</p> : null}
       <div className="journal-dialog-actions"><button className="grace-primary" disabled={busy || !canRecover || review.previousJournal || review.snapshot.metadata.commitment?.disposition === "copy-only"} onClick={async () => {
         if (busy) return; setBusy(true); setError("");
-        try { const payload = await controller.recover(review.snapshot.metadata.id, review.snapshot.metadata.generation); if (alive.current) { adopt(payload, review.snapshot); setReview(null); } }
+        try { await validateRecovery?.(review.snapshot); const payload = await controller.recover(review.snapshot.metadata.id, review.snapshot.metadata.generation); if (alive.current) { adopt(payload, review.snapshot); setReview(null); } }
         catch (reason) { if (alive.current) setError(reason instanceof Error ? reason.message : "Could not recover this writing."); }
         finally { if (alive.current) setBusy(false); }
       }}>Recover for review</button><button disabled={busy} onClick={close}>Keep current editor</button></div>
