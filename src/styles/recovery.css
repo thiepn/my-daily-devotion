@@ -10,3 +10,10 @@
 .recovery-writing textarea { display: block; width: 100%; min-height: 170px; margin-block: .75rem; font-family: var(--font-reading); font-size: 1.05rem; line-height: 1.7; resize: vertical; }
 .recovery-kept-time { font-size: .85rem; line-height: 1.7; color: var(--color-ink-faint); }
 .recovery-journal .grace-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; text-decoration: none; }
+.draft-comparison-details { margin-block:12px; font:.85rem/1.6 var(--font-ui); }
+.draft-comparison-details summary { display:flex; align-items:center; min-height:44px; cursor:pointer; color:var(--color-accent-strong); }
+.draft-comparison-details dl { margin:0; }
+.draft-comparison-details dl > div { padding:8px 0; border-bottom:1px solid var(--color-line); }
+.draft-comparison-details dt { font-weight:600; }
+.draft-comparison-details dd { margin:4px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }
+.draft-comparison-details summary:focus-visible { outline:2px solid var(--color-focus-ring); outline-offset:3px; }

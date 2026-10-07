@@ -32,12 +32,16 @@ export function draftTargetLabel(metadata: DraftMetadata) {
 }
 
 export interface DraftField { label: string; text: string }
+function administrationFields(payload: Extract<DraftPayload, { kind: "prayer-settings" | "prayer-create" }>): DraftField[] {
+  return Object.entries(payload.administration).map(([label, value]) => ({ label: ({ personId: "Person ID", categoryId: "Category ID", scheduleMode: "Schedule", weekdays: "Weekdays", intervalDays: "Interval days", anchorDate: "Starting date", monthlyDay: "Day of month", onDate: "Pray on date", eventDate: "Event date", focusUntil: "Focus until" } as Record<string, string>)[label] ?? label, text: Array.isArray(value) ? value.join(", ") : String(value ?? "") }));
+}
 export function draftFields(payload: DraftPayload): DraftField[] {
   switch (payload.kind) {
     case "reflection": return [{ label: "Your reflection", text: payload.bodyMd }];
     case "verse-note": return [{ label: "Your verse note", text: payload.bodyMd }];
-    case "prayer-create": case "prayer-wording": case "prayer-update": case "prayer-encouragement": case "prayer-answer": return [{ label: "Your writing", text: payload.body }];
-    case "prayer-settings": return Object.entries(payload.administration).map(([label, value]) => ({ label: ({ personId: "Person ID", categoryId: "Category ID", scheduleMode: "Schedule", weekdays: "Weekdays", intervalDays: "Interval days", anchorDate: "Starting date", monthlyDay: "Day of month", onDate: "Pray on date", eventDate: "Event date", focusUntil: "Focus until" } as Record<string, string>)[label] ?? label, text: Array.isArray(value) ? value.join(", ") : String(value ?? "") }));
+    case "prayer-create": return [{ label: "Your writing", text: payload.body }, { label: "Source date", text: payload.localDate }, { label: "Source reflection", text: payload.omitSource ? "Continue without reflection" : payload.sourceReflection ? `${payload.sourceReflection.id} · reviewed revision ${payload.sourceReflection.revision}` : payload.sourceRequest ? "Source awaiting review" : "No reflection" }, { label: "Scripture", text: payload.omitReferences ? "Continue without linked passages" : payload.references.map(reference => `${reference.translationId} · ${reference.startVerseKey} – ${reference.endVerseKey}`).join("\n") }, ...administrationFields(payload)];
+    case "prayer-wording": case "prayer-update": case "prayer-encouragement": case "prayer-answer": return [{ label: "Your writing", text: payload.body }];
+    case "prayer-settings": return administrationFields(payload);
     case "person-create": case "person-edit": return [{ label: "Name", text: payload.name }, { label: "Relationship", text: payload.relationship }, { label: "Notes", text: payload.notes }];
     case "collection-item-note": return [{ label: "Collection note", text: payload.note }];
     default: return [{ label: "Name", text: payload.name }];
@@ -49,6 +53,7 @@ export function draftFields(payload: DraftPayload): DraftField[] {
 export async function reflectionRecoveryDestination(database: MddDatabase, result: DraftReadResult): Promise<string | null> {
   if (result.kind !== "active" || result.previousJournal || result.snapshot.metadata.commitment?.disposition === "copy-only") return null;
   const payload = result.snapshot.contents.payload;
+  if (payload.kind === "prayer-create") return `/prayer/new?${new URLSearchParams({ draft: result.snapshot.metadata.id, return: result.snapshot.metadata.context.returnTo })}`;
   if (payload.kind !== "reflection") return null; // Other editors are integrated in separate slices.
   const rows = await database.reflections.where("localDate").equals(payload.localDate).toArray();
   if (payload.baseline ? !rows.some(row => row.id === payload.baseline!.id && !row.deletedAt) : rows.some(row => row.deletedAt)) return null;
