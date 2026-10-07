@@ -16,9 +16,18 @@ import { readCollection } from './saved-model';
 import { savedPassageUrl, shownCount, withSearchReturn } from '../search/context';
 import { safeDataReturn } from '../data/data-context';
 import { prayerReferenceLabel } from '../prayer/references';
+import {useDurableDraft} from '../recovery/useDurableDraft';
+import {DraftProtection,DraftRecovery} from '../recovery/DraftRecovery';
+import {saveDirectoryDraft,rebaseDirectoryDraft} from '../recovery/directory-adapters';
+import {DraftError,type DraftPayload,type RecordBaseline} from '../recovery/types';
 
 const repository = new CollectionRepository(db);
-type Editor = { kind: 'create'; value: string } | { kind: 'rename'; value: string; base: Collection } | { kind: 'note'; value: string; base: CollectionItem };
+type Editor = { kind: 'create'; value: string } | { kind: 'rename'; value: string; base: Collection } | { kind: 'note'; value: string; base: CollectionItem; collection:RecordBaseline };
+function collectionPayload(editor:Editor):DraftPayload {
+  if(editor.kind==='create')return {kind:'collection-create',name:editor.value};
+  if(editor.kind==='rename')return {kind:'collection-rename',name:editor.value,baseline:{id:editor.base.id,revision:editor.base.revision,name:editor.base.name}};
+  return {kind:'collection-item-note',note:editor.value,collection:editor.collection,baseline:{id:editor.base.id,revision:editor.base.revision,note:editor.base.note}};
+}
 export function CollectionsScreen() {
   const location = useLocation(), [params, setParams] = useSearchParams(), url = location.pathname + location.search;
   const selectedId = params.get('collection'), targetItem = params.get('item'), pending = parsePendingScripture(params);
@@ -26,44 +35,74 @@ export function CollectionsScreen() {
   const shown = shownCount(params.get('shown'), 20);
   const read = useMetadataRead(selectedId ?? '', () => readCollection(db, selectedId));
   const [manifest, setManifest] = useState<BibleManifest | null>(null);
-  const [editor, setEditor] = useState<Editor | null>(null), [busy, setBusy] = useState(false), [status, setStatus] = useState('');
+  const [editor, setEditorState] = useState<Editor | null>(null), [busy, setBusy] = useState(false), [status, setStatus] = useState('');
   const [error, setError] = useState(''), [conflict, setConflict] = useState(false), [latest, setLatest] = useState<Collection | CollectionItem | null>(null);
   const [remove, setRemove] = useState<Collection | CollectionItem | null>(null);
   const lock = useRef(false), draft = useRef(editor); draft.current = editor;
+  const setEditor=(value:Editor|null)=>{draft.current=value;setEditorState(value);};
+  const [owner,setOwner]=useState(0),recoveredOnce=useRef('');
+  const [savedCreation,setSavedCreation]=useState<Collection|null>(null);
   const selected = read.data?.selected ?? null, items = read.data?.items ?? [];
   const editorUnavailable = Boolean(read.data && editor && editor.kind !== 'create' && (editor.kind === 'rename' ? !read.data.collections.some(item => item.id === editor.base.id) : !items.some(item => item.id === editor.base.id)));
-  const dirty = Boolean(editor && (editor.kind === 'create' ? editor.value.trim() : editor.value !== (editor.kind === 'rename' ? editor.base.name : editor.base.note ?? '')));
+  const dirty = Boolean(editor && (editor.kind === 'create' ? editor.value!=='' : editor.value !== (editor.kind === 'rename' ? editor.base.name : editor.base.note ?? '')));
+  const kept=useDurableDraft(db,{returnTo:url,reading:null},editor?collectionPayload(editor):null,dirty,'collection:'+owner);
   useEffect(() => { let active = true; void loadBibleManifest().then(value => { if (active) setManifest(value); }).catch(() => {}); return () => { active = false; }; }, []);
   useEffect(() => {
     const next = new URLSearchParams(params);
     for (const key of ['collection', 'item']) if (next.has(key) && !/^[a-zA-Z0-9_-]+$/.test(next.get(key)!)) next.delete(key);
+    if(next.has('draft')&&!/^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(next.get('draft')!))next.delete('draft');
+    if(next.has('edit')&&!['create','rename','note'].includes(next.get('edit')!))next.delete('edit');
     if (params.has('shown')) { if (shown === 20) next.delete('shown'); else next.set('shown', String(shown)); }
     if (params.has('return') && returnTo !== params.get('return')) next.delete('return');
     if (next.toString() !== params.toString()) setParams(next, {replace: true});
   }, [location.search, shown, returnTo, setParams]);
   const selectedIndex = items.findIndex(item => item.id === targetItem), visible = items.slice(0, Math.max(shown, selectedIndex + 1));
   usePrayerPosition(url, Boolean(read.data), selectedIndex >= 0 ? targetItem : null, '.collections-journal', 'collection-item-');
-  const clear = () => { setEditor(null); setConflict(false); setLatest(null); setError(''); };
+  const clear = () => { setEditor(null);setSavedCreation(null); setConflict(false); setLatest(null); setError('');setOwner(value=>value+1); };
+  const discard=async()=>{await kept.controller.discard();clear();};
   const save = async (): Promise<Collection | CollectionItem | null> => {
     const snapshot = draft.current;
     if (!snapshot) return null;
+    if(snapshot.kind!=='create'&&snapshot.value===(snapshot.kind==='rename'?snapshot.base.name:snapshot.base.note??''))return snapshot.base;
     if (lock.current) throw new Error('Please wait while these changes are saved.');
     lock.current = true; setBusy(true); setError('');
     try {
-      const result = snapshot.kind === 'create' ? await repository.create(snapshot.value) : snapshot.kind === 'rename' ? await repository.rename(snapshot.base.id, snapshot.value, snapshot.base.description, snapshot.base.revision) : await repository.saveItemNote(snapshot.base.id, snapshot.value, snapshot.base.revision);
+      kept.controller.stage(collectionPayload(snapshot));
+      const committed=await kept.controller.commit(context=>saveDirectoryDraft(db,context),(latest,_submitted,result)=>rebaseDirectoryDraft(latest,(result as Awaited<ReturnType<typeof saveDirectoryDraft>>).record!));
+      const result=committed.record as Collection|CollectionItem|undefined;
+      if(!result)throw new Error('Changes were saved. Retry refresh without repeating the save.');
       setStatus(snapshot.kind === 'create' ? 'Collection ready.' : 'Saved locally.');
-      if (draft.current !== snapshot) { setEditor(current => current && current.kind !== 'create' ? {...current, base: result} as Editor : current); throw new Error('Newer changes remain unsaved. Review them before continuing.'); }
-      clear();
       // The committed result is accepted without relying on a successful refresh.
       read.accept(old => {
         if (!old) return {collections: 'name' in result ? [result] : [], selected: 'name' in result ? result : null, items: 'collectionId' in result ? [result] : []};
         return 'name' in result ? {...old, collections: [...old.collections.filter(item => item.id !== result.id), result], selected: old.selected?.id === result.id || snapshot.kind === 'create' ? result : old.selected} : {...old, items: old.items.map(item => item.id === result.id ? result : item)};
       });
+      if(draft.current && draft.current.value!==snapshot.value){
+        if(snapshot.kind==='create'){
+          if('name' in result)setSavedCreation(result);
+          const latest=await kept.controller.adoptCreatedRecord(payload=>rebaseDirectoryDraft(payload,result));
+          if(latest.kind!=='collection-rename'||!('name' in result))throw new Error('Keep remaining writing for copying. Creation has already succeeded.');
+          setEditor({kind:'rename',base:result,value:latest.name});
+          setSavedCreation(null);
+          guard.allowNavigation();const next=new URLSearchParams(params);next.set('collection',result.id);next.delete('draft');next.delete('edit');setParams(next,{replace:true});
+        }else setEditor({...draft.current,base:result} as Editor);
+        throw new Error('Newer changes remain unsaved. Review them before continuing.');
+      }
+      clear();
       read.retry(); return result;
-    } catch (reason) { if (isEditConflict(reason)) setConflict(true); setError(reason instanceof Error ? reason.message : 'Could not save. Your writing is still here.'); throw reason; }
+    } catch (reason) { if (isEditConflict(reason)||reason instanceof DraftError&&reason.code==='stale') setConflict(true); setError(reason instanceof Error ? reason.message : 'Could not save. Your writing is still here.'); throw reason; }
     finally { lock.current = false; setBusy(false); }
   };
-  const guard = usePrayerDraftGuard({dirty, save: async () => { await save(); }, discard: clear, canSave: !editorUnavailable && (Boolean(editor?.value.trim()) || editor?.kind === 'note'), pending: busy});
+  const guard = usePrayerDraftGuard({dirty, save: async () => { await save(); }, discard, canSave: !editorUnavailable && !conflict && !savedCreation && (Boolean(editor?.value.trim()) || editor?.kind === 'note'), pending: busy});
+  useEffect(()=>{
+    const requested=params.get('draft');if(!requested||recoveredOnce.current===requested||!read.data||editor)return;
+    recoveredOnce.current=requested;
+    const mode=params.get('edit');
+    if(mode==='create')setEditor({kind:'create',value:''});
+    else if(mode==='rename'&&selected)setEditor({kind:'rename',value:selected.name,base:selected});
+    else if(mode==='note'&&selected){const item=items.find(row=>row.id===targetItem);if(item)setEditor({kind:'note',value:item.note??'',base:item,collection:{id:selected.id,revision:selected.revision}});}
+  },[location.search,read.data,editor]);
+  useEffect(()=>{if(!editor||editor.kind==='create'||!dirty||busy||!read.data)return;const current=editor.kind==='rename'?read.data.collections.find(row=>row.id===editor.base.id):items.find(row=>row.id===editor.base.id);if(current&&current.revision!==editor.base.revision||editor.kind==='note'&&selected&&selected.revision!==editor.collection.revision)setConflict(true);},[read.data,editor,dirty,busy]);
   const choose = (id: string) => guard.request(() => { clear(); const next = new URLSearchParams(params); next.set('collection', id); next.delete('item'); next.delete('shown'); setParams(next); });
   const openEditor = (next: Editor) => guard.request(() => { clear(); setEditor(next); });
   const submit = (event: FormEvent) => { event.preventDefault(); void save().then(result => { if (result && 'name' in result) { guard.allowNavigation(); const next = new URLSearchParams(params); next.set('collection', result.id); setParams(next); } }).catch(() => {}); };
@@ -84,9 +123,14 @@ export function CollectionsScreen() {
   const editorForm = editor && <form className="collection-editor" onSubmit={submit}>
     <label htmlFor="collection-editor">{editor.kind === 'create' ? 'New collection' : editor.kind === 'rename' ? 'Collection name' : 'Passage note'}</label>
     {editor.kind === 'note' ? <textarea id="collection-editor" className="journal-textarea" disabled={busy} value={editor.value} onChange={event => setEditor({...editor, value: event.target.value})} /> : <input id="collection-editor" disabled={busy} value={editor.value} onChange={event => setEditor({...editor, value: event.target.value})} placeholder="Promises, Wisdom, Family…" />}
-    <p className="journal-help">{dirty ? 'Unsaved changes' : 'No unsaved changes'} · Unsaved writing stays in memory until you save.</p>
-    <div className="journal-actions"><button className="grace-primary" disabled={busy || editorUnavailable || (!editor.value.trim() && editor.kind !== 'note')} type="submit">{busy ? 'Saving…' : editor.kind === 'create' ? 'Save collection' : editor.kind === 'rename' ? 'Save name' : 'Save note'}</button><button type="button" disabled={busy} onClick={() => guard.request(clear)}>Cancel</button></div>
-    {conflict && <div className="journal-conflict"><h3>Review this change</h3><p>Your writing has not been replaced.</p><button type="button" onClick={async () => { try { const current = editor.kind === 'note' ? await db.collectionItems.get(editor.base.id) : editor.kind === 'rename' ? await db.collections.get(editor.base.id) : null; if (!current || current.deletedAt) throw new Error('This record was removed. Copy your writing before closing.'); setLatest(current); } catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not load the saved version.'); } }}>Review latest saved version</button>{latest && <><label>Your changes<textarea readOnly value={editor.value} /></label><label>Saved version<textarea readOnly value={'name' in latest ? latest.name : latest.note ?? ''} /></label><div className="journal-actions"><button type="button" onClick={() => { if (editor.kind !== 'create') setEditor({...editor, base: latest, value: 'name' in latest ? latest.name : latest.note ?? ''} as Editor); setConflict(false); setLatest(null); }}>Use saved version</button><button type="button" onClick={() => { if (editor.kind !== 'create') setEditor({...editor, base: latest} as Editor); setConflict(false); setLatest(null); }}>Keep my changes for explicit save</button></div></>}</div>}
+    <p className="journal-help">{dirty ? 'Unsaved changes' : 'No unsaved changes'}</p>
+    <DraftProtection controller={kept.controller}/>
+    <DraftRecovery controller={kept.controller} kind={collectionPayload(editor).kind} {...(editor.kind!=='create'?{targetKey:collectionPayload(editor).kind+':'+editor.base.id}:{})} current={collectionPayload(editor)} returnTo={url} canRecover={!dirty&&!busy&&!editorUnavailable}
+      validateRecovery={async source=>{const payload=source.contents.payload;if(payload.kind==='collection-rename'){const current=await db.collections.get(payload.baseline.id);if(!current||current.deletedAt)throw new Error('Collection removed. Keep this writing for copying.');}if(payload.kind==='collection-item-note'){const parent=await db.collections.get(payload.collection.id),item=await db.collectionItems.get(payload.baseline.id);if(!parent||parent.deletedAt||!item||item.deletedAt||item.collectionId!==parent.id)throw new Error('Saved passage removed. Keep this writing for copying.');}}}
+      adopt={payload=>{if(payload.kind==='collection-create')setEditor({kind:'create',value:payload.name});if(payload.kind==='collection-rename'&&editor.kind==='rename')setEditor({kind:'rename',value:payload.name,base:{...editor.base,revision:payload.baseline.revision,name:payload.baseline.name}});if(payload.kind==='collection-item-note'&&editor.kind==='note')setEditor({...editor,value:payload.note,collection:payload.collection,base:{...editor.base,revision:payload.baseline.revision,note:payload.baseline.note}});setStatus('Draft recovered on this device. Review before saving.');}}/>
+    {savedCreation?<div className="journal-notice"><p>The collection was saved. Remaining writing cannot create another collection.</p><button type="button" disabled={busy} onClick={()=>{setBusy(true);void kept.controller.adoptCreatedRecord(payload=>rebaseDirectoryDraft(payload,savedCreation)).then(payload=>{if(payload.kind==='collection-rename'){setEditor({kind:'rename',base:savedCreation,value:payload.name});setSavedCreation(null);guard.allowNavigation();const next=new URLSearchParams(params);next.set('collection',savedCreation.id);next.delete('draft');next.delete('edit');setParams(next,{replace:true});}}).catch(reason=>setError(reason instanceof Error?reason.message:'Keep remaining writing for copying.')).finally(()=>setBusy(false));}}>Continue editing saved collection</button></div>:null}
+    <div className="journal-actions"><button className="grace-primary" disabled={busy || conflict || Boolean(savedCreation) || editorUnavailable || (!editor.value.trim() && editor.kind !== 'note')} type="submit">{busy ? 'Saving…' : editor.kind === 'create' ? 'Save collection' : editor.kind === 'rename' ? 'Save name' : 'Save note'}</button><button type="button" disabled={busy} onClick={() => guard.request(clear)}>Cancel</button></div>
+    {conflict && <div className="journal-conflict"><h3>Review this change</h3><p>Your writing has not been replaced.</p><button type="button" onClick={async () => { try { const current = editor.kind === 'note' ? await db.collectionItems.get(editor.base.id) : editor.kind === 'rename' ? await db.collections.get(editor.base.id) : null; if (!current || current.deletedAt) throw new Error('This record was removed. Copy your writing before closing.'); setLatest(current); } catch (reason) { setError(reason instanceof Error ? reason.message : 'Could not load the saved version.'); } }}>Review latest saved version</button>{latest && <><label>Your changes<textarea readOnly value={editor.value} /></label><label>Saved version<textarea readOnly value={'name' in latest ? latest.name : latest.note ?? ''} /></label><div className="journal-actions"><button type="button" onClick={() => { void kept.controller.discard().then(()=>{if(editor.kind!=='create')setEditor({...editor,base:latest,value:'name' in latest?latest.name:latest.note??''} as Editor);setOwner(value=>value+1);setConflict(false);setLatest(null);}).catch(reason=>setError(reason instanceof Error?reason.message:'Keep your writing open.')); }}>Use saved version</button><button type="button" onClick={() => { if (editor.kind !== 'create') setEditor({...editor, base: latest,...(editor.kind==='note'&&selected?{collection:{id:selected.id,revision:selected.revision}}:{})} as Editor); setConflict(false); setLatest(null); }}>Keep my changes for explicit save</button></div></>}</div>}
   </form>;
   return <main className="journal-workspace collections-journal mg-collections-workspace">
     <JournalHeading title="Collections" subtitle="Scripture to keep close" back={returnTo} />
@@ -104,7 +148,7 @@ export function CollectionsScreen() {
     {selected && <section className="collection-content"><div className="archive-section-heading"><h2>{selected.name}</h2><span>{visible.length} of {items.length} passages</span></div><div className="journal-actions"><button disabled={busy} onClick={() => openEditor({kind: 'rename', value: selected.name, base: selected})}>Rename</button><button className="journal-remove" disabled={busy} onClick={() => guard.request(() => setRemove(selected))}>Delete collection</button></div>{editor?.kind === 'rename' && editorForm}
       {!items.length && <p className="archive-empty mg-empty-state">No passages saved here yet. Select Scripture in the reader and choose More → Add to collection.</p>}
       {targetItem && selectedIndex < 0 && <p className="journal-notice">That saved passage is no longer in this collection.</p>}
-      {visible.map(item => <article className="collection-journal-item" id={'collection-item-' + item.id} tabIndex={-1} key={item.id}><Link id={'collection-read-' + item.id} to={savedPassageUrl(item, url)}>{prayerReferenceLabel(item, manifest)}</Link><small> · {item.translationId}</small>{item.note && <p>{item.note}</p>}<div className="journal-actions"><button id={'collection-note-' + item.id} disabled={busy} onClick={() => openEditor({kind: 'note', value: item.note ?? '', base: item})}>{item.note ? 'Edit note' : 'Add note'}</button><button className="journal-remove" disabled={busy} aria-label={'Remove ' + prayerReferenceLabel(item, manifest)} onClick={() => guard.request(() => setRemove(item))}>Remove</button></div>{editor?.kind === 'note' && editor.base.id === item.id && editorForm}</article>)}
+      {visible.map(item => <article className="collection-journal-item" id={'collection-item-' + item.id} tabIndex={-1} key={item.id}><Link id={'collection-read-' + item.id} to={savedPassageUrl(item, url)}>{prayerReferenceLabel(item, manifest)}</Link><small> · {item.translationId}</small>{item.note && <p>{item.note}</p>}<div className="journal-actions"><button id={'collection-note-' + item.id} disabled={busy} onClick={() => openEditor({kind: 'note', value: item.note ?? '', base: item, collection:{id:selected.id,revision:selected.revision}})}>{item.note ? 'Edit note' : 'Add note'}</button><button className="journal-remove" disabled={busy} aria-label={'Remove ' + prayerReferenceLabel(item, manifest)} onClick={() => guard.request(() => setRemove(item))}>Remove</button></div>{editor?.kind === 'note' && editor.base.id === item.id && editorForm}</article>)}
       {visible.length < items.length && <button onClick={() => { const next = new URLSearchParams(params); next.set('shown', String(Math.max(shown, visible.length) + 20)); setParams(next); }}>Show more</button>}
     </section>}
     {remove && <JournalDialog title={'name' in remove ? 'Remove this collection?' : 'Remove this saved passage?'} close={() => setRemove(null)} busy={busy}><p>{'name' in remove ? 'This removes the collection and its saved passages from current views.' : 'This removes the passage and its collection note from current views.'} Copies in existing backups are unaffected.</p><div className="journal-dialog-actions"><button disabled={busy} onClick={() => void removeRecord()}>Remove</button><button disabled={busy} data-initial-focus onClick={() => setRemove(null)}>Keep it</button></div>{error && <p role="alert">{error}</p>}</JournalDialog>}

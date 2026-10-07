@@ -5,7 +5,7 @@ import { safePrayerReturn } from "./detail-model";
 export type MetadataKind = "people" | "categories";
 export type MetadataRecord = Person | Category;
 export interface MetadataQuery {
-  q: string; entry: string | null; shown: number; prayersShown: number; returnTo: string; search: string;
+  q: string; entry: string | null; shown: number; prayersShown: number; returnTo: string; search: string; draft: string | null;
 }
 export interface MetadataDirectory {
   records: MetadataRecord[]; total: number; matching: number; selected: MetadataRecord | null;
@@ -26,13 +26,15 @@ export function parseMetadataQuery(search: string): MetadataQuery {
   const shown = pageSize(params.get("shown"), 20, 20);
   const prayersShown = pageSize(params.get("prayersShown"), 5, 10);
   const returnTo = safePrayerReturn(params.get("return"));
+  const rawDraft=params.get("draft"), draft=rawDraft&&/^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(rawDraft)?rawDraft:null;
+  if(!draft)params.delete("draft");
   if (!q) params.delete("q");
   if (!entry) params.delete("entry");
   for (const [name, value, initial] of [["shown", shown, 20], ["prayersShown", prayersShown, 5]] as const) {
     if (value === initial) params.delete(name); else params.set(name, String(value));
   }
   if (params.has("return") && returnTo !== params.get("return")) params.delete("return");
-  return { q, entry, shown, prayersShown, returnTo, search: params.size ? "?" + params.toString() : "" };
+  return { q, entry, shown, prayersShown, returnTo, draft, search: params.size ? "?" + params.toString() : "" };
 }
 export function metadataUrl(kind: MetadataKind, returnTo: string) {
   return "/prayer/" + kind + "?" + new URLSearchParams({ return: safePrayerReturn(returnTo) });

@@ -57,6 +57,22 @@ export function draftFields(payload: DraftPayload): DraftField[] {
 export async function reflectionRecoveryDestination(database: MddDatabase, result: DraftReadResult): Promise<string | null> {
   if (result.kind !== "active" || result.previousJournal || result.snapshot.metadata.commitment?.disposition === "copy-only") return null;
   const payload = result.snapshot.contents.payload;
+  if(payload.kind.startsWith("collection-")){
+    const origin=new URL(result.snapshot.metadata.context.returnTo,"https://mdd.invalid");
+    const params=origin.pathname==="/bible/collections"?new URLSearchParams(origin.search):new URLSearchParams({return:result.snapshot.metadata.context.returnTo});
+    params.set("draft",result.snapshot.metadata.id);
+    if(payload.kind==="collection-create"){params.set("edit","create");params.delete("collection");params.delete("item");}
+    else if(payload.kind==="collection-rename"){const current=await database.collections.get(payload.baseline.id);if(!current||current.deletedAt)return null;params.set("edit","rename");params.set("collection",current.id);params.delete("item");}
+    else if(payload.kind==="collection-item-note"){const parent=await database.collections.get(payload.collection.id),item=await database.collectionItems.get(payload.baseline.id);if(!parent||parent.deletedAt||!item||item.deletedAt||item.collectionId!==parent.id)return null;params.set("edit","note");params.set("collection",parent.id);params.set("item",item.id);}
+    return "/bible/collections?"+params;
+  }
+  if(payload.kind.startsWith("person-")||payload.kind.startsWith("category-")){
+    const path=payload.kind.startsWith("person-")?"/prayer/people":"/prayer/categories";
+    const origin=new URL(result.snapshot.metadata.context.returnTo,"https://mdd.invalid");
+    const params=origin.pathname===path?new URLSearchParams(origin.search):new URLSearchParams({return:result.snapshot.metadata.context.returnTo});
+    if("baseline" in payload&&payload.baseline){const current=payload.kind.startsWith("person-")?await database.people.get(payload.baseline.id):await database.categories.get(payload.baseline.id);if(!current||current.deletedAt)return null;params.set("entry",current.id);}else params.delete("entry");
+    params.set("draft",result.snapshot.metadata.id);return path+"?"+params;
+  }
   if (payload.kind === "prayer-create") return `/prayer/new?${new URLSearchParams({ draft: result.snapshot.metadata.id, return: result.snapshot.metadata.context.returnTo })}`;
   if (payload.kind === "prayer-settings") {
     const prayer = await database.prayers.get(payload.baseline.id);

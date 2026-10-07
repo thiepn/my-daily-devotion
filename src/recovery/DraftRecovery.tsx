@@ -19,7 +19,7 @@ function SettingsFields({payload}:{payload:Extract<DraftPayload,{kind:"prayer-se
   if(value.scheduleMode==="ON_DATE")rows.push(["Date",value.onDate||"Not entered"]);
   if(value.scheduleMode==="WEEKDAYS")rows.push(["Weekdays",value.weekdays.map(day=>["","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][day]).join(", ")||"None selected"]);
   rows.push(["Event date",value.eventDate||"Not set"],["Focus until",value.focusUntil||"Not set"]);
-  return <><dl className="draft-comparison-details">{rows.map(([label,text])=><div key={label}><dt>{label}</dt><dd>{text}</dd></div>)}</dl>{metadata.error?<p className="journal-help">Names could not load. Saved selections remain retained. <button onClick={metadata.retry}>Retry names</button></p>:null}<details className="draft-comparison-details"><summary>Retained field details</summary><dl>{draftFields(payload).map(field=><div key={field.label}><dt>{field.label}</dt><dd>{field.text||"Not entered"}</dd></div>)}</dl></details></>;
+  return <><dl className="draft-comparison-details">{rows.map(([label,text])=><div key={label}><dt>{label}</dt><dd>{text}</dd></div>)}</dl>{metadata.error?<p className="journal-help">Names could not load. Saved selections remain retained. <button type="button" onClick={metadata.retry}>Retry names</button></p>:null}<details className="draft-comparison-details"><summary>Retained field details</summary><dl>{draftFields(payload).map(field=><div key={field.label}><dt>{field.label}</dt><dd>{field.text||"Not entered"}</dd></div>)}</dl></details></>;
 }
 function ComparisonFields({ payload }: { payload: DraftPayload }) {
   if(payload.kind==="prayer-settings")return <SettingsFields payload={payload}/>;
@@ -28,7 +28,7 @@ function ComparisonFields({ payload }: { payload: DraftPayload }) {
 }
 export function DraftProtection({ controller }: { controller: DurableDraftController }) {
   const state = useSyncExternalStore(controller.subscribe, controller.getState, controller.getState);
-  return <><p className="draft-status journal-help" role="status">{state.status === "keeping" ? "Keeping draft…" : state.status === "kept" ? "Draft kept on this device" : state.status === "copy-only" ? "Action already recorded. Remaining writing is kept for copying." : ""}</p>{state.status === "failed" ? <section className="journal-notice" role="alert"><p>Draft could not be kept — keep this page open. {state.error}</p><p>Copy your writing before leaving. A successful explicit save is separate from draft protection.</p><button onClick={() => void controller.flush().catch(() => undefined)}>Retry draft protection</button></section> : null}</>;
+  return <><p className="draft-status journal-help" role="status">{state.status === "keeping" ? "Keeping draft…" : state.status === "kept" ? "Draft kept on this device" : state.status === "copy-only" ? "Action already recorded. Remaining writing is kept for copying." : ""}</p>{state.status === "failed" ? <section className="journal-notice" role="alert"><p>Draft could not be kept — keep this page open. {state.error}</p><p>Copy your writing before leaving. A successful explicit save is separate from draft protection.</p><button type="button" onClick={() => void controller.flush().catch(() => undefined)}>Retry draft protection</button></section> : null}</>;
 }
 
 export function DraftRecovery({ controller, kind, targetKey, current, returnTo, canRecover, ready = true, adopt, validateRecovery }: {
@@ -71,9 +71,9 @@ export function DraftRecovery({ controller, kind, targetKey, current, returnTo, 
   const offers = page.data?.rows.filter(row => row.metadata?.state === "active" && row.id !== controller.getId()) ?? [];
   const close = () => { requestGeneration.current++; setReview(null); setError(""); };
   return <>
-    {offers.length ? <details className="journal-context"><summary>Kept drafts for this editor</summary><p>Review a draft before choosing to recover it. Your current writing stays here.</p><div className="journal-actions journal-dialog-actions">{offers.map(row => <button key={row.id} disabled={busy} onClick={() => void open(row.id)}>Review kept draft · {new Date(row.metadata!.updatedAt).toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</button>)}<Link to={recoveryUrl(null, returnTo)}>All recovery entries →</Link></div></details> : null}
-    {page.error ? <p role="status">Could not check for kept drafts. <button onClick={page.retry}>Retry draft check</button></p> : null}
-    {error && !review ? <p role="alert">{error}{requested ? <button onClick={() => setOpenAttempt(value => value + 1)}>Retry kept writing</button> : null}</p> : null}
+    {offers.length ? <details className="journal-context"><summary>Kept drafts for this editor</summary><p>Review a draft before choosing to recover it. Your current writing stays here.</p><div className="journal-actions journal-dialog-actions">{offers.map(row => <button type="button" key={row.id} disabled={busy} onClick={() => void open(row.id)}>Review kept draft · {new Date(row.metadata!.updatedAt).toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "numeric", minute: "2-digit" })}</button>)}<Link to={recoveryUrl(null, returnTo)}>All recovery entries →</Link></div></details> : null}
+    {page.error ? <p role="status">Could not check for kept drafts. <button type="button" onClick={page.retry}>Retry draft check</button></p> : null}
+    {error && !review ? <p role="alert">{error}{requested ? <button type="button" onClick={() => setOpenAttempt(value => value + 1)}>Retry kept writing</button> : null}</p> : null}
     {review ? <JournalDialog title="Review kept writing" close={close} busy={busy}>
       <p data-initial-focus tabIndex={-1}>Compare this writing before recovering it. Your current editor stays unchanged until you choose.</p>
       <div className="journal-comparison"><div><h3>Your kept draft</h3><ComparisonFields payload={review.snapshot.contents.payload} /></div><div><h3>Current editor</h3><ComparisonFields payload={current} /></div></div>
@@ -81,12 +81,12 @@ export function DraftRecovery({ controller, kind, targetKey, current, returnTo, 
       {review.previousJournal ? <p>This writing belongs to a previous local journal. Keep it for copying; it cannot be attached automatically.</p> : !canRecover ? <p>Save or discard your current changes before recovering another draft.</p> : null}
       {review.snapshot.metadata.commitment?.disposition === "copy-only" ? <p>This action was already recorded. Copy remaining writing without repeating the action.</p> : null}
       {error ? <p role="alert">{error}</p> : null}
-      <div className="journal-dialog-actions"><button className="grace-primary" disabled={busy || !canRecover || review.previousJournal || review.snapshot.metadata.commitment?.disposition === "copy-only"} onClick={async () => {
+      <div className="journal-dialog-actions"><button type="button" className="grace-primary" disabled={busy || !canRecover || review.previousJournal || review.snapshot.metadata.commitment?.disposition === "copy-only"} onClick={async () => {
         if (busy) return; setBusy(true); setError("");
         try { await validateRecovery?.(review.snapshot); const payload = await controller.recover(review.snapshot.metadata.id, review.snapshot.metadata.generation); if (alive.current) { adopt(payload, review.snapshot); setReview(null); } }
         catch (reason) { if (alive.current) setError(reason instanceof Error ? reason.message : "Could not recover this writing."); }
         finally { if (alive.current) setBusy(false); }
-      }}>Recover for review</button><button disabled={busy} onClick={close}>Keep current editor</button></div>
+      }}>Recover for review</button><button type="button" disabled={busy} onClick={close}>Keep current editor</button></div>
     </JournalDialog> : null}
   </>;
 }
