@@ -134,7 +134,11 @@ test("committed creation survives failed refresh without repeating", async ({ pa
   await page.getByRole("button",{name:"Save person",exact:true}).click();
   await expect(page.getByRole("button",{name:"Retry refresh",exact:true})).toBeVisible();
   await expect(page.locator(".directory-row-copy")).toContainText("Committed person");
-  await page.evaluate(()=>(window as any).restoreMetadataRead());const committed=await writingSnapshot(page);
+  const committed=await writingSnapshot(page);
+  // Foreground refresh may run while Playwright focuses WebKit for the click.
+  // Keep reads failing until the actual Retry activation, then restore before
+  // React handles it so this exercises explicit retry rather than racing it.
+  await page.evaluate(()=>{const button=Array.from(document.querySelectorAll('button')).find(node=>node.textContent==='Retry refresh');if(!button)throw new Error('Expected failed refresh control');button.addEventListener('click',()=>(window as any).restoreMetadataRead(),{capture:true,once:true});});
   await page.getByRole("button",{name:"Retry refresh",exact:true}).click();await expect(page.getByRole("button",{name:"Retry refresh",exact:true})).toHaveCount(0);
   expect(await writingSnapshot(page)).toEqual(committed);await expect(page.locator(".directory-row")).toHaveCount(1);
 });
