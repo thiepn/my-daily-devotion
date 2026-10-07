@@ -49,7 +49,7 @@ test.describe("native mobile application states", () => {
       await expect(other.getByText("Saved locally.", { exact: true })).toBeVisible();
 
 
-      await page.getByRole("button", { name: "Save wording", exact: true }).click();
+      await expect(page.getByRole("button", { name: "Save wording", exact: true })).toBeDisabled();
 
       const review = page.locator(".journal-conflict");
       await expect(review).toBeVisible();

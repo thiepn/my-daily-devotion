@@ -61,7 +61,7 @@ test("stale prayer settings preserve a newer schedule and event date", async ({ 
  await openRoute(page,settings);await page.getByLabel("Focus until",{exact:false}).fill("2026-10-04");
  const other=await context.newPage();await openRoute(other,settings);await other.getByRole("combobox",{name:"Schedule",exact:true}).selectOption("DAILY");
  await other.getByLabel("Event date",{exact:false}).fill("2026-10-01");await other.getByRole("button",{name:"Save details"}).click();await expect(other.locator(".prayer-request-text")).toBeVisible();
- await page.getByRole("button",{name:"Save details"}).click();await expect(page.locator(".journal-status")).toContainText("another tab");await expect(page.getByLabel("Focus until",{exact:false})).toHaveValue("2026-10-04");
+ await expect(page.getByRole("button",{name:"Save details"})).toBeDisabled();await expect(page.locator(".journal-conflict")).toBeVisible();await expect(page.getByLabel("Focus until",{exact:false})).toHaveValue("2026-10-04");
  await page.getByRole("button",{name:"Compare versions"}).click();await page.getByRole("button",{name:"Use saved details"}).click();
  await expect(page.getByRole("combobox",{name:"Schedule",exact:true})).toHaveValue("DAILY");await expect(page.getByLabel("Event date",{exact:false})).toHaveValue("2026-10-01");
 });

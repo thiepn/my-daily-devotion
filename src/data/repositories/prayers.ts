@@ -237,9 +237,10 @@ export class PrayerRepository extends MutableRepository<Prayer> {
     });
   }
 
-  async markPrayed(id: UUID, at: Instant = nowInstant()): Promise<Prayer> {
+  async markPrayed(id: UUID, at: Instant = nowInstant(), expectedRevision?: number): Promise<Prayer> {
     return this.database.transaction("rw", this.database.prayers, this.database.activityEvents, async () => {
       const prayer = await this.require(id);
+      assertExpectedRevision(prayer, expectedRevision);
       if (prayer.status !== "ACTIVE") throw new Error("Only active prayers can be surfaced in focused prayer.");
       const next: Prayer = { ...prayer, lastPrayedAt: at, ...nextMutableFields(prayer, at) };
       await this.database.prayers.put(next);

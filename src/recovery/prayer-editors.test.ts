@@ -6,6 +6,16 @@ import {saveJournalDraft} from "./editor-adapters";
 import type {DraftPayload} from "./types";
 import {administrationValueFrom} from "../prayer/PrayerAdministrationFields";
 const databases:MddDatabase[]=[],controllers:DurableDraftController[]=[];
+it("Prayed now rejects stale revisions without an action and permits a reviewed wording baseline",async()=>{
+ const {database,controller,baseline}=await setup();const prayers=new PrayerRepository(database);
+ await prayers.updateBody(baseline.id,"A concurrently saved request.",baseline.revision);
+ const before=await Promise.all(database.tables.map(table=>table.toArray()));
+ await expect(prayers.markPrayed(baseline.id,undefined,baseline.revision)).rejects.toThrow();
+ expect(await Promise.all(database.tables.map(table=>table.toArray()))).toEqual(before);
+ const reviewed=(await prayers.get(baseline.id))!;const prayed=await prayers.markPrayed(reviewed.id,undefined,reviewed.revision);
+ controller.stage({kind:"prayer-wording",body:"My retained wording.",baseline:{id:prayed.id,revision:prayed.revision,status:prayed.status,body:prayed.body}});
+ const saved=await controller.commit(context=>saveJournalDraft(database,context));expect(saved.prayer?.body).toBe("My retained wording.");expect((await database.activityEvents.toArray()).filter(event=>event.type==='PRAYER_PRAYED')).toHaveLength(1);
+});
 afterEach(async()=>{for(const controller of controllers.splice(0))controller.detach();for(const database of databases.splice(0)){database.close();await database.delete();}});
 async function setup(){const database=new MddDatabase("prayer-editor-"+crypto.randomUUID());databases.push(database);await prepareDatabase(database);const prayer=await new PrayerRepository(database).createPrayer({body:"Original request."});const controller=new DurableDraftController(database,{returnTo:"/prayer?status=ACTIVE&shown=15",reading:null});controllers.push(controller);return{database,prayer,controller,baseline:{id:prayer.id,revision:prayer.revision,status:prayer.status,body:prayer.body}};}
 it.each(["prayer-update","prayer-encouragement","prayer-answer"] as const)("returns committed %s and retains exact action counts after replay",async kind=>{
