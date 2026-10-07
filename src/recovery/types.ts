@@ -10,7 +10,7 @@ export type DraftPayload =
   | { kind: "prayer-create"; localDate: LocalDate; body: string; administration: PrayerAdministrationValue; sourceReflection: RecordBaseline | null; sourceRequest?: { id: string | null }; references: ScriptureReference[]; omitSource: boolean; omitReferences: boolean }
   | { kind: "prayer-wording" | "prayer-update" | "prayer-encouragement"; body: string; baseline: PrayerBaseline }
   | { kind: "prayer-answer"; body: string; baseline: PrayerBaseline; session: { id: string; itemId: string; localDate: LocalDate } | null }
-  | { kind: "prayer-settings"; administration: PrayerAdministrationValue; baseline: PrayerBaseline; schedule: (RecordBaseline & { administration: PrayerAdministrationValue }) | null }
+  | { kind: "prayer-settings"; administration: PrayerAdministrationValue; baseline: PrayerBaseline; schedule: (RecordBaseline & { administration: PrayerAdministrationValue }) | null; baselineAdministration?: PrayerAdministrationValue }
   | { kind: "collection-create"; name: string }
   | { kind: "collection-rename"; name: string; baseline: RecordBaseline & { name: string } }
   | { kind: "collection-item-note"; note: string; collection: RecordBaseline; baseline: RecordBaseline & { note: string | null } }

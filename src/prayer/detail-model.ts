@@ -33,12 +33,16 @@ export function readPrayerSettings(db:MddDatabase,id:string):Promise<{prayer:Pra
   return {prayer,schedule:schedule&&!schedule.deletedAt?schedule:null};
  });
 }
-export interface PrayerDetailQuery { entry:string|null; shown:number; returnTo:string; search:string; }
+export interface PrayerDetailQuery { entry:string|null; shown:number; returnTo:string; search:string; draft:string|null; edit:"wording"|"update"|"encouragement"|"answer"|null; }
 export function safePrayerReturn(value:string|null,fallback="/prayer"):string{
  return value?.startsWith("/")&&!value.startsWith("//")&&!/[\\\\\u0000-\u001f]/.test(value)?value:fallback;
 }
 export function parsePrayerDetailQuery(search:string):PrayerDetailQuery{
  const params=new URLSearchParams(search);const rawEntry=params.get("entry"),rawShown=params.get("shown");
+ const rawDraft=params.get("draft"),rawEdit=params.get("edit");
+ const draft=rawDraft&&/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(rawDraft)?rawDraft:null;
+ const edit=rawEdit&&["wording","update","encouragement","answer"].includes(rawEdit)?rawEdit as PrayerDetailQuery["edit"]:null;
+ if(rawDraft!==null&&!draft)params.delete("draft");if(rawEdit!==null&&!edit)params.delete("edit");
  const entry=rawEntry&&/^(update|answer):[a-zA-Z0-9_-]+$/.test(rawEntry)?rawEntry:null;
  const count=rawShown&&/^\d+$/.test(rawShown)?Number(rawShown):20;
  const rounded=Math.ceil(count/20)*20;
@@ -46,7 +50,7 @@ export function parsePrayerDetailQuery(search:string):PrayerDetailQuery{
  if(rawEntry!==null&&!entry)params.delete("entry");
  if(rawShown!==null) {if(shown===20)params.delete("shown");else params.set("shown",String(shown));}
  const returnTo=safePrayerReturn(params.get("return"));if(params.has("return")&&returnTo!==params.get("return"))params.delete("return");
- return {entry,shown,returnTo,search:params.size?"?"+params.toString():""};
+ return {entry,shown,returnTo,draft,edit,search:params.size?"?"+params.toString():""};
 }
 export function prayerDetailUrl(id:string,returnTo?:string,entry?:string):string {
  const params=new URLSearchParams();if(returnTo)params.set("return",safePrayerReturn(returnTo));if(entry)params.set("entry",entry);

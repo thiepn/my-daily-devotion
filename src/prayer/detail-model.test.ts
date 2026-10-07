@@ -46,6 +46,9 @@ describe("Prayer detail read models and guarded lifecycle",()=>{
   expect(safePrayerReturn("//example.com")).toBe("/prayer");
   expect(parsePrayerDetailQuery("?entry=&shown=").search).toBe("");
   expect(parsePrayerDetailQuery("?shown=9007199254740991").shown).toBe(20);
+  expect(parsePrayerDetailQuery("?draft=not-a-draft&edit=unknown").search).toBe("");
+  const kept=parsePrayerDetailQuery("?draft=00000000-0000-4000-8000-000000008001&edit=answer&return="+encodeURIComponent(back));
+  expect(kept.draft).toBe("00000000-0000-4000-8000-000000008001");expect(kept.edit).toBe("answer");expect(kept.returnTo).toBe(back);
  });
 });
 

@@ -21,6 +21,7 @@ const prayerBaseline = object({ id: uuid, revision: positive, status: oneOf("ACT
 const reference = object({ translationId: oneOf("BSB"), startVerseKey: value => string(value) && /^[a-zA-Z0-9]+\.[1-9]\d*\.[1-9]\d*$/.test(value as string), endVerseKey: value => string(value) && /^[a-zA-Z0-9]+\.[1-9]\d*\.[1-9]\d*$/.test(value as string) });
 const administration = object({ personId: nullable(uuid), categoryId: nullable(uuid), scheduleMode: oneOf("ROTATION", "DAILY", "WEEKDAYS", "INTERVAL_DAYS", "MONTHLY", "ON_DATE", "MANUAL_ONLY"), weekdays: array(value => integer(value) && (value as number) <= 7 && (value as number) >= 1), intervalDays: string, anchorDate: string, monthlyDay: string, onDate: string, eventDate: string, focusUntil: string });
 const prayerCaptureFields = { kind: oneOf("prayer-create"), localDate: date, body: string, administration, sourceReflection: nullable(baseline), references: array(reference), omitSource: boolean, omitReferences: boolean };
+const prayerSettingsFields = {kind: oneOf("prayer-settings"), administration, baseline: prayerBaseline, schedule: nullable(object({id:uuid,revision:positive,administration}))};
 const payloadChecks: { [K in DraftPayload["kind"]]: Check } = {
   reflection: object({ kind: oneOf("reflection"), localDate: date, bodyMd: string, baseline: nullable(object({ id: uuid, revision: positive, bodyMd: string })), pendingReferences: array(reference), dismissedReferences: boolean }),
   "verse-note": object({ kind: oneOf("verse-note"), reference, bodyMd: string, baseline: nullable(object({ id: uuid, revision: positive, bodyMd: string })) }),
@@ -29,7 +30,7 @@ const payloadChecks: { [K in DraftPayload["kind"]]: Check } = {
   "prayer-update": object({ kind: oneOf("prayer-update"), body: string, baseline: prayerBaseline }),
   "prayer-encouragement": object({ kind: oneOf("prayer-encouragement"), body: string, baseline: prayerBaseline }),
   "prayer-answer": object({ kind: oneOf("prayer-answer"), body: string, baseline: prayerBaseline, session: nullable(object({ id: uuid, itemId: uuid, localDate: date })) }),
-  "prayer-settings": object({ kind: oneOf("prayer-settings"), administration, baseline: prayerBaseline, schedule: nullable(object({ id: uuid, revision: positive, administration })) }),
+  "prayer-settings": value => object(prayerSettingsFields)(value) || object({...prayerSettingsFields,baselineAdministration:administration})(value),
   "collection-create": object({ kind: oneOf("collection-create"), name: string }),
   "collection-rename": object({ kind: oneOf("collection-rename"), name: string, baseline: object({ id: uuid, revision: positive, name: string }) }),
   "collection-item-note": object({ kind: oneOf("collection-item-note"), note: string, collection: baseline, baseline: object({ id: uuid, revision: positive, note: nullable(string) }) }),

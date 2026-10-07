@@ -1,12 +1,14 @@
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import type { MddDatabase } from "../data/database";
 import type { DraftContext, DraftPayload } from "./types";
 import { DurableDraftController } from "./controller";
 
 /** Payload and dirty/baseline ownership remain in the editor. No domain save,
  * focus change or selection update is performed by background persistence. */
-export function useDurableDraft(database: MddDatabase, context: DraftContext, payload: DraftPayload | null, dirty: boolean) {
-  const [controller] = useState(() => new DurableDraftController(database, context));
+export function useDurableDraft(database: MddDatabase, context: DraftContext, payload: DraftPayload | null, dirty: boolean, ownerKey = "editor") {
+  // An explicitly completed editor can hand off to a new owner without
+  // discarding a commitment marker while queued input is still possible.
+  const controller = useMemo(() => new DurableDraftController(database, context), [database, ownerKey]);
   const state = useSyncExternalStore(controller.subscribe, controller.getState, controller.getState);
   const serialized = JSON.stringify(payload);
   const serializedContext = JSON.stringify(context);

@@ -121,6 +121,34 @@ export class DurableDraftController {
       }
     });
   }
+  /** Update/encouragement is a classification choice within one text editor.
+   * Transfer its kept writing atomically to a new owner ID; never mutate a
+   * draft's immutable kind or turn the choice into a devotional action. */
+  async reclassifyUpdate(kind: "prayer-update" | "prayer-encouragement"): Promise<void> {
+    if (!this.pending && !this.snapshot) return;
+    await this.flush();
+    return this.serial(async () => {
+      const source = this.snapshot;
+      if (!source || source.metadata.state !== "active" || source.metadata.commitment || !["prayer-update","prayer-encouragement"].includes(source.contents.payload.kind)) throw new DraftError("stale","Keep this writing open; its classification could not be changed.");
+      const payload = source.contents.payload;
+      if (payload.kind !== "prayer-update" && payload.kind !== "prayer-encouragement") throw new DraftError("invalid","Wrong writing kind.");
+      if (payload.kind === kind) return;
+      this.cancelTimers();
+      const capturedGeneration = this.generation, id = crypto.randomUUID(), now = new Date().toISOString();
+      const nextPayload = {...payload,kind};
+      const next: DraftSnapshot = {metadata:{...source.metadata,id,kind,targetKey:draftTargetKey(nextPayload,id),createdAt:now,updatedAt:now,generation:1},contents:{id,generation:1,payload:nextPayload}};
+      await this.database.transaction("rw",this.database.editorDrafts,this.database.editorDraftContents,this.database.draftJournalState,async()=>{
+        await this.repository.persist(next,null);
+        await this.repository.discard(source.metadata.id,source.metadata.generation);
+      });
+      const latest=this.pending?.payload;
+      const newer=this.generation!==capturedGeneration&&latest&&(latest.kind==="prayer-update"||latest.kind==="prayer-encouragement");
+      this.snapshot=next;this.identity={id,createdAt:now};this.writer=new DraftWriter(this.repository,id,1);this.generation=newer?2:1;this.operation=null;
+      this.pending={payload:newer?{...latest,kind}:nextPayload,generation:this.generation};
+      this.report(newer?"keeping":"kept");
+      if(newer)queueMicrotask(()=>{if(!this.detached)void this.flush().catch(()=>undefined);});
+    });
+  }
   commit<T extends CommittedDraftSaveResult>(save: (context: DraftSaveContext) => Promise<T>, rebase?: Rebase): Promise<T> {
     if (this.committing) return Promise.reject(new DraftError("operation", "A save is already in progress."));
     this.committing = true; this.cancelTimers();
