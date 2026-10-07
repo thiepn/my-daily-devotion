@@ -10,10 +10,10 @@ test("detail browsing, selected timeline pagination and settings write no record
  await expect(page.getByLabel("Request",{exact:true})).toHaveCount(0);
  await expect(page.locator(".prayer-story-entry")).toHaveCount(20);
  await page.getByRole("button",{name:"Show more",exact:true}).click();await expect(page.locator(".prayer-story-entry")).toHaveCount(40);
- await openRoute(page,detailRoute+"&entry=update%3Adetail-update-0");
- await expect(page.locator('[id="prayer-entry-update:detail-update-0"]')).toBeFocused();
+ await openRoute(page,detailRoute+"&entry=update%3A00000000-0000-4000-8000-000000008100");
+ await expect(page.locator('[id="prayer-entry-update:00000000-0000-4000-8000-000000008100"]')).toBeFocused();
  await expect(page.locator(".prayer-story-entry")).toHaveCount(45);
- await expect(page.locator('[id="prayer-entry-update:detail-update-0"] button')).toHaveAttribute("aria-expanded","true");
+ await expect(page.locator('[id="prayer-entry-update:00000000-0000-4000-8000-000000008100"] button')).toHaveAttribute("aria-expanded","true");
  await page.getByRole("link",{name:"Edit details",exact:true}).click();
  await expect(page.getByRole("button",{name:"Save details",exact:true})).toBeDisabled();
  expect(await writingSnapshot(page)).toEqual(before);
@@ -37,7 +37,8 @@ test("answer drafts never mark answered through navigation and discarded text cl
  await expect(page.getByRole("dialog").getByRole("button",{name:"Save and continue"})).toHaveCount(0);
  await page.getByRole("button",{name:"Keep editing",exact:true}).click();await expect(page.getByLabel("What happened?",{exact:false})).toHaveValue("Not ready to record.");
  await editor(page).getByRole("button",{name:"Cancel editing"}).click();await page.getByRole("dialog").getByRole("button",{name:"Discard and continue"}).click();
- await page.getByRole("button",{name:"Mark answered",exact:true}).click();await expect(page.getByLabel("What happened?",{exact:false})).toHaveValue("");
+ await expect(editor(page)).toHaveCount(0);
+ await page.locator(".prayer-record-actions").getByRole("button",{name:"Mark answered",exact:true}).click();await expect(page.getByLabel("What happened?",{exact:false})).toHaveValue("");
  await editor(page).getByRole("button",{name:"Mark answered",exact:true}).click();
  await expect(page.locator(".journal-date")).toHaveText("answered");await expect(page.locator(".prayer-story-entry").first()).toContainText("No answer note was added.");
 });
@@ -75,7 +76,7 @@ test("cross-tab wording conflicts preserve both versions and require explicit re
  await seedPrayerDetail(page);await page.getByRole("button",{name:"Edit wording",exact:true}).click();await page.getByLabel("Request",{exact:true}).fill("My local wording.");
  const other=await context.newPage();await openRoute(other,detailRoute);await other.getByRole("button",{name:"Edit wording",exact:true}).click();await other.getByLabel("Request",{exact:true}).fill("Saved in another tab.");
  await other.getByRole("button",{name:"Save wording",exact:true}).click();await expect(other.locator(".prayer-request-text")).toHaveText("Saved in another tab.");
- await page.getByRole("button",{name:"Save wording",exact:true}).click();await page.getByRole("button",{name:"Compare versions",exact:true}).click();
+ await expect(page.getByRole("button",{name:"Save wording",exact:true})).toBeDisabled();await page.getByRole("button",{name:"Compare versions",exact:true}).click();
  await expect(page.getByLabel("Your changes",{exact:true})).toHaveValue("My local wording.");await expect(page.getByLabel("Saved version",{exact:true})).toHaveValue("Saved in another tab.");
  await page.getByRole("button",{name:"Keep my wording for review"}).click();await page.getByRole("button",{name:"Save wording",exact:true}).click();await expect(page.locator(".prayer-request-text")).toHaveText("My local wording.");
 });
@@ -83,7 +84,7 @@ test("settings conflicts use labeled fields and preserve unsaved values",async({
  await seedPrayerDetail(page);await page.getByRole("link",{name:"Edit details",exact:true}).click();const settings=page.url();
  await page.getByLabel("Focus until",{exact:false}).fill("2026-05-01");
  const other=await context.newPage();await other.goto(settings);await other.getByRole("combobox",{name:"Schedule",exact:true}).selectOption("DAILY");await other.getByRole("button",{name:"Save details",exact:true}).click();await expect(other.locator(".prayer-request")).toBeVisible();
- await page.getByRole("button",{name:"Save details",exact:true}).click();await page.getByRole("button",{name:"Compare versions",exact:true}).click();
+ await expect(page.getByRole("button",{name:"Save details",exact:true})).toBeDisabled();await page.getByRole("button",{name:"Compare versions",exact:true}).click();
  await expect(page.locator(".prayer-settings-version").first()).toContainText("2026-05-01");await expect(page.locator(".prayer-settings-version").last()).toContainText("Daily");
  await page.getByRole("button",{name:"Use saved details",exact:true}).click();await expect(page.getByRole("combobox",{name:"Schedule",exact:true})).toHaveValue("DAILY");
 });
@@ -135,20 +136,21 @@ async function holdPrayerWrites(page:any){
  await page.evaluate(async()=>{
   const database=await new Promise<IDBDatabase>(resolve=>{const r=indexedDB.open("my-daily-devotion");r.onsuccess=()=>resolve(r.result);});
   const tx=database.transaction(["prayers"],"readwrite");(window as any).releasePrayerLock=false;
-  const keep=()=>{const r=tx.objectStore("prayers").get("detail-fixture");r.onsuccess=()=>{if(!(window as any).releasePrayerLock)keep();};};keep();tx.oncomplete=()=>database.close();
+  const keep=()=>{const r=tx.objectStore("prayers").get("00000000-0000-4000-8000-000000008001");r.onsuccess=()=>{if(!(window as any).releasePrayerLock)keep();};};keep();tx.oncomplete=()=>database.close();
  });
 }
 test("typing while wording saves retains newer changes without navigating",async({page})=>{
  await seedPrayerDetail(page);await page.getByRole("button",{name:"Edit wording",exact:true}).click();await page.getByLabel("Request",{exact:true}).fill("Submitted wording.");
  await holdPrayerWrites(page);await page.getByRole("button",{name:"Save wording",exact:true}).click();await expect(page.locator(".save-state")).toHaveText("Saving…");
- await page.getByLabel("Request",{exact:true}).fill("Submitted wording. Newer typing.");await page.evaluate(()=>{(window as any).releasePrayerLock=true;});
+ await expect(page.getByLabel("Request",{exact:true})).toHaveAttribute("readonly","");await page.getByLabel("Request",{exact:true}).evaluate((node:HTMLTextAreaElement)=>{Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,"value")!.set!.call(node,"Submitted wording. Newer typing.");node.dispatchEvent(new Event("input",{bubbles:true}));});await page.evaluate(()=>{(window as any).releasePrayerLock=true;});
  await expect(page.locator(".journal-status")).toContainText("Newer changes are still unsaved");await expect(page.getByLabel("Request",{exact:true})).toHaveValue("Submitted wording. Newer typing.");
  await expect(page.locator(".save-state")).toHaveText("Unsaved changes");await page.getByRole("button",{name:"Save wording",exact:true}).click();await expect(page.locator(".prayer-request-text")).toHaveText("Submitted wording. Newer typing.");
 });
 test("settings changed during save stay unsaved on the same route",async({page})=>{
  await seedPrayerDetail(page);await page.getByRole("link",{name:"Edit details",exact:true}).click();await page.getByRole("combobox",{name:"Schedule",exact:true}).selectOption("DAILY");
  await holdPrayerWrites(page);await page.getByRole("button",{name:"Save details",exact:true}).click();await expect(page.getByRole("button",{name:"Saving…",exact:true})).toBeVisible();
- await page.getByLabel("Focus until",{exact:false}).fill("2026-05-03");await page.evaluate(()=>{(window as any).releasePrayerLock=true;});
+ const focus=page.getByLabel("Focus until",{exact:false});await expect(focus).toBeDisabled();
+ await focus.evaluate((node:HTMLInputElement)=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,"value")!.set!.call(node,"2026-05-03");node.dispatchEvent(new Event("input",{bubbles:true}));});await page.evaluate(()=>{(window as any).releasePrayerLock=true;});
  await expect(page.locator(".journal-status")).toContainText("Newer changes are still unsaved");await expect(page.getByLabel("Focus until",{exact:false})).toHaveValue("2026-05-03");
  await page.getByRole("button",{name:"Save details",exact:true}).click();await expect(page.locator(".prayer-record-settings")).toContainText("2026-05-03");
 });
@@ -161,8 +163,8 @@ test("required load errors retry without modifying saved records",async({page})=
 test("missing metadata retains selection IDs and does not block schedule editing",async({page})=>{
  await seedPrayerDetail(page);await page.getByRole("link",{name:"Edit details",exact:true}).click();
  await page.addInitScript(()=>{const cursor=IDBObjectStore.prototype.openCursor;IDBObjectStore.prototype.openCursor=function(...args){if(this.name==="categories")throw new Error("Metadata unavailable");return cursor.apply(this,args);};(window as any).restoreCategoryRead=()=>{IDBObjectStore.prototype.openCursor=cursor;};});
- await page.reload();await expect(page.getByRole("button",{name:"Retry people and categories"})).toBeVisible();await expect(page.getByLabel("Category optional")).toHaveValue("detail-category");await expect(page.getByLabel("Category optional")).toBeDisabled();
- await page.getByRole("combobox",{name:"Schedule",exact:true}).selectOption("DAILY");await page.evaluate(()=>{(window as any).restoreCategoryRead();});await page.getByRole("button",{name:"Retry people and categories"}).click();await expect(page.getByLabel("Category optional")).toBeEnabled();await expect(page.getByLabel("Category optional")).toHaveValue("detail-category");
+ await page.reload();await expect(page.getByRole("button",{name:"Retry people and categories"})).toBeVisible();await expect(page.getByLabel("Category optional")).toHaveValue("00000000-0000-4000-8000-000000008003");await expect(page.getByLabel("Category optional")).toBeDisabled();
+ await page.getByRole("combobox",{name:"Schedule",exact:true}).selectOption("DAILY");await page.evaluate(()=>{(window as any).restoreCategoryRead();});await page.getByRole("button",{name:"Retry people and categories"}).click();await expect(page.getByLabel("Category optional")).toBeEnabled();await expect(page.getByLabel("Category optional")).toHaveValue("00000000-0000-4000-8000-000000008003");
 });
 test("deletion in another tab keeps unsaved wording available without recreating the record",async({page,context})=>{
  await seedPrayerDetail(page);await page.getByRole("button",{name:"Edit wording",exact:true}).click();await page.getByLabel("Request",{exact:true}).fill("Keep this unsaved version.");
@@ -195,19 +197,19 @@ for(const action of ["update","answer","prayed"] as const)test("committed "+acti
 });
 test("missing source writing stays private and settings never seed categories",async({page})=>{
  await seedPrayerDetail(page);
- await page.evaluate(async()=>{const database=await new Promise<IDBDatabase>(resolve=>{const r=indexedDB.open("my-daily-devotion");r.onsuccess=()=>resolve(r.result);});const tx=database.transaction(["reflections","categories"],"readwrite");tx.objectStore("reflections").delete("detail-reflection");tx.objectStore("categories").clear();await new Promise<void>(resolve=>{tx.oncomplete=()=>resolve();});database.close();});
+ await page.evaluate(async()=>{const database=await new Promise<IDBDatabase>(resolve=>{const r=indexedDB.open("my-daily-devotion");r.onsuccess=()=>resolve(r.result);});const tx=database.transaction(["reflections","categories"],"readwrite");tx.objectStore("reflections").delete("00000000-0000-4000-8000-000000008004");tx.objectStore("categories").clear();await new Promise<void>(resolve=>{tx.oncomplete=()=>resolve();});database.close();});
  await page.reload();await page.locator("summary").filter({hasText:"From your reflection"}).click();await expect(page.getByText("The original reflection is no longer available.")).toBeVisible();await expect(page.getByRole("link",{name:"Open reflection",exact:true})).toHaveCount(0);
- const before=await writingSnapshot(page);await page.getByRole("link",{name:"Edit details",exact:true}).click();await expect(page.getByLabel("Category optional")).toHaveValue("detail-category");expect(await writingSnapshot(page)).toEqual(before);
+ const before=await writingSnapshot(page);await page.getByRole("link",{name:"Edit details",exact:true}).click();await expect(page.getByLabel("Category optional")).toHaveValue("00000000-0000-4000-8000-000000008003");expect(await writingSnapshot(page)).toEqual(before);
 });
 test("settings and metadata management preserve selected entry and return focus",async({page})=>{
- await seedPrayerDetail(page,{count:45});const route=detailRoute+"&shown=40&entry=update%3Adetail-update-10";await openRoute(page,route);
- await expect(page.locator('[id="prayer-entry-update:detail-update-10"]')).toBeFocused();await page.getByRole("link",{name:"Edit details",exact:true}).click();const settingsHash=new URL(page.url()).hash;
+ await seedPrayerDetail(page,{count:45});const route=detailRoute+"&shown=40&entry=update%3A00000000-0000-4000-8000-000000008110";await openRoute(page,route);
+ await expect(page.locator('[id="prayer-entry-update:00000000-0000-4000-8000-000000008110"]')).toBeFocused();await page.getByRole("link",{name:"Edit details",exact:true}).click();const settingsHash=new URL(page.url()).hash;
  await page.getByRole("link",{name:"Manage people",exact:true}).click();await page.getByRole("button",{name:"Back",exact:true}).or(page.locator(".quiet-back-link")).visible().click();expect(new URL(page.url()).hash).toBe(settingsHash);
  await page.getByRole("link",{name:"Cancel",exact:true}).click();await expect(page.locator("#prayer-settings-link")).toBeFocused();expect(new URL(page.url()).hash).toBe("#"+route);await expect(page.locator(".prayer-story-entry")).toHaveCount(40);
 });
 test("late loads from an earlier prayer cannot replace the newly selected request",async({page,context})=>{
  await seedPrayerDetail(page);
- await page.evaluate(async()=>{const database=await new Promise<IDBDatabase>(resolve=>{const r=indexedDB.open("my-daily-devotion");r.onsuccess=()=>resolve(r.result);});const tx=database.transaction(["prayers"],"readwrite");const request=tx.objectStore("prayers").get("detail-fixture");request.onsuccess=()=>tx.objectStore("prayers").put({...request.result,id:"second-fixture",body:"The newly selected request."});await new Promise<void>(resolve=>{tx.oncomplete=()=>resolve();});database.close();});
+ await page.evaluate(async()=>{const database=await new Promise<IDBDatabase>(resolve=>{const r=indexedDB.open("my-daily-devotion");r.onsuccess=()=>resolve(r.result);});const tx=database.transaction(["prayers"],"readwrite");const request=tx.objectStore("prayers").get("00000000-0000-4000-8000-000000008001");request.onsuccess=()=>tx.objectStore("prayers").put({...request.result,id:"second-fixture",body:"The newly selected request."});await new Promise<void>(resolve=>{tx.oncomplete=()=>resolve();});database.close();});
  await openRoute(page,"/today");const other=await context.newPage();await openRoute(other,"/today");await holdPrayerWrites(other);
  // Exercise a pending route read, without restarting the app while its DB is locked.
  await page.evaluate(route=>{location.hash=route;},detailRoute);await expect(page.getByText("Opening prayer…",{exact:true})).toBeVisible();

@@ -9,7 +9,7 @@ const rows = (snapshot: unknown[], name: string): any[] => (snapshot.find((row: 
 async function changeRequest(page: Page, changes: Record<string, unknown>) {
   await page.evaluate(async changes => {
     const db = await new Promise<IDBDatabase>(resolve => { const r = indexedDB.open("my-daily-devotion"); r.onsuccess = () => resolve(r.result); });
-    const tx = db.transaction("prayers", "readwrite"), store = tx.objectStore("prayers"), r = store.get("detail-fixture");
+    const tx = db.transaction("prayers", "readwrite"), store = tx.objectStore("prayers"), r = store.get("00000000-0000-4000-8000-000000008001");
     r.onsuccess = () => store.put({ ...r.result, ...changes, revision: r.result.revision + 1 });
     await new Promise<void>(resolve => { tx.oncomplete = () => resolve(); }); db.close(); window.dispatchEvent(new Event("focus"));
   }, changes);
@@ -47,7 +47,7 @@ test("Scripture retains full ranges and browser Back restores the session", asyn
   const query = new URLSearchParams(new URL(page.url()).hash.split("?")[1]);
   expect(query.get("start")).toBe("COL.4.2"); expect(query.get("end")).toBe("COL.4.3"); expect(query.get("return")).toBe(sessionRoute);
   // Deliberately allow Back before the lazy reader has finished rendering.
-  await page.goBack(); await expect(page.locator(".session-heading-top")).toContainText("Request 1 of 3"); await expect(page.locator("#session-scripture-detail-link")).toBeFocused();
+  await page.goBack(); await expect(page.locator(".session-heading-top")).toContainText("Request 1 of 3"); await expect(page.locator("#session-scripture-00000000-0000-4000-8000-000000008006")).toBeFocused();
   const after = await writingSnapshot(page);
   for (const table of ["prayers", "prayerSessions", "prayerSessionItems", "activityEvents"]) expect(rows(after, table)).toEqual(rows(before, table));
 });
@@ -123,7 +123,7 @@ test("changed or deleted requests keep answer writing until explicit continuatio
 
 test("concurrent wording changes require review before answering", async ({ page, context }) => {
   await seedFocusedPrayer(page); await page.getByRole("button", { name: "Mark answered", exact: true }).click(); await page.getByLabel("What happened?", { exact: false }).fill("My answer note.");
-  const other = await context.newPage(); await openRoute(other, "/prayer/detail-fixture"); await other.getByRole("button", { name: "Edit wording", exact: true }).click(); await other.getByLabel("Request", { exact: true }).fill("Updated by another person on this device."); await other.getByRole("button", { name: "Save wording", exact: true }).click();
+  const other = await context.newPage(); await openRoute(other, "/prayer/00000000-0000-4000-8000-000000008001"); await other.getByRole("button", { name: "Edit wording", exact: true }).click(); await other.getByLabel("Request", { exact: true }).fill("Updated by another person on this device."); await other.getByRole("button", { name: "Save wording", exact: true }).click();
   await expect(page.getByRole("heading", { name: "Review the changed request" })).toBeVisible(); await expect(page.locator(".session-answer").getByRole("button", { name: "Mark answered", exact: true })).toBeDisabled();
   await page.getByRole("button", { name: "Use saved request" }).click(); await expect(page.getByLabel("What happened?", { exact: false })).toHaveValue("My answer note."); await page.locator(".session-answer").getByRole("button", { name: "Mark answered", exact: true }).click(); await expect(page.locator(".session-heading-top")).toContainText("Request 2 of 3");
 });
@@ -138,7 +138,7 @@ test("Today and filtered Prayer launch canonical URLs and retain the origin", as
   await seedFocusedPrayer(page); await openRoute(page, "/today"); await page.getByRole("link", { name: "Pray — Resume session", exact: true }).click();
   let query = new URLSearchParams(new URL(page.url()).hash.split("?")[1]); expect(query.get("session")).toBe("focus-session"); expect(query.get("return")).toBe("/today");
   await openRoute(page, sessionOrigin); await page.getByRole("link", { name: "Resume prayer", exact: true }).click();
-  query = new URLSearchParams(new URL(page.url()).hash.split("?")[1]); expect(query.get("session")).toBe("focus-session"); expect(query.get("return")).toContain("person=detail-person");
+  query = new URLSearchParams(new URL(page.url()).hash.split("?")[1]); expect(query.get("session")).toBe("focus-session"); expect(query.get("return")).toContain("person=00000000-0000-4000-8000-000000008002");
 });
 
 test("manual-only requests remain outside automatic sessions", async ({ page }) => {
@@ -199,7 +199,7 @@ async function holdSessionWrites(page: Page) {
   await page.evaluate(async () => {
     const db = await new Promise<IDBDatabase>(resolve => { const r = indexedDB.open("my-daily-devotion"); r.onsuccess = () => resolve(r.result); });
     const tx = db.transaction("prayers", "readwrite"); (window as any).releaseSessionLock = false;
-    const keep = () => { const r = tx.objectStore("prayers").get("detail-fixture"); r.onsuccess = () => { if (!(window as any).releaseSessionLock) keep(); }; }; keep(); tx.oncomplete = () => db.close();
+    const keep = () => { const r = tx.objectStore("prayers").get("00000000-0000-4000-8000-000000008001"); r.onsuccess = () => { if (!(window as any).releaseSessionLock) keep(); }; }; keep(); tx.oncomplete = () => db.close();
   });
 }
 test("answer commitment locks the field and blocks navigation until settled", async ({ page }) => {
