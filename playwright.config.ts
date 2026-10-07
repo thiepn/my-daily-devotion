@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { testOrigin, testPreviewCommand } from "./playwright.server";
 
 export default defineConfig({
   testDir: "./tests/ux",
@@ -10,7 +11,7 @@ export default defineConfig({
   failOnFlakyTests: Boolean(process.env.CI),
   reporter: [["list"], ["json", { outputFile: process.env.MDD_TEST_REPORT ?? "verification/browser.json" }], ...(process.env.CI ? [["html", { open: "never", outputFolder: "playwright-report" }] as const] : [])],
   use: {
-    baseURL: "http://127.0.0.1:4173",
+    baseURL: testOrigin,
     locale: "en-US",
     timezoneId: "Europe/Berlin",
     trace: "retain-on-failure",
@@ -18,8 +19,8 @@ export default defineConfig({
     video: "retain-on-failure",
   },
   webServer: {
-    command: "npm run preview:ux",
-    url: "http://127.0.0.1:4173",
+    command: testPreviewCommand,
+    url: testOrigin,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

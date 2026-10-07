@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { testOrigin, testPreviewCommand } from './playwright.server';
 
 // Keep OS/browser rasterization stable. Cross-platform behavior is covered by
 // playwright.config.ts; these candidate images are reviewed on Windows Chromium.
@@ -13,6 +14,6 @@ export default defineConfig({
   failOnFlakyTests: true,
   expect: { timeout: 8_000, toHaveScreenshot: { animations: 'disabled', maxDiffPixelRatio: .005, threshold: .15 } },
   reporter: [['list'], ['json', { outputFile: process.env.MDD_TEST_REPORT ?? 'verification/visual.json' }], ['html', { open: 'never', outputFolder: 'visual-report' }]],
-  use: { ...devices['Desktop Chrome'], baseURL: 'http://127.0.0.1:4173', locale: 'en-US', timezoneId: 'Europe/Berlin', serviceWorkers: 'block', colorScheme: 'light', reducedMotion: 'reduce', trace: 'retain-on-failure' },
-  webServer: { command: 'npm run preview:ux', url: 'http://127.0.0.1:4173', reuseExistingServer: !process.env.CI, timeout: 120_000 },
+  use: { ...devices['Desktop Chrome'], baseURL: testOrigin, locale: 'en-US', timezoneId: 'Europe/Berlin', serviceWorkers: 'block', colorScheme: 'light', reducedMotion: 'reduce', trace: 'retain-on-failure' },
+  webServer: { command: testPreviewCommand, url: testOrigin, reuseExistingServer: !process.env.CI, timeout: 120_000 },
 });
