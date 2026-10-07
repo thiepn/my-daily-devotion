@@ -128,7 +128,7 @@ export function DataScreen() {
   return <main className="journal-workspace data-journal data-screen">
     <JournalHeading title="Your data" subtitle="Keep what matters" back={context.returnTo} />
     <p className="data-opening">A little care for the words, prayers and moments you’ve kept.</p>
-    <p><Link to={"/recovery?" + new URLSearchParams({ return: location.pathname + location.search })}>Review unfinished writing on this device →</Link></p>
+    <p><Link className="data-secondary-action" to={"/recovery?" + new URLSearchParams({ return: location.pathname + location.search })}>Review unfinished writing on this device →</Link></p>
     <section className="data-panel journal-paper backup-panel" id="data-backups" aria-labelledby="backups-title">
       <div className="data-section-heading"><span className="data-symbol"><LockKeyIcon weight="light" aria-hidden="true" /></span><div><p className="journal-kicker">Safe keeping</p><h2 id="backups-title" tabIndex={-1}>Backups</h2></div></div>
       <p>Keep a copy of your whole devotional journal. An encrypted backup protects the file with a password.</p>
