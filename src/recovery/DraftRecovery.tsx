@@ -9,7 +9,20 @@ import { draftFields, recoveryUrl } from "./presentation";
 import type { DraftPayload, DraftSnapshot } from "./types";
 
 const repository = new DraftRepository(db);
+function SettingsFields({payload}:{payload:Extract<DraftPayload,{kind:"prayer-settings"}>}){
+  const value=payload.administration;
+  const metadata=usePrayerRead(`draft-settings-metadata:${value.personId}:${value.categoryId}`,()=>db.transaction("r",db.people,db.categories,async()=>({person:value.personId?await db.people.get(value.personId):null,category:value.categoryId?await db.categories.get(value.categoryId):null})));
+  const names={ROTATION:"Normal rotation",DAILY:"Daily",WEEKDAYS:"Selected weekdays",INTERVAL_DAYS:"Every few days",MONTHLY:"Monthly",ON_DATE:"One specific date",MANUAL_ONLY:"Manual only"};
+  const rows:[string,string][]=[["Person",value.personId?metadata.data===undefined&&!metadata.error?"Loading…":metadata.data?.person&&!metadata.data.person.deletedAt?metadata.data.person.name:"Unavailable person":"No person"],["Category",value.categoryId?metadata.data===undefined&&!metadata.error?"Loading…":metadata.data?.category&&!metadata.data.category.deletedAt?metadata.data.category.name:"Unavailable category":"No category"],["Schedule",names[value.scheduleMode]]];
+  if(value.scheduleMode==="INTERVAL_DAYS")rows.push(["Every",value.intervalDays?value.intervalDays+" days":"Not entered"],["Starting",value.anchorDate||"Not entered"]);
+  if(value.scheduleMode==="MONTHLY")rows.push(["Day of month",value.monthlyDay||"Not entered"]);
+  if(value.scheduleMode==="ON_DATE")rows.push(["Date",value.onDate||"Not entered"]);
+  if(value.scheduleMode==="WEEKDAYS")rows.push(["Weekdays",value.weekdays.map(day=>["","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"][day]).join(", ")||"None selected"]);
+  rows.push(["Event date",value.eventDate||"Not set"],["Focus until",value.focusUntil||"Not set"]);
+  return <><dl className="draft-comparison-details">{rows.map(([label,text])=><div key={label}><dt>{label}</dt><dd>{text}</dd></div>)}</dl>{metadata.error?<p className="journal-help">Names could not load. Saved selections remain retained. <button onClick={metadata.retry}>Retry names</button></p>:null}<details className="draft-comparison-details"><summary>Retained field details</summary><dl>{draftFields(payload).map(field=><div key={field.label}><dt>{field.label}</dt><dd>{field.text||"Not entered"}</dd></div>)}</dl></details></>;
+}
 function ComparisonFields({ payload }: { payload: DraftPayload }) {
+  if(payload.kind==="prayer-settings")return <SettingsFields payload={payload}/>;
   const [writing, ...details] = draftFields(payload);
   return <>{writing ? writing.text ? <label>{writing.label}<textarea readOnly value={writing.text} /></label> : <p className="journal-help">No writing entered.</p> : null}{details.length ? <details className="draft-comparison-details"><summary><span aria-hidden="true">▾ </span>Source and details</summary><dl>{details.map(field => <div key={field.label}><dt>{field.label}</dt><dd>{field.text || "Not entered"}</dd></div>)}</dl></details> : null}</>;
 }
