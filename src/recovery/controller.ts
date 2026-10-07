@@ -149,6 +149,32 @@ export class DurableDraftController {
       if(newer)queueMicrotask(()=>{if(!this.detached)void this.flush().catch(()=>undefined);});
     });
   }
+  /** Newer text after creating a directory entry must edit that exact saved
+   * record, never replay creation. Transfer to a fresh private owner atomically. */
+  async adoptCreatedRecord(rebase: (payload: DraftPayload) => DraftPayload): Promise<DraftPayload> {
+    await this.flush();
+    return this.serial(async () => {
+      const source = this.snapshot;
+      if (!source || source.metadata.state !== "active" || source.metadata.commitment?.disposition !== "copy-only") throw new DraftError("stale", "The saved entry needs review. Keep remaining writing for copying.");
+      const original = source.contents.payload, nextPayload = rebase(original);
+      const allowed: Partial<Record<DraftPayload["kind"], DraftPayload["kind"]>> = {"person-create":"person-edit", "category-create":"category-edit", "collection-create":"collection-rename"};
+      const saved = source.metadata.commitment.records[0];
+      if (allowed[original.kind] !== nextPayload.kind || !("baseline" in nextPayload) || !nextPayload.baseline || nextPayload.baseline.id !== saved?.id || nextPayload.baseline.revision !== saved.revision) throw new DraftError("invalid", "The editor cannot adopt an unrelated saved entry.");
+      this.cancelTimers();
+      const generation = this.generation, id = crypto.randomUUID(), now = new Date().toISOString();
+      const next: DraftSnapshot = {metadata:{...source.metadata,id,kind:nextPayload.kind,targetKey:draftTargetKey(nextPayload,id),createdAt:now,updatedAt:now,generation:1,commitment:null,lineage:null},contents:{id,generation:1,payload:nextPayload}};
+      await this.database.transaction("rw",this.database.editorDrafts,this.database.editorDraftContents,this.database.draftJournalState,async()=>{
+        await this.repository.persist(next,null);
+        await this.repository.discard(source.metadata.id,source.metadata.generation);
+      });
+      const newer = this.generation !== generation && this.pending;
+      const payload = newer ? rebase(newer.payload) : nextPayload;
+      this.snapshot=next;this.identity={id,createdAt:now};this.writer=new DraftWriter(this.repository,id,1);this.generation=newer?2:1;this.operation=null;
+      this.pending={payload,generation:this.generation};this.report(newer?"keeping":"kept");
+      if(newer)queueMicrotask(()=>{if(!this.detached)void this.flush().catch(()=>undefined);});
+      return structuredClone(payload);
+    });
+  }
   commit<T extends CommittedDraftSaveResult>(save: (context: DraftSaveContext) => Promise<T>, rebase?: Rebase): Promise<T> {
     if (this.committing) return Promise.reject(new DraftError("operation", "A save is already in progress."));
     this.committing = true; this.cancelTimers();
