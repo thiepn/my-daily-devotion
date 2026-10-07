@@ -7,7 +7,7 @@ Owner instruction: implement the offline completion and local connected-services
 | A | Foundation exact certification and current checklist | PR #28 hosted-certified: run 37617486487, feature commit fdda87e / matching merge tree 03e01260. 254 unit/integration, 806 browser, 316 images; no skips/flaky cases. Checklist separates historical presentation from recovery contracts. |
 | B / 5D first slice | Shared controller and Reflection | Implemented; per-commit browser/image/release evidence belongs in its draft PR. |
 | B / remaining 5D | Bible notes and prayer capture/detail/settings/session editors | Not integrated yet; unsaved text remains memory-only. |
-| B / 5E | Collections/metadata and Recovery directory | Pending; all fifteen kinds must be covered before 1.4.0. |
+| B / 5E | Collections/metadata and Recovery directory | Recovery directory implemented; Reflection handoff and copy-only review for other readable payloads. Collection/metadata editors remain pending; all fifteen kinds must be covered before 1.4.0. |
 | C | Versions, thirty-day removal recovery and optional extended backups | Produce concrete migration/portability specification and review before dependent implementation. Keep twenty prior versions; never bypass lifecycle restrictions or duplicate events. |
 | D | Weekly review, opt-in remembering/reminders, backup checks and selected exports | Previous completed Monday–Sunday week; stored local dates; browser printing and Markdown. |
 | E | Offline integration and certification | Intended milestones 1.4.0 drafts, 1.5.0 versions/removal, 1.6.0 remembering. Human/physical-device gates are not automated certification. |
