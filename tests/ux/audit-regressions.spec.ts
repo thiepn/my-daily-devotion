@@ -1,3 +1,4 @@
+import { testOrigin } from "../../playwright.server";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { unzipSync, strFromU8 } from "fflate";
@@ -156,7 +157,7 @@ test("encrypted backup restores in a fresh profile and failed/cancelled restores
   test.setTimeout(90_000);
   await createPrayer(page, "Backup recovery preserves this prayer.", "DAILY");
   const encrypted = await backup(page, true);
-  const clean = await browser.newContext({ serviceWorkers: "block", baseURL: "http://127.0.0.1:4173" });
+  const clean = await browser.newContext({ serviceWorkers: "block", baseURL: testOrigin });
   const fresh = await clean.newPage();
   try {
     await openRoute(fresh, "/data"); await upload(fresh, encrypted);

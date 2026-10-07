@@ -1,3 +1,4 @@
+import { testOrigin } from "../../playwright.server";
 import { expect, test } from "@playwright/test";
 import { strFromU8, unzipSync } from "fflate";
 import { openRoute, expectNoAxeViolations, expectNoHorizontalOverflow } from "./helpers";
@@ -58,7 +59,7 @@ test("changed inputs invalidate review and replacement offers backup or explicit
 
 test("encrypted restore validates password, clears it on cancellation and preserves v1 backups", async ({ page, browser }) => {
   await seedBackupData(page); const bytes = await downloadBackup(page, "test-passphrase");
-  const context = await browser.newContext({ baseURL: "http://127.0.0.1:4173", serviceWorkers: "block" });
+  const context = await browser.newContext({ baseURL: testOrigin, serviceWorkers: "block" });
   try {
     const fresh = await context.newPage(); await openRoute(fresh, "/data"); await chooseBackup(fresh, bytes);
     await fresh.getByLabel("Backup password", { exact: true }).fill("incorrect"); await fresh.getByRole("button", { name: "Preview & validate" }).click();

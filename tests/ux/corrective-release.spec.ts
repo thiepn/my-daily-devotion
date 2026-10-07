@@ -1,3 +1,4 @@
+import { testOrigin } from "../../playwright.server";
 import { expect, test, type Page } from "@playwright/test";
 import { readFile } from "node:fs/promises";
 import { openRoute, enrollCalendarPlan, expectNoAxeViolations, expectNoHorizontalOverflow } from "./helpers";
@@ -130,7 +131,7 @@ test("encrypted backup restores in a fresh browser context on this engine", asyn
   await page.getByLabel("Confirm password").fill("engine-test-passphrase");
   const downloadPromise = page.waitForEvent("download"); await page.getByRole("button", { name: "Download encrypted backup", exact: true }).click();
   const file = await downloadPromise, bytes = await readFile((await file.path())!);
-  const target = await browser.newContext({ baseURL: "http://127.0.0.1:4173", serviceWorkers: "block" });
+  const target = await browser.newContext({ baseURL: testOrigin, serviceWorkers: "block" });
   try {
     const restored = await target.newPage(); await openRoute(restored, "/data");
     await restored.getByLabel("Backup file").setInputFiles({ name: "test.mddbackup", mimeType: "application/zip", buffer: bytes });

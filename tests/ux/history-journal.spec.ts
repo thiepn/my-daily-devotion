@@ -1,3 +1,4 @@
+import { testOrigin } from "../../playwright.server";
 import { expect,test } from '@playwright/test';
 import { seedHistoryJournal,historySnapshot } from './history-fixture';
 import { expectNoAxeViolations,expectNoHorizontalOverflow,openRoute } from './helpers';
@@ -83,7 +84,7 @@ test('Changing browser time zones preserves recorded days and source destination
   await seedHistoryJournal(page);const before=await historySnapshot(page), state=await context.storageState({indexedDB:true});
   const destinations=await page.locator('.history-journal-row').evaluateAll(links=>links.map(link=>link.getAttribute('href')));
   for(const timezoneId of ['Pacific/Honolulu','Asia/Tokyo']){
-    const shifted=await browser.newContext({baseURL:'http://127.0.0.1:4173',storageState:state,timezoneId,locale:'en-US',serviceWorkers:'block'});
+    const shifted=await browser.newContext({baseURL:testOrigin,storageState:state,timezoneId,locale:'en-US',serviceWorkers:'block'});
     try{const tab=await shifted.newPage();await tab.clock.setFixedTime(new Date('2026-04-24T00:30:00Z'));await openRoute(tab,'/history');await expect(tab.locator('.history-journal-row')).toHaveCount(5);expect(await tab.locator('.history-journal-row').evaluateAll(links=>links.map(link=>link.getAttribute('href')))).toEqual(destinations);await tab.locator('#history-row-history-reflection-event').click();await expect(tab.getByRole('heading',{level:1})).toHaveText('Wednesday, April 22, 2026');expect(await historySnapshot(tab)).toEqual(before);}finally{await shifted.close();}
   }
 });

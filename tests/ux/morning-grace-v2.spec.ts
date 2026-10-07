@@ -1,3 +1,4 @@
+import { testOrigin } from "../../playwright.server";
 import { expect, test } from '@playwright/test';
 import { mkdir } from 'node:fs/promises';
 import { enrollCalendarPlan, expectNoAxeViolations, expectNoHorizontalOverflow, openRoute } from './helpers';
@@ -94,7 +95,7 @@ test('Today keeps self-paced enrollment, complete-day and leap-day states', asyn
   const leap = await page.context().browser()!.newContext({ locale: 'en-US', timezoneId: 'Europe/Berlin', serviceWorkers: 'block' });
   const leapPage = await leap.newPage();
   await leapPage.clock.setFixedTime(new Date('2028-02-29T07:00:00+01:00'));
-  await leapPage.goto('http://127.0.0.1:4173/#/today');
+  await leapPage.goto(testOrigin + "/#/today");
   await leapPage.getByRole('button', { name: 'Follow today’s calendar' }).click();
   await expect(leapPage.getByText('Leap-day pause', { exact: true })).toBeVisible();
   await expect(leapPage.locator('.today-reading-check')).toHaveCount(0);
