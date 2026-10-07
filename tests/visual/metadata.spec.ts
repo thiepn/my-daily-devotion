@@ -19,7 +19,7 @@ for (const kind of ["people","categories"] as const) {
     if(state==="confirmation"){await selectMetadata(page,kind==="people"?"Daniel Kim":"Family");await page.getByRole("button",{name:"Remove "+singular,exact:true}).click();}
     if(state==="error"){await page.addInitScript(()=>{const cursor=IDBObjectStore.prototype.openCursor;IDBObjectStore.prototype.openCursor=function(...args){if(["people","categories"].includes(this.name))throw new Error("Read unavailable");return cursor.apply(this,args);};});await page.reload();await expect(page.getByRole("button",{name:"Retry refresh",exact:true})).toBeVisible();}
     if(state==="no-results")await page.getByLabel("Search "+kind).fill("No matching entry");
-    await page.evaluate(()=>{window.scrollTo(0,0);return document.fonts.ready;});await page.mouse.move(0,0);await expect(page).toHaveScreenshot("metadata-"+kind+"-"+state+".png",{fullPage:true});
+    await page.evaluate(async()=>{await document.fonts.ready;await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));if(document.activeElement?.matches(".skip-link"))(document.activeElement as HTMLElement).blur();window.scrollTo({top:0,behavior:"instant"});});await page.mouse.move(0,0);await expect(page).toHaveScreenshot("metadata-"+kind+"-"+state+".png",{fullPage:true});
   });
 }
 test("People conflict comparison",async({page,context})=>{

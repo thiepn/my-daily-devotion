@@ -79,7 +79,7 @@ test('selection, note editor, and enlarged text remain usable on a narrow phone'
   await page.getByLabel('Verse note', { exact: true }).fill('Take up the cross daily.');
   await expectNoHorizontalOverflow(page);
   await page.getByRole('button', { name: 'Save note', exact: true }).click();
-  await expect(page.getByRole('status')).toHaveText('Verse note saved locally.');
+  await expect(page.locator('.verse-note-editor .reader-status')).toHaveText('Verse note saved locally.');
   await page.getByRole('button', { name: 'Close', exact: true }).click();
   await page.screenshot({ path: info.outputPath('bible-320-enlarged.png'), animations: 'disabled' });
   await expectNoAxeViolations(page);

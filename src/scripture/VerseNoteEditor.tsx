@@ -16,7 +16,7 @@ const notes = new VerseNoteRepository(db);
 type NotePayload = Extract<DraftPayload, { kind: "verse-note" }>;
 export interface VerseNoteEditorHandle { request: (action: () => void) => void }
 export function VerseNoteEditor({ reference, label, returnTo, onClose, onChanged, ref }: {
-  reference: ScriptureReference; label: string; returnTo: string; onClose: () => void; onChanged: () => void; ref: Ref<VerseNoteEditorHandle>;
+  reference: ScriptureReference; label: string; returnTo: string; onClose: (removed?: boolean) => void; onChanged: () => void; ref: Ref<VerseNoteEditorHandle>;
 }) {
   const key = `${reference.translationId}:${reference.startVerseKey}:${reference.endVerseKey}`;
   const load = usePrayerRead(key, async () => ({ note: await notes.getSavedRecord(reference) }));
@@ -87,12 +87,12 @@ export function VerseNoteEditor({ reference, label, returnTo, onClose, onChanged
     if (acting.current || !baseline) return; acting.current = true; setBusy(true); setMessage("");
     try {
       await recovery.controller.discard({ tables: ["verseNotes"], action: () => notes.remove(reference, baseline.revision, baseline.id) });
-      if (alive.current) { onChanged(); onClose(); }
+      if (alive.current) { onChanged(); onClose(true); }
     } catch (reason) { if (alive.current) setMessage(reason instanceof Error ? reason.message : "Could not remove this note."); }
     finally { acting.current = false; if (alive.current) setBusy(false); }
   };
   return <section className="verse-note-editor" aria-label="Verse note editor">
-    {!ready ? <><p role={load.error ? "alert" : "status"}>{load.error || "Opening verse note…"}</p>{load.error ? <button onClick={load.retry}>Retry note</button> : null}<button onClick={onClose}>Close</button></> : <>
+    {!ready ? <><p role={load.error ? "alert" : "status"}>{load.error || "Opening verse note…"}</p>{load.error ? <button onClick={load.retry}>Retry note</button> : null}<button onClick={() => onClose()}>Close</button></> : <>
       <DraftRecovery controller={recovery.controller} kind="verse-note" targetKey={draftTargetKey(payload, "")} current={payload} returnTo={returnTo} canRecover={!dirty && !busy && !removed} validateRecovery={async source => {
         const value = source.contents.payload; if (value.kind !== "verse-note") throw new Error("Wrong editor.");
         const saved = await notes.getSavedRecord(value.reference);

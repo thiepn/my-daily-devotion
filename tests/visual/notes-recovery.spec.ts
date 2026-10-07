@@ -2,13 +2,16 @@ import { expect, test } from "@playwright/test";
 import { openRoute, expectNoHorizontalOverflow, expectNoAxeViolations } from "../ux/helpers";
 const route = "/bible/JHN/3?verse=16&endVerse=18&return=%2Fhistory%3Fshown%3D15";
 const writing = "Help me receive this promise with trust, and carry its hope into the people I meet today.";
+async function settleReader(page: import("@playwright/test").Page) {
+  await page.evaluate(async () => { await document.fonts.ready; await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))); window.scrollTo({top:0,behavior:"instant"}); });
+}
 test.beforeEach(async ({ page }) => { await page.clock.setFixedTime(new Date("2026-04-24T07:00:00+02:00")); });
 for (const [width, height] of [[320,568],[360,800],[390,844],[430,932],[768,1024],[1440,900]]) {
   test(`Verse note recovery ${width}`, async ({ page }) => {
     await page.setViewportSize({ width, height }); await openRoute(page, route); await page.getByRole("button", { name: "Add verse note", exact: true }).click();
     await page.getByLabel("Verse note", { exact: true }).fill(writing); await expect(page.locator(".draft-status")).toHaveText("Draft kept on this device");
     await page.evaluate(() => document.fonts.ready); await page.mouse.move(0,0); await expectNoHorizontalOverflow(page); await expectNoAxeViolations(page);
-    await expect(page).toHaveScreenshot(`notes-recovery-${width}.png`);
+    await settleReader(page); await expect(page).toHaveScreenshot(`notes-recovery-${width}.png`);
   });
 }
 for (const state of ["dark", "enlarged", "dialog", "storage-failure", "long-writing", "discard", "conflict", "removed"]) {
@@ -36,6 +39,6 @@ for (const state of ["dark", "enlarged", "dialog", "storage-failure", "long-writ
     if (state === "discard") await page.getByRole("button", { name: "Clear verse selection" }).click();
     if (state === "enlarged") await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
     await page.evaluate(() => document.fonts.ready); await page.mouse.move(0,0); await expectNoHorizontalOverflow(page); await expectNoAxeViolations(page);
-    await expect(page).toHaveScreenshot(`notes-recovery-${state}.png`);
+    await settleReader(page); await expect(page).toHaveScreenshot(`notes-recovery-${state}.png`);
   });
 }
