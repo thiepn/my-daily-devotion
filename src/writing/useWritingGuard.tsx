@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { useBlocker, useNavigate } from "react-router-dom";
 import { JournalDialog } from "./JournalPrimitives";
+import { useUpdateProtection } from "../app/useUpdateProtection";
 
 /** Route transitions and reload warnings only: this is not durable draft storage. */
 export function useWritingGuard(dirty: boolean, save: () => Promise<void>, canSave: boolean, savedDestination?: (target: string) => string, discard?: () => void) {
+  useUpdateProtection(dirty);
   const navigate = useNavigate();
   const bypass = useRef(false);
   const lock = useRef(false);

@@ -1,10 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { isUpdateProtected, subscribeUpdateProtection } from "./update-protection";
+import { DATABASE_CONNECTION_EVENT } from "../data/lifecycle";
 import { activateWaitingServiceWorker, PLATFORM_UPDATE_EVENT } from "./platform";
 
 export function PlatformStatus() {
   const [online, setOnline] = useState(() => typeof navigator === "undefined" ? true : navigator.onLine);
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [connectionClosed, setConnectionClosed] = useState(false);
+  const protectedWriting = useSyncExternalStore(subscribeUpdateProtection, isUpdateProtected, () => false);
 
   useEffect(() => {
     const goOnline = () => setOnline(true);
@@ -16,24 +20,28 @@ export function PlatformStatus() {
     window.addEventListener("online", goOnline);
     window.addEventListener("offline", goOffline);
     window.addEventListener(PLATFORM_UPDATE_EVENT, updateReady);
+    const databaseChanged = (event: Event) => { if ((event as CustomEvent<string>).detail === "closed-for-upgrade") setConnectionClosed(true); };
+    window.addEventListener(DATABASE_CONNECTION_EVENT, databaseChanged);
     return () => {
       window.removeEventListener("online", goOnline);
       window.removeEventListener("offline", goOffline);
       window.removeEventListener(PLATFORM_UPDATE_EVENT, updateReady);
+      window.removeEventListener(DATABASE_CONNECTION_EVENT, databaseChanged);
     };
   }, []);
 
-  if (online && !registration) return null;
+  if (online && !registration && !connectionClosed) return null;
 
   return (
     <div className={`platform-status${!online ? " is-offline" : ""}${registration ? " has-update" : ""}`} role="status" aria-live="polite" aria-atomic="true">
       {!online ? <span><strong>Offline.</strong> Cached Scripture and local devotional data remain available.</span> : null}
+      {connectionClosed ? <span><strong>Another tab updated local storage.</strong> Keep this page open and copy any unsaved writing before reloading. Saved records have not been cleared.<button type="button" disabled={protectedWriting} onClick={() => window.location.reload()}>Reload when ready</button></span> : null}
       {registration ? (
         <span>
           <strong>Update ready.</strong> Your local data is preserved.
           <button
             type="button"
-            disabled={updating}
+            disabled={updating || protectedWriting}
             onClick={() => {
               setUpdating(true);
               void activateWaitingServiceWorker(registration).then((activated) => {
@@ -43,6 +51,7 @@ export function PlatformStatus() {
           >
             {updating ? "Updating…" : "Reload to update"}
           </button>
+          {protectedWriting ? <small>Save or explicitly discard your writing before updating.</small> : null}
         </span>
       ) : null}
     </div>

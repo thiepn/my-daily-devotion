@@ -10,7 +10,7 @@ Approved direction: Read → Reflect → Pray → Remember, canonical Morning Gr
 | 2 | Search scopes/pagination/excerpts, precise destinations, Saved Scripture hub and Collections journal | Draft PR #23; hosted certification passed, unmerged |
 | 3 | Reading Plan journal, skippable onboarding, mode education, optional name and appropriate greeting | Draft PR #24; hosted certification passed, unmerged |
 | 4 | CSS consolidation, complete states, evening artwork, accessibility/usability and performance | Draft PR #25; hosted certification passed (223 unit/integration, 794 browser, 309 images), unmerged; human/physical-device gates outstanding |
-| 5 | Durable device-local drafts and Recovery view | [Specification](specs/DURABLE_LOCAL_DRAFTS.md) owner-approved; [5B portability boundary](RELEASE_5B_PORTABILITY.md) implemented, certification pending; migration/repository/editor slices remain |
+| 5 | Durable device-local drafts and Recovery view | [Specification](specs/DURABLE_LOCAL_DRAFTS.md) owner-approved; [5B portability boundary](RELEASE_5B_PORTABILITY.md) hosted-certified in PR #27; [5C recovery foundation](RELEASE_5C_RECOVERY_FOUNDATION.md) implemented, final certification pending; editor persistence and Recovery journal remain |
 | 6 | Twenty saved versions, thirty-day removal recovery, optional recovery backup payloads | Requires reviewed migration/portability spec |
 | 7 | Manual weekly review, opt-in resurfacing/backup reminders, backup checks and period exports | Planned |
 | 8 | Repository/platform boundaries, thiepn-platform, isolated domains/environments and origin transfer | Infrastructure inventory required |

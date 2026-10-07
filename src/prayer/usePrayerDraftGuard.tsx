@@ -1,7 +1,9 @@
 import {useEffect,useRef,useState} from "react";
 import {useBlocker} from "react-router-dom";
 import {JournalDialog} from "../writing/JournalPrimitives";
+import {useUpdateProtection} from "../app/useUpdateProtection";
 export function usePrayerDraftGuard({dirty,save,discard,answer=false,answerRecorded=false,canSave=true,pending=false}:{dirty:boolean;save:()=>Promise<void>;discard:()=>void;answer?:boolean;answerRecorded?:boolean;canSave?:boolean;pending?:boolean}) {
+ useUpdateProtection(dirty || pending);
  const [next,setNext]=useState<(()=>void)|null>(null),[error,setError]=useState(""),[busy,setBusy]=useState(false);
  const lock=useRef(false),bypass=useRef(false);
  const blocker=useBlocker(({currentLocation,nextLocation})=>(dirty||pending)&&!bypass.current&&(currentLocation.pathname!==nextLocation.pathname||currentLocation.search!==nextLocation.search));

@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 import { openRoute } from "../ux/helpers";
 import { chooseBackup, dataSnapshot, fixtureBackup, reviewBackup, seedBackupData } from "../ux/data-fixture";
+import { APP_VERSION } from "../../src/app/version";
+import { DATABASE_SCHEMA_VERSION } from "../../src/data/schema";
 
 test.beforeEach(async ({ page }) => { await page.clock.setFixedTime(new Date("2026-04-24T07:00:00+02:00")); });
 for (const [width, height] of [[320,568],[360,800],[390,844],[430,932],[768,1024],[1440,900]]) test(`Data journal ${width}`, async ({ page }) => {
@@ -29,9 +31,9 @@ for (const state of ["dark", "text200", "export", "password-mismatch", "export-d
   if (state === "error") { await chooseBackup(page, Buffer.from("corrupt")); await expect(page.getByRole("alert")).toBeVisible(); }
   if (["appearance", "privacy", "advanced"].includes(state)) {
     await page.locator(`#data-${state} summary`).first().click();
-    if (state === "advanced") { await expect(page.locator(".storage-facts")).not.toContainText("Checking"); await page.locator(".storage-facts").evaluate(el => { el.querySelectorAll("dd")[1]!.textContent = "80 KB / 3.0 GB"; }); }
+    if (state === "advanced") { await expect(page.locator(".storage-facts")).not.toContainText("Checking"); await expect(page.getByText(`Version ${APP_VERSION} · Local database schema ${DATABASE_SCHEMA_VERSION} · Backup format 1`)).toBeVisible(); await page.locator(".storage-facts").evaluate(el => { el.querySelectorAll("dd")[1]!.textContent = "80 KB / 3.0 GB"; }); }
   }
   await page.evaluate(() => document.fonts.ready); await page.mouse.move(0, 0);
   if (state !== "replace-confirm") await page.evaluate(() => window.scrollTo(0, 0));
-  await expect(page).toHaveScreenshot(`data-${state}.png`, { fullPage: state !== "replace-confirm" });
+  await expect(page).toHaveScreenshot(`data-${state}.png`, { fullPage: state !== "replace-confirm", ...(state === "advanced" ? { maxDiffPixelRatio: 0, threshold: 0 } : {}) });
 });
