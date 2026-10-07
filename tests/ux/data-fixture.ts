@@ -3,6 +3,11 @@ import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { zipSync, strToU8 } from "fflate";
 import { openRoute } from "./helpers";
+import { PORTABLE_TABLE_NAMES } from "../../src/data/portable-tables";
+
+export function portableFixtureData(data: Record<string, unknown[]>): Record<string, unknown[]> {
+  return Object.fromEntries(PORTABLE_TABLE_NAMES.filter(name => Object.hasOwn(data, name)).map(name => [name, data[name]!]));
+}
 
 export async function dataSnapshot(page: Page): Promise<Record<string, unknown[]>> {
   return page.evaluate(async () => {
@@ -27,6 +32,7 @@ export async function seedBackupData(page: Page) {
   });
 }
 export function fixtureBackup(data: Record<string, unknown[]>, changes: Record<string, unknown> = {}) {
+  data = portableFixtureData(data);
   const payload = strToU8(JSON.stringify(data));
   return Buffer.from(zipSync({ "data.json": payload, "manifest.json": strToU8(JSON.stringify({ format: "mdd-backup", formatVersion: 1, appVersion: "0.8.0", schemaVersion: 1, exportedAt: "2026-04-24T05:00:00.000Z", files: [{ path: "data.json", bytes: payload.byteLength, sha256: createHash("sha256").update(payload).digest("hex") }], encryption: null, ...changes })) }));
 }

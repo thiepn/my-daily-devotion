@@ -174,6 +174,18 @@ function reflectionOperation(database: MddDatabase): DraftSaveOperation {
   } };
 }
 describe("atomic explicit-save commitment", () => {
+  it("never forks copy-only leftover writing into another prayer creation", async () => {
+    const database = await setup(), repository = new DraftRepository(database);
+    const draft = await snapshot(database, { kind: "prayer-create", localDate: "2026-10-07", body: "Create once", administration: blankPrayerAdministration("2026-10-07"), sourceReflection: null, references: [], omitSource: true, omitReferences: true });
+    await repository.persist(draft, null);
+    const newer = structuredClone(draft); newer.metadata.generation = 2; newer.contents.generation = 2;
+    if (newer.contents.payload.kind === "prayer-create") newer.contents.payload.body = "Copyable newer wording";
+    await repository.persist(newer, 1);
+    await saveJournalDraft(database, { snapshot: draft, operationId: crypto.randomUUID() });
+    await expect(repository.forkForRecovery(draft.metadata.id, 2)).rejects.toMatchObject({ code: "retired" });
+    expect(await repository.read(draft.metadata.id)).toMatchObject({ kind: "active", snapshot: { contents: { payload: { body: "Copyable newer wording" } } } });
+    expect(await database.prayers.count()).toBe(1); expect(await database.activityEvents.count()).toBe(1);
+  });
   it("checkpoints newer memory text after commitment without removing the operation marker", async () => {
     const database = await setup(), repository = new DraftRepository(database), draft = await snapshot(database);
     await repository.persist(draft, null);

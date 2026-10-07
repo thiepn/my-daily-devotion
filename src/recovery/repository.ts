@@ -62,6 +62,7 @@ export class DraftRepository {
       const source = await this.read(id);
       if (source.kind !== "active") throw new DraftError("invalid", "This draft cannot be adopted automatically.");
       if (source.previousJournal) throw new DraftError("epoch", "Writing from a previous journal needs explicit review.");
+      if (source.snapshot.metadata.commitment?.disposition === "copy-only") throw new DraftError("retired", "This action was already recorded. Keep the leftover writing for copying; do not repeat it.");
       if (source.snapshot.metadata.generation !== generation) throw new DraftError("stale", "This draft changed before recovery.");
       const snapshot: DraftSnapshot = { metadata: { ...source.snapshot.metadata, id: forkId, createdAt: now, updatedAt: now, generation: 1, commitment: null, lineage: { sourceDraftId: id, sourceGeneration: generation } }, contents: { ...source.snapshot.contents, id: forkId, generation: 1 } };
       await this.database.editorDrafts.add(snapshot.metadata);

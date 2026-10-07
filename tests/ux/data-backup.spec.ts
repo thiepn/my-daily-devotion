@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { strFromU8, unzipSync } from "fflate";
 import { openRoute, expectNoAxeViolations, expectNoHorizontalOverflow } from "./helpers";
-import { chooseBackup, dataSnapshot, downloadBackup, fixtureBackup, reviewBackup, seedBackupData } from "./data-fixture";
+import { chooseBackup, dataSnapshot, downloadBackup, fixtureBackup, portableFixtureData, reviewBackup, seedBackupData } from "./data-fixture";
 
 test.beforeEach(async ({ page }) => { await page.clock.setFixedTime(new Date("2026-04-24T07:00:00+02:00")); });
 
@@ -9,7 +9,7 @@ test("readonly browsing, export, review and cancellation preserve every live rec
   await seedBackupData(page); const before = await dataSnapshot(page);
   await page.getByText("Privacy", { exact: true }).click(); await page.getByText("Advanced", { exact: true }).click();
   const bytes = await downloadBackup(page);
-  expect(JSON.parse(strFromU8(unzipSync(bytes)["data.json"]!))).toEqual(before);
+  expect(JSON.parse(strFromU8(unzipSync(bytes)["data.json"]!))).toEqual(portableFixtureData(before));
   await expect(page.locator(".backup-receipt")).toContainText("Plain");
   await reviewBackup(page, bytes);
   await expect(page.locator(".backup-counts").getByText("Prayers", { exact: true }).locator("..")).toContainText("2");
@@ -202,6 +202,6 @@ test("restore locks rapid submissions and guards navigation during commitment", 
   expect(await page.evaluate(() => { const event = new Event("beforeunload", { cancelable: true }); window.dispatchEvent(event); return event.defaultPrevented; })).toBe(true);
   await page.evaluate(() => (window as unknown as { releaseCommit: () => void }).releaseCommit());
   await expect(page.locator(".restore-result")).toBeVisible();
-  expect(await page.evaluate(() => (window as unknown as { clears: number }).clears)).toBe(Object.keys(before).length);
+  expect(await page.evaluate(() => (window as unknown as { clears: number }).clears)).toBe(Object.keys(portableFixtureData(before)).length);
   expect(await dataSnapshot(page)).toEqual(before);
 });
