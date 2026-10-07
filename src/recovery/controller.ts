@@ -115,14 +115,13 @@ export class DurableDraftController {
     return this.serial(async () => {
       if (!pending) throw new DraftError("invalid", "There are no changed values to save.");
       if (this.snapshot?.metadata.commitment?.disposition === "copy-only") throw new DraftError("operation", "This action was already recorded. Copy the remaining writing instead of repeating it.");
-      try { await this.keep(pending); } catch (reason) {
-        // A valid explicit save can succeed even if the first separate draft
-        // checkpoint failed. Existing stale generations must not be bypassed.
-        this.report("failed", reason); if (this.snapshot) throw reason;
-      }
-      const submitted = this.snapshot ?? await this.candidate(pending.payload, pending.generation);
+      try { await this.keep(pending); } catch (reason) { this.report("failed", reason); }
+      // The atomic adapter checks the exact known kept generation again. It can
+      // save valid writing without first writing a private body that failed.
+      const expectedKeptGeneration = this.snapshot?.metadata.generation ?? null;
+      const submitted = this.snapshot?.metadata.generation === pending.generation ? this.snapshot : await this.candidate(pending.payload, pending.generation);
       if (this.operation?.generation !== pending.generation) this.operation = { generation: pending.generation, id: crypto.randomUUID() };
-      const result = await save({ snapshot: submitted, operationId: this.operation.id });
+      const result = await save({ snapshot: submitted, operationId: this.operation.id, expectedKeptGeneration });
       // Domain commitment has succeeded. A recovery acknowledgment failure is
       // reported independently and must never turn into Retry mutation.
       try {

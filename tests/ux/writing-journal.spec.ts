@@ -266,6 +266,20 @@ test("reflection draft recovery preserves the full incoming range and original d
   expect((saved.find((row: any) => row[0] === "scriptureLinks") as any)[1][0]).toMatchObject({ translationId: "BSB", startVerseKey: "JHN.3.16", endVerseKey: "JHN.3.18" });
 });
 
+test("explicit reflection save uses the latest text after a later private checkpoint fails", async ({ page }) => {
+  await openRoute(page, "/today/reflection/2026-04-24"); await page.getByLabel("Daily reflection").fill("Older kept text.");
+  await expect(page.locator(".draft-status")).toHaveText("Draft kept on this device");
+  await page.evaluate(() => { const original = IDBObjectStore.prototype.put; IDBObjectStore.prototype.put = function (...args) { if (this.name === "editorDraftContents") throw new DOMException("Checkpoint unavailable", "QuotaExceededError"); return original.apply(this, args); }; });
+  await page.getByLabel("Daily reflection").fill("The latest explicitly saved reflection.");
+  await expect(page.getByRole("alert")).toContainText("Draft could not be kept");
+  await page.getByRole("button", { name: "Save reflection", exact: true }).click();
+  await expect(page.locator(".reflection-status")).toContainText("saved locally");
+  const data = await writingSnapshot(page);
+  expect((data.find((row: any) => row[0] === "reflections") as any)[1][0]).toMatchObject({ bodyMd: "The latest explicitly saved reflection." });
+  expect((data.find((row: any) => row[0] === "activityEvents") as any)[1].filter((event: any) => event.type === "REFLECTION_CREATED")).toHaveLength(1);
+  expect((data.find((row: any) => row[0] === "editorDraftContents") as any)[1]).toHaveLength(0);
+});
+
 test("a recovered reflection removed in another tab stays copyable without recreation", async ({ page, context }) => {
   await seedWriting(page, "reflection"); await page.getByLabel("Daily reflection").fill("Copy this even if the saved record is removed.");
   await expect(page.locator(".draft-status")).toHaveText("Draft kept on this device");

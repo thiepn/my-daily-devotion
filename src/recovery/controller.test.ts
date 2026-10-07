@@ -86,6 +86,23 @@ describe("serialized durable editor controller", () => {
     const next = await controller.commit(context => saveJournalDraft(database, context), rebase);
     expect(next.reflection?.revision).toBe(2); expect(await database.activityEvents.count()).toBe(1);
   });
+  it("saves the latest valid writing when an existing draft's subsequent checkpoint fails", async () => {
+    const { database, controller } = await setup(); controller.stage(payload("Older kept text")); await controller.flush();
+    vi.spyOn(DraftRepository.prototype, "persist").mockRejectedValue(new Error("Private checkpoint unavailable"));
+    controller.stage(payload("Newer explicit save")); await expect(controller.flush()).rejects.toThrow("Private checkpoint unavailable");
+    const saved = await controller.commit(context => saveJournalDraft(database, context), rebase);
+    expect(saved.reflection?.bodyMd).toBe("Newer explicit save");
+    expect((await database.editorDrafts.get(controller.getId()!))?.generation).toBe(2);
+    expect(await database.editorDraftContents.count()).toBe(0); expect(await database.activityEvents.count()).toBe(1);
+  });
+  it("does not silently save or recreate a known draft that disappeared", async () => {
+    const { database, controller } = await setup(); controller.stage(payload("Known writing")); await controller.flush();
+    const id = controller.getId()!;
+    await database.transaction("rw", database.editorDrafts, database.editorDraftContents, async () => { await database.editorDrafts.delete(id); await database.editorDraftContents.delete(id); });
+    controller.stage(payload("Latest writing stays in memory"));
+    await expect(controller.commit(context => saveJournalDraft(database, context), rebase)).rejects.toThrow("no longer available");
+    expect(await database.reflections.count()).toBe(0); expect(await database.activityEvents.count()).toBe(0); expect(await database.editorDrafts.count()).toBe(0);
+  });
   it("makes a recovered fork explicit and keeps the source until a successful save", async () => {
     const { database, controller } = await setup(); controller.stage(payload("Recovered writing")); await controller.flush();
     const id = controller.getId()!, other = new DurableDraftController(database, { returnTo: "/today", reading: null }); controllers.push(other);

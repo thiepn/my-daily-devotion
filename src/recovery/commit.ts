@@ -4,7 +4,12 @@ import { readJournalEpoch } from "./journal";
 import { DraftError, type DraftCommitMarker, type DraftPayload, type DraftSnapshot, type RecordBaseline } from "./types";
 import { hasValidDraftTarget, isDraftContents, isDraftMetadata } from "./validation";
 
-export interface DraftSaveContext { snapshot: DraftSnapshot; operationId: string }
+export interface DraftSaveContext {
+  snapshot: DraftSnapshot; operationId: string;
+  /** Explicit editor save may retire its known older checkpoint when a separate
+   * private-body checkpoint failed. No other generation may be bypassed. */
+  expectedKeptGeneration?: number | null;
+}
 export interface CommittedDraftSaveResult { kind: "committed"; marker: DraftCommitMarker; replayed: boolean; newerWriting: boolean }
 /** Storage-level contract. Editor adapters supply their existing domain operation
  * and target/revision checks; no editor may invoke this from recovery browsing. */
@@ -17,20 +22,21 @@ export interface DraftSaveOperation {
 }
 
 export async function saveWithDraft(database: MddDatabase, context: DraftSaveContext, operation: DraftSaveOperation): Promise<CommittedDraftSaveResult> {
-  const { snapshot, operationId } = structuredClone(context);
+  const { snapshot, operationId, expectedKeptGeneration } = structuredClone(context);
   if (!isDraftMetadata(snapshot.metadata) || !isDraftContents(snapshot.contents) || snapshot.metadata.id !== snapshot.contents.id || snapshot.metadata.generation !== snapshot.contents.generation || !hasValidDraftTarget(snapshot.metadata, snapshot.contents.payload) || snapshot.metadata.state !== "active" || !/^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(operationId)) throw new DraftError("invalid", "Invalid draft save context.");
   const committedAt = new Date().toISOString();
   const tables = [...operation.tables.map(name => database.table(name)), database.editorDrafts, database.editorDraftContents, database.draftJournalState];
   return database.transaction("rw", tables, async () => {
     if (snapshot.metadata.journalEpoch !== await readJournalEpoch(database)) throw new DraftError("epoch", "Review this previous-journal draft before saving.");
     const current = await database.editorDrafts.get(snapshot.metadata.id);
+    if (!current && expectedKeptGeneration != null) throw new DraftError("missing", "This kept draft is no longer available. Keep the writing open for review.");
     if (current && !isDraftMetadata(current)) throw new DraftError("invalid", "The draft metadata is unavailable.");
     if (current?.commitment?.operationId === operationId) {
       if (current.commitment.submittedGeneration !== snapshot.metadata.generation || current.commitment.targetKey !== snapshot.metadata.targetKey) throw new DraftError("operation", "This operation was already used for different writing.");
       return { kind: "committed", marker: current.commitment, replayed: true, newerWriting: current.state === "active" };
     }
     if (current?.state === "discarded" || current?.state === "committed") throw new DraftError("retired", "This draft was already retired.");
-    if (current && (current.journalEpoch !== snapshot.metadata.journalEpoch || current.kind !== snapshot.metadata.kind || current.targetKey !== snapshot.metadata.targetKey || current.generation < snapshot.metadata.generation)) throw new DraftError("stale", "Keep the submitted draft before saving.");
+    if (current && (current.journalEpoch !== snapshot.metadata.journalEpoch || current.kind !== snapshot.metadata.kind || current.targetKey !== snapshot.metadata.targetKey || JSON.stringify(current.lineage) !== JSON.stringify(snapshot.metadata.lineage) || (current.generation < snapshot.metadata.generation && expectedKeptGeneration !== current.generation))) throw new DraftError("stale", "Keep the submitted draft before saving.");
     const kept = current ? await database.editorDraftContents.get(current.id) : null;
     if (current && (!isDraftContents(kept) || kept.generation !== current.generation)) throw new DraftError("invalid", "The kept draft generation is unavailable.");
     if (current?.generation === snapshot.metadata.generation && JSON.stringify(kept?.payload) !== JSON.stringify(snapshot.contents.payload)) throw new DraftError("stale", "The submitted writing differs from its kept generation.");
@@ -39,7 +45,7 @@ export async function saveWithDraft(database: MddDatabase, context: DraftSaveCon
     const outcome = await operation.save(snapshot.contents.payload);
     const newerWriting = Boolean(current && current.generation > snapshot.metadata.generation);
     const marker: DraftCommitMarker = { operationId, submittedGeneration: snapshot.metadata.generation, targetKey: snapshot.metadata.targetKey, committedAt, records: outcome.records, disposition: operation.rebase ? outcome.disposition : "copy-only" };
-    const metadata = { ...(current ?? snapshot.metadata), updatedAt: committedAt, commitment: marker, state: newerWriting ? "active" as const : "committed" as const };
+    const metadata = { ...(current ?? snapshot.metadata), generation: Math.max(current?.generation ?? 0, snapshot.metadata.generation), updatedAt: committedAt, commitment: marker, state: newerWriting ? "active" as const : "committed" as const };
     if (newerWriting && kept) {
       const contents = { ...kept, payload: operation.rebase ? operation.rebase(kept.payload, outcome.records) : kept.payload };
       if (!isDraftContents(contents) || contents.payload.kind !== metadata.kind) throw new DraftError("invalid", "The updated recovery baseline is invalid.");
