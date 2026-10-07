@@ -21,6 +21,7 @@
 .scripture-run.is-selected.is-highlighted .scripture-text { background: var(--color-accent-soft); text-decoration: underline; text-decoration-color: var(--color-accent); text-underline-offset: .2em; }
 .scripture-run.is-plan-reading .verse-number { color: var(--color-accent-strong); }
 .scripture-run.is-red-letter .scripture-text { color: var(--color-red-letter); }
+.scripture-run.is-red-letter.is-selected .scripture-text { color: var(--color-red-letter-selected); }
 .scripture-run.emphasis-bd .scripture-text, .scripture-run.emphasis-bdit .scripture-text { font-weight: 700; }
 .scripture-run.emphasis-em .scripture-text, .scripture-run.emphasis-it .scripture-text, .scripture-run.emphasis-bdit .scripture-text { font-style: italic; }
 /* Keep the numeral beside its own verse; the generous hit area extends before it. */
