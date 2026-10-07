@@ -1,7 +1,7 @@
 export const DATA_SECTIONS = ["backups", "restore", "appearance", "privacy", "advanced"] as const;
 export type DataSection = typeof DATA_SECTIONS[number];
 export function safeDataReturn(value: string | null): string {
-  if (!value || !/^\/(today|bible|prayer|history|search|welcome)(?:[/?#]|$)/.test(value) || /[\\\x00-\x1f]/.test(value)) return "/today";
+  if (!value || !/^\/(today|bible|prayer|history|search|welcome|recovery)(?:[/?#]|$)/.test(value) || /[\\\x00-\x1f]/.test(value)) return "/today";
   return value;
 }
 export function parseDataContext(search: string) {

@@ -25,3 +25,4 @@
 @import "./data.css" layer(screens);
 @import "./archive.css" layer(screens);
 @import "./plan.css" layer(screens);
+@import "./recovery.css" layer(screens);

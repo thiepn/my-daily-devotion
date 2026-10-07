@@ -1,0 +1,57 @@
+import type { MddDatabase } from "../data/database";
+import type { DraftMetadata, DraftPayload, DraftReadResult } from "./types";
+import { isDraftReturnRoute } from "./validation";
+
+export const DRAFT_LABELS: Record<DraftPayload["kind"], string> = {
+  reflection: "Reflection", "verse-note": "Verse note", "prayer-create": "New prayer",
+  "prayer-wording": "Prayer wording", "prayer-update": "Prayer update", "prayer-encouragement": "Encouragement",
+  "prayer-answer": "Answer note", "prayer-settings": "Prayer details", "collection-create": "New collection",
+  "collection-rename": "Collection name", "collection-item-note": "Collection note", "person-create": "New person",
+  "person-edit": "Person details", "category-create": "New category", "category-edit": "Category name",
+};
+
+export function parseRecoveryContext(search: string) {
+  const params = new URLSearchParams(search);
+  const raw = params.get("shown"), value = raw && /^\d+$/.test(raw) ? Number(raw) : 20;
+  const shown = Number.isSafeInteger(value) && value >= 20 && value <= 100_000 ? Math.ceil(value / 20) * 20 : 20;
+  const candidate = params.get("return");
+  const returnTo = isDraftReturnRoute(candidate) ? candidate : "/data";
+  return { shown, returnTo };
+}
+
+export function recoveryUrl(id: string | null, returnTo: string, shown = 20) {
+  return `/recovery${id ? `/${encodeURIComponent(id)}` : ""}?${new URLSearchParams({ return: returnTo, shown: String(shown) })}`;
+}
+
+/** Metadata only: names, request bodies and notes never appear in the directory. */
+export function draftTargetLabel(metadata: DraftMetadata) {
+  const target = metadata.targetKey.slice(metadata.kind.length + 1);
+  if (metadata.kind === "reflection") return target;
+  if (metadata.kind === "verse-note") return target.replace(/^BSB:/, "BSB · ").replace(":", " – ");
+  return metadata.kind.endsWith("-create") ? "Unfinished entry" : "Saved entry";
+}
+
+export interface DraftField { label: string; text: string }
+export function draftFields(payload: DraftPayload): DraftField[] {
+  switch (payload.kind) {
+    case "reflection": return [{ label: "Your reflection", text: payload.bodyMd }];
+    case "verse-note": return [{ label: "Your verse note", text: payload.bodyMd }];
+    case "prayer-create": case "prayer-wording": case "prayer-update": case "prayer-encouragement": case "prayer-answer": return [{ label: "Your writing", text: payload.body }];
+    case "prayer-settings": return Object.entries(payload.administration).map(([label, value]) => ({ label: ({ personId: "Person ID", categoryId: "Category ID", scheduleMode: "Schedule", weekdays: "Weekdays", intervalDays: "Interval days", anchorDate: "Starting date", monthlyDay: "Day of month", onDate: "Pray on date", eventDate: "Event date", focusUntil: "Focus until" } as Record<string, string>)[label] ?? label, text: Array.isArray(value) ? value.join(", ") : String(value ?? "") }));
+    case "person-create": case "person-edit": return [{ label: "Name", text: payload.name }, { label: "Relationship", text: payload.relationship }, { label: "Notes", text: payload.notes }];
+    case "collection-item-note": return [{ label: "Collection note", text: payload.note }];
+    default: return [{ label: "Name", text: payload.name }];
+  }
+}
+
+/** Reads only; the editor remains responsible for explicit comparison and fork.
+ * No session start/reconciliation, category seeding or domain mutation here. */
+export async function reflectionRecoveryDestination(database: MddDatabase, result: DraftReadResult): Promise<string | null> {
+  if (result.kind !== "active" || result.previousJournal || result.snapshot.metadata.commitment?.disposition === "copy-only") return null;
+  const payload = result.snapshot.contents.payload;
+  if (payload.kind !== "reflection") return null; // Other editors are integrated in separate slices.
+  const rows = await database.reflections.where("localDate").equals(payload.localDate).toArray();
+  if (payload.baseline ? !rows.some(row => row.id === payload.baseline!.id && !row.deletedAt) : rows.some(row => row.deletedAt)) return null;
+  const params = new URLSearchParams({ draft: result.snapshot.metadata.id, return: result.snapshot.metadata.context.returnTo });
+  return `/today/reflection/${payload.localDate}?${params}`;
+}

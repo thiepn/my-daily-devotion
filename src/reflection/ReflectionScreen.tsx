@@ -98,6 +98,20 @@ function ReflectionEditor({ localDate }: { localDate: LocalDate }) {
   }, [localDate, attempt]);
 
   useEffect(() => {
+    const draftId = params.get("draft");
+    if (!draftId || loading || loadError) return;
+    let cancelled = false;
+    void new DraftRepository(db).read(draftId).then(item => {
+      if (cancelled) return;
+      if (item.kind !== "active" || item.snapshot.contents.payload.kind !== "reflection" || item.snapshot.contents.payload.localDate !== localDate) {
+        setRecoveryError("This kept reflection is no longer available here. Your saved writing has not changed."); return;
+      }
+      setReview({ snapshot: item.snapshot, previousJournal: item.previousJournal });
+    }).catch(() => { if (!cancelled) setRecoveryError("Could not open kept writing. Your saved reflection remains available."); });
+    return () => { cancelled = true; };
+  }, [localDate, loading, loadError, params]);
+
+  useEffect(() => {
     if (loading || loadError) return;
     const subscription = liveQuery(async () => {
       const item = await repository.getDaily(localDate);

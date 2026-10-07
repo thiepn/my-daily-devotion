@@ -1,0 +1,12 @@
+.recovery-journal { max-width: 760px; margin-inline: auto; }
+.recovery-directory { list-style: none; padding: 0; margin-block: 1.5rem; }
+.recovery-directory li { border-bottom: 1px solid var(--color-line); }
+.recovery-directory a { display: flex; justify-content: space-between; align-items: center; gap: 1rem; min-height: 44px; padding-block: 1rem; color: var(--color-ink); text-decoration: none; }
+.recovery-directory strong { font-family: var(--font-display); font-size: 1.1rem; }
+.recovery-directory small { display: block; margin-top: .3rem; color: var(--color-ink-faint); overflow-wrap: anywhere; }
+.recovery-pagination { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; justify-content: space-between; }
+.recovery-empty, .recovery-writing { padding: 1.25rem; margin-block: 1.5rem; }
+.recovery-writing label { display: block; margin-bottom: 1.5rem; }
+.recovery-writing textarea { display: block; width: 100%; min-height: 170px; margin-block: .75rem; font-family: var(--font-reading); font-size: 1.05rem; line-height: 1.7; resize: vertical; }
+.recovery-kept-time { font-size: .85rem; line-height: 1.7; color: var(--color-ink-faint); }
+.recovery-journal .grace-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; text-decoration: none; }
