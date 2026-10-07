@@ -121,7 +121,10 @@ const archive = await readFile(artifactPath);
 const archiveSha = createHash("sha256").update(archive).digest("hex");
 assert.equal(releaseManifest.product, "My Daily Devotion");
 assert.equal(releaseManifest.version, pkg.version);
-assert.equal(releaseManifest.databaseSchemaVersion, 1);
+// The reviewed contract above locks the additive recovery migration and the
+// unchanged v1 domain/portable schemas. The archive must declare that physical
+// schema accurately rather than retain the historical release's version.
+assert.equal(releaseManifest.databaseSchemaVersion, Number(/DATABASE_SCHEMA_VERSION\s*=\s*(\d+)/.exec(schema)?.[1]));
 assert.equal(releaseManifest.sha256, archiveSha);
 assert.equal(sums.trim(), `${archiveSha}  ${releaseManifest.artifact}`);
 assert.equal(releaseManifest.archiveBytes, archive.byteLength);
