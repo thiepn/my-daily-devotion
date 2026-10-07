@@ -64,8 +64,10 @@ describe("serialized durable editor controller", () => {
     const { database, controller } = await setup(); const original = DraftRepository.prototype.persist;
     const failure = vi.spyOn(DraftRepository.prototype, "persist").mockRejectedValueOnce(new Error("Storage unavailable"));
     controller.stage(payload("Keep me")); await expect(controller.flush()).rejects.toThrow("Storage unavailable"); const id = controller.getId();
-    expect(controller.getState()).toEqual({ status: "failed", error: "Storage unavailable" }); failure.mockImplementation(original);
-    await controller.flush(); expect(controller.getId()).toBe(id); expect((await database.editorDraftContents.toArray())[0]?.payload).toEqual(payload("Keep me"));
+    expect(controller.getState()).toEqual({ status: "failed", error: "Storage unavailable" });
+    controller.stage(payload("Keep the latest too")); expect(controller.getState()).toEqual({ status: "failed", error: "Storage unavailable" });
+    failure.mockImplementation(original);
+    await controller.flush(); expect(controller.getId()).toBe(id); expect((await database.editorDraftContents.toArray())[0]?.payload).toEqual(payload("Keep the latest too"));
   });
   it("allows explicit save after a failed first draft checkpoint without duplicate activity", async () => {
     const { database, controller } = await setup(); vi.spyOn(DraftRepository.prototype, "persist").mockRejectedValue(new Error("Separate checkpoint failed"));
@@ -102,6 +104,12 @@ describe("serialized durable editor controller", () => {
     controller.stage(payload("Latest writing stays in memory"));
     await expect(controller.commit(context => saveJournalDraft(database, context), rebase)).rejects.toThrow("no longer available");
     expect(await database.reflections.count()).toBe(0); expect(await database.activityEvents.count()).toBe(0); expect(await database.editorDrafts.count()).toBe(0);
+  });
+  it("keeps domain-save failures separate from an acknowledged recovery checkpoint", async () => {
+    const { database, controller } = await setup(); controller.stage(payload("Kept writing")); await controller.flush();
+    await expect(controller.commit(async () => { throw new Error("Domain save unavailable"); })).rejects.toThrow("Domain save unavailable");
+    expect(controller.getState().status).toBe("kept"); expect(await database.reflections.count()).toBe(0);
+    expect((await new DraftRepository(database).read(controller.getId()!)).kind).toBe("active");
   });
   it("makes a recovered fork explicit and keeps the source until a successful save", async () => {
     const { database, controller } = await setup(); controller.stage(payload("Recovered writing")); await controller.flush();

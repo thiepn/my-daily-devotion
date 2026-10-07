@@ -33,7 +33,9 @@ export class DurableDraftController {
   getId = () => this.snapshot?.metadata.id ?? this.identity?.id;
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   private report(status: DraftStatus, reason?: unknown) {
-    this.state = { status, error: reason instanceof Error ? reason.message : reason ? "Could not keep this draft. Keep this page open." : "" };
+    const error = reason instanceof Error ? reason.message : reason ? "Could not keep this draft. Keep this page open." : "";
+    if (this.state.status === status && this.state.error === error) return;
+    this.state = { status, error };
     if (!this.detached) for (const listener of this.listeners) listener();
   }
   private serial<T>(action: () => Promise<T>): Promise<T> {
@@ -44,7 +46,9 @@ export class DurableDraftController {
     if (this.detached) return;
     if (JSON.stringify(this.pending?.payload ?? this.snapshot?.contents.payload) === JSON.stringify(payload)) return;
     this.pending = { payload: structuredClone(payload), generation: ++this.generation };
-    this.report(this.snapshot?.metadata.commitment?.disposition === "copy-only" ? "copy-only" : "keeping");
+    // Keep a settled failure visible while typing instead of removing and
+    // re-announcing its alert on every subsequent checkpoint attempt.
+    if (this.state.status !== "failed") this.report(this.snapshot?.metadata.commitment?.disposition === "copy-only" ? "copy-only" : "keeping");
     clearTimeout(this.debounce);
     this.debounce = setTimeout(() => { void this.flush().catch(() => undefined); }, 500);
     this.maximum ??= setTimeout(() => { void this.flush().catch(() => undefined); }, 2000);
@@ -102,10 +106,16 @@ export class DurableDraftController {
           // The retired ID must never accept a late checkpoint. Keep the newer
           // memory generation as an independent writer and prevent navigation.
           this.snapshot = null; this.writer = null; this.identity = null;
+          this.report("keeping");
           throw new DraftError("stale", "Newer writing arrived while discarding. Keep it open.");
         }
         this.snapshot = null; this.writer = null; this.pending = null; this.operation = null; this.identity = null; this.generation = 0; this.report("idle");
-      } catch (reason) { this.report("failed", reason); throw reason; }
+      } catch (reason) {
+        // Discard/removal failure is reported by the explicit action's dialog.
+        // It does not mean a previously acknowledged checkpoint was lost.
+        if (this.pending) queueMicrotask(() => { if (!this.detached) void this.flush().catch(() => undefined); });
+        throw reason;
+      }
     });
   }
   commit<T extends CommittedDraftSaveResult>(save: (context: DraftSaveContext) => Promise<T>, rebase?: Rebase): Promise<T> {
@@ -146,7 +156,7 @@ export class DurableDraftController {
         }
       } catch (reason) { this.report("failed", reason); }
       return result;
-    }).catch(reason => { this.report("failed", reason); throw reason; }).finally(() => { this.committing = false; });
+    }).finally(() => { this.committing = false; });
   }
   /** Cancel timers, not transactions. Unload remains best-effort; an already
    * acknowledged draft is the restart guarantee, not asynchronous cleanup. */
