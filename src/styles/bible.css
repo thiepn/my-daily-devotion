@@ -44,6 +44,10 @@
 .grace-bible .verse-note-editor textarea { display: block; width: 100%; min-height: 7rem; padding: 12px; border: 1px solid var(--color-line-strong); border-radius: var(--radius-sm); color: var(--color-ink); background: var(--color-canvas); font-family: var(--font-reading); font-size: 1rem; line-height: 1.65; resize: vertical; }
 .grace-bible .verse-note-editor-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
 .grace-bible .verse-note-editor-actions button:first-child { color: var(--color-action-on); background: var(--color-accent-strong); }
+.grace-bible .verse-note-editor .journal-conflict button,
+.grace-bible .verse-note-editor .journal-notice button,
+.grace-bible .verse-note-editor > button { min-height: 44px; padding: 8px 12px; margin: 4px 4px 0 0; border: 1px solid var(--color-line-strong); border-radius: var(--radius-sm); color: var(--color-ink); background: var(--color-surface); font-family: var(--font-ui); font-size: .8rem; line-height: 1.5; cursor: pointer; }
+.grace-bible .verse-note-editor .draft-status { margin: 8px 0; font-family: var(--font-ui); font-size: .75rem; line-height: 1.5; }
 .grace-bible button:disabled { cursor: default; opacity: .55; }
 .grace-bible .reader-status { margin: 8px 4px 0; color: var(--color-ink-soft); font-size: .76rem; line-height: 1.5; }
 .grace-bible .reader-status:empty { display: none; }
