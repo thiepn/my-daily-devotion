@@ -115,6 +115,7 @@ test("changed or deleted requests keep answer writing until explicit continuatio
   await seedFocusedPrayer(page); await page.getByRole("button", { name: "Mark answered", exact: true }).click(); await page.getByLabel("What happened?", { exact: false }).fill("Keep this note.");
   await changeRequest(page, { deletedAt: "2026-04-24T06:00:00.000Z" });
   await expect(page.getByLabel("Unsaved answer note")).toHaveValue("Keep this note."); await expect(page.locator(".session-request-text")).toHaveCount(0);
+  await expect(page.locator('.draft-status')).toHaveText('Draft kept on this device');
   const before = await writingSnapshot(page); await page.evaluate(() => window.dispatchEvent(new Event("focus"))); expect(await writingSnapshot(page)).toEqual(before);
   await page.getByRole("button", { name: "Continue session", exact: true }).click(); await page.getByRole("button", { name: "Discard and continue" }).click();
   await expect(page.locator(".session-heading-top")).toContainText("Request 2 of 3"); const after = await writingSnapshot(page);
