@@ -1,4 +1,4 @@
-# Morning Grace 1.3.0 release checklist
+# Current release checklist — Morning Grace and recovery
 
 This is an operational gate, not a historical assertion that every item has passed. Complete it for the exact proposed release commit and retain the resulting evidence in the integration PR. Merge, deployment and publication require explicit owner authorization.
 
@@ -9,7 +9,8 @@ Ship only from a commit whose complete hosted certification and manual visual re
 - [ ] Review constituent PRs #12–#21 in the integration PR against `main`.
 - [ ] Record the source commit, package version 1.3.0 and known discrepancies.
 - [ ] Verify package, application and service-worker versions agree.
-- [ ] Confirm database schema and portable backup format remain v1.
+- [ ] Record the exact compatibility contracts: original presentation uses database v1; the approved recovery foundation/editor integration uses database v2; domain and ordinary portable backup format/schema remain v1. Do not treat a database downgrade as a safe rollback.
+- [ ] Check the current editor coverage report: Reflection has acknowledged device-local drafts; remaining editors must not promise restart recovery before their integration is certified.
 - [ ] Review old PRs #9–#11 for necessary scoped fixes; do not import their global navigation/CSS changes wholesale. Close superseded PRs only after approved integration.
 - [ ] Inspect the canonical application crops, approved icon and current screenshots together using `docs/VISUAL_AUTHORITY.md`.
 
@@ -35,4 +36,4 @@ Ship only from a commit whose complete hosted certification and manual visual re
 
 ## Operational limits
 
-No automatic deployment on `main` push. This release introduces no accounts, cloud services, schema migration, durable drafts or sync. Unsaved writing remains memory-only. Search, Collections, Reading Plan and dedicated evening artwork remain later roadmap work; record their limitations rather than claiming the entire visual rebuild is complete.
+No automatic deployment on `main` push. The original 1.3.0 integration milestone was presentation-only; Search, Collections, Reading Plan and evening artwork were added in subsequent unmerged changes. Recovery introduces its separately approved migration and editor coverage. Record the contracts and behavior of the actual candidate rather than repeating historical limitations or claiming every editor is durable. Accounts, cloud services and sync remain outside the current offline candidate.

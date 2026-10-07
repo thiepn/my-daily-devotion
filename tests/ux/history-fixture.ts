@@ -14,8 +14,8 @@ export async function seedHistoryJournal(page: Page, options: { count?: number; 
     putEvent('history-reading','READING_COMPLETED','2026-04-24','reading-1',{enrollmentId:'history-plan',assignmentSequence:114,readingIndex:0});
     putEvent('history-request','PRAYER_CREATED','2026-04-23','history-prayer-0');
     tx.objectStore('devotionDays').put({...fields('history-day'),localDate:'2026-04-22',planEnrollmentId:null,startedAt:at,lastActiveAt:at});
-    tx.objectStore('reflections').put({...fields('history-reflection'),localDate:'2026-04-22',devotionDayId:'history-day',bodyMd:'Grateful for His faithfulness in ordinary days.'+(options.long?' Help me remember these moments and carry them with gentleness. '.repeat(40):'')});
-    putEvent('history-reflection-event','REFLECTION_CREATED','2026-04-22','history-reflection');
+    tx.objectStore('reflections').put({...fields('00000000-0000-4000-8000-000000000704'),localDate:'2026-04-22',devotionDayId:'history-day',bodyMd:'Grateful for His faithfulness in ordinary days.'+(options.long?' Help me remember these moments and carry them with gentleness. '.repeat(40):'')});
+    putEvent('history-reflection-event','REFLECTION_CREATED','2026-04-22','00000000-0000-4000-8000-000000000704');
     putEvent('history-answer-event','PRAYER_ANSWERED','2026-04-20','history-prayer-1',{resolutionId:'history-answer'});
     putEvent('history-old-reading','READING_COMPLETED','2026-04-19','reading-2',{enrollmentId:'history-plan',assignmentSequence:109,readingIndex:0});
     for(let i=5;i<(options.count??5);i++){const id=`extra-${String(i).padStart(5,'0')}`;tx.objectStore('reflections').put({...fields(id),localDate:'2026-04-18',devotionDayId:'history-day',bodyMd:`Remembered reflection ${i}. A small kindness.`});putEvent(id,'REFLECTION_CREATED','2026-04-18',id);}
