@@ -8,6 +8,7 @@ export interface PrayerSessionContext {
   invalidSession: boolean;
   depth: PrayerDepth;
   returnTo: string;
+  draftId: string | null;
 }
 
 export function parsePrayerSessionContext(search: string): PrayerSessionContext {
@@ -20,12 +21,14 @@ export function parsePrayerSessionContext(search: string): PrayerSessionContext 
     invalidSession: rawId !== null && !valid,
     depth: Object.hasOwn(PRAYER_DEPTH_TARGETS, requested) ? requested as PrayerDepth : "quick",
     returnTo: safePrayerReturn(params.get("return")),
+    draftId: /^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(params.get("draft")??"")?params.get("draft"):null,
   };
 }
 
-export function prayerSessionUrl({ sessionId, depth = "quick", returnTo = "/prayer" }: { sessionId?: string | undefined; depth?: PrayerDepth; returnTo?: string } = {}): string {
+export function prayerSessionUrl({ sessionId, depth = "quick", returnTo = "/prayer", draftId }: { sessionId?: string | undefined; depth?: PrayerDepth; returnTo?: string; draftId?: string | null } = {}): string {
   const params = new URLSearchParams(sessionId ? { session: sessionId } : { depth });
   params.set("return", safePrayerReturn(returnTo));
+  if(sessionId&&draftId&&/^[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(draftId))params.set("draft",draftId);
   return `/prayer/session?${params}`;
 }
 
