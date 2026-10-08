@@ -98,7 +98,9 @@ jobs:
     name: Reviewed journal image comparisons
     needs: build
     runs-on: windows-2025
-    timeout-minutes: 15
+    # The expanded, single-worker image inventory needs setup/upload time in
+    # addition to its ~14-minute comparison run. Assertions remain unchanged.
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
