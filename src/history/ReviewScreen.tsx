@@ -51,6 +51,6 @@ export function HistoryReviewScreen({ rangeMode = false }: { rangeMode?: boolean
         {result.data.rows.length ? <HistoryFeed rows={result.data.rows} today={localDate} url={url} manifest={manifest} /> : <div className="history-journal-empty"><h2>A quiet chapter.</h2><p>No activity is recorded in these dates. You can choose another period.</p></div>}
         <div className="history-list-footer"><span role="status">Showing {result.data.rows.length} of {result.data.total} entries</span>{result.data.rows.length < result.data.total && <button id="history-review-more" onClick={() => { const next = new URLSearchParams(params); next.set('shown', String(shown + 20)); setParams(next); }}>Show more</button>}</div></>}
     </>}
-    <div className="history-review-links"><Link to={withHistoryReturn(rangeMode ? '/history/review' : `/history/range${range ? `?from=${range.from}&to=${range.to}` : ''}`, url)}>{rangeMode ? 'Weekly review' : 'Choose a date range'}</Link><Link to={withHistoryReturn('/history/calendar', url)}>Browse dates</Link></div>
+    <div className="history-review-links"><Link to={withHistoryReturn(rangeMode ? '/history/review' : `/history/range${range ? `?from=${range.from}&to=${range.to}` : ''}`, url)}>{rangeMode ? 'Weekly review' : 'Choose a date range'}</Link><Link to={withHistoryReturn('/history/calendar', url)}>Browse dates</Link><Link id="history-export" to={withHistoryReturn(`/history/export${range ? `?from=${range.from}&to=${range.to}` : ""}`, url)}>Keep this chapter</Link></div>
   </main>;
 }
