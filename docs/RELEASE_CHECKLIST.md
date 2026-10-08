@@ -6,6 +6,8 @@ Ship only from a commit whose complete hosted certification and manual visual re
 
 ## Candidate and compatibility
 
+Current implemented coverage and exact stacked evidence: [Offline integration status](OFFLINE_INTEGRATION_STATUS.md). Schema-3 recovery, final milestone versions, human/device gates and the resulting main commit's certification remain outstanding; do not reuse a historical presentation-only report as current release approval.
+
 - [ ] Review constituent PRs #12–#21 in the integration PR against `main`.
 - [ ] Record the source commit, package version 1.3.0 and known discrepancies.
 - [ ] Verify package, application and service-worker versions agree.
