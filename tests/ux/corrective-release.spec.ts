@@ -50,7 +50,8 @@ test("stale People notes can be compared without replacing the unsaved draft", a
   await page.getByRole("button", { name:"Edit person",exact:true }).click(); await page.getByLabel("Name",{exact:true}).fill("Anne");
   const other=await context.newPage(); await openRoute(other,"/prayer/people"); await other.locator(".directory-row-toggle").click(); await other.getByRole("button",{name:"Edit person",exact:true}).click();
   await other.getByLabel("Notes",{exact:false}).fill("Newer notes from another tab."); await other.getByRole("button",{name:"Save changes"}).click(); await expect(other.locator(".directory-notes")).toContainText("Newer notes");
-  await page.getByRole("button",{name:"Save changes"}).click(); await expect(page.locator(".journal-status")).toContainText("another tab");
+  await expect(page.getByRole("button",{name:"Save changes"})).toBeDisabled();
+  await expect(page.getByLabel("Name",{exact:true})).toHaveValue("Anne");
   await page.getByRole("button",{name:"Compare versions"}).click(); await expect(page.locator(".directory-versions")).toContainText("Newer notes from another tab.");
   await page.screenshot({path:testInfo.outputPath("conflict-version-review.png")}); await expect(page.getByLabel("Name",{exact:true})).toHaveValue("Anne");
   await page.getByRole("button",{name:"Use saved version"}).click(); await expect(page.getByLabel("Notes",{exact:false})).toHaveValue("Newer notes from another tab.");
