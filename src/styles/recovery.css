@@ -29,4 +29,6 @@
 .removed-record .version-field { margin-block:1rem; }
 .removed-journal button { max-width:100%; white-space:normal; overflow-wrap:anywhere; }
 .removed-journal h1 { overflow-wrap:anywhere; }
+.removed-journal .journal-heading-line { flex-wrap:wrap; }
+.removed-journal .journal-heading-line > div { flex:1 1 240px; }
 @media(max-width:650px) { .version-comparison { grid-template-columns:minmax(0,1fr); } .version-comparison .recovery-writing { margin-block:.5rem; } }
