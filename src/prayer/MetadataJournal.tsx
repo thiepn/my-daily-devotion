@@ -39,6 +39,7 @@ export function MetadataJournal({ kind }: { kind: MetadataKind }) {
   const [removing, setRemoving] = useState<MetadataRecord | null>(null), [removeError, setRemoveError] = useState("");
   const [committed, setCommitted] = useState<MetadataRecord | null>(null);
   const [savedCreation,setSavedCreation]=useState<MetadataRecord|null>(null);
+  const [focusTarget,setFocusTarget]=useState<string|null>(null);
   const alive = useRef(true);
   useEffect(() => { alive.current = true; return () => { alive.current = false; }; }, []);
   const changeEditor = (value: Editor | null) => { editorRef.current = value; setEditor(value); };
@@ -118,6 +119,7 @@ export function MetadataJournal({ kind }: { kind: MetadataKind }) {
     changeEditor({record,baseline:fields(record),value:fields(record)});
   },[query.draft,query.entry,directory.data,editor]);
   usePrayerPosition(url, Boolean(directory.data) && (!query.entry || linked.data !== undefined || Boolean(linked.error)), query.entry, ".metadata-journal");
+  useEffect(()=>{if(!focusTarget||editor||busy)return;const control=document.getElementById(focusTarget);if(control){control.focus();setFocusTarget(null);}},[focusTarget,editor,busy,directory.data]);
   const select = (id: string) => guard.request(() => { clear(); guard.allowNavigation(); setQuery({ entry: query.entry === id ? null : id, prayersShown: null,draft:null }); });
   const begin = (record: MetadataRecord | null) => guard.request(() => {
     clear(); changeEditor({ record, baseline: fields(record), value: fields(record) });
@@ -157,7 +159,7 @@ export function MetadataJournal({ kind }: { kind: MetadataKind }) {
     {deleted ? <label>Your unsaved writing<textarea readOnly value={[editor.value.name, editor.value.relationship, editor.value.notes].filter(Boolean).join("\n\n")} /></label> : null}
     {savedCreation?<div className="journal-notice"><p>This {singular} was saved. Remaining writing is protected separately; creation will not be repeated.</p><button disabled={busy} onClick={()=>{setBusy(true);void kept.controller.adoptCreatedRecord(payload=>rebaseDirectoryDraft(payload,savedCreation)).then(payload=>{if(payload.kind==='person-edit'||payload.kind==='category-edit'){changeEditor({record:savedCreation,baseline:fields(savedCreation),value:{name:payload.name,relationship:'relationship' in payload?payload.relationship:'',notes:'notes' in payload?payload.notes:''}});setCommitted(savedCreation);setSavedCreation(null);setMessage('Remaining writing is ready for an explicit save.');}}).catch(reason=>setMessage(errorText(reason))).finally(()=>setBusy(false));}}>Continue editing saved {singular}</button></div>:null}
     <div className="journal-actions"><button className="grace-primary" disabled={busy || deleted || conflict || Boolean(savedCreation) || !editor.value.name.trim() || Boolean(editor.record && !dirty)} onClick={() => void saveAndClose()}>{busy ? "Saving…" : editor.record ? "Save changes" : "Save " + singular}</button>
-      <button disabled={busy} onClick={() => guard.request(() => { clear(); requestAnimationFrame(() => document.getElementById(editor.record ? "metadata-edit-" + editor.record.id : "metadata-add")?.focus()); })}>Cancel</button></div>
+      <button disabled={busy} onClick={() => guard.request(() => { clear();setFocusTarget(editor.record ? "metadata-edit-" + editor.record.id : "metadata-add"); })}>Cancel</button></div>
     <DraftProtection controller={kept.controller}/>
     <DraftRecovery controller={kept.controller} kind={metadataPayload(kind,editor).kind} {...(editor.record?{targetKey:metadataPayload(kind,editor).kind+":"+editor.record.id}:{})} current={metadataPayload(kind,editor)} returnTo={url} canRecover={!dirty&&!busy&&!deleted} ready={!editor.record||editedRecord.data!==undefined}
       validateRecovery={async source=>{const payload=source.contents.payload;if("baseline" in payload&&payload.baseline){const current=await db[kind].get(payload.baseline.id);if(!current||current.deletedAt)throw new Error("This entry was removed. Keep this writing for copying.");}}}
