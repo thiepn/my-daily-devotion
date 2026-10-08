@@ -3,6 +3,8 @@ import type { DraftMetadata, DraftPayload, DraftReadResult } from "./types";
 import { VerseNoteRepository } from "../data/repositories/verse-notes";
 import { parseVerseKey } from "../scripture/repository";
 import { isDraftReturnRoute } from "./validation";
+import {PrayerSessionRepository} from "../data/repositories/prayer-sessions";
+import {prayerSessionUrl} from "../prayer/session-context";
 
 export const DRAFT_LABELS: Record<DraftPayload["kind"], string> = {
   reflection: "Reflection", "verse-note": "Verse note", "prayer-create": "New prayer",
@@ -42,7 +44,7 @@ export function draftFields(payload: DraftPayload): DraftField[] {
     case "reflection": return [{ label: "Your reflection", text: payload.bodyMd }];
     case "verse-note": return [{ label: "Your verse note", text: payload.bodyMd }, { label: "Scripture", text: `${payload.reference.translationId} · ${payload.reference.startVerseKey} – ${payload.reference.endVerseKey}` }];
     case "prayer-create": return [{ label: "Your writing", text: payload.body }, { label: "Source date", text: payload.localDate }, { label: "Source reflection", text: payload.omitSource ? "Continue without reflection" : payload.sourceReflection ? `${payload.sourceReflection.id} · reviewed revision ${payload.sourceReflection.revision}` : payload.sourceRequest ? "Source awaiting review" : "No reflection" }, { label: "Scripture", text: payload.omitReferences ? "Continue without linked passages" : payload.references.map(reference => `${reference.translationId} · ${reference.startVerseKey} – ${reference.endVerseKey}`).join("\n") }, ...administrationFields(payload)];
-    case "prayer-wording": case "prayer-update": case "prayer-encouragement": case "prayer-answer": return [{ label: "Your writing", text: payload.body }, {label:"Saved request when writing began",text:payload.baseline.body},{label:"Status then",text:payload.baseline.status.toLowerCase()},{label:"Reviewed revision",text:String(payload.baseline.revision)}];
+    case "prayer-wording": case "prayer-update": case "prayer-encouragement": case "prayer-answer": return [{ label: "Your writing", text: payload.body }, {label:"Saved request when writing began",text:payload.baseline.body},{label:"Status then",text:payload.baseline.status.toLowerCase()},{label:"Reviewed revision",text:String(payload.baseline.revision)},...(payload.kind==="prayer-answer"&&payload.session?[{label:"Session date",text:payload.session.localDate}]:[])];
     case "prayer-settings": return administrationFields(payload);
     case "person-create": case "person-edit": return [{ label: "Name", text: payload.name }, { label: "Relationship", text: payload.relationship }, { label: "Notes", text: payload.notes }];
     case "collection-item-note": return [{ label: "Collection note", text: payload.note }];
@@ -65,7 +67,13 @@ export async function reflectionRecoveryDestination(database: MddDatabase, resul
     return `/prayer/${prayer.id}/settings?${params}`;
   }
   if (["prayer-wording", "prayer-update", "prayer-encouragement", "prayer-answer"].includes(payload.kind) && "baseline" in payload && payload.baseline && "status" in payload.baseline) {
-    if (payload.kind === "prayer-answer" && payload.session) return null; // Session adapter ships separately.
+    if (payload.kind === "prayer-answer" && payload.session) {
+      const saved=await new PrayerSessionRepository(database).readState(payload.session.id).catch(()=>null);
+      const pending=saved?.entries.find(entry=>entry.item.outcome===null);
+      if(!saved||saved.session.endedAt||saved.session.localDate!==payload.session.localDate||pending?.item.id!==payload.session.itemId||pending.prayer?.id!==payload.baseline.id||pending.prayer.status!=="ACTIVE")return null;
+      const origin=new URL(result.snapshot.metadata.context.returnTo,"https://mdd.invalid");
+      return prayerSessionUrl({sessionId:saved.session.id,returnTo:origin.pathname==="/prayer/session"?origin.searchParams.get("return")??"/prayer":result.snapshot.metadata.context.returnTo,draftId:result.snapshot.metadata.id});
+    }
     const prayer = await database.prayers.get(payload.baseline.id);
     if (!prayer || prayer.deletedAt || prayer.status !== "ACTIVE" && prayer.status !== "WAITING") return null;
     const origin = new URL(result.snapshot.metadata.context.returnTo,"https://mdd.invalid");

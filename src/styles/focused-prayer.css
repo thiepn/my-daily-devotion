@@ -38,6 +38,7 @@
 .session-answer > label span { color:var(--color-ink-faint); }
 .session-answer .journal-textarea { min-height:10rem; }
 .session-answer .journal-actions, .session-answer > .journal-help { margin:14px 16px; }
+.session-answer .journal-actions > .grace-primary { flex:1 0 min(100%,12rem); }
 .session-answer .journal-notice { margin:16px; }
 .session-answer .journal-notice :is(h3,h4) { font-family:var(--font-reading); }
 .session-answer .journal-notice details p { white-space:pre-wrap; overflow-wrap:anywhere; }

@@ -1,7 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { seedFocusedPrayer, sessionOrigin, sessionRoute } from "./focused-prayer-fixture";
 import { seedPrayerJournal } from "./prayer-fixture";
-import { writingSnapshot } from "./writing-fixture";
+import { writingSnapshot, writingDomainSnapshot } from "./writing-fixture";
 import { expectNoAxeViolations, expectNoHorizontalOverflow, openRoute } from "./helpers";
 
 test.beforeEach(async ({ page }) => { await page.clock.setFixedTime(new Date("2026-04-24T07:00:00+02:00")); });
@@ -61,18 +61,18 @@ test("Prayed, skip and finish record distinct explicit actions once", async ({ p
   const snapshot = await writingSnapshot(page);
   expect(rows(snapshot, "activityEvents").filter(event => event.type === "PRAYER_PRAYED")).toHaveLength(2);
   expect(rows(snapshot, "prayerSessionItems").map(item => item.outcome)).toEqual(["NEXT", "SKIP", "NEXT"]);
-  expect(rows(snapshot, "prayers").find(prayer => prayer.id === "focus-prayer-1").lastPrayedAt).toBeNull();
+  expect(rows(snapshot, "prayers").find(prayer => prayer.id === "00000000-0000-4000-8000-000000009201").lastPrayedAt).toBeNull();
   await page.reload(); await expect(page.getByRole("heading", { name: "Session finished" })).toBeVisible(); expect(await writingSnapshot(page)).toEqual(snapshot);
 });
 
 test("unfinished answers block skipping and navigation without recording", async ({ page }) => {
-  await seedFocusedPrayer(page); const before = await writingSnapshot(page);
+  await seedFocusedPrayer(page); const before = await writingDomainSnapshot(page);
   await page.getByRole("button", { name: "Mark answered", exact: true }).click(); await page.getByLabel("What happened?", { exact: false }).fill("Not ready to record.");
   await page.getByRole("button", { name: "Skip this request" }).click(); await expect(page.getByRole("dialog")).toContainText("has not been recorded");
   await expect(page.getByRole("button", { name: "Keep editing", exact: true })).toBeFocused(); await page.keyboard.press("Escape");
   await expect(page.getByLabel("What happened?", { exact: false })).toHaveValue("Not ready to record.");
   await page.getByRole("link", { name: "Open prayer", exact: true }).click(); await page.getByRole("button", { name: "Discard and continue" }).click();
-  await expect(page.locator(".prayer-request")).toBeVisible(); expect(await writingSnapshot(page)).toEqual(before);
+  await expect(page.locator(".prayer-request")).toBeVisible(); expect(await writingDomainSnapshot(page)).toEqual(before);
   await page.goBack(); await page.getByRole("button", { name: "Mark answered", exact: true }).click(); await expect(page.getByLabel("What happened?", { exact: false })).toHaveValue("");
 });
 
@@ -87,7 +87,7 @@ test("failed answers retain writing and retry commits one resolution", async ({ 
 });
 
 test("ending confirms remaining requests and ended URLs never start another session", async ({ page }) => {
-  await seedFocusedPrayer(page); await openRoute(page, "/prayer/session?session=focus-session&return=%2Ftoday"); await page.getByText("Session options", { exact: true }).click(); await page.getByRole("button", { name: "End session", exact: true }).click();
+  await seedFocusedPrayer(page); await openRoute(page, "/prayer/session?session=00000000-0000-4000-8000-000000009001&return=%2Ftoday"); await page.getByText("Session options", { exact: true }).click(); await page.getByRole("button", { name: "End session", exact: true }).click();
   await expect(page.getByRole("dialog")).toContainText("will not be marked prayed"); await expect(page.getByRole("button", { name: "Keep praying" })).toBeFocused();
   await page.getByRole("dialog").getByRole("button", { name: "End session", exact: true }).click(); await expect(page.getByRole("heading", { name: "Session ended", exact: true })).toBeVisible();
   await expect(page.getByRole("link", { name: "Return to Prayer", exact: true })).toHaveAttribute("href", "#/prayer"); await expect(page.getByRole("link", { name: "Back", exact: true })).toHaveAttribute("href", "#/today");
@@ -101,13 +101,13 @@ test("identified sessions keep date and order across midnight and reload", async
   await page.getByRole("button", { name: "Prayed · Next" }).click(); await expect(page.locator(".session-heading-top")).toContainText("Request 2 of 3");
   const snapshot = await writingSnapshot(page); expect(rows(snapshot, "activityEvents")[0].localDate).toBe("2026-04-24");
   await page.getByRole("link", { name: "Start today’s session" }).click(); await expect(page.locator(".session-date-notice")).toHaveCount(0);
-  const after = await writingSnapshot(page); expect(rows(after, "prayerSessions")).toHaveLength(2); expect(rows(after, "prayerSessions").find(session => session.id === "focus-session").endedAt).not.toBeNull(); expect(rows(after, "prayerSessions").find(session => session.id !== "focus-session").localDate).toBe("2026-04-25");
+  const after = await writingSnapshot(page); expect(rows(after, "prayerSessions")).toHaveLength(2); expect(rows(after, "prayerSessions").find(session => session.id === "00000000-0000-4000-8000-000000009001").endedAt).not.toBeNull(); expect(rows(after, "prayerSessions").find(session => session.id !== "00000000-0000-4000-8000-000000009001").localDate).toBe("2026-04-25");
 });
 
 test("invalid, missing and deleted session URLs never create records", async ({ page }) => {
   await seedFocusedPrayer(page); const before = await writingSnapshot(page);
   for (const id of ["missing", "!invalid", ""]) { await openRoute(page, "/prayer/session?session=" + encodeURIComponent(id)); await expect(page.getByRole("heading", { name: "Session unavailable" })).toBeVisible(); expect(await writingSnapshot(page)).toEqual(before); }
-  await page.evaluate(async () => { const db = await new Promise<IDBDatabase>(resolve => { const r = indexedDB.open("my-daily-devotion"); r.onsuccess = () => resolve(r.result); }); const tx = db.transaction("prayerSessions", "readwrite"), store = tx.objectStore("prayerSessions"), r = store.get("focus-session"); r.onsuccess = () => store.put({ ...r.result, deletedAt: "2026-04-24T06:00:00.000Z", revision: 2 }); await new Promise<void>(resolve => { tx.oncomplete = () => resolve(); }); db.close(); });
+  await page.evaluate(async () => { const db = await new Promise<IDBDatabase>(resolve => { const r = indexedDB.open("my-daily-devotion"); r.onsuccess = () => resolve(r.result); }); const tx = db.transaction("prayerSessions", "readwrite"), store = tx.objectStore("prayerSessions"), r = store.get("00000000-0000-4000-8000-000000009001"); r.onsuccess = () => store.put({ ...r.result, deletedAt: "2026-04-24T06:00:00.000Z", revision: 2 }); await new Promise<void>(resolve => { tx.oncomplete = () => resolve(); }); db.close(); });
   const removed = await writingSnapshot(page); await openRoute(page, sessionRoute); await expect(page.getByRole("heading", { name: "Session unavailable" })).toBeVisible(); expect(await writingSnapshot(page)).toEqual(removed);
 });
 
@@ -115,6 +115,7 @@ test("changed or deleted requests keep answer writing until explicit continuatio
   await seedFocusedPrayer(page); await page.getByRole("button", { name: "Mark answered", exact: true }).click(); await page.getByLabel("What happened?", { exact: false }).fill("Keep this note.");
   await changeRequest(page, { deletedAt: "2026-04-24T06:00:00.000Z" });
   await expect(page.getByLabel("Unsaved answer note")).toHaveValue("Keep this note."); await expect(page.locator(".session-request-text")).toHaveCount(0);
+  await expect(page.locator('.draft-status')).toHaveText('Draft kept on this device');
   const before = await writingSnapshot(page); await page.evaluate(() => window.dispatchEvent(new Event("focus"))); expect(await writingSnapshot(page)).toEqual(before);
   await page.getByRole("button", { name: "Continue session", exact: true }).click(); await page.getByRole("button", { name: "Discard and continue" }).click();
   await expect(page.locator(".session-heading-top")).toContainText("Request 2 of 3"); const after = await writingSnapshot(page);
@@ -136,9 +137,9 @@ test("optional Scripture failure leaves explicit prayer actions usable", async (
 
 test("Today and filtered Prayer launch canonical URLs and retain the origin", async ({ page }) => {
   await seedFocusedPrayer(page); await openRoute(page, "/today"); await page.getByRole("link", { name: "Pray — Resume session", exact: true }).click();
-  let query = new URLSearchParams(new URL(page.url()).hash.split("?")[1]); expect(query.get("session")).toBe("focus-session"); expect(query.get("return")).toBe("/today");
+  let query = new URLSearchParams(new URL(page.url()).hash.split("?")[1]); expect(query.get("session")).toBe("00000000-0000-4000-8000-000000009001"); expect(query.get("return")).toBe("/today");
   await openRoute(page, sessionOrigin); await page.getByRole("link", { name: "Resume prayer", exact: true }).click();
-  query = new URLSearchParams(new URL(page.url()).hash.split("?")[1]); expect(query.get("session")).toBe("focus-session"); expect(query.get("return")).toContain("person=00000000-0000-4000-8000-000000008002");
+  query = new URLSearchParams(new URL(page.url()).hash.split("?")[1]); expect(query.get("session")).toBe("00000000-0000-4000-8000-000000009001"); expect(query.get("return")).toContain("person=00000000-0000-4000-8000-000000008002");
 });
 
 test("manual-only requests remain outside automatic sessions", async ({ page }) => {
@@ -232,6 +233,8 @@ test("late input after answer commitment stays copyable and cannot create anothe
   await page.getByLabel("What happened?", { exact: false }).evaluate((input: HTMLTextAreaElement) => { Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value")!.set!.call(input, "The submitted answer. Newer writing."); input.dispatchEvent(new Event("input", { bubbles: true })); });
   await page.evaluate(() => { (window as any).releaseSessionLock = true; });
   await expect(page.getByLabel("Unsaved answer note")).toHaveValue("The submitted answer. Newer writing."); await expect(page.getByRole("button", { name: "Mark answered", exact: true })).toHaveCount(0);
+  await expect(page.locator(".draft-status")).toContainText("Action already recorded");
+  const kept=await writingSnapshot(page);expect(rows(kept,"editorDraftContents")[0].payload.body).toBe("The submitted answer. Newer writing.");expect(rows(kept,"editorDrafts")[0].commitment.disposition).toBe("copy-only");
   await page.getByRole("button", { name: "Continue session", exact: true }).click(); await expect(page.getByRole("dialog")).toContainText("The answer is already recorded"); await page.getByRole("button", { name: "Keep note", exact: true }).click(); await expect(page.getByLabel("Unsaved answer note")).toBeVisible();
   await page.getByRole("button", { name: "Continue session", exact: true }).click(); await page.getByRole("button", { name: "Discard and continue" }).click(); await expect(page.locator(".session-heading-top")).toContainText("Request 2 of 3");
   const saved = rows(await writingSnapshot(page), "prayerResolutions"); expect(saved).toHaveLength(1); expect(saved[0].reflectionMd).toBe("The submitted answer.");

@@ -7,7 +7,7 @@ const repository = new PrayerSessionRepository(db);
 const unavailable = (error: unknown) => error instanceof PrayerSessionUnavailableError;
 
 /** Only initial explicit entry reconciles; later reads and retries are readonly. */
-export function useSessionState(sessionId: string) {
+export function useSessionState(sessionId: string, readonlyEntry = false) {
   const [data, setData] = useState<PrayerSessionState | null>();
   const [error, setError] = useState("");
   const [attempt, setAttempt] = useState(0);
@@ -31,7 +31,7 @@ export function useSessionState(sessionId: string) {
     };
     setError("");
     if (entered.current) subscribe();
-    else void repository.loadState(sessionId).then(state => {
+    else void (readonlyEntry ? repository.readState(sessionId) : repository.loadState(sessionId)).then(state => {
       if (!current()) return;
       entered.current = true; setData(state); subscribe();
     }).catch(failed);
@@ -41,7 +41,7 @@ export function useSessionState(sessionId: string) {
       active = false; subscription?.unsubscribe();
       window.removeEventListener("focus", refresh); window.removeEventListener("pageshow", refresh); document.removeEventListener("visibilitychange", refresh);
     };
-  }, [sessionId, attempt]);
+  }, [sessionId, attempt, readonlyEntry]);
 
   const accept = useCallback((state: PrayerSessionState) => {
     // An older subscription result cannot replace a just-committed mutation.

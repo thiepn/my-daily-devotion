@@ -96,9 +96,12 @@ describe("focused prayer journal safety", () => {
     expect(await db.activityEvents.where("type").equals("PRAYER_PRAYED").count()).toBe(1);
   });
   it("validates session identity without falling back to creation and keeps nested return URLs", () => {
-    expect(parsePrayerSessionContext("?session=&depth=unknown&return=https://example.com")).toEqual({ sessionId: null, invalidSession: true, depth: "quick", returnTo: "/prayer" });
+    expect(parsePrayerSessionContext("?session=&depth=unknown&return=https://example.com")).toEqual({ sessionId: null, invalidSession: true, depth: "quick", returnTo: "/prayer", draftId:null });
     const origin = "/prayer?status=ACTIVE&person=friend&category=family";
     const url = prayerSessionUrl({ sessionId: "saved-session", returnTo: origin });
-    expect(parsePrayerSessionContext(url.slice(url.indexOf("?")))).toEqual({ sessionId: "saved-session", invalidSession: false, depth: "quick", returnTo: origin });
+    expect(parsePrayerSessionContext(url.slice(url.indexOf("?")))).toEqual({ sessionId: "saved-session", invalidSession: false, depth: "quick", returnTo: origin, draftId:null });
+    const draftId="00000000-0000-4000-8000-000000009999";
+    expect(parsePrayerSessionContext(prayerSessionUrl({sessionId:"saved-session",returnTo:origin,draftId}).split("?")[1]!).draftId).toBe(draftId);
+    expect(parsePrayerSessionContext("?session=saved-session&draft=malformed").draftId).toBeNull();
   });
 });
