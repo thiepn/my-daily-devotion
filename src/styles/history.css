@@ -85,10 +85,21 @@
 .history-calendar-day-list a { display: flex; gap: 12px; align-items: center; justify-content: space-between; min-height: 56px; padding: 12px 0; border-bottom: 1px solid var(--color-line); color: var(--color-ink); text-decoration: none; font: .85rem/1.6 var(--font-display); }
 .history-calendar-day-list a > span:last-child { display: flex; align-items: center; font: .65rem/1.5 var(--font-ui); }
 .history-calendar-legend { font: .68rem/1.6 var(--font-ui); color: var(--color-ink-soft); text-align: center; margin-top: 16px; }
+.history-review-controls { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; padding: 18px; margin-block: 20px; }
+.history-review-controls label { display: grid; gap: 8px; flex: 1 1 12rem; min-width: 0; font: .8rem/1.5 var(--font-ui); }
+.history-review-controls input { width: 100%; min-width: 0; min-height: 44px; padding: 10px; border: 1px solid var(--color-line); border-radius: var(--radius-sm); background: var(--color-surface); color: var(--color-ink); font: inherit; }
+.history-review-week-actions, .history-review-links { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.history-review-week-actions { width: 100%; }
+.history-review-links { margin-block: 16px; }
+.history-review-links a { display: inline-flex; align-items: center; min-height: 44px; }
+.history-review-period { font: 1.1rem/1.6 var(--font-display); }
+.history-review-explanation { color: var(--color-ink-soft); font: .75rem/1.7 var(--font-ui); }
+.history-review-screen .history-journal-heading > .grace-art { width: 60px; flex: 0 0 60px; }
 .history-calendar-legend > span { display: inline-flex; align-items: center; gap: 5px; margin: 4px 6px; }
 @container (max-width: 20rem) { .history-calendar-grid { display: none; }.history-calendar-day-list { display: block; } }
 @container (max-width: 18rem) { .history-journal-tabs { grid-template-columns: repeat(2,minmax(0,1fr)); }.history-row-copy > span { display: block; }.history-journal-row { grid-template-columns: 2.45rem minmax(0,1fr); }.history-journal-row time { grid-column: 2; max-width: none; text-align: left; } }
 @container (max-width: 18rem) {
+  .history-review-screen .history-journal-heading > .grace-art { grid-column: 2; grid-row: 1; width: 44px; }
   .history-journal-heading { display: grid; grid-template-columns: minmax(0,1fr) 44px; gap: 6px; }
   .history-journal-heading > div { display: contents; }
   .history-journal-heading .history-back { grid-column: 1; grid-row: 1; justify-self: start; }
@@ -100,6 +111,7 @@
 }
 @container (max-width: 13rem) { .history-journal-stats { grid-template-columns: 1fr; gap: 12px; }.history-journal-stats > div + div { border-left: 0; } }
 @media (max-width: 860px), (max-height: 500px) and (max-width: 900px) {
+  .history-review-route .mobile-nav { display: grid; }
   .history-journal-route .utility-bar { display: none; }
   .history-journal-route .workspace-content { padding: 0 18px calc(var(--mobile-nav-height) + env(safe-area-inset-bottom) + 16px); }
   .grace-history { padding-top: 18px; }

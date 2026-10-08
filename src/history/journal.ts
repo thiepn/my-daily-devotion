@@ -1,6 +1,7 @@
 import type { MddDatabase } from '../data/database';
 import type { ActivityEvent, ActivityEventType, LocalDate } from '../domain/types';
 import { HistoryRepository, type HistoryEntry } from './repository';
+import type { JournalDateRange } from './review';
 
 export const historyViews = ['overview', 'readings', 'prayer', 'reflections'] as const;
 export type HistoryView = typeof historyViews[number];
@@ -43,9 +44,10 @@ export function groupHistoryEvents(events: ActivityEvent[], view: HistoryView, m
   }
   return [...groups.values()].sort((a, b) => descending(a[0]!, b[0]!));
 }
-export async function loadHistoryJournal(db: MddDatabase, query: HistoryQuery, today: LocalDate, moments = false): Promise<HistoryJournal> {
+export async function loadHistoryJournal(db: MddDatabase, query: HistoryQuery, today: LocalDate, moments = false, range?: JournalDateRange): Promise<HistoryJournal> {
   const all = await db.transaction('r', db.activityEvents, () => db.activityEvents.toArray());
-  const events = filterHistoryEvents(all, query, today);
+  const periodEvents = filterHistoryEvents(all, query, today);
+  const events = range ? periodEvents.filter(event => event.localDate >= range.from && event.localDate <= range.to) : periodEvents;
   const metrics = { days: new Set(events.map(e => e.localDate)).size,
     prayers: new Set(events.filter(e => e.type === 'PRAYER_CREATED').map(e => e.subjectId)).size,
     reflections: new Set(events.filter(e => e.type === 'REFLECTION_CREATED').map(e => e.subjectId)).size };
