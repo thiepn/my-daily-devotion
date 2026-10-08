@@ -131,10 +131,12 @@ export class PrayerRepository extends MutableRepository<Prayer> {
   async updateBody(id: UUID, body: string, expectedRevision?: number): Promise<Prayer> {
     const normalized = body.trim();
     if (!normalized) throw new Error("Prayer body is required.");
-    return this.database.transaction("rw", this.database.prayers, async () => {
+    return this.database.transaction("rw", [this.database.prayers, ...savedVersionTables(this.database)], async () => {
       const current = await this.require(id);
       if (current.status !== "ACTIVE" && current.status !== "WAITING") throw new Error("Answered or archived prayer wording cannot be edited.");
-      return this.patch(id, { body: normalized }, expectedRevision);
+      const saved = await this.patch(id, { body: normalized }, expectedRevision);
+      await captureSavedVersion(this.database, "prayer-wording", current, saved);
+      return saved;
     });
   }
 
@@ -340,3 +342,4 @@ export class PrayerRepository extends MutableRepository<Prayer> {
     });
   }
 }
+import { captureSavedVersion, savedVersionTables } from "../../recovery/saved-versions";

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { MddDatabase } from "../data/database";
+import { MddDatabase, prepareDatabase } from "../data/database";
 import { PrayerRepository } from "../data/repositories/prayers";
 import { PrayerSessionRepository } from "../data/repositories/prayer-sessions";
 import type { Instant, LocalDate } from "../domain/types";
@@ -9,6 +9,7 @@ const databases: MddDatabase[] = [];
 afterEach(async () => { for (const db of databases.splice(0)) { db.close(); await db.delete(); } });
 async function setup(count = 3) {
   const db = new MddDatabase(`session-journal-${crypto.randomUUID()}`); databases.push(db);
+  await prepareDatabase(db);
   const prayers = new PrayerRepository(db), sessions = new PrayerSessionRepository(db);
   for (let i = 0; i < count; i++) await prayers.createPrayer({ body: `Request ${i}` });
   const state = (await sessions.startOrResume("quick", "2026-04-24" as LocalDate))!;
