@@ -120,7 +120,7 @@ describe("approved additive recovery migration", () => {
     expect((await createBackupSnapshot(upgraded)).data).toEqual(data);
     expect(await upgraded.prayers.get(prayer.id)).toEqual(prayer);
     expect(await upgraded.editorDraftContents.count()).toBe(0);
-    expect(await upgraded.schemaMetadata.get("database")).toMatchObject({ schemaVersion: 2, contractVersion: 1, createdAt: "2026-01-01T00:00:00.000Z" });
+    expect(await upgraded.schemaMetadata.get("database")).toMatchObject({ schemaVersion: 3, contractVersion: 1, createdAt: "2026-01-01T00:00:00.000Z" });
     upgraded.close();
     const downgradeError = await new Promise<DOMException | null>(resolve => {
       const request = indexedDB.open(name, 10); // Dexie v1 uses physical IDB version 10.

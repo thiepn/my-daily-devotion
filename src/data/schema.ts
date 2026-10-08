@@ -1,5 +1,5 @@
 export const DATABASE_NAME = "my-daily-devotion";
-export const DATABASE_SCHEMA_VERSION = 2;
+export const DATABASE_SCHEMA_VERSION = 3;
 export const DOMAIN_CONTRACT_VERSION = 1;
 
 export const schemaV1 = {
@@ -32,4 +32,11 @@ export const recoverySchemaV2 = {
   editorDrafts: "&id,kind,targetKey,updatedAt,journalEpoch,[targetKey+updatedAt]",
   editorDraftContents: "&id",
   draftJournalState: "&key",
+} as const;
+
+export const recoverySchemaV3 = {
+  savedVersions: "&id,targetKey,capturedAt,[targetKey+capturedAt],journalEpoch",
+  savedVersionContents: "&id",
+  removalGroups: "&id,removedAt,expiresAt,journalEpoch,state",
+  removalGroupContents: "&id",
 } as const;
