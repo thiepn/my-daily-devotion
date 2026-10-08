@@ -1,3 +1,4 @@
+import { withRemovalCapture } from "../../recovery/removals";
 import { assertExpectedRevision } from "../conflicts";
 import { newMutableFields, nextMutableFields, nowInstant } from "../../domain/identity";
 import type { Collection, CollectionItem, ScriptureReference, UUID } from "../../domain/types";
@@ -87,6 +88,9 @@ export class CollectionRepository {
   }
 
   async removeItem(id: UUID, expectedRevision?: number): Promise<void> {
+    return withRemovalCapture(this.database, async () => ({ table: "collectionItems", id }), () => this.removeItemInternalRecovery(id, expectedRevision));
+  }
+  private async removeItemInternalRecovery(id: UUID, expectedRevision?: number): Promise<void> {
     return this.database.transaction("rw", this.database.collectionItems, async () => {
       const item = await this.database.collectionItems.get(id);
       if (!item || item.deletedAt) return;
@@ -97,7 +101,7 @@ export class CollectionRepository {
   }
 
   async removeCollection(id: UUID, expectedRevision?: number): Promise<void> {
-    return this.database.transaction("rw", this.database.collections, this.database.collectionItems, () => this.removeCollectionInternal(id, expectedRevision));
+    return withRemovalCapture(this.database, async () => ({ table: "collections", id }), () => this.removeCollectionInternal(id, expectedRevision));
   }
   private async removeCollectionInternal(id: UUID, expectedRevision?: number): Promise<void> {
     const collection = await this.database.collections.get(id);

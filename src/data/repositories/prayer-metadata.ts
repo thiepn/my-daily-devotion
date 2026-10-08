@@ -1,3 +1,4 @@
+import { withRemovalCapture } from "../../recovery/removals";
 import { newMutableFields } from "../../domain/identity";
 import type { Category, Person, UUID } from "../../domain/types";
 import type { MddDatabase } from "../database";
@@ -42,7 +43,7 @@ export class PersonRepository extends MutableRepository<Person> {
   }
 
   async removePerson(id: UUID, expectedRevision?: number): Promise<void> {
-    return this.database.transaction("rw", this.database.people, this.database.prayers, () => this.removePersonInternal(id, expectedRevision));
+    return withRemovalCapture(this.database, async () => ({ table: "people", id }), () => this.removePersonInternal(id, expectedRevision));
   }
   private async removePersonInternal(id: UUID, expectedRevision?: number): Promise<void> {
     assertExpectedRevision(await this.require(id), expectedRevision);
@@ -96,7 +97,7 @@ export class CategoryRepository extends MutableRepository<Category> {
   }
 
   async removeCategory(id: UUID, expectedRevision?: number): Promise<void> {
-    return this.database.transaction("rw", this.database.categories, this.database.prayers, () => this.removeCategoryInternal(id, expectedRevision));
+    return withRemovalCapture(this.database, async () => ({ table: "categories", id }), () => this.removeCategoryInternal(id, expectedRevision));
   }
   private async removeCategoryInternal(id: UUID, expectedRevision?: number): Promise<void> {
     assertExpectedRevision(await this.require(id), expectedRevision);

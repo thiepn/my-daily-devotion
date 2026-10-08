@@ -1,3 +1,4 @@
+import { withRemovalCapture } from "../../recovery/removals";
 import { newMutableFields, nextMutableFields, nowInstant } from "../../domain/identity";
 import type { ScriptureReference, VerseNote } from "../../domain/types";
 import type { MddDatabase } from "../database";
@@ -69,6 +70,9 @@ export class VerseNoteRepository {
   }
 
   async remove(reference: ScriptureReference, expectedRevision?: number, expectedId?: string): Promise<void> {
+    return withRemovalCapture(this.database, async () => { const record = await this.getExact(reference); return record ? { table: "verseNotes", id: record.id } : null; }, () => this.removeInternalRecovery(reference, expectedRevision, expectedId));
+  }
+  private async removeInternalRecovery(reference: ScriptureReference, expectedRevision?: number, expectedId?: string): Promise<void> {
     await this.database.transaction("rw", this.database.verseNotes, async () => {
       const note = await this.getExact(reference);
       if (expectedRevision !== undefined && (!note || note.revision !== expectedRevision || expectedId !== undefined && note.id !== expectedId)) throw new Error("This verse note changed or was removed. Review before removing it.");

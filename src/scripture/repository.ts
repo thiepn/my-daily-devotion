@@ -1,3 +1,4 @@
+import { withRemovalCapture } from "../recovery/removals";
 import { ActivityLog } from "../data/activity";
 import { db, type MddDatabase } from "../data/database";
 import { newMutableFields, nextMutableFields } from "../domain/identity";
@@ -135,7 +136,7 @@ export class ScriptureRepository {
   }
 
   async toggleHighlight(reference: ScriptureReference, style = "accent"): Promise<Highlight | null> {
-    return this.database.transaction("rw", this.database.highlights, this.database.activityEvents, () => this.toggleHighlightInternal(reference, style));
+    return withRemovalCapture(this.database, async () => { const record = await this.database.highlights.where("translationId").equals(reference.translationId).filter(item => item.deletedAt === null && exactReference(item, reference)).first(); return record ? { table: "highlights", id: record.id } : null; }, () => this.toggleHighlightInternal(reference, style));
   }
 
   private async toggleHighlightInternal(reference: ScriptureReference, style = "accent"): Promise<Highlight | null> {
@@ -174,7 +175,7 @@ export class ScriptureRepository {
   }
 
   async toggleBookmark(reference: ScriptureReference, label: string | null = null): Promise<Bookmark | null> {
-    return this.database.transaction("rw", this.database.bookmarks, () => this.toggleBookmarkInternal(reference, label));
+    return withRemovalCapture(this.database, async () => { const record = await this.database.bookmarks.where("translationId").equals(reference.translationId).filter(item => item.deletedAt === null && exactReference(item, reference)).first(); return record ? { table: "bookmarks", id: record.id } : null; }, () => this.toggleBookmarkInternal(reference, label));
   }
 
   private async toggleBookmarkInternal(reference: ScriptureReference, label: string | null = null): Promise<Bookmark | null> {

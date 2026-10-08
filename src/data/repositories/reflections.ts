@@ -1,3 +1,4 @@
+import { withRemovalCapture } from "../../recovery/removals";
 import { ActivityLog } from "../activity";
 import { newMutableFields, nextMutableFields, nowInstant } from "../../domain/identity";
 import type { LocalDate, Reflection, ScriptureLink, ScriptureReference, UUID } from "../../domain/types";
@@ -146,6 +147,9 @@ export class ReflectionRepository {
   }
 
   async removeDaily(localDate: LocalDate, expectedRevision?: number): Promise<void> {
+    return withRemovalCapture(this.database, async () => { const record = await this.getDaily(localDate); return record ? { table: "reflections", id: record.id } : null; }, () => this.removeDailyInternalRecovery(localDate, expectedRevision));
+  }
+  private async removeDailyInternalRecovery(localDate: LocalDate, expectedRevision?: number): Promise<void> {
     await this.database.transaction("rw", this.database.reflections, this.database.scriptureLinks, async () => {
       const reflection = await this.getDaily(localDate);
       if (expectedRevision !== undefined && reflection?.revision !== expectedRevision) throw new ReflectionConflictError(reflection);

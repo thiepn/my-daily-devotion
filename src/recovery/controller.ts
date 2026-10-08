@@ -1,3 +1,4 @@
+import { removalTables } from "./removals";
 import type { MddDatabase } from "../data/database";
 import type { PortableTableName } from "../data/portable-tables";
 import { readJournalEpoch } from "./journal";
@@ -100,7 +101,7 @@ export class DurableDraftController {
     return this.serial(async () => {
       try {
         if (mutation) {
-          await this.database.transaction("rw", [...mutation.tables.map(name => this.database.table(name)), this.database.editorDrafts, this.database.editorDraftContents], async () => {
+          await this.database.transaction("rw", [...mutation.tables.map(name => this.database.table(name)), ...removalTables(this.database), this.database.editorDrafts, this.database.editorDraftContents], async () => {
             await mutation.action();
             if (this.snapshot) await this.repository.discard(this.snapshot.metadata.id, this.snapshot.metadata.generation);
           });
