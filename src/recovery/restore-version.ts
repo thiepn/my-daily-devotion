@@ -12,10 +12,11 @@ export type RestoreVersionResult =
   | { kind: "committed" | "unchanged"; record: WritingRecords[keyof WritingRecords] }
   | { kind: "conflict"; currentRevision: number; currentWriting: SavedWriting }
   | { kind: "unavailable"; reason: string }
+  | { kind: "review-changed"; reason: string }
   | { kind: "failed"; reason: string };
 
 /** Explicit, revision-checked command. The UI must review and confirm first. */
-export async function restoreSavedVersion(database: MddDatabase, versionId: string, expectedRevision: number): Promise<RestoreVersionResult> {
+export async function restoreSavedVersion(database: MddDatabase, versionId: string, expectedRevision: number, expectedVersion?: string): Promise<RestoreVersionResult> {
   if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 1) return { kind: "unavailable", reason: "Review the current saved writing first." };
   try {
     return await database.transaction("rw", [database.reflections, database.prayers, database.verseNotes, database.collections, database.collectionItems, database.people, database.devotionDays, database.scriptureLinks, database.activityEvents, ...savedVersionTables(database)], async (): Promise<RestoreVersionResult> => {
@@ -23,6 +24,7 @@ export async function restoreSavedVersion(database: MddDatabase, versionId: stri
       if (selected.kind !== "available") return { kind: "unavailable", reason: "This saved version is unavailable." };
       if (selected.previousJournal) return { kind: "unavailable", reason: "This version belongs to a previous journal. It remains available for copying." };
       const { metadata, contents } = selected;
+      if (expectedVersion !== undefined && expectedVersion !== JSON.stringify({ metadata, contents })) return { kind: "review-changed", reason: "This saved version changed. Review it again before restoring." };
       const current = await database.table(writingTables[metadata.kind]).get(metadata.targetId) as WritingRecords[keyof WritingRecords] | undefined;
       if (!current || current.deletedAt !== null) return { kind: "unavailable", reason: "The original record was removed. This action cannot recreate it." };
       const currentWriting = editableWriting(metadata.kind, current), writing = contents.writing;
