@@ -36,6 +36,11 @@ export type ImportMode = "merge" | "replace";
 
 export interface BackupExportResult { bytes: Uint8Array; generatedAt: string; kind: "encrypted" | "plain"; }
 export interface BackupContentCount { live: number; deletionMarkers: number; }
+export interface ValidatedBackupContents {
+  readonly manifest: BackupArchiveManifest;
+  readonly encrypted: boolean;
+  readonly contents: Readonly<Record<string, BackupContentCount>>;
+}
 export interface RestoreEffects {
   additions: number; replacements: number; retained: number; removals: number;
   newlyRemoved: number; restored: number;
@@ -263,6 +268,15 @@ export async function previewMddBackup(bytes: Uint8Array, password: string, data
   const { manifest, snapshot } = await readArchive(bytes, password, database);
   await validateInTemporaryDatabase(snapshot);
   return { manifest, counts: Object.fromEntries(Object.entries(snapshot.data).map(([name, rows]) => [name, rows.length])), encrypted: Boolean(manifest.encryption) };
+}
+
+// Unlike a restore review, this result has no candidate/commit capability and
+// never reads a local snapshot. Validation uses the same bounded archive and
+// temporary-database relationship checks as historical imports.
+export async function checkMddBackup(bytes: Uint8Array, password: string, database: MddDatabase): Promise<ValidatedBackupContents> {
+  const { manifest, snapshot } = await readArchive(bytes, password, database);
+  await validateInTemporaryDatabase(snapshot);
+  return { manifest, encrypted: Boolean(manifest.encryption), contents: Object.fromEntries(Object.entries(snapshot.data).map(([name, rows]) => [name, { live: rows.filter(row => !deleted(row)).length, deletionMarkers: rows.filter(deleted).length }])) };
 }
 
 function emptyEffects(): RestoreEffects { return { additions: 0, replacements: 0, retained: 0, removals: 0, newlyRemoved: 0, restored: 0 }; }

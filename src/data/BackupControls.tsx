@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { BACKUP_TABLE_LABELS } from "./data-context";
-import type { RestoreReview } from "./portability";
+import type { BackupContentCount, RestoreReview } from "./portability";
 
 export function formatBackupDate(value: string) { return new Date(value).toLocaleString(undefined, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }); }
 export function PasswordForm({ id, busy, submit, cancel }: { id: string; busy: boolean; submit: (password: string) => Promise<boolean>; cancel: () => void }) {
@@ -25,11 +25,16 @@ export function PasswordForm({ id, busy, submit, cancel }: { id: string; busy: b
   </form>;
 }
 
+export function BackupRecordCounts({ contents }: { contents: Readonly<Record<string, BackupContentCount>> }) {
+  return <>
+    <dl className="backup-counts">{["reflections", "prayers", "highlights", "verseNotes", "readingProgress", "activityEvents"].map(key => <div key={key}><dt>{BACKUP_TABLE_LABELS[key]}</dt><dd>{contents[key]?.live ?? 0}</dd></div>)}</dl>
+    <p className="data-help">Counts above exclude each record’s deletion marker. Related records may be unavailable when their parent was removed.</p>
+    <details className="data-inner-disclosure"><summary>All records & deletion markers</summary><dl className="backup-full-counts">{Object.entries(contents).map(([key, count]) => <div key={key}><dt>{BACKUP_TABLE_LABELS[key] ?? key}</dt><dd>{count.live} saved · {count.deletionMarkers} removed</dd></div>)}</dl><p className="data-help">Removed records retain deletion markers and may retain text. Backups preserve these records so removals can be carried between copies.</p></details>
+  </>;
+}
 export function RestoreContents({ review }: { review: RestoreReview }) {
   return <>
-    <dl className="backup-counts">{["reflections", "prayers", "highlights", "verseNotes", "readingProgress", "activityEvents"].map(key => <div key={key}><dt>{BACKUP_TABLE_LABELS[key]}</dt><dd>{review.contents[key]?.live ?? 0}</dd></div>)}</dl>
-    <p className="data-help">Counts above exclude each record’s deletion marker. Related records may be unavailable when their parent was removed.</p>
-    <details className="data-inner-disclosure"><summary>All records & deletion markers</summary><dl className="backup-full-counts">{Object.entries(review.contents).map(([key, count]) => <div key={key}><dt>{BACKUP_TABLE_LABELS[key] ?? key}</dt><dd>{count.live} saved · {count.deletionMarkers} removed</dd></div>)}</dl><p className="data-help">Removed records retain deletion markers and may retain text. Backups preserve these records so removals can be carried between copies.</p></details>
+    <BackupRecordCounts contents={review.contents} />
     <h3>What will change</h3><dl className="restore-effects">{[["Added", review.effects.additions], ["Replaced", review.effects.replacements], ["Kept locally", review.effects.retained], ["Removed from this browser", review.effects.removals]].map(([label, count]) => <div key={label}><dt>{label}</dt><dd>{count}</dd></div>)}</dl>
     <p className="data-help">These are database records, including links, settings and History. {review.effects.newlyRemoved} saved records become marked removed; {review.effects.restored} removed records become available again.</p>
     <details className="data-inner-disclosure"><summary>Changes by record type</summary><dl className="backup-full-counts">{Object.entries(review.tables).filter(([, effect]) => effect.additions + effect.replacements + effect.retained + effect.removals > 0).map(([key, effect]) => <div key={key}><dt>{BACKUP_TABLE_LABELS[key]}</dt><dd>{effect.additions} added · {effect.replacements} replaced · {effect.retained} kept · {effect.removals} removed</dd></div>)}</dl></details>
