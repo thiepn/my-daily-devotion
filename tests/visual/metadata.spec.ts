@@ -16,6 +16,7 @@ for (const kind of ["people","categories"] as const) {
     if(state==="text200"){await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{document.documentElement.style.fontSize="200%";});}
     if(state==="expanded")await selectMetadata(page,name);
     if(state==="editor"){await editMetadata(page,name,singular);await page.getByLabel("Name",{exact:true}).fill(name+" edited");}
+    if(state==="editor")await expect(page.locator(".draft-status")).toHaveText("Draft kept on this device");
     if(state==="confirmation"){await selectMetadata(page,kind==="people"?"Daniel Kim":"Family");await page.getByRole("button",{name:"Remove "+singular,exact:true}).click();}
     if(state==="error"){await page.addInitScript(()=>{const cursor=IDBObjectStore.prototype.openCursor;IDBObjectStore.prototype.openCursor=function(...args){if(["people","categories"].includes(this.name))throw new Error("Read unavailable");return cursor.apply(this,args);};});await page.reload();await expect(page.getByRole("button",{name:"Retry refresh",exact:true})).toBeVisible();}
     if(state==="no-results")await page.getByLabel("Search "+kind).fill("No matching entry");
@@ -25,5 +26,5 @@ for (const kind of ["people","categories"] as const) {
 test("People conflict comparison",async({page,context})=>{
   await page.setViewportSize({width:390,height:844});await seedMetadata(page);await editMetadata(page,"Anna Wilson");await page.getByLabel("Notes",{exact:false}).fill("My local notes to keep.");
   const other=await context.newPage();await openRoute(other,"/prayer/people");await editMetadata(other,"Anna Wilson");await other.getByLabel("Notes",{exact:false}).fill("The version saved in another tab.");await other.getByRole("button",{name:"Save changes"}).click();await expect(other.locator(".directory-notes")).toContainText("another tab");
-  await page.getByRole("button",{name:"Save changes"}).click();await page.getByRole("button",{name:"Compare versions"}).click();await page.evaluate(()=>window.scrollTo(0,0));await expect(page).toHaveScreenshot("metadata-people-conflict.png",{fullPage:true});
+  await expect(page.getByRole("button",{name:"Save changes"})).toBeDisabled();await page.getByRole("button",{name:"Compare versions"}).click();await page.evaluate(()=>window.scrollTo(0,0));await expect(page).toHaveScreenshot("metadata-people-conflict.png",{fullPage:true});
 });

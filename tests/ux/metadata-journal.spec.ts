@@ -14,7 +14,7 @@ test("directories, counts, search, expansion and pagination are readonly", async
   await expect(page.locator(".directory-prayers a")).toHaveCount(5);
   for (const status of ["Active", "Waiting", "Answered", "Archived"]) await expect(page.locator(".directory-prayers small").filter({ hasText: status }).first()).toBeVisible();
   await page.getByRole("button", { name: "Show more prayers" }).click(); await expect(page.locator(".directory-prayers a")).toHaveCount(15);
-  await openRoute(page, "/prayer/people?entry=person-44");
+  await openRoute(page, "/prayer/people?entry=00000000-0000-4000-8000-000000010044");
   await expect(page.locator(".directory-pagination").last()).toContainText("Showing 20 of 45 people. Selected entry also shown.");
   await expect(page.locator(".directory-row")).toHaveCount(21);
   await expect(page.getByText("Selected entry · outside this page or search", { exact: true })).toBeVisible();
@@ -55,7 +55,7 @@ test("linked removals are blocked and unlinked removal uses an accessible confir
 });
 test("filtered origin and linked Detail Settings return restore the directory and focus", async ({ page }) => {
   await seedMetadata(page);
-  const origin = "/prayer?status=WAITING&person=person-0&category=category-0";
+  const origin = "/prayer?status=WAITING&person=00000000-0000-4000-8000-000000010000&category=00000000-0000-4000-8000-000000011000";
   await openRoute(page, origin); await page.getByRole("link", { name: "People", exact: true }).click();
   await selectMetadata(page, "Anna Wilson"); await page.getByRole("button", { name: "Show more prayers" }).click();
   const url = page.url(); const link = page.locator(".directory-prayers a").first(); const id = await link.getAttribute("id");
@@ -70,9 +70,10 @@ test("conflict comparison preserves both versions and requires an explicit save"
   await seedMetadata(page); await editMetadata(page, "Anna Wilson"); await page.getByLabel("Notes", { exact: false }).fill("My local writing.");
   const other = await context.newPage(); await openRoute(other, "/prayer/people"); await editMetadata(other, "Anna Wilson");
   await other.getByLabel("Notes", { exact: false }).fill("Saved in another tab."); await other.getByRole("button", { name: "Save changes" }).click(); await expect(other.locator(".directory-notes")).toContainText("Saved in another tab.");
-  await page.getByRole("button", { name: "Save changes" }).click(); await page.getByRole("button", { name: "Compare versions" }).click();
+  await expect(page.getByRole("button", { name: "Save changes" })).toBeDisabled();await expect(page.locator('.draft-status')).toHaveText('Draft kept on this device'); await page.getByRole("button", { name: "Compare versions" }).click();
   const before = await writingSnapshot(page); await expect(page.locator(".directory-versions")).toContainText("My local writing."); await expect(page.locator(".directory-versions")).toContainText("Saved in another tab.");
-  await page.getByRole("button", { name: "Keep my changes for review" }).click(); expect(await writingSnapshot(page)).toEqual(before);
+  expect(await writingSnapshot(page)).toEqual(before);
+  await page.getByRole("button", { name: "Keep my changes for review" }).click();
   await page.getByRole("button", { name: "Save changes" }).click(); await expect(page.locator(".directory-notes")).toContainText("My local writing.");
 });
 test("deleted entries preserve unsaved notes and cannot be recreated", async ({ page, context }) => {
@@ -153,7 +154,7 @@ test("late writing during commitment remains unsaved without duplicate creation"
 });
 async function holdMetadataWrites(page:Page){
   await page.evaluate(async()=>{const db=await new Promise<IDBDatabase>(resolve=>{const r=indexedDB.open("my-daily-devotion");r.onsuccess=()=>resolve(r.result);});
-    const tx=db.transaction("people","readwrite");(window as any).releaseMetadataLock=false;const keep=()=>{const r=tx.objectStore("people").get("person-0");r.onsuccess=()=>{if(!(window as any).releaseMetadataLock)keep();};};keep();tx.oncomplete=()=>db.close();
+    const tx=db.transaction("people","readwrite");(window as any).releaseMetadataLock=false;const keep=()=>{const r=tx.objectStore("people").get("00000000-0000-4000-8000-000000010000");r.onsuccess=()=>{if(!(window as any).releaseMetadataLock)keep();};};keep();tx.oncomplete=()=>db.close();
   });
 }
 test("linked-request failures keep the directory and retry without writes",async({page})=>{

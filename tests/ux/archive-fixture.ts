@@ -19,8 +19,8 @@ export async function seedArchive(page: Page, count = 5, long = false) {
    tx.objectStore('highlights').put({...fields('archive-highlight-'+i,i),...ref,style:null});
    tx.objectStore('verseNotes').put({...fields('archive-note-'+i,i),...ref,bodyMd:'A reminder of grace and the love of God.'});
   }
-  tx.objectStore('collections').put({...fields('archive-collection'),name:'Promises to remember',description:'Passages for moments of grace.',sortOrder:0});
-  for(let i=0;i<25;i++)tx.objectStore('collectionItems').put({...fields('archive-item-'+i,i),collectionId:'archive-collection',translationId:'BSB',startVerseKey:'PSA.'+(i+1)+'.1',endVerseKey:'PSA.'+(i+1)+'.2',note:'Grace remembered in this passage.'+(long?' '+ 'The Lord is faithful through every uncertain season. '.repeat(12):''),sortOrder:i});
+  tx.objectStore('collections').put({...fields('00000000-0000-4000-8000-000000013000'),name:'Promises to remember',description:'Passages for moments of grace.',sortOrder:0});
+  for(let i=0;i<25;i++)tx.objectStore('collectionItems').put({...fields('00000000-0000-4000-8000-'+String(14000+i).padStart(12,'0'),i),collectionId:'00000000-0000-4000-8000-000000013000',translationId:'BSB',startVerseKey:'PSA.'+(i+1)+'.1',endVerseKey:'PSA.'+(i+1)+'.2',note:'Grace remembered in this passage.'+(long?' '+ 'The Lord is faithful through every uncertain season. '.repeat(12):''),sortOrder:i});
   await done;
   // Bound synthetic fixture writes, which are much slower in Windows WebKit than other engines.
   // Search measurements start after all batches commit, independently of preparation time.
