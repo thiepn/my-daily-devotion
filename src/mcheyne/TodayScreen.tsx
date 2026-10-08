@@ -1,5 +1,6 @@
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
+import { RememberSuggestions } from "../history/RememberChoices";
 import { DevotionalIcon } from "../app/visual/DevotionalIcon";
 import { TodayVerse } from "./TodayVerse";
 import { MorningGraceArtwork } from "../app/visual/MorningGraceArtwork";
@@ -25,6 +26,7 @@ function key(sequence: number, readingIndex: number): string {
 
 export function TodayScreen() {
   const { localDate: today, hour } = useLocalClock();
+  const location = useLocation();
   const { busy, status, failed, run } = useMutation();
   const read = usePrayerRead('today-plan:' + today, () => readPlanJournal(today));
   const preference = usePrayerRead('journey-preference', readJourneyPreference);
@@ -108,5 +110,6 @@ export function TodayScreen() {
       </section>
       {enrollment ? <Link className="grace-primary today-devotion" to={devotionalHref}>{assignment && firstIncompleteIndex !== null ? completedCount ? "Continue Today’s Devotion" : "Begin Today’s Devotion" : "Reflect on Today’s Reading"}<DevotionalIcon name="arrow" /></Link> : null}
     </div>
+    <RememberSuggestions url={location.pathname + location.search} />
   </main>;
 }

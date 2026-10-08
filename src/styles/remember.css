@@ -1,0 +1,13 @@
+/* Opt-in suggestions and device choices; no change to default journal composition. */
+.remember-suggestions { margin-top:24px; }
+.remember-suggestions section { margin-bottom:18px; padding:20px; border:1px solid var(--color-line); border-radius:var(--radius-sm); }
+.remember-suggestions h2 { margin:0 0 8px; font:400 1.35rem/1.4 var(--font-display); }
+.remember-suggestions p { color:var(--color-ink-soft); font:.8rem/1.8 var(--font-ui); }
+.remember-suggestions :is(a,button), .remember-choices button, .anniversary-screen > a, .anniversary-screen > p a { display:inline-flex; align-items:center; min-height:44px; min-width:44px; padding:8px; color:var(--color-accent-strong); font:.8rem/1.6 var(--font-ui); }
+.remember-suggestions button { border:1px solid var(--color-line); border-radius:8px; background:var(--color-surface); cursor:pointer; }
+.remember-suggestions .journal-actions { display:flex; flex-wrap:wrap; gap:12px; }
+.remember-choices h4 { margin:20px 0 6px; font:400 1.1rem/1.5 var(--font-display); }
+.anniversary-screen .journal-heading-line { flex-wrap:wrap; }
+.anniversary-screen .journal-heading-line > div { flex:1 1 12rem; min-width:0; }
+.anniversary-screen > p { font:.9rem/1.8 var(--font-reading); overflow-wrap:anywhere; }
+.anniversary-screen > p a { display:flex; }
