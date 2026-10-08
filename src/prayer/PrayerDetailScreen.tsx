@@ -1,3 +1,4 @@
+import { SavedVersionsLink } from "../recovery/SavedVersionsLink";
 import {useEffect,useRef,useState} from "react";
 import {Link,useLocation,useNavigate,useParams} from "react-router-dom";
 import {db} from "../data/database";
@@ -156,7 +157,7 @@ function PrayerRecord({prayerId}:{prayerId:string}) {
    <dl><div><dt>Person</dt><dd>{person?.name??(prayer!.personId?"Unavailable":"No person")}</dd></div><div><dt>Category</dt><dd>{category?.name??(prayer!.categoryId?"Unavailable":"No category")}</dd></div><div><dt>Schedule</dt><dd>{administration.error?"Unavailable":administration.data===undefined?"Loading…":scheduleLabel(administration.data?.schedule??null)}</dd></div>{prayer!.eventDate?<div><dt>Event date</dt><dd>{prayer!.eventDate}</dd></div>:null}{prayer!.focusUntil?<div><dt>Focus until</dt><dd>{prayer!.focusUntil}</dd></div>:null}</dl>
    {administration.error?<button onClick={administration.retry}>Retry schedule</button>:null}
   </section>
-  <details className="prayer-more-actions"><summary>More actions</summary>{prayer!.status==="ACTIVE"?<button disabled={busy} onClick={()=>transition("WAITING")}>Move to waiting</button>:null}{prayer!.status!=="ARCHIVED"?<button disabled={busy} onClick={()=>transition("ARCHIVED")}>Archive prayer</button>:null}<button className="prayer-remove" disabled={busy} onClick={()=>guard.request(()=>setRemoveOpen(true))}>Remove prayer</button></details>
+  <details className="prayer-more-actions"><summary>More actions</summary><SavedVersionsLink kind="prayer-wording" targetId={prayer!.id} returnTo={url} pending={busy}/>{prayer!.status==="ACTIVE"?<button disabled={busy} onClick={()=>transition("WAITING")}>Move to waiting</button>:null}{prayer!.status!=="ARCHIVED"?<button disabled={busy} onClick={()=>transition("ARCHIVED")}>Archive prayer</button>:null}<button className="prayer-remove" disabled={busy} onClick={()=>guard.request(()=>setRemoveOpen(true))}>Remove prayer</button></details>
   {guard.dialog}
   {removeOpen?<JournalDialog title="Remove this prayer?" busy={busy} close={()=>setRemoveOpen(false)}><p>The request, its updates, and answer will be removed from current views. Existing backups are unaffected.</p><div className="journal-dialog-actions"><button className="prayer-remove" disabled={busy} onClick={()=>run(async()=>{await repository.removePrayer(prayerId,prayer!.revision);guard.allowNavigation();navigate(query.returnTo,{replace:true});})}>Remove prayer</button><button disabled={busy} data-initial-focus onClick={()=>setRemoveOpen(false)}>Keep prayer</button></div>{message?<p role="alert">{message}</p>:null}</JournalDialog>:null}
  </main>;

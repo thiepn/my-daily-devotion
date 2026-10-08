@@ -1,3 +1,4 @@
+import { SavedVersionsLink } from "../recovery/SavedVersionsLink";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { TagIcon } from "@phosphor-icons/react/dist/csr/Tag";
@@ -187,7 +188,7 @@ export function MetadataJournal({ kind }: { kind: MetadataKind }) {
       {linked.data.items.length ? <div className="directory-prayers">{linked.data.items.map(prayer => <Link key={prayer.id} id={"metadata-prayer-" + prayer.id} to={prayerDetailUrl(prayer.id, url)}><span><small>{prayerStatusLabels[prayer.status]}</small><span>{prayer.body}</span></span><DevotionalIcon name="chevron"/></Link>)}</div> : <p className="directory-empty-copy">No saved prayers are linked to this {singular}.</p>}
       <div className="directory-pagination"><span>Showing {linked.data.items.length} of {linked.data.total} prayers</span>{linked.data.items.length < linked.data.total ? <button id="metadata-more-prayers" onClick={() => setQuery({ prayersShown: String(query.prayersShown + 10) }, true)}>Show more prayers</button> : null}</div>
     </> : linked.data ? <p>This entry is no longer available.</p> : null}
-    <div className="journal-actions directory-management"><button id={"metadata-edit-" + record.id} onClick={() => begin(record)}>Edit {singular}</button><button className="directory-remove" onClick={() => guard.request(() => { clear(); setRemoveError(""); setRemoving(record); })}>Remove {singular}</button></div>
+    {kind === "people" ? <SavedVersionsLink kind="person" targetId={record.id} returnTo={location.pathname + location.search} pending={busy}/> : null}<div className="journal-actions directory-management"><button id={"metadata-edit-" + record.id} onClick={() => begin(record)}>Edit {singular}</button><button className="directory-remove" onClick={() => guard.request(() => { clear(); setRemoveError(""); setRemoving(record); })}>Remove {singular}</button></div>
   </section>;
   const records = directory.data?.records ?? [];
   const extraSelection = selected && !records.some(record => record.id === selected.id) ? selected : null;

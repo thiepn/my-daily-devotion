@@ -1,3 +1,5 @@
+import { usePrayerPosition } from "../prayer/detail-hooks";
+import { SavedVersionsLink } from "../recovery/SavedVersionsLink";
 import { useEffect, useRef, useState } from "react";
 import { liveQuery } from "dexie";
 import { Link, useLocation, useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -180,6 +182,7 @@ function ReflectionEditor({ localDate }: { localDate: LocalDate }) {
     requestAnimationFrame(() => { textarea.current?.focus(); textarea.current?.setSelectionRange(start + before.length, start + before.length + selected.length); });
   };
   const date = new Intl.DateTimeFormat(undefined, { weekday: "long", year: "numeric", month: "long", day: "numeric" }).format(new Date(localDate + "T12:00:00"));
+  usePrayerPosition(self, !loading && !loadError, null, ".journal-reflection");
   return <main className="journal-workspace journal-reflection mg-reflection-workspace">
     <JournalHeading title="Reflect" subtitle={date} back={back} />
     {loading ? <p role="status">Opening your local reflection…</p> : loadError ? <section role="alert"><p>{loadError}</p><button onClick={() => setAttempt(value => value + 1)}>Retry reflection</button></section> : <>
@@ -219,6 +222,7 @@ function ReflectionEditor({ localDate }: { localDate: LocalDate }) {
       <div className="journal-actions"><button className="grace-primary" disabled={busy || !dirty || !body.trim() || Boolean(conflict)} onClick={() => void save().catch(() => undefined)}>Save reflection</button></div>
       <section className="journal-handoff"><p className="journal-kicker">Bring it to Him</p><h2>Let your reflection become prayer.</h2><p>Your saved reflection and linked Scripture will stay connected.</p><button disabled={busy || !body.trim() || Boolean(conflict)} onClick={() => void handoff()}>{dirty ? "Save and continue to prayer" : "Bring into prayer"} <span aria-hidden="true">→</span></button></section>
       <p className="journal-help">Kept drafts can be recovered on this device. Save to record your reflection. The latest edits may not be kept yet; drafts do not replace external backups.</p>
+      {reflection ? <SavedVersionsLink kind="reflection" targetId={reflection.id} returnTo={self} pending={busy} /> : null}
       {reflection ? <button className="journal-remove" onClick={() => { setRemoveError(""); setRemoveOpen(true); }} disabled={busy}>Remove reflection</button> : null}
     </>}
     {guard.dialog}
