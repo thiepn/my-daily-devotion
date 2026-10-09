@@ -29,7 +29,7 @@ node scripts/p10/acceptance-cli.mjs template <40-hex-SHA> https://CURRENT_ORIGIN
 node scripts/p10/acceptance-cli.mjs assess /secure/location/p10-ledger.json <40-hex-SHA>
 ~~~
 
-The template is created exclusively (no overwrite) with requested mode 0600 and 14 pending gates. Assessment returns code 2 for any unpassed gate. Only HTTPS links without fragments, credentials or token-bearing queries may be used as evidence references. Neither browser personal data, journal text, phone numbers, passwords, backup bytes nor privileged release credentials belong in the ledger. Store nonprivate device/platform metadata in separate controlled evidence.
+The template is created exclusively (no overwrite) with requested mode 0600 and 14 pending gates. Assessment returns code 2 for any unpassed gate and code 3 for even a completely self-reported passing ledger; **it never exits successfully as a release gate**. Only HTTPS links without fragments, credentials or token-bearing queries may be used as evidence references. Neither browser personal data, journal text, phone numbers, passwords, backup bytes nor privileged release credentials belong in the ledger. Store nonprivate device/platform metadata in separate controlled evidence.
 
 ## Qualification boundaries and integration
 
