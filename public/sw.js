@@ -16,6 +16,11 @@ function validateRequiredAsset(url, response) {
   if (parsed.pathname.endsWith(".css") && type !== "text/css") throw new Error("Offline stylesheet has an unexpected content type.");
   if (parsed.pathname.endsWith(".json") && !/\bjson\b/.test(type)) throw new Error("Offline JSON asset has an unexpected content type.");
   if (parsed.pathname.endsWith(".webmanifest") && !/(?:json|manifest)/.test(type)) throw new Error("Offline manifest has an unexpected content type.");
+  if (parsed.pathname.endsWith(".svg") && type !== "image/svg+xml") throw new Error("Offline SVG asset has an unexpected content type.");
+  if (parsed.pathname.endsWith(".png") && type !== "image/png") throw new Error("Offline PNG asset has an unexpected content type.");
+  if (parsed.pathname.endsWith(".webp") && type !== "image/webp") throw new Error("Offline WebP asset has an unexpected content type.");
+  if (/\.jpe?g$/.test(parsed.pathname) && type !== "image/jpeg") throw new Error("Offline JPEG asset has an unexpected content type.");
+  if (/\.woff2?$/.test(parsed.pathname) && !/^font\/woff2?$/.test(type)) throw new Error("Offline font asset has an unexpected content type.");
 }
 async function fetchRequired(url) {
   const root = scopeRoot();
