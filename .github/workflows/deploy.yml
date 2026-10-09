@@ -7,6 +7,14 @@ on:
         description: Successful Release Certification CI run for the selected main commit
         required: true
         type: string
+      expected_public_url:
+        description: Existing GitHub Pages public URL, including its current path; this release must not change the origin
+        required: true
+        type: string
+      p1_migration_attestation:
+        description: Type P1-UPGRADE-AND-BACKUP-VERIFIED only after the disposable-profile migration and off-device recovery drill pass
+        required: true
+        type: string
       publish_release:
         description: Also publish the immutable versioned GitHub release
         default: false
@@ -40,6 +48,18 @@ jobs:
           node-version: "24"
           cache: npm
       - run: npm ci --ignore-scripts
+      - name: Confirm existing Pages target and P1 migration gate before deploying
+        env:
+          GH_TOKEN: ${{ github.token }}
+          MDD_EXPECTED_PUBLIC_URL: ${{ inputs.expected_public_url }}
+          MDD_P1_MIGRATION_ATTESTATION: ${{ inputs.p1_migration_attestation }}
+        run: |
+          PR_MERGED=$(gh api "repos/${GITHUB_REPOSITORY}/pulls/46" --jq '.merged_at')
+          test "$PR_MERGED" != "null" || { echo "::error::P1 PR #46 is not merged; deployment blocked"; exit 1; }
+          CONFIGURED_URL=$(gh api "repos/${GITHUB_REPOSITORY}/pages" --jq '.html_url')
+          test -n "$CONFIGURED_URL" || { echo "::error::GitHub Pages has no configured URL"; exit 1; }
+          echo "MDD_CONFIGURED_PAGES_URL=$CONFIGURED_URL" >> "$GITHUB_ENV"
+          MDD_CONFIGURED_PAGES_URL="$CONFIGURED_URL" node scripts/release-preflight.mjs
       - name: Validate the completed certification run
         env:
           GH_TOKEN: ${{ github.token }}
@@ -67,6 +87,7 @@ jobs:
           path: |
             release/deployment-verification.json
             release/certified-run.json
+            verification/release-preflight.json
           retention-days: 90
 
   publish:
