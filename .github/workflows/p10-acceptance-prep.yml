@@ -1,0 +1,25 @@
+name: P10 Acceptance Preparation
+
+on:
+  pull_request:
+    paths:
+      - "scripts/p10/**"
+      - "docs/P10_INTEGRATED_RELEASE_ACCEPTANCE.md"
+      - ".github/workflows/p10-acceptance-prep.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  acceptance-tool-tests:
+    name: Fail-closed evidence ledger tests (not release certification)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Reject fabricated signoff, stale SHA, privacy and origin leaks
+        run: node --test scripts/p10/acceptance.check.mjs
