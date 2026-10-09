@@ -8,7 +8,7 @@ import type {Prayer,PrayerStatus} from "../domain/types";
 import {JournalDialog,JournalHeading,WritingPreview} from "../writing/JournalPrimitives";
 import {ScriptureContext} from "../writing/ScriptureContext";
 import {buildReflectionUrl} from "../reflection/context";
-import {parsePrayerDetailQuery,prayerTimeline,readPrayerDetail,readPrayerMetadata,readPrayerSettings,type PrayerDetailModel} from "./detail-model";
+import {parsePrayerDetailQuery,prayerTimeline,readPrayerDetail,readPrayerMetadata,readPrayerSettings,safePrayerDetailBack,type PrayerDetailModel} from "./detail-model";
 import {usePrayerPosition,usePrayerRead} from "./detail-hooks";
 import {usePrayerDraftGuard} from "./usePrayerDraftGuard";
 import {scheduleLabel} from "./scheduling";
@@ -26,6 +26,7 @@ export function PrayerDetailScreen(){const {prayerId=""}=useParams();return <Pra
 function PrayerRecord({prayerId}:{prayerId:string}) {
  const location=useLocation(),navigate=useNavigate(),query=parsePrayerDetailQuery(location.search);
  const url=location.pathname+query.search;
+ const back=safePrayerDetailBack(query.returnTo,prayerId);
  const load=usePrayerRead(prayerId,()=>readPrayerDetail(db,prayerId));
  const metadata=usePrayerRead("detail-metadata",()=>readPrayerMetadata(db));
  const administration=usePrayerRead("detail-administration:"+prayerId,()=>readPrayerSettings(db,prayerId));
@@ -114,13 +115,13 @@ function PrayerRecord({prayerId}:{prayerId:string}) {
  };
  const editorTitle=editor==="wording"?"Edit wording":editor==="answer"?"Record an answer":editor==="encouragement"?"Add encouragement":"Add update";
  const saveLabel=editor==="wording"?"Save wording":editor==="answer"?"Mark answered":editor==="encouragement"?"Add encouragement":"Add update";
- if(model===undefined)return <main className="journal-workspace prayer-record"><JournalHeading title="Prayer" subtitle="Your prayer journal" back={query.returnTo}/>{load.error?<div role="alert" className="journal-notice"><p>Could not open this prayer. Your saved records are unchanged.</p><button onClick={load.retry}>Retry</button></div>:<p role="status">Opening prayer…</p>}</main>;
- if(model===null)return <main className="journal-workspace prayer-record"><JournalHeading title="Prayer unavailable" subtitle="Your prayer journal" back={query.returnTo}/><p>This prayer has been removed or is no longer available.</p>{dirty?<div className="journal-notice"><h2>Your unsaved writing</h2><p>It has not been saved. You can copy it before leaving.</p><textarea aria-label="Unsaved prayer writing" value={draft} readOnly/></div>:null}{guard.dialog}</main>;
+ if(model===undefined)return <main className="journal-workspace prayer-record"><JournalHeading title="Prayer" subtitle="Your prayer journal" back={back}/>{load.error?<div role="alert" className="journal-notice"><p>Could not open this prayer. Your saved records are unchanged.</p><button onClick={load.retry}>Retry</button></div>:<p role="status">Opening prayer…</p>}</main>;
+ if(model===null)return <main className="journal-workspace prayer-record"><JournalHeading title="Prayer unavailable" subtitle="Your prayer journal" back={back}/><p>This prayer has been removed or is no longer available.</p>{dirty?<div className="journal-notice"><h2>Your unsaved writing</h2><p>It has not been saved. You can copy it before leaving.</p><textarea aria-label="Unsaved prayer writing" value={draft} readOnly/></div>:null}{guard.dialog}</main>;
  const editable=prayer!.status==="ACTIVE"||prayer!.status==="WAITING";
  const person=metadata.data?.people.find(item=>item.id===prayer!.personId),category=metadata.data?.categories.find(item=>item.id===prayer!.categoryId);
  const settingsUrl=location.pathname+"/settings"+query.search;
  return <main className="journal-workspace prayer-record">
-  <JournalHeading title="Prayer" subtitle={prayer!.status.toLowerCase()} back={query.returnTo}/>
+  <JournalHeading title="Prayer" subtitle={prayer!.status.toLowerCase()} back={back}/>
   <section className="journal-paper prayer-request" aria-label="Prayer request">
    {person?<div className="prayer-record-person"><span className="prayer-record-initials" aria-hidden="true">{personInitials(person.name)}</span><div><strong>{person.name}</strong>{person.relationship?<small>{person.relationship}</small>:null}</div></div>:null}
    <p className="prayer-request-text">{prayer!.body}</p>
@@ -172,6 +173,6 @@ function PrayerRecord({prayerId}:{prayerId:string}) {
   </section>
   <details className="prayer-more-actions"><summary>More actions</summary><SavedVersionsLink kind="prayer-wording" targetId={prayer!.id} returnTo={url} pending={busy}/>{prayer!.status==="ACTIVE"?<button disabled={busy} onClick={()=>transition("WAITING")}>Move to waiting</button>:null}{prayer!.status!=="ARCHIVED"?<button disabled={busy} onClick={()=>transition("ARCHIVED")}>Archive prayer</button>:null}<button className="prayer-remove" disabled={busy} onClick={()=>guard.request(()=>setRemoveOpen(true))}>Remove prayer</button></details>
   {guard.dialog}
-  {removeOpen?<JournalDialog title="Remove this prayer?" busy={busy} close={()=>setRemoveOpen(false)}><p>The request, its updates, and answer will be removed from current views. Existing backups are unaffected.</p><div className="journal-dialog-actions"><button className="prayer-remove" disabled={busy} onClick={()=>run(async()=>{await repository.removePrayer(prayerId,prayer!.revision);guard.allowNavigation();navigate(query.returnTo,{replace:true});})}>Remove prayer</button><button disabled={busy} data-initial-focus onClick={()=>setRemoveOpen(false)}>Keep prayer</button></div>{message?<p role="alert">{message}</p>:null}</JournalDialog>:null}
+  {removeOpen?<JournalDialog title="Remove this prayer?" busy={busy} close={()=>setRemoveOpen(false)}><p>The request, its updates, and answer will be removed from current views. Existing backups are unaffected.</p><div className="journal-dialog-actions"><button className="prayer-remove" disabled={busy} onClick={()=>run(async()=>{await repository.removePrayer(prayerId,prayer!.revision);guard.allowNavigation();navigate(back,{replace:true});})}>Remove prayer</button><button disabled={busy} data-initial-focus onClick={()=>setRemoveOpen(false)}>Keep prayer</button></div>{message?<p role="alert">{message}</p>:null}</JournalDialog>:null}
  </main>;
 }

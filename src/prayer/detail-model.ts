@@ -35,7 +35,15 @@ export function readPrayerSettings(db:MddDatabase,id:string):Promise<{prayer:Pra
 }
 export interface PrayerDetailQuery { entry:string|null; shown:number; returnTo:string; search:string; draft:string|null; edit:"wording"|"update"|"encouragement"|"answer"|null; }
 export function safePrayerReturn(value:string|null,fallback="/prayer"):string{
- return value?.startsWith("/")&&!value.startsWith("//")&&!/[\\\\\u0000-\u001f]/.test(value)?value:fallback;
+ if(!value || !/^\/(?:today|bible|prayer|history|search|data|recovery|welcome)(?:[/?]|$)/.test(value) ||
+    value.startsWith("//") || /[\\\u0000-\u001f#]/.test(value) || /%(?:00|0[ad]|5c|2f)/i.test(value)) return fallback;
+ return value;
+}
+/** Refuse a Back link that would navigate to the same prayer record. */
+export function safePrayerDetailBack(value:string|null,prayerId:string):string{
+ const target=safePrayerReturn(value);
+ const path=target.split(/[?#]/,1)[0] ?? "";
+ return path==="/prayer/"+encodeURIComponent(prayerId) ? "/prayer" : target;
 }
 export function parsePrayerDetailQuery(search:string):PrayerDetailQuery{
  const params=new URLSearchParams(search);const rawEntry=params.get("entry"),rawShown=params.get("shown");
