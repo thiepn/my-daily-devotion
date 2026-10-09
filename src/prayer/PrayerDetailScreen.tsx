@@ -98,7 +98,20 @@ function PrayerRecord({prayerId}:{prayerId:string}) {
  const run=(action:()=>Promise<void>)=>void perform(action).catch(()=>{});
  const classifyUpdate=(next:"update"|"encouragement")=>run(async()=>{await recovery.controller.reclassifyUpdate(next==="update"?"prayer-update":"prayer-encouragement");setEditor(next);});
  const useSavedWording=()=>run(async()=>{if(!review)return;await recovery.controller.discard();baseline.current={id:review.id,status:review.status,body:review.body,revision:review.revision};draftRef.current=review.body;setDraft(review.body);accept(current=>({...current,prayer:review}));setConflict(false);setReview(null);requestAnimationFrame(()=>editorRef.current?.focus());});
- const transition=(status:PrayerStatus)=>{const serial=committed.current.serial;guard.request(()=>run(async()=>{if(!prayer)return;const revision=committed.current.serial!==serial?committed.current.prayer!.revision:prayer.revision;const saved=await repository.transition(prayerId,status,revision);accept(current=>({...current,prayer:saved}));await discard();setMessage(status==="ARCHIVED"?"Prayer archived.":"Prayer status updated.");load.retry();}));};
+ const transition=(status:PrayerStatus)=>{const serial=committed.current.serial;guard.request(()=>run(async()=>{if(!prayer)return;const revision=committed.current.serial!==serial?committed.current.prayer!.revision:prayer.revision;const saved=await repository.transition(prayerId,status,revision);noteCommit(saved);accept(current=>({...current,prayer:saved}));try { await discard(); } catch { setMessage("Prayer status updated. Earlier draft cleanup needs review; do not repeat the action.");load.retry();return; }setMessage(status==="ARCHIVED"?"Prayer archived.":"Prayer status updated.");load.retry();}));};
+ const markPrayedNow=()=>{
+  const serial=committed.current.serial;
+  guard.request(()=>run(async()=>{
+   const latest=committed.current.serial!==serial?committed.current.prayer:prayer;
+   if(!latest||latest.status!=="ACTIVE"){setMessage("The request changed. Review it before recording prayer.");load.retry();return;}
+   const saved=await repository.markPrayed(prayerId,undefined,latest.revision);
+   if(baseline.current?.revision===latest.revision&&baseline.current.body===latest.body&&baseline.current.status===latest.status){
+    baseline.current={...baseline.current,revision:saved.revision};setConflict(false);setReview(null);
+   }
+   noteCommit(saved);accept(current=>({...current,prayer:saved}));
+   setMessage("Prayed now recorded.");load.retry();
+  }));
+ };
  const editorTitle=editor==="wording"?"Edit wording":editor==="answer"?"Record an answer":editor==="encouragement"?"Add encouragement":"Add update";
  const saveLabel=editor==="wording"?"Save wording":editor==="answer"?"Mark answered":editor==="encouragement"?"Add encouragement":"Add update";
  if(model===undefined)return <main className="journal-workspace prayer-record"><JournalHeading title="Prayer" subtitle="Your prayer journal" back={query.returnTo}/>{load.error?<div role="alert" className="journal-notice"><p>Could not open this prayer. Your saved records are unchanged.</p><button onClick={load.retry}>Retry</button></div>:<p role="status">Opening prayer…</p>}</main>;
@@ -115,7 +128,7 @@ function PrayerRecord({prayerId}:{prayerId:string}) {
    <dl className="prayer-record-dates"><div><dt>Created</dt><dd>{date(prayer!.createdAt)}</dd></div><div><dt>Last prayed</dt><dd>{prayer!.lastPrayedAt?date(prayer!.lastPrayedAt):"Not recorded yet"}</dd></div></dl>
   </section>
   <div className="prayer-record-actions">
-   {prayer!.status==="ACTIVE"?<button className="grace-primary" disabled={busy} onClick={()=>run(async()=>{const previous=prayer!;const saved=await repository.markPrayed(prayerId,undefined,previous.revision);if(baseline.current?.revision===previous.revision&&baseline.current.body===previous.body&&baseline.current.status===previous.status){baseline.current={...baseline.current,revision:saved.revision};setConflict(false);setReview(null);}noteCommit(saved);accept(current=>({...current,prayer:saved}));setMessage("Prayed now recorded.");load.retry();})}>Prayed now</button>:null}
+   {prayer!.status==="ACTIVE"?<button className="grace-primary" disabled={busy} onClick={markPrayedNow}>Prayed now</button>:null}
    {editable?<><button id="open-prayer-update" disabled={busy} onClick={()=>startEditor("update")}>Add update</button><button disabled={busy} onClick={()=>startEditor("answer")}>Mark answered</button></>:null}
    {prayer!.status==="WAITING"?<button disabled={busy} onClick={()=>transition("ACTIVE")}>Return to active</button>:null}
    {prayer!.status==="ARCHIVED"?<button className="grace-primary" disabled={busy} onClick={()=>run(async()=>{const saved=await repository.restoreArchived(prayerId,prayer!.revision);accept(current=>({...current,prayer:saved}));setMessage("Prayer restored.");load.retry();})}>Restore to {model.resolution?"answered":"active"}</button>:null}
