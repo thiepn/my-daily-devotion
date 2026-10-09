@@ -157,10 +157,16 @@ describe("P5 explicitly encrypted format-2 recovery portability", () => {
     const review = await prepareMddRestore(archive.bytes, "strong-passphrase", "merge", dest);
     const before = await createBackupSnapshot(dest);
     const old = await readJournalEpoch(dest);
-    await addPrivateWriting(dest);
+    const sourceDraft = (await source.editorDrafts.toArray())[0]!;
+    const sourceContents = (await source.editorDraftContents.toArray())[0]!;
+    const id = crypto.randomUUID();
+    await dest.transaction("rw", [dest.editorDrafts, dest.editorDraftContents], async () => {
+      await dest.editorDrafts.add({ ...sourceDraft, id, journalEpoch: old });
+      await dest.editorDraftContents.add({ ...sourceContents, id });
+    });
     await expect(commitMddRestore(review, dest)).rejects.toBeInstanceOf(StaleRestoreReviewError);
     expect(await readJournalEpoch(dest)).toBe(old);
-    expect((await createBackupSnapshot(dest)).data).not.toEqual(before.data); // Local intentional change retained.
+    expect((await createBackupSnapshot(dest)).data).toEqual(before.data); // Only the private draft changed.
     expect(await dest.editorDrafts.count()).toBe(1);
   });
 });
