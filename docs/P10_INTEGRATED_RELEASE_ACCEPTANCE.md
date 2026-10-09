@@ -24,7 +24,7 @@ P10 inventories automated and human-only release checks against an exact 40-char
 Use the actual verified old site URL, including path, **not** the aspirational new domain.
 
 ~~~sh
-node --test scripts/p10/acceptance.test.mjs
+node --test scripts/p10/acceptance.check.mjs
 node scripts/p10/acceptance-cli.mjs template <40-hex-SHA> https://CURRENT_ORIGIN/CURRENT_PATH/ https://CURRENT_ORIGIN/CURRENT_PATH/ /secure/location/p10-ledger.json
 node scripts/p10/acceptance-cli.mjs assess /secure/location/p10-ledger.json <40-hex-SHA>
 ~~~
