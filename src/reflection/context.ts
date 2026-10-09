@@ -9,7 +9,7 @@ export function buildReflectionUrl(localDate: LocalDate, reference?: ScriptureRe
     params.set("start", reference.startVerseKey);
     params.set("end", reference.endVerseKey);
   }
-  if (returnTo?.startsWith("/")) params.set("return", returnTo);
+  if (returnTo?.startsWith("/") && !returnTo.startsWith("//")) params.set("return", returnTo);
   const query = params.toString();
   return `/today/reflection/${localDate}${query ? `?${query}` : ""}`;
 }
@@ -22,7 +22,8 @@ export function parsePendingScripture(params: URLSearchParams): ScriptureReferen
   return { translationId, startVerseKey: start as VerseKey, endVerseKey: end as VerseKey };
 }
 
-export function buildPrayerHandoffUrl(reflection: Reflection): string {
+export function buildPrayerHandoffUrl(reflection: Reflection, returnTo?: string): string {
   const params = new URLSearchParams({ sourceReflectionId: reflection.id, sourceDevotionDate: reflection.localDate });
+  params.set("return", returnTo?.startsWith("/") && !returnTo.startsWith("//") ? returnTo : buildReflectionUrl(reflection.localDate));
   return `/prayer/new?${params.toString()}`;
 }

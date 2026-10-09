@@ -4,7 +4,7 @@ import { enrollCalendarPlan, expectNoAxeViolations, openRoute, visibleNavLink } 
 test.describe("accessibility and keyboard UX", () => {
   test("major empty-state surfaces have no automated WCAG A/AA violations", async ({ page }) => {
     const routes: Array<[string, string]> = [
-      ["/today", "Today"],
+      ["/today", "Good morning, Friend."],
       ["/bible/JHN/3", "Bible"],
       ["/prayer", "Prayer"],
       ["/history", "History"],
@@ -13,7 +13,7 @@ test.describe("accessibility and keyboard UX", () => {
     ];
     for (const [route, heading] of routes) {
       await openRoute(page, route);
-      await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
+      await expect(page.getByRole("heading", { level: 1, name: route === "/today" ? /^Good (morning|afternoon|evening), Friend\.$/ : heading })).toBeVisible();
       await expectNoAxeViolations(page);
     }
   });
@@ -36,13 +36,16 @@ test.describe("accessibility and keyboard UX", () => {
 
   test("date and calendar controls have meaningful accessible names", async ({ page }) => {
     await openRoute(page, "/today");
+    await page.locator(".today-import summary").click();
     await expect(page.getByLabel("Completed through date")).toBeVisible();
     await enrollCalendarPlan(page);
+    await page.locator(".today-plan-card summary").click();
     await page.getByRole("link", { name: "Open full plan" }).click();
     await expect(page.getByRole("heading", { level: 1, name: "Reading plan" })).toBeVisible();
+    await page.getByText("Plan details & progress", { exact: true }).click();
     await expect(page.getByLabel("Completed through date")).toBeVisible();
 
-    await openRoute(page, "/history");
+    await openRoute(page, "/history/calendar");
     await expect(page.getByRole("button", { name: "Previous month" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Next month" })).toBeVisible();
   });

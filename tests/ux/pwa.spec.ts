@@ -39,26 +39,59 @@ test.describe("offline PWA UX", () => {
     await expect(coldPage.getByRole("heading", { level: 1, name: "Bible" })).toBeVisible();
     await expect(coldPage.getByRole("heading", { level: 2, name: "John 3" })).toBeVisible();
     await expect(coldPage.getByRole("button", { name: "Select John 3:16" })).toBeVisible();
+    await expect.poll(() => coldPage.locator('.brand-mark').evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth === 192)).toBe(true);
+    const offlineBrandAssets = await coldPage.evaluate(async () => {
+      const paths = ['brand-mark.svg', 'icons/favicon-16.png', 'icons/favicon-32.png', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/maskable-512.png', 'apple-touch-icon.png'];
+      return Promise.all(paths.map(async path => ({ path, ok: (await fetch(new URL(path, location.origin + location.pathname))).ok })));
+    });
+    expect(offlineBrandAssets.every(asset => asset.ok), JSON.stringify(offlineBrandAssets)).toBe(true);
 
+    await coldPage.emulateMedia({ colorScheme: 'dark' });
+    for (const [route, selector, asset] of [['/today', '.grace-art--morning img', 'evening-valley'], ['/bible/JHN/3', '.grace-art--context img', 'evening-context'], ['/history', '.grace-art--reflection img', 'evening-reflection']]) {
+      await coldPage.goto('/#' + route);
+      await expect(coldPage.locator(selector)).toHaveAttribute('src', new RegExp(asset));
+      await expect.poll(() => coldPage.locator(selector).evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth === 1200)).toBe(true);
+    }
+    await coldPage.goto('/#/bible/JHN/3');
     await coldPage.getByRole("link", { name: "Search", exact: true }).click();
     await expect(coldPage.getByRole("heading", { level: 1, name: "Search" })).toBeVisible();
     await coldPage.getByLabel("Search MDD").fill("John 3:16");
     await coldPage.getByRole("button", { name: "Search", exact: true }).click();
     await expect(coldPage.getByText("John 3:16", { exact: true }).first()).toBeVisible();
     await expect(coldPage.locator(".platform-status")).toContainText(/Offline|offline/i);
+    await coldPage.goto("/#/today/reflection/2026-04-24?translation=BSB&start=JHN.3.16&end=JHN.3.18");
+    await coldPage.getByLabel("Daily reflection").fill("### Offline grace\n\nMy writing stays with me.");
+    await coldPage.getByRole("button", { name: "Preview", exact: true }).click();
+    await expect(coldPage.locator(".journal-preview")).toContainText("Offline grace");
+    await coldPage.locator(".journal-context summary").click();
+    await expect(coldPage.locator(".journal-scripture blockquote")).toContainText("For God so loved the world");
+    await coldPage.getByRole("button", { name: "Save reflection", exact: true }).click();
+    await expect(coldPage.locator(".journal-status")).toContainText("saved locally");
+    await coldPage.reload();
+    await expect(coldPage.getByLabel("Daily reflection")).toHaveValue("### Offline grace\n\nMy writing stays with me.");
     await coldPage.goto("/#/prayer/new");
     await coldPage.getByLabel("What do you want to pray about?").fill("A request saved while completely offline.");
     await coldPage.getByRole("button", { name: "Save prayer", exact: true }).click();
     await coldPage.getByRole("button", { name: "Prayed now", exact: true }).click();
     await expect(coldPage.getByText("Prayed now recorded.")).toBeVisible();
-    await coldPage.goto("/#/history/moments");
-    await expect(coldPage.getByText("A request saved while completely offline.")).toBeVisible();
+    await coldPage.goto("/#/history?view=prayer");
+    await expect(coldPage.getByText("A request saved while completely offline.")).toBeVisible(); await expect(coldPage.locator(".history-reflection-band img")).toBeVisible(); await expect(coldPage.locator(".history-reflection-band blockquote")).toContainText("mercies");
     await coldPage.reload(); await expect(coldPage.getByText("A request saved while completely offline.")).toBeVisible();
     for (const theme of ["Light", "Dark"]) {
       await coldPage.getByRole("button", { name: `${theme} theme` }).click();
-      for (const [name, route, heading] of [["today", "/today", "Today"], ["bible", "/bible/JHN/3", "Bible"], ["search", "/search?q=John+3%3A16", "Search"], ["prayer", "/prayer", "Prayer"], ["history", "/history", "History"]]) {
-        await coldPage.goto(`/#${route}`); await expect(coldPage.getByRole("heading", { name: heading!, exact: true, level: 1 })).toBeVisible();
+      for (const [name, route, heading] of [["plan", "/today/plan", "Reading plan"], ["welcome", "/welcome", "A gentle beginning"], ["today", "/today", "Good morning, Friend."], ["bible", "/bible/JHN/3", "Bible"], ["search", "/search?q=John+3%3A16", "Search"], ["prayer", "/prayer", "Prayer"], ["history", "/history", "History"]]) {
+        await coldPage.goto(`/#${route}`); await expect(coldPage.getByRole("heading", { name: name === "today" ? /^Good (morning|afternoon|evening), Friend\.$/ : heading!, exact: true, level: 1 })).toBeVisible();
         if (name === "bible") await expect(coldPage.locator(".scripture-copy")).toBeVisible();
+        if (name === "today") {
+          await expect(coldPage.locator(".grace-art img")).toBeVisible();
+          expect(await coldPage.locator(".grace-art img").evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+          await expect(coldPage.locator(".today-verse blockquote")).toBeVisible();
+        }
+        if (name === "prayer") {
+          await expect(coldPage.locator(".prayer-quotation blockquote")).toBeVisible();
+          await expect(coldPage.locator(".prayer-journal-row")).toHaveCount(1);
+          expect(await coldPage.locator(".prayer-focus-caption img").evaluate((image: HTMLImageElement) => image.complete && image.naturalWidth > 0)).toBe(true);
+        }
         if (name === "search") await expect(coldPage.locator(".search-hit").first()).toBeVisible();
         await coldPage.screenshot({ path: testInfo.outputPath(`offline-${theme}-${name}.png`) });
       }
@@ -114,14 +147,14 @@ test.describe("offline PWA UX", () => {
         });
       });
       await expect.poll(() => page.evaluate(() => caches.keys())).toEqual([`mdd-app-v${APP_VERSION}-fixture-old`]);
-      await context.setOffline(true); await page.reload(); await expect(page.getByRole("heading", { name: "Today", exact: true })).toBeVisible();
+      await context.setOffline(true); await page.reload(); await expect(page.getByRole("heading", { name: /^Good (morning|afternoon|evening), Friend\.$/, exact: true })).toBeVisible();
       // Publish the complete generation before the online event automatically checks for updates.
       generation = "new";
       await context.setOffline(false);
       await page.evaluate(async () => { await (await navigator.serviceWorker.ready).update(); });
       await page.waitForFunction(async () => Boolean((await navigator.serviceWorker.getRegistration())?.waiting));
       await Promise.all([page.waitForEvent("load"), page.getByRole("button", { name: "Reload to update" }).click()]);
-      await expect(page.getByRole("heading", { name: "Today", exact: true })).toBeVisible();
+      await expect(page.getByRole("heading", { name: /^Good (morning|afternoon|evening), Friend\.$/, exact: true })).toBeVisible();
       expect(await oldTab.evaluate(async () => (await fetch("./assets/old-only.js")).text())).toBe("old tab lazy asset");
       await oldTab.close(); await page.reload();
       await expect.poll(() => page.evaluate(() => caches.keys())).toEqual([`mdd-app-v${APP_VERSION}-fixture-new`]);

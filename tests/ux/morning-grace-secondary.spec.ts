@@ -5,7 +5,7 @@ async function createPrayer(page) {
   await openRoute(page,"/prayer/new");
   await page.getByLabel("What do you want to pray about?").fill("Give wisdom and peace today.");
   await page.getByRole("button",{name:"Save prayer",exact:true}).click();
-  await expect(page.getByLabel("Request",{exact:true})).toHaveValue("Give wisdom and peace today.");
+  await expect(page.locator(".prayer-request-text")).toHaveText("Give wisdom and peace today.");
   return new URL(page.url()).hash.replace(/^#/,"");
 }
 
@@ -20,19 +20,19 @@ test.describe("Morning Grace secondary workflows",()=>{
     await expect(page.locator(".mg-plan-workspace")).toBeVisible();
 
     const prayerRoute=await createPrayer(page);
-    await expect(page.locator(".mg-prayer-detail-workspace")).toBeVisible();
+    await expect(page.locator(".prayer-record")).toBeVisible();
 
-    await openRoute(page,prayerRoute+"/settings");
-    await expect(page.locator(".mg-prayer-settings-workspace")).toBeVisible();
+    await openRoute(page,prayerRoute.includes("?") ? prayerRoute.replace("?", "/settings?") : prayerRoute+"/settings");
+    await expect(page.locator(".prayer-settings-journal")).toBeVisible();
 
     await openRoute(page,"/prayer/people");
-    await expect(page.locator(".mg-prayer-metadata-workspace")).toBeVisible();
+    await expect(page.locator(".metadata-journal")).toBeVisible();
 
     await openRoute(page,"/prayer/categories");
-    await expect(page.locator(".mg-prayer-metadata-workspace")).toBeVisible();
+    await expect(page.locator(".metadata-journal")).toBeVisible();
 
     await openRoute(page,"/prayer/session?depth=quick");
-    await expect(page.locator(".mg-focused-prayer-workspace")).toBeVisible();
+    await expect(page.locator(".session-is-active")).toBeVisible();
 
     await openRoute(page,"/bible/collections");
     await expect(page.locator(".mg-collections-workspace")).toBeVisible();
@@ -41,7 +41,7 @@ test.describe("Morning Grace secondary workflows",()=>{
     await expect(page.locator(".mg-search-workspace")).toBeVisible();
 
     await openRoute(page,"/data");
-    await expect(page.locator(".mg-data-workspace")).toBeVisible();
+    await expect(page.locator(".data-journal")).toBeVisible();
     await expectNoAxeViolations(page);
   });
 
@@ -53,7 +53,7 @@ test.describe("Morning Grace secondary workflows",()=>{
       "/today/reflection/2026-09-19",
       "/today/plan",
       prayerRoute,
-      prayerRoute+"/settings",
+      prayerRoute.includes("?") ? prayerRoute.replace("?", "/settings?") : prayerRoute+"/settings",
       "/prayer/people",
       "/prayer/categories",
       "/prayer/session?depth=quick",

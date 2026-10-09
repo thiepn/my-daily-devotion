@@ -1,0 +1,18 @@
+import {expect,test,type Page} from '@playwright/test';
+import {openRoute} from '../ux/helpers';
+import {seedMetadata,editMetadata} from '../ux/metadata-fixture';
+import {seedArchive} from '../ux/archive-fixture';
+test.beforeEach(async({page})=>{await page.clock.setFixedTime(new Date('2026-04-24T07:00:00+02:00'));});
+async function editor(page:Page,surface:string){
+ if(surface==='collections'){await seedArchive(page);await openRoute(page,'/bible/collections?collection=00000000-0000-4000-8000-000000013000');await page.locator('#collection-note-00000000-0000-4000-8000-000000014000').click();await page.getByLabel('Passage note').fill('Remember His faithfulness in the small moments.\n\nHelp me carry these words into today.');}
+ else{await seedMetadata(page,surface as 'people'|'categories');await editMetadata(page,surface==='people'?'Anna Wilson':'Personal',surface==='people'?'person':'category');await page.getByLabel('Name',{exact:true}).fill(surface==='people'?'Anna Wilson':'Everyday faithfulness');if(surface==='people')await page.getByLabel('Notes',{exact:false}).fill('Keep her family close in prayer.\n\nRemember the conversation we shared.');}
+ await expect(page.locator('.draft-status')).toHaveText('Draft kept on this device');
+}
+for(const surface of ['people','categories','collections'])for(const [width,height] of [[320,568],[360,800],[390,844],[430,932],[768,1024],[1440,900]])test(`Durable ${surface} ${width}`,async({page})=>{await page.setViewportSize({width:width!,height:height!});await editor(page,surface);await page.evaluate(async()=>{await document.fonts.ready;(document.activeElement as HTMLElement)?.blur();window.scrollTo({top:0,behavior:"instant"});await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));});await page.mouse.move(0,0);await expect(page).toHaveScreenshot(`durable-${surface}-${width}.png`,{fullPage:true});});
+for(const surface of ['people','categories','collections'])for(const state of ['dark','text200','review','failure'])test(`Durable ${surface} ${state}`,async({page})=>{
+ await page.setViewportSize({width:state==='text200'?320:390,height:844});if(state==='dark')await page.emulateMedia({colorScheme:'dark'});await editor(page,surface);
+ if(state==='text200')await page.evaluate(()=>{document.documentElement.style.fontSize='200%';});
+ if(state==='review'){await page.reload();if(surface==='collections'){await page.locator('#collection-note-00000000-0000-4000-8000-000000014000').click();}else await editMetadata(page,surface==='people'?'Anna Wilson':'Personal',surface==='people'?'person':'category');await page.getByText('Kept drafts for this editor',{exact:true}).click();await page.getByRole('button',{name:/Review kept draft/}).click();await expect(page.getByRole('dialog')).toBeVisible();}
+ if(state==='failure'){await page.evaluate(()=>{const put=IDBObjectStore.prototype.put;IDBObjectStore.prototype.put=function(...args){if(this.name==='editorDraftContents')throw new DOMException('Draft storage unavailable','QuotaExceededError');return put.apply(this,args);};});const field=page.getByLabel(surface==='collections'?'Passage note':'Name',{exact:true});await field.fill((await field.inputValue())+' More writing.');await expect(page.getByRole('button',{name:'Retry draft protection',exact:true})).toBeVisible();}
+ await page.evaluate(async()=>{await document.fonts.ready;(document.activeElement as HTMLElement)?.blur();window.scrollTo({top:0,behavior:"instant"});await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));});await page.mouse.move(0,0);await expect(page).toHaveScreenshot(`durable-${surface}-${state}.png`,{fullPage:state!=='review'});
+});

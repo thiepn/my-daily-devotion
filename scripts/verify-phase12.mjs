@@ -1,3 +1,4 @@
+import { assertReviewedDatabaseContract } from "./reviewed-database-contract.mjs";
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { access, readFile, readdir, stat } from "node:fs/promises";
@@ -31,7 +32,7 @@ assert.match(pkg.scripts.build, /npm run notices:build/);
 assert.equal(pkg.scripts["release:package"], "npm run build && node scripts/package-release.mjs");
 assert.equal(pkg.scripts["audit:prod"], "npm audit --omit=dev --audit-level=high");
 assert.equal(pkg.scripts["verify:phase12"], "node scripts/certify.mjs");
-const certification = await read("scripts/certify.mjs");
+const certification = await read("scripts/certify.mjs") + await read("scripts/certification/runner.mjs");
 for (const gate of ["verify-phase0.mjs", "typecheck", '"test:report"', '"build"', "test:ux", "verify-phase11.mjs", "package-release.mjs", "verify-phase12.mjs"]) assert.ok(certification.includes(gate), `Certification missing ${gate}`);
 assert.match(certification, /phase = 2; phase <= 10/);
 
@@ -63,7 +64,7 @@ assert.match(ci, /path:\s*release\//);
 assert.doesNotMatch(ci, /npm install --ignore-scripts/);
 
 for (const token of ["release/", "playwright-report/", "test-results/", "/public/THIRD_PARTY_NOTICES.txt"]) assert.ok(gitignore.includes(token), `.gitignore missing ${token}`);
-assert.match(schema, /DATABASE_SCHEMA_VERSION\s*=\s*1/);
+await assertReviewedDatabaseContract();
 assert.match(changelog, /## 1\.0\.0 — 2026-09-17/);
 assert.match(privacyDoc, /local-first/i);
 assert.match(privacyDoc, /does not include analytics, advertising, social tracking/i);
@@ -120,7 +121,10 @@ const archive = await readFile(artifactPath);
 const archiveSha = createHash("sha256").update(archive).digest("hex");
 assert.equal(releaseManifest.product, "My Daily Devotion");
 assert.equal(releaseManifest.version, pkg.version);
-assert.equal(releaseManifest.databaseSchemaVersion, 1);
+// The reviewed contract above locks the additive recovery migration and the
+// unchanged v1 domain/portable schemas. The archive must declare that physical
+// schema accurately rather than retain the historical release's version.
+assert.equal(releaseManifest.databaseSchemaVersion, Number(/DATABASE_SCHEMA_VERSION\s*=\s*(\d+)/.exec(schema)?.[1]));
 assert.equal(releaseManifest.sha256, archiveSha);
 assert.equal(sums.trim(), `${archiveSha}  ${releaseManifest.artifact}`);
 assert.equal(releaseManifest.archiveBytes, archive.byteLength);

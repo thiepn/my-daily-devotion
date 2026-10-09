@@ -1,0 +1,45 @@
+import { expect, test } from '@playwright/test';
+import fs from 'node:fs/promises';
+import { seedHistoryJournal } from './history-fixture';
+import { dataSnapshot } from './data-fixture';
+import { openRoute, expectNoHorizontalOverflow, expectNoAxeViolations } from './helpers';
+test.beforeEach(async ({ page }) => { await page.clock.setFixedTime(new Date('2026-04-24T07:00:00+02:00')); });
+test('selected Markdown and printing preserve records and complete contextual returns', async ({ page }) => {
+  await seedHistoryJournal(page, { long: true }); const before = await dataSnapshot(page);
+  await openRoute(page, '/history/range?from=2026-04-19&to=2026-04-24&shown=40&return=%2Fhistory%3Fperiod%3Dall');
+  await page.getByRole('link', { name: 'Keep this chapter' }).click();
+  await expect(page.getByRole('heading', { name: 'A chapter of grace' })).toBeVisible();
+  await page.getByLabel('Prayer requests', { exact: true }).uncheck();
+  await expect(page.locator('.journal-export-entry h3').filter({ hasText: 'Added a prayer request' })).toHaveCount(0);
+  const pending = page.waitForEvent('download'); await page.getByRole('button', { name: 'Download selected Markdown' }).click();
+  const download = await pending, text = await fs.readFile((await download.path())!, 'utf8');
+  expect(download.suggestedFilename()).toBe('mdd-journal-2026-04-19-through-2026-04-24.md');
+  expect(text).toContain('Reflection written'); expect(text).not.toContain('Added a prayer request'); expect(text).not.toContain('data.json');
+  await page.evaluate(() => { window.print = () => { document.body.dataset.printRequested = 'yes'; }; });
+  await page.getByRole('button', { name: 'Print / Save as PDF' }).click(); await expect(page.getByRole('status')).toContainText('Print dialog requested');
+  expect(await page.locator('body').getAttribute('data-print-requested')).toBe('yes');
+  const source = page.locator('.journal-export-entry').filter({ has: page.getByRole('heading', { name: 'Reflection written' }) }).getByRole('link', { name: 'Open this entry' });
+  await source.click(); await expect(page.locator('.history-day-entry.is-selected')).toBeFocused();
+  await page.locator('#history-back').click(); await expect(page.getByLabel('Prayer requests', { exact: true })).not.toBeChecked();
+  expect(await dataSnapshot(page)).toEqual(before);
+});
+test('empty selection, invalid dates and optional assets do not expose drafts or alter records', async ({ page }) => {
+  await seedHistoryJournal(page); const before = await dataSnapshot(page);
+  await page.route('**/bible/manifest.json', route => route.abort());
+  await openRoute(page, '/history/export?from=2026-04-19&to=2026-04-24&sections=reflections');
+  await expect(page.locator('.journal-export-entry')).toHaveCount(1);
+  await page.getByLabel('Reflections', { exact: true }).uncheck(); await expect(page.getByRole('button', { name: 'Download selected Markdown' })).toBeDisabled();
+  await expect(page.getByText('No saved entries match', { exact: false })).toBeVisible();
+  await openRoute(page, '/history/export?from=2026-02-29&to=2026-04-01'); await expect(page.getByText('Choose a valid first and last date.', { exact: false })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Print / Save as PDF' })).toHaveCount(0);
+  expect(await dataSnapshot(page)).toEqual(before);
+});
+test('print media excludes navigation and controls; narrow dark enlarged text remains usable', async ({ page }) => {
+  await page.setViewportSize({ width: 320, height: 844 }); await page.emulateMedia({ colorScheme: 'dark' });
+  await seedHistoryJournal(page, { long: true }); await openRoute(page, '/history/export?from=2026-04-19&to=2026-04-24');
+  await expect(page.locator('.journal-export-entry')).toHaveCount(5);
+  await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; }); await expectNoHorizontalOverflow(page); await expectNoAxeViolations(page);
+  await expect(page.locator('.mobile-nav')).toBeVisible(); await page.emulateMedia({ media: 'print' });
+  await expect(page.locator('.mobile-nav')).toBeHidden(); await expect(page.locator('.journal-export-controls')).toBeHidden();
+  await expect(page.locator('.journal-export-preview')).toBeVisible(); await expect(page.locator('.journal-export-source').first()).toBeHidden();
+});

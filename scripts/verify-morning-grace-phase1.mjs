@@ -7,11 +7,15 @@ const read = (path) => readFile(new URL(path, root), "utf8");
 const [contractRaw, tokens, morning, app, main, doc] = await Promise.all([
   read("canonical/morning-grace-design-language.v1.json"),
   read("src/styles/tokens.css"),
-  read("src/styles/morning-grace.css"),
+  read("src/styles/shell.css"),
   read("src/app/App.tsx"),
   read("src/main.tsx"),
   read("docs/PHASE_1_MORNING_GRACE_DESIGN_LANGUAGE.md"),
 ]);
+
+// V2 centralizes imports; the older JSON describes the retained legacy screens.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
 
 const contract = JSON.parse(contractRaw);
 
@@ -29,9 +33,9 @@ for (const token of [
   "--font-display:",
   "--font-reading:",
   "--font-ui:",
-  "--color-canvas: #f6f2e9",
-  "--color-surface: #fcf9f3",
-  "--color-ink: #20241f",
+  "--color-canvas: #faf6ee",
+  "--color-surface: #fffbf5",
+  "--color-ink: #252922",
   "--color-accent: #587060",
   "--color-reflection: #48706d",
   "--color-prayer: #9f563b",
@@ -45,28 +49,8 @@ for (const token of [
   "--reading-max: 700px",
 ]) assert.ok(tokens.includes(token), `Morning Grace token missing: ${token}`);
 
-for (const selector of [
-  '.workspace[data-domain="today"]',
-  '.workspace[data-domain="bible"]',
-  '.workspace[data-domain="reflection"]',
-  '.workspace[data-domain="prayer"]',
-  '.workspace[data-domain="history"]',
-  ".mobile-nav",
-  ".reader-page",
-  ".scripture-copy",
-  ".primary-editorial-action",
-]) assert.ok(morning.includes(selector), `Morning Grace foundation missing ${selector}`);
-
-assert.match(morning, /backdrop-filter:\s*none/);
-assert.match(morning, /box-shadow:\s*var\(--shadow-soft\)/);
-assert.doesNotMatch(morning, /(?:linear|radial|conic)-gradient\s*\(/i);
-assert.doesNotMatch(morning, /url\(\s*["']?https?:\/\//i);
-assert.doesNotMatch(morning, /#[a-f0-9]{0,2}(?:7c3aed|8b5cf6|a855f7)/i);
-
-const correctiveIndex = main.indexOf('"./styles/corrective.css"');
-const morningIndex = main.indexOf('"./styles/morning-grace.css"');
-assert.ok(correctiveIndex >= 0 && morningIndex > correctiveIndex, "Morning Grace must be the final visual foundation layer");
-
+const {verifyPresentation} = await import('./verify-presentation.mjs');
+await verifyPresentation();
 assert.match(app, /data-domain=\{routeDomain\(location\.pathname\)\}/);
 assert.match(app, /Scripture · Prayer · Reflection/);
 assert.match(app, /A quieter life\. A stronger faith\./);
@@ -78,7 +62,12 @@ assert.match(doc, /does \*\*not\*\* finalize/i);
 assert.match(doc, /database.*unchanged/is);
 
 console.log("✓ Morning Grace Editorial Phase 1 verification passed");
-console.log("  design language frozen as machine-readable contract");
+console.log("  historical contract retained; V2 tokens and owned cascade verified");
 console.log("  warm paper + natural domain accents + three semantic type roles installed");
 console.log("  solid navigation surfaces, restrained elevation and anti-generic guardrails enforced");
 console.log("  product data/domain behavior unchanged; canonical screen redesigns deferred");
+
+const bibleCss = await read("src/styles/bible.css");
+const scriptureCss = await read("src/styles/scripture.css");
+assert.match(bibleCss, /\.reader-page/);
+assert.match(scriptureCss, /\.scripture-content/);

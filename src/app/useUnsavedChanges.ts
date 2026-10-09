@@ -1,8 +1,10 @@
 import { useEffect, useRef } from "react";
 import { useBlocker } from "react-router-dom";
+import { useUpdateProtection } from "./useUpdateProtection";
 
 /** Guard both SPA history and browser reloads without creating saved records. */
 export function useUnsavedChanges(dirty: boolean): () => void {
+  useUpdateProtection(dirty);
   const allow = useRef(false);
   const blocker = useBlocker(({ currentLocation, nextLocation }) => dirty && !allow.current && (currentLocation.pathname !== nextLocation.pathname || currentLocation.search !== nextLocation.search));
   useEffect(() => { allow.current = false; }, [dirty]);

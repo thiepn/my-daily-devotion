@@ -33,27 +33,29 @@ test("visual record of populated devotional journeys and management screens", as
   test.setTimeout(300_000);
   const errors: string[] = []; page.on("pageerror", (error) => errors.push(error.message));
   await enrollCalendarPlan(page);
-  await page.locator(".reading-toggle").first().click();
+  await page.locator(".today-plan-card summary").click(); await page.locator(".today-reading-check").first().click();
   await expect(page.getByText("1 of 4", { exact: true })).toBeVisible();
-  await openRoute(page, "/prayer/people"); await page.getByLabel("Name", { exact: true }).fill("Anna"); await page.getByLabel("Relationship", { exact: false }).fill("Family");
-  await page.getByRole("button", { name: "Add person", exact: true }).click(); await expect(page.locator(".metadata-row").filter({ hasText: "Anna" })).toBeVisible();
+  await openRoute(page, "/prayer/people"); await page.getByRole("button", { name: "Add person", exact: true }).click(); await page.getByLabel("Name", { exact: true }).fill("Anna"); await page.getByLabel("Relationship", { exact: false }).fill("Family");
+  await page.getByRole("button", { name: "Save person", exact: true }).click(); await expect(page.locator(".directory-row").filter({ hasText: "Anna" })).toBeVisible();
+  // Category management initializes its defaults; opening capture is read-only.
+  await openRoute(page, "/prayer/categories"); await page.getByRole("button", { name: "Add suggested categories" }).click(); await expect(page.locator(".directory-row").filter({ hasText: "Family" })).toBeVisible();
   await openRoute(page, "/today/reflection/2026-09-17?translation=BSB&start=JHN.3.16&end=JHN.3.16");
   await page.getByLabel("Daily reflection").fill("God’s love invites a generous response.\n\nToday I want to listen carefully and show kindness to my family, especially when the day feels hurried.");
   await page.getByRole("button", { name: "Save reflection" }).click(); await expect(page.getByText("Reflection created and saved locally.")).toBeVisible();
-  await page.getByRole("link", { name: "Create prayer →" }).click();
+  await page.getByRole("button", { name: /Bring into prayer/ }).click();
   await page.getByLabel("What do you want to pray about?").fill("Give Anna wisdom and peace for the week ahead.");
   await page.getByRole("button", { name: "Add details", exact: true }).click(); await page.getByRole("combobox", { name: "Person optional", exact: true }).selectOption({ label: "Anna" });
   await page.getByRole("combobox", { name: "Category optional", exact: true }).selectOption({ label: "Family" }); await page.getByRole("combobox", { name: "Schedule", exact: true }).selectOption("DAILY");
-  await page.getByRole("button", { name: "Save prayer" }).click(); await expect(page.getByLabel("Request", { exact: true })).toHaveValue("Give Anna wisdom and peace for the week ahead.");
+  await page.getByRole("button", { name: "Save prayer" }).click(); await expect(page.locator(".prayer-request-text")).toHaveText("Give Anna wisdom and peace for the week ahead.");
   const prayer = page.url().split("#")[1]!;
   const prayerSettings = prayer.includes("?") ? prayer.replace("?", "/settings?") : `${prayer}/settings`;
-  await page.getByLabel("Prayer update").fill("We had a good conversation today. Keep helping me listen."); await page.getByRole("button", { name: "Add update", exact: true }).click();
-  await expect(page.getByText("Update recorded.")).toBeVisible(); await page.getByRole("button", { name: "Prayed now" }).click();
+  await page.getByRole("button", { name: "Add update", exact: true }).click(); await page.getByLabel("Prayer update").fill("We had a good conversation today. Keep helping me listen."); await page.locator(".prayer-record-editor").getByRole("button", { name: "Add update", exact: true }).click();
+  await expect(page.getByText("Saved locally.", { exact: true })).toBeVisible(); await page.getByRole("button", { name: "Prayed now" }).click();
   await expect(page.getByText("Prayed now recorded.")).toBeVisible();
   await openRoute(page, "/prayer/new"); await page.getByLabel("What do you want to pray about?").fill("Help me listen with patience and speak with kindness today.");
-  await page.getByRole("button", { name: "Save prayer" }).click(); await expect(page.getByLabel("Request", { exact: true })).toBeVisible();
-  await openRoute(page, "/bible/collections?translation=BSB&start=JHN.3.16&end=JHN.3.16"); await page.getByLabel("New collection").fill("Promises to remember");
-  await page.getByRole("button", { name: "Add", exact: true }).click(); await page.getByRole("button", { name: "Add selected passage to Promises to remember" }).click();
+  await page.getByRole("button", { name: "Save prayer" }).click(); await expect(page.locator(".prayer-request-text")).toBeVisible();
+  await openRoute(page, "/bible/collections?translation=BSB&start=JHN.3.16&end=JHN.3.16"); await page.getByRole("button", { name: "Add collection", exact: true }).click(); await page.getByLabel("New collection").fill("Promises to remember");
+  await page.getByRole("button", { name: "Save collection", exact: true }).click(); await page.getByRole("button", { name: "Add selected passage to Promises to remember" }).click();
   await expect(page.getByRole("link", { name: "John 3:16", exact: true })).toBeVisible();
   await openRoute(page, "/bible/JHN/3?verse=16");
   await page.getByRole("button", { name: "Highlight", exact: true }).click();
@@ -61,17 +63,17 @@ test("visual record of populated devotional journeys and management screens", as
   const surfaces: Surface[] = [
     ...emptySurfaces.filter((item) => item[0] !== "search"),
     ["plan", "/today/plan", "Reading plan"], ["prayer-new", "/prayer/new", "Add prayer"], ["prayer-detail", prayer, "Prayer"],
-    ["prayer-settings", prayerSettings, "Prayer details", "Prayer settings"], ["people", "/prayer/people", "People", "Prayer people"], ["categories", "/prayer/categories", "Categories", "Prayer categories"],
+    ["prayer-settings", prayerSettings, "Prayer settings", "Prayer settings"], ["people", "/prayer/people", "People", "Prayer people"], ["categories", "/prayer/categories", "Categories", "Prayer categories"],
     ["moments", "/history/moments", "Moments", "History moments"], ["search-results", "/search?q=love", "Search"],
   ];
   for (const mode of ["light", "dark", "mobile", "mobile-dark", "small-mobile", "tablet-portrait", "tablet-landscape"] as const) {
     await page.setViewportSize(mode.includes("mobile") ? { width: mode === "small-mobile" ? 320 : 390, height: mode === "small-mobile" ? 568 : 844 } : mode === "tablet-portrait" ? { width: 768, height: 1024 } : mode === "tablet-landscape" ? { width: 1024, height: 768 } : { width: 1440, height: 900 });
     await setVisualTheme(page, mode.includes("dark") ? "dark" : "light");
     for (const surface of surfaces) await capture(page, testInfo, `populated-${mode}`, surface);
-    await openRoute(page, "/prayer/session?depth=quick"); await expect(page.locator(".focused-prayer-card")).toBeVisible();
+    await openRoute(page, "/prayer/session?depth=quick"); await expect(page.locator(".session-request-paper")).toBeVisible();
     await expectNoHorizontalOverflow(page); await page.screenshot({ path: testInfo.outputPath(`populated-${mode}-focused-prayer.png`) });
     await expectNoAxeViolations(page);
-    await openRoute(page, "/history"); await page.locator(".history-day[href]").first().click();
+    await openRoute(page, "/history"); await page.locator(".history-journal-row").first().click();
     await expect(page.locator(".history-entry").first()).toBeVisible(); await expectNoHorizontalOverflow(page);
     await page.screenshot({ path: testInfo.outputPath(`populated-${mode}-history-day.png`) });
   }
@@ -116,8 +118,8 @@ test("compact verse-note editing and storage recovery visual states", async ({ p
     await expectNoHorizontalOverflow(page);
     await page.screenshot({ path: testInfo.outputPath(`note-editor-${width}.png`) });
     // Remove the test note so each viewport exercises the same capture state.
-    page.once("dialog", dialog => dialog.accept());
     await page.getByRole("button", { name: "Remove note", exact: true }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Remove note", exact: true }).click();
     await expect(page.getByText("Verse note removed from current views.")).toBeVisible();
   }
   await page.addInitScript(() => {

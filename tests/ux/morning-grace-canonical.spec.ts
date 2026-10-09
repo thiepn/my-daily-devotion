@@ -5,25 +5,23 @@ test.describe("Morning Grace canonical screens", () => {
   test("canonical landmarks render after enrollment", async ({ page }) => {
     await enrollCalendarPlan(page);
     await openRoute(page, "/today");
-    await expect(page.locator(".mg-today-hero")).toBeVisible();
-    await expect(page.locator(".mg-reading-card")).toHaveCount(4);
-    await expect(page.locator(".mg-response-section")).toBeVisible();
+    await expect(page.locator(".today-opening")).toBeVisible();
+    await expect(page.locator(".today-reading-row")).toHaveCount(4);
+    await expect(page.locator(".today-responses")).toBeVisible();
 
     await openRoute(page, "/bible/JHN/3");
     await expect(page.locator(".mg-bible-shell-header")).toBeVisible();
-    const mobile = (page.viewportSize()?.width ?? 9999) <= 760;
-    if (mobile) await expect(page.locator(".mg-bible-chapter-art")).toBeHidden();
-    else await expect(page.locator(".mg-bible-chapter-art")).toBeVisible();
+    await expect(page.locator(".mg-bible-chapter-art")).toBeVisible();
     await expect(page.locator(".mg-scripture-page .scripture-copy")).toBeVisible();
 
     await openRoute(page, "/prayer");
-    await expect(page.locator(".mg-prayer-hero")).toBeVisible();
-    await expect(page.locator(".mg-prayer-library")).toBeVisible();
+    await expect(page.locator(".prayer-journal-heading")).toBeVisible();
+    await expect(page.locator(".prayer-journal-library")).toBeVisible();
 
     await openRoute(page, "/history");
-    await expect(page.locator(".mg-history-hero")).toBeVisible();
-    await expect(page.locator(".mg-history-overview")).toBeVisible();
-    await expect(page.locator(".mg-history-calendar")).toBeVisible();
+    await expect(page.locator(".history-journal-heading")).toBeVisible();
+    await expect(page.locator(".history-overview-card")).toBeVisible();
+    await expect(page.locator(".history-reflection-band")).toBeVisible();
     await expectNoAxeViolations(page);
   });
 

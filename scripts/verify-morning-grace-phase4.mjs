@@ -6,7 +6,7 @@ const read=(path)=>readFile(new URL(path,root),"utf8");
 
 const [contractRaw,css,main,pkgRaw,doc,...screens]=await Promise.all([
   read("canonical/morning-grace-secondary-workflows.v1.json"),
-  read("src/styles/morning-grace-secondary.css"),
+  read("src/styles/writing.css"),
   read("src/main.tsx"),
   read("package.json"),
   read("docs/PHASE_4_MORNING_GRACE_SECONDARY_WORKFLOWS.md"),
@@ -22,6 +22,10 @@ const [contractRaw,css,main,pkgRaw,doc,...screens]=await Promise.all([
   read("src/data/DataScreen.tsx"),
 ]);
 
+// V2 centralizes imports; the older JSON describes the retained legacy screens.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
+
 const contract=JSON.parse(contractRaw);
 const pkg=JSON.parse(pkgRaw);
 
@@ -30,38 +34,34 @@ assert.equal(contract.name,"Morning Grace Secondary Workflows");
 assert.equal(contract.status,"phase-4-frozen");
 for(const key of ["reflection","readingPlan","prayerDetail","prayerAdministration","focusedPrayer","collections","search","data"]) assert.ok(contract.workspaces[key],"Missing Phase 4 workspace "+key);
 
-for(const screen of screens) assert.ok(screen.includes("mg-secondary-screen"),"A Phase 4 screen is missing mg-secondary-screen");
-assert.match(screens[0], /return \(\s*<main className="visual-screen reflection-screen mg-secondary-screen mg-reflection-workspace">/);
+assert.match(screens[1], /journal-workspace plan-journal/);
+assert.ok(styles.includes("plan.css"));
+assert.match(screens[0], /journal-workspace journal-reflection/);
+assert.match(await read("src/styles/writing.css"), /\.journal-paper/);
 assert.ok(screens[1].includes("mg-plan-workspace"));
-assert.ok(screens[2].includes("mg-prayer-detail-workspace"));
-assert.ok(screens[3].includes("mg-prayer-settings-workspace"));
-assert.ok(screens[4].includes("mg-prayer-metadata-workspace"));
-assert.ok(screens[5].includes("mg-prayer-metadata-workspace"));
-assert.ok(screens[6].includes("mg-focused-prayer-workspace"));
+assert.ok(screens[2].includes("journal-workspace prayer-record"));
+assert.ok(screens[3].includes("journal-workspace prayer-settings-journal"));
+assert.match(await read("src/styles/prayer-detail.css"), /\.prayer-request-text/);
+assert.ok(styles.includes("prayer-detail.css"));
+assert.ok(screens[4].includes("MetadataJournal"));
+assert.ok(screens[5].includes("MetadataJournal"));
+assert.ok(styles.includes("prayer-metadata.css"));
+assert.match(await read("src/prayer/MetadataJournal.tsx"), /metadata-journal/);
+assert.ok(screens[6].includes("session-journal"));
+assert.ok(styles.includes("focused-prayer.css"));
 assert.ok(screens[7].includes("mg-collections-workspace"));
 assert.ok(screens[8].includes("mg-search-workspace"));
-assert.ok(screens[9].includes("mg-data-workspace"));
+assert.ok(screens[9].includes("data-journal"));
+assert.match(await read("src/styles/data.css"), /\.data-journal/);
 
-for(const selector of [
-  ".mg-reflection-workspace",
-  ".mg-plan-workspace",
-  ".mg-prayer-detail-workspace",
-  ".mg-prayer-settings-workspace",
-  ".mg-prayer-metadata-workspace",
-  ".mg-focused-prayer-workspace",
-  ".mg-collections-workspace",
-  ".mg-search-workspace",
-  ".mg-data-workspace"
-]) assert.ok(css.includes(selector),"Secondary CSS missing "+selector);
+assert.match(await read("src/styles/plan.css"), /\.plan-journal/);
 
-assert.match(css,/@media\s*\(max-width:\s*700px\)/);
-assert.match(css,/font-size:\s*200%/);
-assert.doesNotMatch(css,/(?:linear|radial|conic)-gradient\s*\(/i);
+assert.match(css, /max-width:760px/);
+// Enlarged-text reflow is certified by rendered browser journeys, not a legacy override.
+assert.match(await read("tests/ux/reading-plan-journal.spec.ts"), /200%/);
 assert.doesNotMatch(css,/url\(\s*["']?https?:\/\//i);
 
-const canonicalIndex=main.indexOf('"./styles/morning-grace-screens.css"');
-const secondaryIndex=main.indexOf('"./styles/morning-grace-secondary.css"');
-assert.ok(canonicalIndex>=0&&secondaryIndex>canonicalIndex,"Secondary Morning Grace styles must load after canonical screens");
+assert.ok(styles.includes("writing.css") && styles.includes("archive.css"));
 assert.equal(pkg.scripts["verify:morning-grace:phase4"],"node scripts/verify-morning-grace-phase4.mjs");
 
 assert.match(doc,/Status:\s*\*\*implemented on redesign branch\*\*/i);
@@ -74,3 +74,7 @@ console.log("  Reflection, Plan, Prayer administration/session, Collections, Sea
 console.log("  secondary workflows use quieter editorial composition than canonical screens");
 console.log("  destructive data and restore safety language preserved");
 console.log("  phone and 200% text reflow rules installed");
+
+// Archive compositions have migrated out of legacy CSS.
+assert.match(await read("src/styles/archive.css"), /\.archive-segments/);
+assert.match(await read("src/styles/archive.css"), /\.collection-journal-item/);

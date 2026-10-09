@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { liveQuery } from "dexie";
 import { db } from "../../data/database";
 import { nowInstant } from "../../domain/identity";
 import { Icon, type IconName } from "./Icon";
@@ -36,17 +37,29 @@ function applyTheme(mode: ThemeMode): void {
   try { localStorage.setItem(LOCAL_THEME_KEY, mode); } catch { /* localStorage is only a pre-paint mirror */ }
 }
 
+/** Also called after a committed restore; a failed read must not repeat the restore. */
+export async function refreshThemePreferences(): Promise<void> {
+  const preference = await db.preferences.get(PREFERENCE_KEY);
+  applyTheme(asTheme(preference?.value) ?? "system");
+  window.dispatchEvent(new Event("mdd-theme-refreshed"));
+}
+
 export function ThemeSwitcher() {
   const [mode, setMode] = useState<ThemeMode>(initialTheme);
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [attempt, setAttempt] = useState(0);
 
   useEffect(() => {
     let active = true;
-    void db.preferences.get(PREFERENCE_KEY).then((preference) => {
-      const saved = asTheme(preference?.value);
-      if (active && saved) setMode(saved);
-    }).catch(() => undefined);
-    return () => { active = false; };
-  }, []);
+    const subscription = liveQuery(() => db.preferences.get(PREFERENCE_KEY)).subscribe({
+      next: preference => { if (active) { const next = asTheme(preference?.value) ?? "system"; setMode(next); applyTheme(next); } },
+      error: () => { if (active) setError("Could not read your saved appearance. Try choosing it again."); },
+    });
+    const refresh = () => { if (active) { setMode(initialTheme()); setError(""); setAttempt(value => value + 1); } };
+    window.addEventListener("mdd-theme-refreshed", refresh);
+    return () => { active = false; subscription.unsubscribe(); window.removeEventListener("mdd-theme-refreshed", refresh); };
+  }, [attempt]);
 
   useEffect(() => {
     applyTheme(mode);
@@ -57,9 +70,17 @@ export function ThemeSwitcher() {
     return () => query.removeEventListener("change", syncSystemTheme);
   }, [mode]);
 
-  const choose = (next: ThemeMode) => {
-    setMode(next);
-    void db.preferences.put({ key: PREFERENCE_KEY, value: next, updatedAt: nowInstant() }).catch(() => undefined);
+  const choose = async (next: ThemeMode) => {
+    if (busy) return;
+    setBusy(true); setError("");
+    try {
+      await db.transaction("rw", db.preferences, async () => {
+        if ((await db.preferences.get(PREFERENCE_KEY))?.value !== next) await db.preferences.put({ key: PREFERENCE_KEY, value: next, updatedAt: nowInstant() });
+      });
+      setMode(next); applyTheme(next);
+      window.dispatchEvent(new Event("mdd-theme-refreshed"));
+    } catch { setError("Appearance could not be saved. Please try again."); }
+    finally { setBusy(false); }
   };
 
   return (
@@ -71,12 +92,14 @@ export function ThemeSwitcher() {
           className="theme-option"
           aria-pressed={mode === option.mode}
           aria-label={`${option.label} theme`}
-          onClick={() => choose(option.mode)}
+          disabled={busy}
+          onClick={() => void choose(option.mode)}
         >
           <Icon name={option.icon} aria-hidden="true" />
           <span>{option.label}</span>
         </button>
       ))}
+      {error ? <p className="theme-error" role="alert">{error}</p> : null}
     </div>
   );
 }

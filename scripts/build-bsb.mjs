@@ -10,7 +10,7 @@ const SOURCE_PATH = join(ROOT, "canonical/bsb/source-manifest.json");
 const OUTPUT_DIR = join(ROOT, "public/bible");
 const BOOKS_DIR = join(OUTPUT_DIR, "books");
 const SEARCH_FILE = join(OUTPUT_DIR, "search-index.json");
-const PARSER_VERSION = "mdd-usj-normalizer/5";
+const PARSER_VERSION = "mdd-usj-normalizer/6";
 const NORMALIZED_DATA_VERSION = 1;
 
 function textContent(content) {
@@ -52,6 +52,14 @@ export function normalizeUsjBook(usj, bookMeta) {
   const walkContent = (content, segments, notes, style = { redLetter: false, emphasis: null }) => {
     if (!Array.isArray(content)) return;
     for (const [index, item] of content.entries()) {
+      // Notes sit between words in the pinned source without always carrying
+      // surrounding whitespace (Luke 9:1: "Twelve" + note + add "together").
+      // Restore word boundaries after a word or sentence punctuation; never detach punctuation.
+      const previousItem = content[index - 1];
+      const nextText = typeof item === "string" ? item : item?.type === "char" ? textContent(item.content) : "";
+      if (previousItem?.type === "note" && /[\p{L}\p{N}.!?:;,]$/u.test(segments.at(-1)?.text ?? "") && /^[\p{L}\p{N}]/u.test(nextText)) {
+        segments.at(-1).text += " ";
+      }
       if (typeof item === "string") {
         const text = item.replace(/\s+/g, " "); if (!text) continue;
         appendSegment(segments, { verseKey: currentVerseKey, verse: verseFromKey(currentVerseKey), text, isVerseStart: nextIsVerseStart, redLetter: style.redLetter, emphasis: style.emphasis }); nextIsVerseStart = false; continue;
@@ -62,7 +70,6 @@ export function normalizeUsjBook(usj, bookMeta) {
       const marker = typeof item.marker === "string" ? item.marker : "";
       // The pinned BSB source sometimes places separate added words in adjacent
       // add spans without a space (for example "in keeping" + "His", 2 Peter 3:9).
-      const previousItem = content[index - 1];
       if (marker === "add" && previousItem?.marker === "add" && /[\p{L}\p{N}]$/u.test(segments.at(-1)?.text ?? "") && /^[\p{L}\p{N}]/u.test(textContent(item.content))) {
         segments.at(-1).text += " ";
       }

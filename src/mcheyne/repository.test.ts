@@ -26,6 +26,21 @@ function assignment(sequence: number, calendarKey: string): McheyneAssignment {
 const plan = { planId: "mcheyne-classic", version: 1, assignments: [assignment(1, "01-01"), assignment(2, "01-02"), assignment(3, "01-03")] } as McheynePlan;
 
 describe("McheyneRepository", () => {
+  it("can resolve fallback enrollment in a readonly transaction without repairing preferences", async () => {
+    const database = testDb();
+    await prepareDatabase(database);
+    const repository = new McheyneRepository(database);
+    const enrollment = await repository.enrollSelfPaced("2026-04-24" as LocalDate);
+    await database.preferences.delete("mcheyne.activeEnrollmentId");
+    const preferences = await database.preferences.toArray();
+    const result = await database.transaction("r", database.preferences, database.planEnrollments, () => repository.getActiveEnrollment("2026-04-24" as LocalDate, false));
+    expect(result?.id).toBe(enrollment.id);
+    expect(await database.preferences.toArray()).toEqual(preferences);
+    expect(await database.activityEvents.count()).toBe(0);
+    // Existing callers retain the compatible explicit fallback-repair behavior.
+    expect((await repository.getActiveEnrollment("2026-04-24" as LocalDate))?.id).toBe(enrollment.id);
+    expect((await database.preferences.get("mcheyne.activeEnrollmentId"))?.value).toBe(enrollment.id);
+  });
   it("records explicit completion, devotion history, and reversible state", async () => {
     const database = testDb();
     await prepareDatabase(database);

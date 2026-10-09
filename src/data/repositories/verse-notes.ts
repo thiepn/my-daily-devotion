@@ -16,14 +16,22 @@ export class VerseNoteRepository {
 
   private async matches(reference: ScriptureReference): Promise<VerseNote[]> {
     return this.database.verseNotes
-      .where("translationId")
-      .equals(reference.translationId)
+      .where("startVerseKey")
+      .equals(reference.startVerseKey)
       .filter((item) => sameReference(item, reference))
       .toArray();
   }
 
   async getExact(reference: ScriptureReference): Promise<VerseNote | undefined> {
-    return (await this.matches(reference)).filter((item) => item.deletedAt === null).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+    return (await this.matches(reference)).filter((item) => item.deletedAt === null).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id))[0];
+  }
+
+  /** Include a retained removal baseline when explicitly opening a new note.
+   * Prefer a live match so a newer tombstone never replaces an unrelated live ID. */
+  async getSavedRecord(reference: ScriptureReference): Promise<VerseNote | undefined> {
+    const matches = await this.matches(reference);
+    matches.sort((a, b) => Number(Boolean(a.deletedAt)) - Number(Boolean(b.deletedAt)) || b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id));
+    return matches[0];
   }
 
   async listForChapter(bookId: string, chapter: number): Promise<VerseNote[]> {
@@ -47,7 +55,7 @@ export class VerseNoteRepository {
     const normalized = bodyMd.replace(/\r\n/g, "\n").trimEnd();
     if (!normalized.trim()) throw new Error("Verse note text is required before saving.");
     const matches = await this.matches(reference);
-    const existing = matches.sort((a, b) => b.updatedAt.localeCompare(a.updatedAt))[0];
+    const existing = matches.sort((a, b) => Number(Boolean(a.deletedAt)) - Number(Boolean(b.deletedAt)) || b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id))[0];
     if (existing) {
       const next: VerseNote = { ...existing, ...reference, bodyMd: normalized, deletedAt: null, ...nextMutableFields(existing) };
       await this.database.verseNotes.put(next);
@@ -58,9 +66,12 @@ export class VerseNoteRepository {
     return note;
   }
 
-  async remove(reference: ScriptureReference): Promise<void> {
-    const note = await this.getExact(reference);
-    if (!note) return;
-    await this.database.verseNotes.put({ ...note, ...nextMutableFields(note), deletedAt: nowInstant() });
+  async remove(reference: ScriptureReference, expectedRevision?: number, expectedId?: string): Promise<void> {
+    await this.database.transaction("rw", this.database.verseNotes, async () => {
+      const note = await this.getExact(reference);
+      if (expectedRevision !== undefined && (!note || note.revision !== expectedRevision || expectedId !== undefined && note.id !== expectedId)) throw new Error("This verse note changed or was removed. Review before removing it.");
+      if (!note) return;
+      await this.database.verseNotes.put({ ...note, ...nextMutableFields(note), deletedAt: nowInstant() });
+    });
   }
 }

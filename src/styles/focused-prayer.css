@@ -1,0 +1,62 @@
+/* Focused Prayer owns its composition at every size; shared journal tokens remain authoritative. */
+.session-journal { padding-bottom:max(32px,env(safe-area-inset-bottom)); }
+.session-heading-top { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px 20px; }
+.session-heading-top > span { color:var(--color-ink-faint); font:.68rem/1.6 var(--font-ui); }
+.session-heading .quiet-back-link { margin-bottom:8px; }
+.session-heading .journal-date { color:var(--color-prayer); }
+.session-heading-line, .session-heading .journal-heading-line { flex-wrap:wrap; }
+.session-heading .journal-heading-line > div { flex:1 1 10rem; }
+.session-heading .grace-art { margin-left:auto; }
+.session-request-paper { padding:22px; }
+.session-request-text { margin:0; white-space:pre-wrap; overflow-wrap:anywhere; font:1.08rem/1.85 var(--font-reading); }
+.session-kicker { margin:0 0 14px; color:var(--color-prayer); font:.61rem/1.6 var(--font-ui); letter-spacing:.14em; text-transform:uppercase; }
+.session-reason { margin:18px 0 0; color:var(--color-ink-faint); font:.69rem/1.7 var(--font-ui); }
+.session-latest { margin-top:22px; padding-top:16px; border-top:1px solid var(--color-line); }
+.session-latest > div { display:flex; justify-content:space-between; flex-wrap:wrap; gap:4px 12px; font:.65rem/1.7 var(--font-ui); color:var(--color-ink-faint); }
+.session-latest > div > span { color:var(--color-prayer); }
+.session-latest p { margin:8px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; font:.88rem/1.75 var(--font-reading); }
+.session-latest > button { padding-inline:0; text-decoration:underline; text-underline-offset:3px; }
+.session-scripture { margin-top:18px; border-top:1px solid var(--color-line); }
+.session-scripture summary, .session-options summary { min-height:44px; padding:12px 0; cursor:pointer; color:var(--color-accent-strong); font:.82rem/1.6 var(--font-reading); }
+.session-scripture summary span { margin-left:8px; font:.65rem/1.6 var(--font-ui); color:var(--color-ink-faint); }
+.session-devotional-actions { margin-top:16px; }
+.session-devotional-actions > button { width:100%; }
+.session-devotional-actions .grace-primary { justify-content:space-between; padding-inline:22px; }
+.session-secondary-actions { display:flex; justify-content:space-between; flex-wrap:wrap; gap:0 8px; margin-top:6px; }
+.session-secondary-actions a, .session-state > a:not(.grace-primary), .session-date-notice a { display:inline-flex; align-items:center; min-height:44px; padding:9px 4px; color:var(--color-accent-strong); font:.75rem/1.6 var(--font-ui); text-decoration:underline; text-underline-offset:3px; }
+.session-secondary-actions > button { padding-inline:4px; font-size:.75rem; }
+.session-secondary-actions #session-open-answer { color:var(--color-prayer); }
+.session-secondary-actions #session-open-answer:hover { color:var(--color-accent-strong); }
+.session-options { margin-top:18px; border-top:1px solid var(--color-line); }
+.session-options summary { color:var(--color-ink-faint); font-family:var(--font-ui); font-size:.72rem; }
+.session-options p { margin:8px 0; color:var(--color-ink-soft); font:.78rem/1.75 var(--font-ui); }
+.session-options > button { padding-inline:0; text-decoration:underline; text-underline-offset:3px; }
+.session-date-notice { margin:0 0 18px; padding:12px 16px; background:var(--color-surface-subtle); border-radius:8px; }
+.session-date-notice p { margin:0; color:var(--color-ink-soft); font:.76rem/1.7 var(--font-ui); }
+.session-answer { margin-top:20px; }
+.session-answer > label { display:block; margin:16px 20px 0; color:var(--color-ink-soft); font:.78rem/1.6 var(--font-ui); }
+.session-answer > label span { color:var(--color-ink-faint); }
+.session-answer .journal-textarea { min-height:10rem; }
+.session-answer .journal-actions, .session-answer > .journal-help { margin:14px 16px; }
+.session-answer .journal-actions > .grace-primary { flex:1 0 min(100%,12rem); }
+.session-answer .journal-notice { margin:16px; }
+.session-answer .journal-notice :is(h3,h4) { font-family:var(--font-reading); }
+.session-answer .journal-notice details p { white-space:pre-wrap; overflow-wrap:anywhere; }
+.session-answer summary { min-height:44px; padding-block:10px; cursor:pointer; }
+.session-retained textarea { display:block; width:100%; min-height:10rem; padding:12px; color:var(--color-ink); background:var(--color-surface); border:1px solid var(--color-line-strong); }
+.session-state { margin-top:10px; padding:24px 20px; }
+.session-state > .grace-art { width:50px; margin-bottom:14px; }
+.session-state h2 { margin:0 0 12px; font:1.6rem/1.4 var(--font-display); }
+.session-state p { color:var(--color-ink-soft); font:.92rem/1.8 var(--font-reading); }
+.session-state .grace-primary { margin-top:24px; }
+.session-journal :is(#session-request,#session-state-heading):focus { outline:2px solid var(--color-focus-ring); outline-offset:5px; border-radius:3px; }
+@media (min-width:861px) { .session-request-paper { padding:30px; } }
+@media (max-width:860px) {
+  .focused-journal-route .workspace-content { min-height:100svh; min-height:100dvh; }
+  .focused-journal-route { padding-bottom:0; }
+}
+@media (max-width:350px) {
+  .session-request-paper { padding:17px; }
+  .session-heading h1 { font-size:2.1rem; }
+  .session-secondary-actions { justify-content:flex-start; gap:0 14px; }
+}

@@ -27,6 +27,11 @@ for (const [index, verse] of documents.entries()) {
   assert.doesNotMatch(verse.text, /”[\p{L}\p{N}]/u, `Missing quotation word boundary: ${verse.verseKey}`);
 }
 for (const fixture of quoteFixtures) assert.equal(byKey.get(fixture.verseKey)?.text, fixture.text, fixture.verseKey);
+const noteBoundaries = await read("docs/scripture/omitted-note-boundaries.json");
+for (const fixture of noteBoundaries) {
+  assert.equal(fixture.before.replace(/\s/g, ""), fixture.after.replace(/\s/g, ""), `Whitespace-only correction: ${fixture.verse}`);
+  assert.equal(byKey.get(fixture.verse)?.text, fixture.after, `Omitted-note boundary: ${fixture.verse}`);
+}
 for (const book of manifest.books) {
   const asset = await read(`public/bible/books/${book.id}.json`);
   for (const chapter of asset.chapters) {
@@ -35,4 +40,4 @@ for (const book of manifest.books) {
     if (verses.length) assert.equal(scriptureTextForRange(chapter, verses[0].verse, verses.at(-1).verse), verses.map((verse) => verse.text).join(" "), `Whole-chapter copy: ${book.id}.${chapter.chapter}`);
   }
 }
-console.log(`✓ Complete Scripture verification: ${documents.length} verse identities, all 365 assignments, ${quoteFixtures.length} quotation regressions; reader/copy/search text agrees.`);
+console.log(`✓ Complete Scripture verification: ${documents.length} verse identities, all 365 assignments, ${quoteFixtures.length} quotation and ${noteBoundaries.length} omitted-note regressions; reader/copy/search text agrees.`);

@@ -1,3 +1,4 @@
+import { isUpdateProtected } from "./update-protection";
 export const PLATFORM_UPDATE_EVENT = "mdd:update-ready";
 
 export type StoragePersistenceState = "granted" | "not-granted" | "unsupported";
@@ -67,9 +68,10 @@ export async function registerMddServiceWorker(): Promise<ServiceWorkerRegistrat
 }
 
 export async function activateWaitingServiceWorker(registration?: ServiceWorkerRegistration | null): Promise<boolean> {
+  if (isUpdateProtected()) return false;
   if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return false;
   const target = registration ?? await navigator.serviceWorker.getRegistration(import.meta.env.BASE_URL || "./");
-  if (!target?.waiting) return false;
+  if (!target?.waiting || isUpdateProtected()) return false;
   reloadForUpdate = true;
   target.waiting.postMessage({ type: "SKIP_WAITING" });
   return true;

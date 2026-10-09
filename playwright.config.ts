@@ -1,4 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
+import { testOrigin, testPreviewCommand } from "./playwright.server";
 
 export default defineConfig({
   testDir: "./tests/ux",
@@ -8,9 +9,9 @@ export default defineConfig({
   workers: process.env.CI ? 1 : 2,
   retries: process.env.CI ? 1 : 0,
   failOnFlakyTests: Boolean(process.env.CI),
-  reporter: process.env.CI ? [["list"], ["html", { open: "never", outputFolder: "playwright-report" }], ["json", { outputFile: "verification/browser.json" }]] : "list",
+  reporter: [["list"], ["json", { outputFile: process.env.MDD_TEST_REPORT ?? "verification/browser.json" }], ...(process.env.CI ? [["html", { open: "never", outputFolder: "playwright-report" }] as const] : [])],
   use: {
-    baseURL: "http://127.0.0.1:4173",
+    baseURL: testOrigin,
     locale: "en-US",
     timezoneId: "Europe/Berlin",
     trace: "retain-on-failure",
@@ -18,14 +19,14 @@ export default defineConfig({
     video: "retain-on-failure",
   },
   webServer: {
-    command: "npm run preview:ux",
-    url: "http://127.0.0.1:4173",
+    command: testPreviewCommand,
+    url: testOrigin,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },
   projects: [
-    { name: "desktop-firefox", testMatch: /(?:core-flow|release-smoke|corrective-release)\.spec\.ts/, use: { ...devices["Desktop Firefox"], serviceWorkers: "block" } },
-    { name: "desktop-webkit", testMatch: /(?:core-flow|release-smoke|corrective-release)\.spec\.ts/, use: { ...devices["Desktop Safari"], serviceWorkers: "block" } },
+    { name: "desktop-firefox", testMatch: /(?:core-flow|release-smoke|corrective-release|prayer-journal|prayer-detail-journal|focused-prayer-journal|metadata-journal|history-journal|history-review|journal-export|remember-journal|writing-journal|data-backup|backup-check|search-saved-journal|reading-plan-journal|presentation-journal|recovery-foundation|recovery-journal|durable-capture|durable-notes|durable-prayer-editors|durable-prayer-settings|durable-session-answer|durable-directories)\.spec\.ts/, use: { ...devices["Desktop Firefox"], serviceWorkers: "block" } },
+    { name: "desktop-webkit", testMatch: /(?:core-flow|release-smoke|corrective-release|prayer-journal|prayer-detail-journal|focused-prayer-journal|metadata-journal|history-journal|history-review|journal-export|remember-journal|writing-journal|data-backup|backup-check|search-saved-journal|reading-plan-journal|presentation-journal|recovery-foundation|recovery-journal|durable-capture|durable-notes|durable-prayer-editors|durable-prayer-settings|durable-session-answer|durable-directories)\.spec\.ts/, use: { ...devices["Desktop Safari"], serviceWorkers: "block" } },
     {
       name: "desktop-chromium",
       testIgnore: /pwa\.spec\.ts/,

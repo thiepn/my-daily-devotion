@@ -14,6 +14,10 @@ const [sourceRaw, packageRaw, app, main, reader, repository, manifestRaw] = awai
   read("src/scripture/repository.ts"),
   read("public/bible/manifest.json"),
 ]);
+// Visual imports moved to the single layered entrypoint; domain gates are unchanged.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
+
 
 const source = JSON.parse(sourceRaw);
 const pkg = JSON.parse(packageRaw);
@@ -43,7 +47,7 @@ assert.ok(pkg.scripts["verify:phase3"]);
 assert.equal(pkg.dependencies.fflate, "0.8.3");
 assert.match(app, /BibleScreen/);
 assert.match(app, /\/bible\/:bookId\/:chapter/);
-assert.ok(main.includes("scripture.css"));
+assert.ok(styles.includes("scripture.css"));
 assert.match(reader, /toggleHighlight/);
 assert.match(reader, /toggleBookmark/);
 assert.match(reader, /IntersectionObserver/);

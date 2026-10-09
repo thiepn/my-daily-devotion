@@ -5,18 +5,23 @@ test.describe("Morning Grace final visual polish",()=>{
   test("mobile chrome is compact and accessible",async({page})=>{
     await page.setViewportSize({width:390,height:844});
     await openRoute(page,"/today");
+    await expect(page.getByRole("link",{name:"Data and settings",exact:true})).toBeVisible();
+    await expect(page.locator(".utility-bar")).toBeHidden();
+    await expectNoAxeViolations(page);
+    await openRoute(page,"/prayer");
     const search=page.getByRole("link",{name:"Search",exact:true});
     const data=page.getByRole("link",{name:"Data",exact:true});
     await expect(search).toBeVisible();
     await expect(data).toBeVisible();
-    await expect(search.locator(".icon-search")).toBeVisible();
-    await expect(data.locator(".icon-settings")).toBeVisible();
+    await expect(search).toHaveAttribute("href", /return=/);
+    await expect(data).toHaveAttribute("href", /return=/);
     await expect(page.locator(".utility-bar .theme-switcher")).toBeHidden();
     await expectNoHorizontalOverflow(page);
     await expectNoAxeViolations(page);
 
     await openRoute(page,"/data");
     await expect(page.locator(".mobile-appearance-panel")).toBeVisible();
+    await page.getByText("Appearance", { exact: true }).click();
     await expect(page.getByRole("button",{name:"Light theme"})).toBeVisible();
     await expect(page.getByRole("button",{name:"System theme"})).toBeVisible();
     await expect(page.getByRole("button",{name:"Dark theme"})).toBeVisible();
@@ -27,10 +32,10 @@ test.describe("Morning Grace final visual polish",()=>{
     await expect(page.locator(".mg-prayer-capture-workspace")).toBeVisible();
 
     await openRoute(page,"/history/moments");
-    await expect(page.locator(".mg-history-detail-workspace")).toBeVisible();
+    await expect(page.locator(".grace-history")).toBeVisible();
 
     await openRoute(page,"/history/day/2026-09-19");
-    await expect(page.locator(".mg-history-detail-workspace")).toBeVisible();
+    await expect(page.locator(".grace-history")).toBeVisible();
   });
 
   test("polished routes reflow at 320px and 200 percent text",async({page})=>{
@@ -53,6 +58,6 @@ test.describe("Morning Grace final visual polish",()=>{
   test("reduced motion removes route entrance animation",async({page})=>{
     await page.emulateMedia({reducedMotion:"reduce"});
     await openRoute(page,"/today");
-    await expect(page.locator(".visual-screen")).toHaveCSS("animation-name","none");
+    await expect(page.locator(".grace-today")).toHaveCSS("animation-name","none");
   });
 });

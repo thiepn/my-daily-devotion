@@ -31,7 +31,7 @@ export class McheyneRepository {
     return enrollment?.deletedAt ? undefined : enrollment;
   }
 
-  async getActiveEnrollment(localDate: LocalDate = todayLocalDate()): Promise<PlanEnrollment | undefined> {
+  async getActiveEnrollment(localDate: LocalDate = todayLocalDate(), persistFallback = true): Promise<PlanEnrollment | undefined> {
     const preferred = await this.database.preferences.get(ACTIVE_ENROLLMENT_KEY);
     const preferredId = typeof preferred?.value === "string" ? preferred.value : null;
     if (preferredId) {
@@ -44,7 +44,7 @@ export class McheyneRepository {
       .filter((item) => this.appliesToDate(item, localDate))
       .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
     const fallback = enrollments[0];
-    if (fallback) await this.setActiveEnrollment(fallback.id);
+    if (fallback && persistFallback) await this.setActiveEnrollment(fallback.id);
     return fallback;
   }
 

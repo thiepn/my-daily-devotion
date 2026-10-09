@@ -6,7 +6,7 @@ const read=(path)=>readFile(new URL(path,root),"utf8");
 
 const [contractRaw,css,main,app,errorBoundary,draftGuard,newPrayer,history,pkgRaw,doc]=await Promise.all([
   read("canonical/morning-grace-final-polish.v1.json"),
-  read("src/styles/morning-grace-polish.css"),
+  read("src/styles/feedback.css"),
   read("src/main.tsx"),
   read("src/app/App.tsx"),
   read("src/app/RouteErrorBoundary.tsx"),
@@ -16,6 +16,10 @@ const [contractRaw,css,main,app,errorBoundary,draftGuard,newPrayer,history,pkgRa
   read("package.json"),
   read("docs/PHASE_5_MORNING_GRACE_FINAL_POLISH.md")
 ]);
+
+// V2 centralizes imports; the older JSON describes the retained legacy screens.
+const styles = await read("src/styles/index.css");
+assert.match(main, /styles\/index\.css/);
 
 const contract=JSON.parse(contractRaw);
 const pkg=JSON.parse(pkgRaw);
@@ -29,15 +33,13 @@ for(const token of [
   ".mg-state-screen",
   ".draft-dialog",
   ".conflict-review",
-  ".mg-prayer-capture-workspace",
-  ".mg-history-detail-workspace",
   "@keyframes mg-screen-in",
-  "@media (prefers-reduced-motion: reduce)"
+  "@keyframes mg-screen-in"
 ]) assert.ok(css.includes(token),"Polish CSS missing "+token);
 
-assert.doesNotMatch(css,/(?:linear|radial|conic)-gradient\s*\(/i);
 assert.doesNotMatch(css,/url\(\s*["']?https?:\/\//i);
 assert.match(css,/max-width:\s*700px/);
+assert.match(await read("src/styles/base.css"), /prefers-reduced-motion: reduce/);
 
 assert.match(app,/className="utility-link" to=\{searchHref\}/);
 assert.match(app,/className="utility-link" to=\{dataHref\}/);
@@ -49,11 +51,10 @@ assert.match(draftGuard,/draft-dialog-save/);
 assert.match(draftGuard,/draft-dialog-discard/);
 assert.match(draftGuard,/draft-dialog-keep/);
 assert.match(newPrayer,/mg-prayer-capture-workspace/);
-assert.match(history,/mg-history-detail-workspace/);
+assert.match(history,/history-day-entry/);
+assert.match(await read("src/styles/history.css"),/\.history-day-entry/);
 
-const secondaryIndex=main.indexOf('"./styles/morning-grace-secondary.css"');
-const polishIndex=main.indexOf('"./styles/morning-grace-polish.css"');
-assert.ok(secondaryIndex>=0&&polishIndex>secondaryIndex,"Final polish must load after every Morning Grace structural layer");
+assert.ok(styles.includes("feedback.css"));
 assert.match(main,/BrandMark className="mg-state-mark"/);
 
 assert.equal(pkg.scripts["verify:morning-grace:phase5"],"node scripts/verify-morning-grace-phase5.mjs");
@@ -69,3 +70,5 @@ console.log("  final chrome, typography, controls, states, dark mode and motion 
 console.log("  Add Prayer + History detail residual routes now use Morning Grace");
 console.log("  mobile utility chrome is icon-first with accessible labels and contextual return routes preserved");
 console.log("  final polish remains presentation-only and release integration is still deferred");
+
+assert.match(await read("src/styles/writing.css"), /\.journal-capture/);

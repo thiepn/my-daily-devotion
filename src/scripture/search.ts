@@ -6,6 +6,7 @@ export interface BibleSearchOptions {
   bookId?: string | null;
   testament?: "OT" | "NT" | null;
   limit?: number;
+  offset?: number;
 }
 
 export interface BibleSearchResult extends BibleSearchDocument { score: number; }
@@ -27,25 +28,26 @@ async function parseReference(query: string): Promise<{ bookId: string; chapter:
   return { bookId: book.id, chapter, startVerse, endVerse };
 }
 
-export async function searchBible(rawQuery: string, options: BibleSearchOptions = {}): Promise<BibleSearchResult[]> {
+export async function searchBiblePage(rawQuery: string, options: BibleSearchOptions = {}): Promise<{ items: BibleSearchResult[]; total: number }> {
   const query = rawQuery.trim();
-  if (!query) return [];
+  if (!query) return { items: [], total: 0 };
   const documents = await loadBibleSearchIndex();
-  const limit = Math.max(1, Math.min(options.limit ?? 40, 100));
+  const limit = Number.isSafeInteger(options.limit) && options.limit! > 0 ? options.limit! : 40;
+  const offset = Number.isSafeInteger(options.offset) && options.offset! >= 0 ? options.offset! : 0;
+  const page = (items: BibleSearchResult[]) => ({ items: items.slice(offset, offset + limit), total: items.length });
   const reference = await parseReference(query);
   const filtered = documents.filter((doc) => (!options.bookId || doc.bookId === options.bookId) && (!options.testament || doc.testament === options.testament));
 
   if (reference) {
-    return filtered
+    return page(filtered
       .filter((doc) => doc.bookId === reference.bookId && doc.chapter === reference.chapter && (reference.startVerse === null || (doc.verse >= reference.startVerse && doc.verse <= (reference.endVerse ?? reference.startVerse))))
-      .slice(0, limit)
-      .map((doc) => ({ ...doc, score: 10_000 - doc.verse }));
+      .map((doc) => ({ ...doc, score: 10_000 - doc.verse })));
   }
 
   const q = normalized(query);
   const quoted = q.length >= 2 && q.startsWith('"') && q.endsWith('"') ? q.slice(1, -1).trim() : null;
   const tokens = (quoted ?? q).split(/\s+/).filter(Boolean);
-  if (!tokens.length) return [];
+  if (!tokens.length) return { items: [], total: 0 };
 
   const results: BibleSearchResult[] = [];
   for (const doc of filtered) {
@@ -64,7 +66,11 @@ export async function searchBible(rawQuery: string, options: BibleSearchOptions 
     }
     results.push({ ...doc, score });
   }
-  return results.sort((a, b) => b.score - a.score || a.order - b.order || a.chapter - b.chapter || a.verse - b.verse).slice(0, limit);
+  return page(results.sort((a, b) => b.score - a.score || a.order - b.order || a.chapter - b.chapter || a.verse - b.verse));
+}
+
+export async function searchBible(rawQuery: string, options: BibleSearchOptions = {}): Promise<BibleSearchResult[]> {
+  return (await searchBiblePage(rawQuery, options)).items;
 }
 
 export function bibleSearchHref(result: BibleSearchDocument): string { return `/bible/${result.bookId}/${result.chapter}?verse=${result.verse}`; }

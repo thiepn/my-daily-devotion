@@ -6,32 +6,23 @@ test.describe("mobile-first Morning Grace layout",()=>{
     await page.setViewportSize({width:390,height:844});
   });
 
-  test("Today is compact and reading-first",async({page})=>{
+  test("Today retains the reference artwork and compact plan disclosure", async ({page}) => {
     await enrollCalendarPlan(page);
-    await expect(page.locator(".mg-hero-art")).toBeHidden();
-    await expect(page.locator(".mg-reading-card")).toHaveCount(4);
-
-    const appbar=await page.locator(".utility-bar").boundingBox();
-    const tabbar=await page.locator(".mobile-nav").boundingBox();
-    expect(appbar?.height??999).toBeLessThanOrEqual(52);
-    expect(tabbar?.height??999).toBeLessThanOrEqual(66);
-
-    for(const row of await page.locator(".mg-reading-card").all()){
-      const box=await row.boundingBox();
-      expect(box?.height??999).toBeLessThanOrEqual(76);
-    }
-
+    await expect(page.locator(".grace-art")).toBeVisible();
+    await expect(page.locator(".today-reading-row")).toHaveCount(4);
+    await expect(page.locator(".today-plan-card")).not.toHaveAttribute("open", "");
+    await expect(page.locator(".today-devotion")).toBeVisible();
     await expectNoHorizontalOverflow(page);
     await expectNoAxeViolations(page);
   });
 
   test("Bible opens directly into reading content",async({page})=>{
     await openRoute(page,"/bible/JHN/3");
-    await expect(page.locator(".mg-bible-chapter-art")).toBeHidden();
-    await expect(page.locator(".mg-bible-shell-header > div:first-child")).toBeHidden();
+    await expect(page.locator(".mg-bible-chapter-art")).toBeVisible();
+    await expect(page.getByRole("button", { name: "Reading appearance", exact: true })).toBeVisible();
     await expect(page.locator(".mg-scripture-page .scripture-copy")).toBeVisible();
 
-    const toolbar=await page.locator(".mg-bible-toolbar").boundingBox();
+    const toolbar=await page.locator(".bible-reader-header").boundingBox();
     const reader=await page.locator(".mg-reader-heading").boundingBox();
     expect((toolbar?.height??999)).toBeLessThanOrEqual(92);
     expect((reader?.y??999)).toBeLessThan(260);
@@ -40,15 +31,15 @@ test.describe("mobile-first Morning Grace layout",()=>{
 
   test("Prayer and History use compact mobile compositions",async({page})=>{
     await openRoute(page,"/prayer");
-    await expect(page.locator(".mg-prayer-hero-art")).toBeHidden();
-    await expect(page.locator(".mg-prayer-library")).toBeVisible();
-    await expect(page.locator(".prayer-status-tabs")).toBeVisible();
-    const prayerHero=await page.locator(".mg-prayer-hero").boundingBox();
+    await expect(page.locator(".prayer-focus-caption img")).toBeVisible();
+    await expect(page.locator(".prayer-journal-library")).toBeVisible();
+    await expect(page.locator(".prayer-journal-tabs")).toBeVisible();
+    const prayerHero=await page.locator(".prayer-journal-heading").boundingBox();
     expect(prayerHero?.height??999).toBeLessThanOrEqual(260);
 
     await openRoute(page,"/history");
-    await expect(page.locator(".mg-history-hero-art")).toBeHidden();
-    const stats=page.locator(".mg-history-stats");
+    await expect(page.locator(".history-reflection-band img")).toBeVisible();
+    const stats=page.locator(".history-journal-stats");
     await expect(stats).toBeVisible();
     const columns=await stats.evaluate(el=>getComputedStyle(el).gridTemplateColumns.split(" ").length);
     expect(columns).toBe(3);
@@ -60,6 +51,7 @@ test.describe("mobile-first Morning Grace layout",()=>{
     await expect(page.locator(".utility-bar .theme-switcher")).toBeHidden();
     await openRoute(page,"/data");
     await expect(page.locator(".mobile-appearance-panel")).toBeVisible();
+    await page.getByText("Appearance", { exact: true }).click();
     await expect(page.getByRole("button",{name:"Light theme"})).toBeVisible();
     await expect(page.getByRole("button",{name:"System theme"})).toBeVisible();
     await expect(page.getByRole("button",{name:"Dark theme"})).toBeVisible();
@@ -85,32 +77,32 @@ test.describe("mobile-first Morning Grace layout",()=>{
   test("phone landscape remains a compact mobile app",async({page})=>{
     await page.setViewportSize({width:844,height:390});
     await openRoute(page,"/today");
-    await expect(page.locator(".mg-hero-art")).toBeHidden();
+    await expect(page.locator(".grace-art")).toBeVisible();
     await expect(page.locator(".utility-bar .theme-switcher")).toBeHidden();
     const appbar=await page.locator(".utility-bar").boundingBox();
-    expect(appbar?.height??999).toBeLessThanOrEqual(52);
+    expect(appbar).toBeNull();
 
     await openRoute(page,"/bible/JHN/3");
-    await expect(page.locator(".mg-bible-chapter-art")).toBeHidden();
+    await expect(page.locator(".mg-bible-chapter-art")).toBeVisible();
     await expect(page.locator(".mobile-nav")).toBeVisible();
     await expect(page.locator(".utility-link").filter({hasText:"Search"}).locator("span")).toBeHidden();
     const firstVerse=page.locator(".scripture-copy .verse-number").first();
     await expect(firstVerse).toBeVisible();
     const verseBox=await firstVerse.boundingBox();
-    expect(verseBox?.y??999).toBeLessThan(330);
+    expect(verseBox?.y??999).toBeLessThan(480);
 
     await openRoute(page,"/prayer");
-    await expect(page.locator(".mg-prayer-hero-art")).toBeHidden();
+    await expect(page.locator(".prayer-focus-caption img")).toBeVisible();
 
     await openRoute(page,"/history");
-    await expect(page.locator(".mg-history-hero-art")).toBeHidden();
+    await expect(page.locator(".history-reflection-band img")).toBeVisible();
     await expectNoHorizontalOverflow(page);
   });
 
-  test("first-run Today choices are compact app rows",async({page})=>{
+  test("first-run Today retains enrollment choices",async({page})=>{
     await page.setViewportSize({width:390,height:844});
     await openRoute(page,"/today");
-    const setup=page.locator(".setup-options");
+    const setup=page.locator(".today-setup");
     if(await setup.isVisible()){
       const choices=setup.locator("button");
       for(let i=0;i<await choices.count();i++){
@@ -120,11 +112,11 @@ test.describe("mobile-first Morning Grace layout",()=>{
     }
   });
 
-  test("desktop composition is untouched by the phone-only layer",async({page})=>{
+  test("desktop Today and Bible retain their artwork",async({page})=>{
     await page.setViewportSize({width:1280,height:900});
     await openRoute(page,"/today");
-    await expect(page.locator(".mg-hero-art")).toBeVisible();
-    const hero=await page.locator(".mg-canonical-hero").boundingBox();
+    await expect(page.locator(".grace-art")).toBeVisible();
+    const hero=await page.locator(".today-opening").boundingBox();
     expect(hero?.height??0).toBeGreaterThan(220);
     await openRoute(page,"/bible/JHN/3");
     await expect(page.locator(".mg-bible-chapter-art")).toBeVisible();

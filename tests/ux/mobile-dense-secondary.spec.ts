@@ -4,66 +4,51 @@ import { expectNoAxeViolations, expectNoHorizontalOverflow, openRoute } from "./
 test.describe("dense secondary mobile workflows", () => {
   test.beforeEach(async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
+    // Measure settled controls: entrance transforms can report 43.999992px for a 44px target.
+    await page.emulateMedia({ reducedMotion: "reduce" });
   });
 
-  test("People and Categories put the editor before the saved list", async ({ page }) => {
-    for (const route of ["/prayer/people", "/prayer/categories"]) {
-      await openRoute(page, route);
-      const editor = page.locator(".metadata-editor");
-      const list = page.locator(".metadata-list");
-      await expect(editor).toBeVisible();
-      await expect(list).toBeVisible();
-      const editorBox = await editor.boundingBox();
-      const listBox = await list.boundingBox();
-      expect(editorBox?.y ?? Infinity).toBeLessThan(listBox?.y ?? -Infinity);
-      await expectNoHorizontalOverflow(page);
-    }
-
-    await openRoute(page, "/prayer/people");
-    await page.getByLabel("Name", { exact: true }).fill("Anna");
-    await page.getByLabel(/Relationship/).fill("Family");
-    await page.getByRole("button", { name: "Add person", exact: true }).click();
-    const row = page.locator(".metadata-row").filter({ hasText: "Anna" });
-    await expect(row).toBeVisible();
-    for (const name of ["Edit", "Remove"]) {
-      const box = await row.getByRole("button", { name, exact: true }).boundingBox();
-      expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
+  test("People and Categories open on the directory with editing on demand", async ({ page }) => {
+    for (const [kind,label] of [["people","person"],["categories","category"]]) {
+      await openRoute(page,"/prayer/"+kind); await expect(page.locator(".directory-list")).toBeVisible(); await expect(page.locator(".directory-editor")).toHaveCount(0);
+      await page.getByRole("button",{name:"Add "+label,exact:true}).click(); await expect(page.locator(".directory-editor")).toBeVisible();
+      const box=await page.getByRole("button",{name:"Save "+label,exact:true}).boundingBox(); expect(box?.height??0).toBeGreaterThanOrEqual(44); await expectNoHorizontalOverflow(page);
     }
   });
 
-  test("Prayer detail is a compact mobile story with visible status context", async ({ page }) => {
+  test("Prayer detail is a readable journal story with visible status context", async ({ page }) => {
     await openRoute(page, "/prayer/new");
     await page.getByLabel("What do you want to pray about?").fill("Give wisdom and patience today.");
     await page.getByRole("button", { name: "Save prayer", exact: true }).click();
-    await expect(page.getByLabel("Request", { exact: true })).toHaveValue("Give wisdom and patience today.");
+    await expect(page.locator(".prayer-request-text")).toHaveText("Give wisdom and patience today.");
 
-    const eyebrow = page.locator(".prayer-detail-heading .eyebrow");
+    const eyebrow = page.locator(".prayer-record .journal-date");
     await expect(eyebrow).toBeVisible();
     await expect(eyebrow).toContainText("active");
 
-    const lifecycle = page.locator(".prayer-lifecycle-actions");
-    await expect(lifecycle).toHaveCSS("display", "grid");
+    const lifecycle = page.locator(".prayer-record-actions");
+    await expect(lifecycle).toHaveCSS("display", "flex");
     const buttons = lifecycle.getByRole("button");
     for (let index = 0; index < await buttons.count(); index += 1) {
       const box = await buttons.nth(index).boundingBox();
       expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
     }
 
-    await expect(page.locator(".prayer-detail-context")).toHaveCSS("display", "block");
+    await expect(page.locator(".prayer-record-settings")).toBeVisible();
     await expectNoHorizontalOverflow(page);
     await expectNoAxeViolations(page);
   });
 
-  test("Prayer Settings uses a flat form and sticky mobile save bar", async ({ page }) => {
+  test("Prayer Settings groups fields with actions in document flow", async ({ page }) => {
     await openRoute(page, "/prayer/new");
     await page.getByLabel("What do you want to pray about?").fill("Pray faithfully this week.");
     await page.getByRole("button", { name: "Save prayer", exact: true }).click();
-    await expect(page.getByLabel("Request", { exact: true })).toHaveValue("Pray faithfully this week.");
-    await page.getByRole("link", { name: "Edit", exact: true }).click();
+    await expect(page.locator(".prayer-request-text")).toHaveText("Pray faithfully this week.");
+    await page.getByRole("link", { name: "Edit details", exact: true }).click();
 
-    await expect(page.locator(".prayer-settings-panel")).toBeVisible();
+    await expect(page.locator(".prayer-settings-paper")).toBeVisible();
     const actions = page.locator(".prayer-settings-actions");
-    await expect(actions).toHaveCSS("position", "sticky");
+    await expect(actions).toHaveCSS("position", "static");
     const saveBox = await page.getByRole("button", { name: "Save details", exact: true }).boundingBox();
     expect(saveBox?.height ?? 0).toBeGreaterThanOrEqual(44);
     await expectNoHorizontalOverflow(page);
@@ -71,20 +56,21 @@ test.describe("dense secondary mobile workflows", () => {
 
   test("History Day keeps its date visible after the desktop title collapses", async ({ page }) => {
     await openRoute(page, "/history/day/2026-09-21");
-    const context = page.locator(".history-day-screen .mg-secondary-header .eyebrow");
+    const context = page.locator(".history-day-screen h1");
     await expect(context).toBeVisible();
     await expect(context).toContainText("2026");
     await expect(page.locator(".mobile-nav")).toBeHidden();
     await expectNoHorizontalOverflow(page);
   });
 
-  test("History Moments uses a compact local mobile switcher", async ({ page }) => {
+  test("History Moments keeps its period and search controls accessible", async ({ page }) => {
     await openRoute(page, "/history/moments");
-    const tabs = page.locator(".mg-history-detail-workspace .history-tabs");
+    const tabs = page.locator(".history-journal-heading");
     await expect(tabs).toBeVisible();
-    await expect(tabs).toHaveCSS("display", "flex");
+    await expect(page.getByLabel("History period")).toBeVisible();
     const links = tabs.getByRole("link");
     for (let index = 0; index < await links.count(); index += 1) {
+      await expect(links.nth(index)).toBeVisible();
       const box = await links.nth(index).boundingBox();
       expect(box?.height ?? 0).toBeGreaterThanOrEqual(44);
     }
@@ -104,13 +90,9 @@ test.describe("dense secondary mobile workflows", () => {
     }
   });
 
-  test("desktop secondary workflow composition remains unchanged", async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 900 });
-    await openRoute(page, "/prayer/people");
-    const editor = page.locator(".metadata-editor");
-    const list = page.locator(".metadata-list");
-    const editorBox = await editor.boundingBox();
-    const listBox = await list.boundingBox();
-    expect(editorBox?.x ?? 0).toBeGreaterThan(listBox?.x ?? Infinity);
+  test("desktop directories use a centered journal column", async ({ page }) => {
+    await page.setViewportSize({width:1440,height:900}); await openRoute(page,"/prayer/people");
+    await expect(page.locator(".directory-list")).toBeVisible(); const box=await page.locator(".metadata-journal").boundingBox(); expect(box?.width??Infinity).toBeLessThanOrEqual(760);
+    await page.getByRole("button",{name:"Add person",exact:true}).click(); await expect(page.locator(".directory-editor")).toBeVisible(); await expectNoHorizontalOverflow(page);
   });
 });

@@ -28,11 +28,13 @@ describe("grouped personal search", () => {
 
     const update = await searchPersonal(database, "visa appointment");
     expect(update.prayers).toHaveLength(1);
-    expect(update.prayers[0]).toMatchObject({ kind: "Prayer update", href: `/prayer/${prayer.id}` });
+    expect(update.prayers[0]).toMatchObject({ kind: "Prayer update" });
+    expect(update.prayers[0]!.href).toContain(`/prayer/${prayer.id}?entry=update%3A`);
 
     const answer = await searchPersonal(database, "travel funds");
     expect(answer.prayers).toHaveLength(1);
-    expect(answer.prayers[0]).toMatchObject({ kind: "Answered prayer", href: `/prayer/${prayer.id}` });
+    expect(answer.prayers[0]).toMatchObject({ kind: "Answered prayer" });
+    expect(answer.prayers[0]!.href).toContain(`/prayer/${prayer.id}?entry=answer%3A`);
   });
 
   it("keeps reflections, people and saved Scripture in separate result groups", async () => {

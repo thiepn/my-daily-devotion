@@ -2,29 +2,31 @@
   "version": 1,
   "name": "Morning Grace Brand Assets",
   "parentDesignLanguage": "canonical/morning-grace-design-language.v1.json",
-  "status": "phase-2-frozen",
+  "status": "legacy-screen-contract-with-approved-brand",
   "mark": {
-    "name": "Morning Sprig Book",
+    "name": "Cream Forest Book and Cross",
+    "source": "design/brand/cream-forest-master.png",
+    "sourceSha256": "391b70b313e75fa7cee0f7b687fbcf4cbdd18ad16db7b8b6c20e61f2e035856f",
     "meaning": {
       "book": "Scripture as the root of the devotional life",
-      "sprig": "daily growth and faithful formation",
+      "cross": "Christian faith centered on Christ",
       "sun": "new mercies and morning grace"
     },
-    "geometry": "open-book base with an upward sprig and small rising sun",
+    "geometry": "approved open book, upright cross and rising sun on a softly finished cream tile; preserve the raster master",
     "minimumDigitalSizePx": 24,
     "preferredShellSizePx": 34,
-    "clearSpace": "one sun diameter on all sides",
+    "clearSpace": "preserve the approved master margins; maskable export uses 90 percent scale",
     "variants": [
       "full-color-light",
-      "theme-aware-interface",
+      "same-artwork-on-light-and-dark-surfaces",
       "maskable-app-icon"
     ],
     "prohibited": [
       "stretching",
       "rotating",
-      "adding-cross-or-text-inside-mark",
-      "gradient-fill",
-      "drop-shadow",
+      "unapproved-redrawing",
+      "adding-text-inside-mark",
+      "filter-inversion",
       "placing-on-busy-artwork"
     ]
   },

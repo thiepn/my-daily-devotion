@@ -5,33 +5,20 @@ import { App } from "./app/App";
 import { BrandMark } from "./app/visual/BrandMark";
 import { inspectStorage, registerMddServiceWorker } from "./app/platform";
 import { prepareDatabase } from "./data/database";
-import "./styles/tokens.css";
-import "./styles/base.css";
-import "./styles/shell.css";
-import "./styles/screens.css";
-import "./styles/scripture.css";
-import "./styles/phase4.css";
-import "./styles/phase5.css";
-import "./styles/phase6.css";
-import "./styles/phase7.css";
-import "./styles/phase8.css";
-import "./styles/phase9.css";
-import "./styles/phase10.css";
-import "./styles/phase11.css";
-import "./styles/corrective.css";
-import "./styles/morning-grace.css";
-import "./styles/morning-grace-brand.css";
-import "./styles/morning-grace-screens.css";
-import "./styles/morning-grace-secondary.css";
-import "./styles/morning-grace-polish.css";
-import "./styles/morning-grace-mobile.css";
-import "./styles/morning-grace-mobile-stacked.css";
+import { DATABASE_CONNECTION_EVENT } from "./data/lifecycle";
+
+import "./styles/index.css";
 
 const rootElement = document.getElementById("root");
 if (!rootElement) throw new Error("MDD root element is missing.");
 const root = createRoot(rootElement);
 
 async function start(): Promise<void> {
+  const connectionNotice = (event: Event) => {
+    if ((event as CustomEvent<string>).detail !== "blocked") return;
+    root.render(<main className="startup-error mg-state-screen" role="status"><BrandMark className="mg-state-mark" /><h1>Finish writing in the other tab</h1><p>Local storage is waiting to update. Save or copy your writing, then close older MDD tabs. This page will continue when they close.</p><p>Your saved data has not been cleared.</p><button className="quiet-button" type="button" onClick={() => window.location.reload()}>Retry opening MDD</button></main>);
+  };
+  window.addEventListener(DATABASE_CONNECTION_EVENT, connectionNotice);
   try {
     await prepareDatabase();
     const router = createHashRouter([{ path: "*", element: <App /> }]);
@@ -42,18 +29,19 @@ async function start(): Promise<void> {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown startup error";
+    const updateRequired = error instanceof Error && (error.name === "VersionError" || /newer than this app|compatible app update/.test(error.message));
     root.render(
       <main className="startup-error mg-state-screen" role="alert">
         <BrandMark className="mg-state-mark" />
         <p className="eyebrow">Unable to open</p>
-        <h1>My Daily Devotion could not open its local data.</h1>
+        <h1>{updateRequired ? "Update My Daily Devotion to open this journal" : "My Daily Devotion could not open its local data."}</h1>
         <p>Try opening the app again. If this continues, check that your browser allows this site to store data and that you are using the latest version of MDD.</p>
         <p>MDD has not cleared your saved data. Avoid clearing browser storage; it can remove data that has not been backed up.</p>
         <button className="quiet-button" type="button" onClick={() => window.location.reload()}>Try opening MDD again</button>
         <details><summary>Technical details</summary><p>{message}</p></details>
       </main>,
     );
-  }
+  } finally { window.removeEventListener(DATABASE_CONNECTION_EVENT, connectionNotice); }
 }
 
 void start();

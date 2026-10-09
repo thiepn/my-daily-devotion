@@ -1,21 +1,24 @@
 :root {
   color-scheme: light;
 
-  /* Morning Grace semantic typography roles. Exact bundled brand fonts remain a later brand-assets decision. */
+  /* Single owner of semantic tokens. Fonts are bundled locally (OFL). */
   --font-ui: "Inter", "Segoe UI Variable", "Aptos", "Segoe UI", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-display: "Iowan Old Style", "Baskerville", "Palatino Linotype", "Book Antiqua", Georgia, ui-serif, serif;
-  --font-reading: "Charter", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, ui-serif, serif;
+  --font-display: "Libre Caslon Text", Georgia, serif;
+  --font-reading: "Libre Caslon Text", Georgia, serif;
+  --color-nav-active: #174c4b;
+  --color-muted: var(--color-ink-faint);
+  --color-surface-muted: var(--color-surface-subtle);
   --font-editorial: var(--font-display);
 
   /* Warm paper + olive-charcoal foundation. */
-  --color-canvas: #f6f2e9;
+  --color-canvas: #faf6ee;
   --color-canvas-warm: #f1eadf;
-  --color-surface: #fcf9f3;
+  --color-surface: #fffbf5;
   --color-surface-subtle: #efe9de;
-  --color-ink: #20241f;
+  --color-ink: #252922;
   --color-ink-soft: #464b45;
-  --color-ink-faint: #686d65;
-  --color-line: #dcd4c7;
+  --color-ink-faint: #5e625a;
+  --color-line: #e8dfd1;
   --color-line-strong: #c7bfb2;
 
   /* Brand and domain accents. */
@@ -25,11 +28,13 @@
   --color-reflection: #48706d;
   --color-reflection-soft: #dce8e6;
   --color-prayer: #9f563b;
+  --color-prayer-strong: #813e29;
   --color-prayer-soft: #f1ded6;
   --color-morning: #d29a3a;
   --color-morning-soft: #f2e5c5;
   --color-highlight: #e8d6ab;
   --color-red-letter: #93493f;
+  --color-red-letter-selected: #873e35;
 
   /* Existing semantic aliases retained for compatibility. */
   --color-answer: #8f6e49;
@@ -76,7 +81,8 @@
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     color-scheme: dark;
-    --color-canvas: #171b18;
+    --color-nav-active: #b7d1c6;
+    --color-canvas: #20251f;
     --color-canvas-warm: #1c211d;
     --color-surface: #20251f;
     --color-surface-subtle: #282d27;
@@ -91,11 +97,13 @@
     --color-reflection: #86aba7;
     --color-reflection-soft: #263836;
     --color-prayer: #d58b6d;
+    --color-prayer-strong: #e3a084;
     --color-prayer-soft: #3c2d27;
     --color-morning: #e1b667;
     --color-morning-soft: #3d3423;
     --color-highlight: #5a4a2a;
     --color-red-letter: #e0a097;
+    --color-red-letter-selected: #efb3a9;
     --color-answer: #d0aa7c;
     --color-answer-soft: #3b3025;
     --color-warning-text: #e0b585;
@@ -110,7 +118,8 @@
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --color-canvas: #171b18;
+  --color-nav-active: #b7d1c6;
+    --color-canvas: #20251f;
   --color-canvas-warm: #1c211d;
   --color-surface: #20251f;
   --color-surface-subtle: #282d27;
@@ -125,14 +134,75 @@
   --color-reflection: #86aba7;
   --color-reflection-soft: #263836;
   --color-prayer: #d58b6d;
+  --color-prayer-strong: #e3a084;
   --color-prayer-soft: #3c2d27;
   --color-morning: #e1b667;
   --color-morning-soft: #3d3423;
   --color-highlight: #5a4a2a;
   --color-red-letter: #e0a097;
+  --color-red-letter-selected: #efb3a9;
   --color-answer: #d0aa7c;
   --color-answer-soft: #3b3025;
   --color-warning-text: #e0b585;
   --color-focus-ring: #a8cdb5;
   --color-action-on: #151915;
+}
+
+/* Shared domain and responsive layout aliases. */
+
+
+:root {
+  --control-height: 44px;
+  --screen-gutter: clamp(22px, 4.5vw, 64px);
+  --section-rhythm: clamp(32px, 4vw, 48px);
+}
+@media (max-width: 980px) {
+  :root {
+    --screen-gutter: clamp(20px, 4vw, 42px);
+  }
+}
+@media (max-width: 620px) {
+  :root {
+    --screen-gutter: 18px;
+  }
+}
+@media (max-width: 420px) {
+  :root {
+    --screen-gutter: 16px;
+  }
+}
+
+:root {
+  --domain-accent: var(--color-accent);
+  --domain-accent-strong: var(--color-accent-strong);
+}
+
+:root {
+  --icon-stroke-width: 1.55;
+}
+
+:root {
+  --mg-control-height: 44px;
+  --mg-rule: var(--color-line);
+  --mg-rule-strong: var(--color-line-strong);
+  --mg-hover: color-mix(in srgb, var(--color-surface-muted) 56%, transparent);
+  --mg-paper-hover: color-mix(in srgb, var(--color-surface) 86%, var(--color-accent-soft));
+}
+:root[data-theme="dark"] {
+  --mg-hover: color-mix(in srgb, var(--color-surface-muted) 68%, transparent);
+  --mg-paper-hover: color-mix(in srgb, var(--color-surface) 90%, var(--color-accent-soft));
+}
+@media (max-width: 760px), (max-height: 500px) and (max-width: 900px) {
+  :root {
+    --mobile-appbar-height: 48px;
+    --mobile-tabbar-height: 60px;
+    --mobile-gutter: 12px;
+    --mobile-section-gap: 18px;
+    --mobile-row-height: 54px;
+  }
+}
+@media (max-width: 430px) {
+  :root {
+    --mobile-gutter: 10px;
+  }
 }

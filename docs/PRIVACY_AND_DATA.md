@@ -48,6 +48,6 @@ Remove uses soft-deletion markers, not secure erasure. Original record text and 
 
 Storage is isolated by origin, not URL path. Other applications on the exact same scheme/host/port share this trust boundary. A dedicated MDD origin is recommended for stronger app separation, but moving origin requires explicit export/import; this corrective release does not move the site or clear storage.
 
-Unsaved editor drafts are guarded against navigation and context changes; they are not a guarantee against OS termination. Save meaningful writing and keep periodic encrypted backups.
+Reflection keeps changed writing in separate, unencrypted local draft stores after a short delay. Only text acknowledged as kept is covered by restart recovery. The latest edits can still be lost before acknowledgment; browser eviction, cleared storage and device loss can remove drafts. Recovery is explicit and does not record devotional activity. Ordinary backups omit unfinished drafts. Other editors currently retain unsaved writing in memory with navigation guards. Save meaningful writing and keep periodic encrypted backups.
 
 Duplicate reading-progress repair is non-destructive and idempotent: it retains the newest explicit state, tombstones redundant records, preserves original history, and records repair details in local preferences. Schema remains 1.
