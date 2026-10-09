@@ -129,3 +129,34 @@ test('rejects private record fields, personal devices, tokens and stale receipts
  const c=params();c.receiptPacket.sourceCommit=other;
  assert.throws(()=>reconcileEvidence(c),/Stale receipt packet/);
 });
+
+
+test('CLI returns nonzero for structurally valid but unverified external reviews, and redacts errors',async()=>{
+ const {mkdtempSync,writeFileSync,rmSync}=await import('node:fs');
+ const {join}=await import('node:path'); const {tmpdir}=await import('node:os');
+ const {spawnSync}=await import('node:child_process');
+ const {fileURLToPath}=await import('node:url');
+ const dir=mkdtempSync(join(tmpdir(),'p14-intake-'));
+ const cli=fileURLToPath(new URL('./evidence-cli.mjs',import.meta.url));
+ const files=['packet.json','history.json','snapshot.json','links.json'].map(n=>join(dir,n));
+ try{
+   const fixture=params();
+   writeFileSync(files[0],JSON.stringify(fixture.receiptPacket));
+   writeFileSync(files[1],JSON.stringify({sourceCommit:sha,receiptIds:[]}));
+   writeFileSync(files[2],JSON.stringify(fixture.githubReviewSnapshot));
+   writeFileSync(files[3],JSON.stringify(fixture.sourceLinks));
+   const run=()=>spawnSync(process.execPath,[cli,'reconcile',...files,'none',sha],{encoding:'utf8'});
+   const good=run();
+   assert.equal(good.status,3,good.stderr);
+   const report=JSON.parse(good.stdout);
+   assert.equal(report.githubRecordsMatched,1);
+   assert.equal(report.releaseAuthorized,false);
+   assert.equal(report.physicalDeviceVerified,false);
+   assert.ok(!good.stdout.includes('external-reviewer'));
+   writeFileSync(files[0],JSON.stringify({...fixture.receiptPacket,privatePrayer:'MY_PRIVATE_TEXT'}));
+   const bad=run();
+   assert.equal(bad.status,4);
+   assert.ok(!bad.stderr.includes('MY_PRIVATE_TEXT'));
+   assert.ok(!bad.stderr.includes(dir));
+ }finally{rmSync(dir,{recursive:true,force:true})}
+});
