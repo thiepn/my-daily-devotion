@@ -28,3 +28,14 @@ Android Chrome and Samsung Internet PWA physical devices: Home/Recents, process 
 P1 migration, P2 deployment authorization, P5 format-2 backups, P6 functionality and P7 full CI remain independent gates. Nothing in P8 authorizes merge/deployment.
 
 **Next: P9 — Platform & Release Infrastructure Consolidation.** Scope: artifact/origin integrity, qualification gates, recovery and operational rollback, route ownership, non-sensitive runtime diagnostics. Status: not started.
+
+## P8 exact-head repair follow-up
+
+- Regression fix: the offline PWA generation fixture must intercept `fetch(target.href, ...)`; otherwise the broken generation wrongly appears complete and invalidates the interrupted-deployment test.
+- Browser isolation: backup check/restore assertions must inspect their local `.data-status` element because a separate, valid platform/IndexedDB warning can coexist, especially in WebKit.
+- Asset integrity hardening: required SVG/PNG/WebP/JPEG/WOFF assets must have a matching MIME type; HTTP 200 HTML fallbacks for visual assets may not enter a durable offline cache. Added deterministic SVG/PNG failure tests. Existing JavaScript, stylesheet and JSON checks remain.
+- Eight legacy Windows storage-failure screenshots now have an additional quota banner (typically 54 CSS pixels tall). **Do not automatically replace approved baselines.** Obtain an independent visual/product review of captured diff artifacts and explicit human approval, or implement a product-justified presentation correction with equivalent warning visibility. Screenshot CI remains a gate.
+
+## Android packaging, signing and configuration applicability
+
+The checked project is a **Vite web application installed as a PWA**, with a web app manifest and a service worker. There is **no APK/AAB, Gradle signing configuration or Android keystore** to verify on this branch. Do not claim Android application signing or Play Store readiness from these web checks. Before web publication, verify HTTPS origin, relative manifest `id`/`scope`/`start_url`, service worker registration scope, exact build identity, same-origin cache, CSP/referrer policy, and backup recovery on the actual deployment origin. Any future Android wrapper requires a separately qualified package, signing key custody, Play upload signing and real-device installation acceptance. P1 migration and P2 deployment remain independent release blockers.
