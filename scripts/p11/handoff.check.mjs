@@ -43,7 +43,7 @@ test('rejects origin/path changes and query tokens, even when claims say complet
   b.candidateSiteUrl='https://mdd.example.test/';
   assert.throws(()=>assessHandoff(b,sha),/path/);
   b.candidateSiteUrl=site+'?auth=my-token';
-  assert.throws(()=>assessHandoff(b,sha),/query tokens/);
+  assert.throws(()=>assessHandoff(b,sha),/query strings or bearer tokens/);
 });
 test('rejects unknown personal-data fields at handoff and reviewer level',()=>{
   const b=sample();b.prayer='PRIVATE';
