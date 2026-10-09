@@ -114,4 +114,5 @@ export async function prepareDatabase(database: MddDatabase = db): Promise<void>
     await readJournalEpoch(database);
   });
   await repairDuplicateReadingProgress(database);
+  announceDatabaseConnection("ready");
 }

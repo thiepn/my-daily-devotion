@@ -7,6 +7,7 @@ import { DevotionalIcon, type DevotionalIconName } from "./visual/DevotionalIcon
 import { Icon } from "./visual/Icon";
 import { ThemeSwitcher } from "./visual/ThemeSwitcher";
 import { useDataReturnPosition } from "../data/useDataReturnPosition";
+import { useMobileKeyboard } from "./useMobileKeyboard";
 import { safeDataReturn } from "../data/data-context";
 
 const TodayScreen = lazy(() => import("../mcheyne/TodayScreen").then((module) => ({ default: module.TodayScreen })));
@@ -142,6 +143,7 @@ function RouteLoading() { return <div className="route-loading mg-route-loading"
 export function App() {
   const location = useLocation();
   const navigate = useNavigate();
+  const mobileKeyboardVisible = useMobileKeyboard();
   useDataReturnPosition(location.pathname + location.search);
   const currentLabel = routeLabel(location.pathname);
   const mobileBack = mobileBackTarget(location.pathname, location.search);
@@ -151,6 +153,7 @@ export function App() {
   const shellClass = [
     "app-shell",
     "morning-grace-shell",
+    mobileKeyboardVisible ? "mobile-keyboard-visible" : "",
     location.pathname === "/today" || location.pathname === "/" ? "today-route" : "",
     mobileBack ? "mobile-detail-route" : "",
     location.pathname === "/bible" || /^\/bible\/[^/]+\/\d+$/.test(location.pathname) ? "bible-reader-route" : "",

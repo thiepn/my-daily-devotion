@@ -655,6 +655,14 @@
   .app-shell {
     padding-bottom: calc(var(--mobile-tabbar-height) + env(safe-area-inset-bottom));
   }
+  /* Only suppress fixed chrome when a focused editor is genuinely occluded
+     by a reduced visual viewport; never infer a keyboard from focus alone. */
+  .app-shell.mobile-keyboard-visible {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .app-shell.mobile-keyboard-visible .mobile-nav {
+    display: none;
+  }
   .utility-bar {
     position: sticky;
     z-index: 40;
