@@ -107,6 +107,7 @@ test.describe("offline PWA UX", () => {
       const requestGeneration = generation;
       const path = new URL(request.url!, "http://localhost").pathname.replace(/^\/devotion\//, "");
       // A failed build stays failed even if an automatic update overlaps the next deployment.
+      // Match the service worker's canonical-target fetch so failed-generation requests stay pinned.
       if (request.headers["x-mdd-test-build"] === "broken" && path === "bible/books/GEN.json") { response.writeHead(503); response.end("Interrupted deployment"); return; }
       if (path === "assets/old-only.js") { response.writeHead(generation === "old" ? 200 : 404, { "Content-Type": "text/javascript" }); response.end("old tab lazy asset"); return; }
       const file = resolve(root, path || "index.html");
@@ -115,7 +116,7 @@ test.describe("offline PWA UX", () => {
         let bytes = await readFile(file);
         if (path === "sw.js") bytes = Buffer.from(bytes.toString()
           .replace(/const BUILD_ID = "[^"]+"/, `const BUILD_ID = "fixture-${requestGeneration}"`)
-          .replace('fetch(url, { cache:', `fetch(url, { headers: { "X-Mdd-Test-Build": "${requestGeneration}" }, cache:`));
+          .replace('fetch(target.href, { cache:', `fetch(url, { headers: { "X-Mdd-Test-Build": "${requestGeneration}" }, cache:`));
         if (path === ".vite/manifest.json" && requestGeneration === "old") { const manifest = JSON.parse(bytes.toString()); manifest.oldTab = { file: "assets/old-only.js" }; bytes = Buffer.from(JSON.stringify(manifest)); }
         const types: Record<string,string> = { ".html":"text/html", ".js":"text/javascript", ".css":"text/css", ".json":"application/json", ".webmanifest":"application/manifest+json", ".svg":"image/svg+xml", ".png":"image/png" };
         response.writeHead(200, { "Content-Type": types[extname(file)] || "application/octet-stream", "Cache-Control": "no-store" }); response.end(bytes);
