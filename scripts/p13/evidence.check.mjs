@@ -92,3 +92,27 @@ test('rejects emulated devices and duplicate or unsupported scenarios',()=>{
  const b=intake();b.receipts[0].device.scenarios=['offline-cold-start','offline-cold-start'];assert.throws(()=>inspectReviewerIntake(b),/Duplicated scenarios/);
  const c=intake();c.receipts[0].device.platform='ios';assert.throws(()=>inspectReviewerIntake(c),/Unknown device/);
 });
+
+
+test('review CLI accepts only privacy-safe claims and never returns approval success', async()=>{
+  const {mkdtempSync,writeFileSync,rmSync}=await import('node:fs');
+  const {join}=await import('node:path');
+  const {tmpdir}=await import('node:os');
+  const {spawnSync}=await import('node:child_process');
+  const {fileURLToPath}=await import('node:url');
+  const folder=mkdtempSync(join(tmpdir(),'p13-claims-'));
+  try{
+    const packet=join(folder,'packet.json'),history=join(folder,'history.json');
+    writeFileSync(packet,JSON.stringify({sourceCommit:sha,receipts:[receipt()]}));
+    writeFileSync(history,JSON.stringify({sourceCommit:sha,receiptIds:[]}));
+    const cli=fileURLToPath(new URL('./evidence-cli.mjs',import.meta.url));
+    const run=()=>spawnSync(process.execPath,[cli,'review',packet,history,sha],{encoding:'utf8'});
+    const good=run();assert.equal(good.status,3,good.stderr);
+    assert.equal(JSON.parse(good.stdout).releaseAuthorized,false);
+    assert.ok(!good.stdout.includes('independent-reviewer'));
+    writeFileSync(packet,JSON.stringify({sourceCommit:sha,receipts:[receipt()],journal:'MY_SECRET_PRAYER'}));
+    const bad=run();assert.equal(bad.status,4);
+    assert.ok(!bad.stderr.includes('MY_SECRET_PRAYER'));
+    assert.ok(!bad.stderr.includes(packet));
+  }finally{rmSync(folder,{recursive:true,force:true});}
+});
