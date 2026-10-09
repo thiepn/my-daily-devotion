@@ -2,28 +2,42 @@
 
 Approved direction: Read → Reflect → Pray → Remember, canonical Morning Grace visual identity, dependable local-first use and optional connected services. Work proceeds through bounded reviewed releases; neither merging nor deployment is automatic.
 
-## Release ledger
+## Release ledger — verified October 9, 2026
 
-| Release | Deliverable | State |
+This table describes **implementation on the integrated main branch**, not publication. Historic PR descriptions and their unmerged status are not current release status.
+
+| Workstream | Current main-branch state | Outstanding gate |
 |---|---|---|
-| 1 | Integrate PRs #12–#21, certify one artifact, manual release operations, version 1.3.0 | Draft integration PR #22; certification passed, owner review/merge pending |
-| 2 | Search scopes/pagination/excerpts, precise destinations, Saved Scripture hub and Collections journal | Draft PR #23; hosted certification passed, unmerged |
-| 3 | Reading Plan journal, skippable onboarding, mode education, optional name and appropriate greeting | Draft PR #24; hosted certification passed, unmerged |
-| 4 | CSS consolidation, complete states, evening artwork, accessibility/usability and performance | Draft PR #25; hosted certification passed (223 unit/integration, 794 browser, 309 images), unmerged; human/physical-device gates outstanding |
-| 5 | Durable device-local drafts and Recovery view | [Specification](specs/DURABLE_LOCAL_DRAFTS.md) owner-approved; [5B portability boundary](RELEASE_5B_PORTABILITY.md) hosted-certified in PR #27; [5C recovery foundation](RELEASE_5C_RECOVERY_FOUNDATION.md) hosted-certified in PR #28; [Reflection/controller](RELEASE_5D_REFLECTION.md) and [Recovery directory](RELEASE_5E_RECOVERY_DIRECTORY.md) implemented in review branches. Other editor integrations remain. |
-| 6 | Twenty saved versions, thirty-day removal recovery, optional recovery backup payloads | Requires reviewed migration/portability spec |
-| 7 | Manual weekly review, opt-in resurfacing/backup reminders, backup checks and period exports | Planned |
-| 8 | Repository/platform boundaries, thiepn-platform, isolated domains/environments and origin transfer | Infrastructure inventory required |
-| 9 | Shared thiepn.dev identity, app boundaries, account/device management | Free Cloudflare + Supabase + SMTP prototype |
-| 10 | Encryption/sync protocol, test vectors, two-device prototype and independent review | Required before public sync beta |
-| 11 | Encrypted web sync, durable outbox/checkpoints/conflicts and explicit journal connection | Depends on reviewed protocol |
-| 12 | Capacitor iOS/Android, SQLite adapter, physical-device recovery and store preparation | After web sync |
-| 13 | Opt-in local notifications, calendar export, private shortcuts/widgets | After native reliability |
-| 14 | Public rollout, diagnostics, operations and user-driven improvements | Continuous gates |
+| Morning Grace Today/Bible/Prayer/History, writing and backup UI (earlier releases 1–4) | Integrated through PR #41; certified in main run 37896665631 | Human visual/usability review, reference-device performance, deployment |
+| Search, Saved Scripture, Collections, Reading Plan and optional onboarding | Integrated through PR #41 | Manual device and usability review |
+| Durable local drafts and Recovery directory (earlier release 5) | Integrated through PR #41; physical database schema 2 foundation retained within schema 3 | Real-user migration and interruption checks |
+| Saved versions and guarded restoration (release 6, C1–C2) | Integrated through PR #42 and #43 | Cross-version real-device validation |
+| Recently removed / 30-day restoration (release 6, C3) | Integrated through PR #44, certified on resulting main | Optional recovery-inclusive backups (C4) still absent |
+| Manual weekly/date-range review, export, backup check and opt-in Remember (release 7) | Integrated through PR #41 | Human/device gates |
+| Origin migration, separate platform repository and isolated environments (release 8) | Planned; no verified live origin migration | Inventory production DNS and old-origin transfer safety |
+| Shared thiepn.dev account identity and device management (release 9) | Design/prototype evidence only; not shipped in MDD | Isolated staging integration |
+| Threat model, encryption protocol, two-device proof (release 10) | Specification/prototype work | Independent security review and exhaustive test vectors |
+| Encrypted web sync with outbox/checkpoints/conflicts (release 11) | Not integrated in MDD | Security and dual-device correctness gates |
+| Capacitor Android/iOS and SQLite adapter (release 12) | Not released | Native lifecycle, storage and device testing |
+| Opt-in reminders/calendar/widgets (release 13) | Local in-app remembering exists; native extensions pending | Platform permissions and reliability |
+| Public connected-platform rollout (release 14) | Not started | Operations, security and staged rollout |
+
+## Execution sequence — stabilization P0–P15
+
+- **P0 (this baseline):** consolidate repository evidence, close only PRs proven ancestry-contained, establish one current roadmap and a protected-by-process merge policy.
+- **P1:** audit schema 1/2 → 3 upgrades, existing-user journal integrity and backup/restore compatibility.
+- **P2:** explicitly authorize and deploy the newly certified main artifact, then verify identity and all live assets on the existing origin.
+- **P3–P4:** physical-device defect removal and Morning Grace interaction/visual refinement.
+- **P5–P8:** recovery-inclusive backups, exhaustive workflows, accessibility/performance and offline resilience.
+- **P9–P12:** platform infrastructure, optional THIEPN accounts, reviewed encryption, encrypted cross-device sync.
+- **P13–P15:** Android first, then iOS/device integrations and public operations.
+
+Detailed baseline: [October 9 release baseline](RELEASE_BASELINE_2026-10-09.md). Development rules: [Codex workflow](CODEX_WORKFLOW.md).
+
 
 ## Locked product and safety decisions
 
-- Finish visual releases with schema v1. Draft/recovery/sync migrations are separate reviewed work; preserve v1 backup import and independently version database, backup and sync formats.
+- The integrated web candidate uses **physical database schema 3**; domain contract and ordinary portable backups remain version 1. Preserve v1 backup import and independently version future database, recovery-backup and sync formats. A database downgrade is not a safe rollback.
 - Shared thiepn.dev login isolates each app’s private records and permissions. Account creation never uploads a guest journal or enables sync.
 - Recovery uses a code or an existing approved device; support cannot decrypt journals. Losing both requires an independently usable backup or a new journal.
 - First sync covers explicitly saved work and saved versions. Drafts, active reader position, device settings/reminders and backup receipts stay local.

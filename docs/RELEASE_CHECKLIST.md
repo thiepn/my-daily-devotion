@@ -1,41 +1,47 @@
-# Current release checklist — Morning Grace and recovery
+# Release checklist — integrated offline main candidate
 
-This is an operational gate, not a historical assertion that every item has passed. Complete it for the exact proposed release commit and retain the resulting evidence in the integration PR. Merge, deployment and publication require explicit owner authorization.
+Authoritative status as of **2026-10-09**. This checklist applies to the **exact new commit** proposed for deployment, not simply to a successful historical PR. See [P0 release baseline](RELEASE_BASELINE_2026-10-09.md) and [Codex workflow](CODEX_WORKFLOW.md).
 
-Ship only from a commit whose complete hosted certification and manual visual review succeed. Local results support that decision; they do not substitute for it.
+## Confirmed prior to this P0 documentation change
 
-## Candidate and compatibility
+- [x] Source application integration on `main`: `87f4d25f43892dc9c5fbfbcda8c1ed739286e8e8` via PRs #41–#44.
+- [x] `Phase 0 Contract` and `Release Certification CI` succeeded for that exact source commit: runs [37896665636](https://github.com/thiepn/my-daily-devotion/actions/runs/37896665636) and [37896665631](https://github.com/thiepn/my-daily-devotion/actions/runs/37896665631).
+- [x] Certified build: 344 unit/integration cases, 1,118 browser cases across eight shards, 526 Windows visual comparisons; no failures/skips/flaky tests; exact release artifact produced.
+- [x] Code-backed physical schema 3, domain contract 1, ordinary portable backup format/schema 1; durable drafts, saved versions and Recently removed included.
+- [x] Deployment workflow is manually dispatched, not triggered on push; package metadata currently 1.3.0; last published release is v1.2.5.
 
-Current implemented coverage and exact stacked evidence: [Offline integration status](OFFLINE_INTEGRATION_STATUS.md). Schema-3 recovery, final milestone versions, human/device gates and the resulting main commit's certification remain outstanding; do not reuse a historical presentation-only report as current release approval.
+**Warning:** This is evidence for the pre-P0 source commit. Any documentation-only merge changes `main` SHA and requires a fresh passing run on that new SHA before invoking the certified deployment workflow.
 
-- [ ] Review constituent PRs #12–#21 in the integration PR against `main`.
-- [ ] Record the source commit, package version 1.3.0 and known discrepancies.
-- [ ] Verify package, application and service-worker versions agree.
-- [ ] Record the exact compatibility contracts: original presentation uses database v1; the approved recovery foundation/editor integration uses database v2; domain and ordinary portable backup format/schema remain v1. Do not treat a database downgrade as a safe rollback.
-- [ ] Check the current editor coverage reports: Reflection, prayer capture, verse notes, prayer wording/updates/encouragement/ordinary answers, settings, Focused Prayer answers, Collections and People/Categories have dedicated integration slices. Verify the final directory-editor report and exact integrated certification before marking Batch B complete or promising restart recovery across every editor.
-- [ ] Review old PRs #9–#11 for necessary scoped fixes; do not import their global navigation/CSS changes wholesale. Close superseded PRs only after approved integration.
-- [ ] Inspect the canonical application crops, approved icon and current screenshots together using `docs/VISUAL_AUTHORITY.md`.
+## P0 repository and evidence
 
-## Exact-commit certification
+- [ ] Merge the P0 documentation-only change after reviewing the diff and current PR/branch inventory.
+- [ ] Confirm old stacked PRs with head commits provably contained in `main` have been closed as superseded *without deleting their branches*.
+- [ ] Resolve or explicitly retain distinct legacy/diverged PRs #9, #10, #11, #31 and #35; never force-merge their divergent histories.
+- [ ] Re-run certification on the resulting exact `main` SHA and record its artifact/run ID.
 
-- [ ] Worktree is clean. Run `npm run verify:phase12` on Windows for complete local supporting evidence.
-- [ ] Hosted Release Certification CI succeeds for the integrated commit. Its build job runs static/domain checks, inventories all cases and builds the production artifact once.
-- [ ] All eight browser shards and the Windows image job pass without skips, failures or retries. Aggregation rejects missing coverage, stale reports and differing artifact hashes.
-- [ ] Review Chromium, mobile, Firefox, WebKit and offline journeys, including cold cached Bible/search, explicit completion/prayed behavior and service-worker update handling.
-- [ ] Review encrypted/plain backups, validation, reviewed merge/replace, rollback and fresh-install recovery.
-- [ ] Inspect mobile widths 320/360/390/430, tablet/desktop, dark mode and 200% text. Passing baselines alone do not certify fidelity.
-- [ ] Check keyboard/focus, 44px controls, contrast, safe areas, long content and unavailable-source/error states.
-- [ ] Retain content-free test reports, SHA-256 package manifest, coverage inventory and visual discrepancy report.
+## P1 — data integrity gate before deploying an upgraded journal
 
-## Explicit release actions
+- [ ] Confirm data and device backup availability on the existing live origin.
+- [ ] Test real upgrade paths from previously deployed local schemas to physical schema 3 with representative saved records, tombstones, prayers, dates, reader state and device-local drafts.
+- [ ] Test interrupted migration, persistence/rollback, cold reload, multiple tabs, quota pressure and recovery from backup.
+- [ ] Validate original ordinary portable-v1 encrypted/plain import and reviewed replace/merge, including wrong password and corrupt archive behavior.
+- [ ] Document that **ordinary** portable backups omit private unfinished drafts, previous writing versions and Recently removed recovery copies; do not claim optional recovery format 2 is released.
+- [ ] Verify package, application and service-worker versions and prevent downgrade to incompatible database schema.
 
-- [ ] Obtain authorization to merge. Re-run hosted certification on the resulting `main` commit; a PR merge ref is not the deployed commit.
-- [ ] Obtain authorization to deploy. Manually dispatch **Deploy certified release** on that exact `main` commit with its successful certification run ID. Leave **publish_release** disabled unless publication is also authorized.
-- [ ] Deployment validates the completed main run, archive checksum, every asset hash and build identity. It extracts the certified artifact without rebuilding.
-- [ ] Verify deployed identity and every asset; retain deployment proof. A failed verification requires investigation and an explicit recovery decision.
-- [ ] If publication is authorized, publish the immutable versioned package and current 1.3.0 notes. Existing version tags/releases must not be overwritten.
-- [ ] Close superseded stack PRs only after successful approved integration, with a link to the integration PR.
+## P2 — explicit web release
 
-## Operational limits
+- [ ] Review canonical Morning Grace artwork/icons, real screens at 320/360/390/430/768/1440px, dark mode, 200% text and keyboard/focus/contrast; preserve all open human/device qualifications.
+- [ ] Obtain explicit authorization for live deployment, distinct from authorization to merge.
+- [ ] Trigger **Deploy certified release** on the current `main` SHA using that exact SHA's successful `Release Certification CI` run ID; leave `publish_release=false` without separate permission.
+- [ ] Deploy the certified archive *without rebuilding*; verify the deployed commit identity and every asset checksum, service-worker behavior and offline cold boot.
+- [ ] Preserve the existing browser origin until an old-origin → new-origin encrypted journal transfer and recovery exercise have been validated. DNS redirect alone does not migrate IndexedDB.
+- [ ] Retain a deploy verification report and a rollback/recovery plan compatible with schema 3.
+- [ ] Publish a correctly versioned immutable GitHub release only after explicit release approval; never overwrite v1.2.5 or reuse a tag.
 
-No automatic deployment on `main` push. The original 1.3.0 integration milestone was presentation-only; Search, Collections, Reading Plan and evening artwork were added in subsequent unmerged changes. Recovery introduces its separately approved migration and editor coverage. Record the contracts and behavior of the actual candidate rather than repeating historical limitations or claiming every editor is durable. Accounts, cloud services and sync remain outside the current offline candidate.
+## Post-release quality requirements
+
+- [ ] Screen-reader, physical-phone IME/keyboard, usable offline install/update and representative 10,000-record navigation/search performance reports.
+- [ ] No unresolved critical or high-severity defects; known lower-priority limitations recorded.
+- [ ] New Codex feature PRs target `main`, include exact-commit tests and avoid resurrecting closed stacked PRs.
+
+Human acceptance and production deployment are **not** implied by a green automated CI run.
