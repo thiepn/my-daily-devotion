@@ -140,7 +140,7 @@ test("encrypted backup restores in a fresh browser context on this engine", asyn
     await restored.getByRole("button", { name: "Preview & validate" }).click();
     await restored.getByRole("button", { name: "Continue to confirmation" }).click();
     await restored.getByRole("button", { name: "Merge validated backup" }).click();
-    await expect(restored.getByRole("status")).toContainText("merged successfully");
+    await expect(restored.locator(".data-status.restore-status")).toContainText("merged successfully");
     await openRoute(restored, route); await expect(restored.locator(".prayer-request-text")).toHaveText("Pray for the visit.");
   } finally { await target.close(); }
 });

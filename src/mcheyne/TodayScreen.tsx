@@ -7,7 +7,7 @@ import { MorningGraceArtwork } from "../app/visual/MorningGraceArtwork";
 import { useLocalClock } from "../app/useLocalClock";
 import { useMutation } from "../app/useMutation";
 import { PlanSetup } from "./PlanSetup";
-import { readPlanJournal, readJourneyPreference, greeting } from "./journal-model";
+import { readPlanJournal, greeting } from "./journal-model";
 import { usePrayerRead } from "../prayer/detail-hooks";
 import type { LocalDate, PlanEnrollment, ReadingProgress } from "../domain/types";
 import { TodayPrayerPanel } from "../prayer/TodayPrayerPanel";
@@ -29,7 +29,7 @@ export function TodayScreen() {
   const location = useLocation();
   const { busy, status, failed, run } = useMutation();
   const read = usePrayerRead('today-plan:' + today, () => readPlanJournal(today));
-  const preference = usePrayerRead('journey-preference', readJourneyPreference);
+  // Plan and greeting are read from one consistent, reactive IndexedDB snapshot.
   const plan = read.data?.plan ?? null, enrollment = read.data?.enrollment ?? null;
   const assignment = enrollment ? read.data?.assignment ?? null : null;
   const progress = read.data?.progress ?? new Map();
@@ -71,14 +71,14 @@ export function TodayScreen() {
   return <main className="grace-today">
     <header className="today-opening">
       <MorningGraceArtwork />
-      <h1>{greeting(hour)},<br />{preference.data?.name || "Friend"}.</h1>
+      <h1>{greeting(hour)},<br />{read.data?.preference.name || "Friend"}.</h1>
       <p>{hour < 12 ? "A new day. A fresh opportunity" : "A quiet moment. A fresh opportunity"}<br />to walk with God.</p>
       <Link className="today-profile" to="/data?return=%2Ftoday" aria-label="Data and settings"><DevotionalIcon name="profile" /></Link>
     </header>
     <div className="today-journal">
       <TodayVerse reference={previewReading?.references[0]} today={today} />
       <p className="today-status" role={failed ? "alert" : "status"}>{busy ? "Saving…" : status}</p>
-      {!enrollment ? plan && <PlanSetup plan={plan} today={today} onSaved={read.retry} introduction={!preference.data?.dismissed} /> : <section className="today-plan" aria-labelledby="reading-heading">
+      {!enrollment ? plan && <PlanSetup plan={plan} today={today} onSaved={read.retry} introduction={!read.data?.preference.dismissed} /> : <section className="today-plan" aria-labelledby="reading-heading">
         <div className="today-section-heading"><h2 id="reading-heading">Today’s Reading Plan</h2><span>{assignment ? `Day ${assignment.sequence}` : "M’Cheyne"}</span></div>
         {assignment ? <details className="today-plan-card grace-paper">
           <summary aria-label={`View Day ${assignment.sequence} readings`}>

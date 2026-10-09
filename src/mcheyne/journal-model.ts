@@ -26,11 +26,12 @@ export function greeting(hour:number) { return hour<12?'Good morning':hour<18?'G
 export async function readPlanJournal(today:LocalDate) {
  const plan=await loadMcheynePlan(), repository=new McheyneRepository();
  return db.transaction('r',[db.preferences,db.planEnrollments,db.readingProgress],async()=>{
+ const preference=parseJourneyPreference((await db.preferences.get(JOURNEY_PREFERENCE))?.value);
  const enrollment=await repository.getActiveEnrollment(today,false)??null;
  const progress=enrollment?await repository.completionMap(enrollment.id):new Map<string,ReadingProgress>();
  const sequence=enrollment?.mode==='SELF_PACED'?await repository.getCurrentSelfPacedSequence(plan,enrollment):null;
  const assignment=enrollment?.mode==='SELF_PACED'?(sequence?plan.assignments[sequence-1]??null:null):assignmentForCalendarDate(plan,today);
  const earlierUnread=enrollment?.mode==='CALENDAR'?await repository.getEarlierUnreadAssignments(plan,enrollment,assignment?.sequence??sequenceOnOrAfter(plan,today)??366):[];
- return {plan,enrollment,progress,sequence,assignment,earlierUnread};
+ return {plan,enrollment,progress,sequence,assignment,earlierUnread,preference};
  });
 }

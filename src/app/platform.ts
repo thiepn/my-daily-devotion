@@ -1,5 +1,6 @@
 import { isUpdateProtected } from "./update-protection";
 export const PLATFORM_UPDATE_EVENT = "mdd:update-ready";
+export const PLATFORM_UPDATE_ACTIVATED_EVENT = "mdd:update-activated";
 
 export type StoragePersistenceState = "granted" | "not-granted" | "unsupported";
 
@@ -55,7 +56,12 @@ export async function registerMddServiceWorker(): Promise<ServiceWorkerRegistrat
   });
 
   navigator.serviceWorker.addEventListener("controllerchange", () => {
-    if (reloadForUpdate) window.location.reload();
+    if (!reloadForUpdate) return;
+    reloadForUpdate = false;
+    // The user may have started new writing while activation was in flight.
+    // Never reload a newly dirty editor even after an earlier approval.
+    if (isUpdateProtected()) window.dispatchEvent(new Event(PLATFORM_UPDATE_ACTIVATED_EVENT));
+    else window.location.reload();
   });
 
   const updateWhenVisible = () => {
@@ -72,7 +78,12 @@ export async function activateWaitingServiceWorker(registration?: ServiceWorkerR
   if (typeof navigator === "undefined" || !("serviceWorker" in navigator)) return false;
   const target = registration ?? await navigator.serviceWorker.getRegistration(import.meta.env.BASE_URL || "./");
   if (!target?.waiting || isUpdateProtected()) return false;
-  reloadForUpdate = true;
-  target.waiting.postMessage({ type: "SKIP_WAITING" });
-  return true;
+  try {
+    target.waiting.postMessage({ type: "SKIP_WAITING" });
+    reloadForUpdate = true;
+    return true;
+  } catch {
+    reloadForUpdate = false;
+    return false;
+  }
 }
