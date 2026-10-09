@@ -19,7 +19,7 @@ test.describe("P7 accessible Morning Grace and resource qualification", () => {
     await expect(passage).toHaveAttribute("aria-expanded", "false");
     await expect(passage).toBeFocused();
 
-    const appearance = page.getByRole("button", { name: "Reading appearance" });
+    const appearance = page.locator(".reader-type-button");
     await appearance.click();
     await expect(appearance).toHaveAttribute("aria-expanded", "true");
     const reading = page.getByRole("dialog", { name: "Reading" });
@@ -103,7 +103,7 @@ test.describe("P7 accessible Morning Grace and resource qualification", () => {
     expect(measurements.largestEncodedBytes).toBeLessThan(12 * 1024 * 1024);
     expect(measurements.encodedBytes).toBeLessThan(35 * 1024 * 1024);
     await page.getByRole("button", { name: /^Select Psalms? 119:1$/ }).click();
-    await expect(page.getByRole("button", { name: "Select Psalms 119:1" })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByRole("button", { name: /^Select Psalms? 119:1$/ })).toHaveAttribute("aria-pressed", "true");
     await expectNoHorizontalOverflow(page);
   });
 });
