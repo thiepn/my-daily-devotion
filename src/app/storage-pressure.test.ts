@@ -19,6 +19,7 @@ describe("P8 conservative storage-pressure signals", () => {
   });
   it("does not dispatch user content or alerts for unrelated failures", () => {
     const spy = vi.fn();
+    vi.stubGlobal("window", new EventTarget());
     window.addEventListener(STORAGE_WRITE_FAILURE_EVENT, spy);
     try {
       reportStorageWriteFailure(new Error("a private journal entry"));
@@ -28,6 +29,6 @@ describe("P8 conservative storage-pressure signals", () => {
       expect(spy.mock.calls[0]).toHaveLength(1);
       expect(spy.mock.calls[0]?.[0]).toHaveProperty("type", STORAGE_WRITE_FAILURE_EVENT);
       expect(JSON.stringify(spy.mock.calls[0])).not.toContain("sensitive journal");
-    } finally { window.removeEventListener(STORAGE_WRITE_FAILURE_EVENT, spy); }
+    } finally { window.removeEventListener(STORAGE_WRITE_FAILURE_EVENT, spy); vi.unstubAllGlobals(); }
   });
 });
