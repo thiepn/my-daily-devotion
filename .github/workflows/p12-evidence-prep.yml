@@ -1,0 +1,29 @@
+name: P12 Candidate Evidence Preparation
+
+on:
+  pull_request:
+    paths:
+      - "scripts/p12/**"
+      - "scripts/p11/**"
+      - "scripts/p10/**"
+      - "docs/P12_RELEASE_CANDIDATE_EVIDENCE_PREPARATION.md"
+      - ".github/workflows/p12-evidence-prep.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-artifact-evidence:
+    name: Offline artifact SHA256 and provenance cross-checks (not release authorization)
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Verify byte-level release evidence and rejection of self-reported approvals
+        run: node --test scripts/p12/candidate.check.mjs
