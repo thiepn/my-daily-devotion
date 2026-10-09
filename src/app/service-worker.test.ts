@@ -21,7 +21,7 @@ function worker(failPath = "", clients: string[] = [], wrongTypePath = "", escap
     if (url.endsWith(".vite/manifest.json")) return Response.json({ main: { file: "assets/new.js" }, lazy: { file: escapeScope ? "../outside.js" : "assets/lazy.js" } });
     if (url.endsWith("bible/manifest.json")) return Response.json({ searchIndexPath: "/bible/search-index.json", books: [{ path: "/bible/books/GEN.json" }] });
     if (wrongTypePath && url.endsWith(wrongTypePath)) return new Response("<html>Fallback page</html>", { headers: { "Content-Type": "text/html" } });
-    return new Response("asset", { headers: { "Content-Type": url.endsWith(".js") ? "text/javascript" : url.endsWith(".css") ? "text/css" : url.endsWith(".webmanifest") ? "application/manifest+json" : url.endsWith(".json") ? "application/json" : "application/octet-stream" } });
+    return new Response("asset", { headers: { "Content-Type": url.endsWith(".js") ? "text/javascript" : url.endsWith(".css") ? "text/css" : url.endsWith(".webmanifest") ? "application/manifest+json" : url.endsWith(".json") ? "application/json" : url.endsWith(".svg") ? "image/svg+xml" : url.endsWith(".png") ? "image/png" : url.endsWith(".webp") ? "image/webp" : url.endsWith(".woff2") ? "font/woff2" : "application/octet-stream" } });
   };
   const registration = { scope: root, installing: null as object | null, waiting: null as object | null };
   const self = { registration, location: { origin: "https://mdd.test" }, clients: { async matchAll() { return clients.map((id) => ({ id })); }, async claim() {} }, addEventListener(name: string, handler: (event: any) => void) { listeners[name] = handler; } };
@@ -44,6 +44,12 @@ describe("atomic offline updates", () => {
   });
   it("rejects a 200 HTML fallback pretending to be a JavaScript chunk without deleting the previous offline app", async () => {
     const w = worker("", [], "assets/lazy.js");
+    await expect(w.lifecycle("install")).rejects.toThrow("unexpected content type");
+    expect(w.stores.has(w.key)).toBe(false);
+    expect(w.stores.has("mdd-app-v1.0.0-previous")).toBe(true);
+  });
+  it.each(["brand-mark.svg", "icons/icon-192.png"])("rejects an HTML fallback for required artwork %s without deleting the previous offline app", async (asset) => {
+    const w = worker("", [], asset);
     await expect(w.lifecycle("install")).rejects.toThrow("unexpected content type");
     expect(w.stores.has(w.key)).toBe(false);
     expect(w.stores.has("mdd-app-v1.0.0-previous")).toBe(true);
