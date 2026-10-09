@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import { seedPrayerDetail } from "./prayer-detail-fixture";
+import { openRoute } from "./helpers";
 import { writingSnapshot } from "./writing-fixture";
 
 test.beforeEach(async ({ page }) => {
@@ -58,4 +59,17 @@ test("marking prayed with no active edits keeps the ordinary one-click behavior"
   await expect(page.getByText("Prayed now recorded.")).toBeVisible();
   await expect(page.getByRole("dialog", { name: "Keep your unsaved changes?" })).toHaveCount(0);
   expect(await recorded(page, "PRAYER_PRAYED")).toBe(1);
+});
+
+test("returning from a prayer detail never loops to its own route or an invalid target", async ({ page }) => {
+  await seedPrayerDetail(page);
+  const id = "00000000-0000-4000-8000-000000008001";
+  for (const destination of ["/prayer/" + id, "/unknown", "/%2Fevil.invalid"]) {
+    await openRoute(page, "/prayer/" + id + "?return=" + encodeURIComponent(destination));
+    await expect(page.locator(".journal-heading .quiet-back-link")).toHaveAttribute("href", /#\/prayer$/);
+    await page.locator(".journal-heading .quiet-back-link").click();
+    await expect(page).toHaveURL(/#\/prayer$/);
+  }
+  await openRoute(page, "/prayer/" + id + "?return=" + encodeURIComponent("/history/day/2026-04-24?shown=20"));
+  await expect(page.locator(".journal-heading .quiet-back-link")).toHaveAttribute("href", /#\/history\/day\/2026-04-24\?shown=20$/);
 });
