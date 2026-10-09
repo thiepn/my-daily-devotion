@@ -108,6 +108,8 @@ test.describe("offline PWA UX", () => {
     // target.href was defined, preventing the initial worker from installing.
     const workerSource = await readFile(resolve(root, "sw.js"), "utf8");
     const requiredFetchCall = 'fetch(target.href, { cache:';
+    // Strict production precaching rejects HTML/octet-stream fallbacks for
+    // artwork and fonts. Keep the fixture as faithful as the deployed server.
     expect(workerSource, "The PWA interception fixture must match the built worker").toContain(requiredFetchCall);
     const server = createServer(async (request, response) => {
       const requestGeneration = generation;
@@ -124,7 +126,7 @@ test.describe("offline PWA UX", () => {
           .replace(/const BUILD_ID = "[^"]+"/, `const BUILD_ID = "fixture-${requestGeneration}"`)
           .replace(requiredFetchCall, `fetch(target.href, { headers: { "X-Mdd-Test-Build": "${requestGeneration}" }, cache:`));
         if (path === ".vite/manifest.json" && requestGeneration === "old") { const manifest = JSON.parse(bytes.toString()); manifest.oldTab = { file: "assets/old-only.js" }; bytes = Buffer.from(JSON.stringify(manifest)); }
-        const types: Record<string,string> = { ".html":"text/html", ".js":"text/javascript", ".css":"text/css", ".json":"application/json", ".webmanifest":"application/manifest+json", ".svg":"image/svg+xml", ".png":"image/png" };
+        const types: Record<string,string> = { ".html":"text/html", ".js":"text/javascript", ".css":"text/css", ".json":"application/json", ".webmanifest":"application/manifest+json", ".svg":"image/svg+xml", ".png":"image/png", ".webp":"image/webp", ".jpg":"image/jpeg", ".jpeg":"image/jpeg", ".woff":"font/woff", ".woff2":"font/woff2" };
         response.writeHead(200, { "Content-Type": types[extname(file)] || "application/octet-stream", "Cache-Control": "no-store" }); response.end(bytes);
       } catch { response.writeHead(404); response.end(); }
     });
