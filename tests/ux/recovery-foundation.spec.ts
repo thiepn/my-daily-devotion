@@ -22,7 +22,7 @@ test("blocked v1 upgrade explains recovery and continues after the legacy tab cl
       };
     });
   });
-  expect(metadata).toMatchObject({ version: { schemaVersion: 2, contractVersion: 1 }, journal: { formatVersion: 1 } });
+  expect(metadata).toMatchObject({ version: { schemaVersion: 3, contractVersion: 1 }, journal: { formatVersion: 1 } });
 });
 
 test("a storage upgrade closes the old connection without replacing unsaved writing", async ({ page }, testInfo) => {
@@ -30,10 +30,10 @@ test("a storage upgrade closes the old connection without replacing unsaved writ
   const writing = page.getByRole("textbox", { name: "Daily reflection" });
   await writing.fill("Keep this unsaved writing in memory while another tab updates storage.");
   await page.evaluate(async () => {
-    const request = indexedDB.open("my-daily-devotion", 30);
+    const request = indexedDB.open("my-daily-devotion", 40);
     request.onupgradeneeded = () => {
       request.result.createObjectStore("syntheticFutureStore", { keyPath: "id" });
-      request.transaction!.objectStore("schemaMetadata").put({ key: "database", schemaVersion: 3, contractVersion: 1, createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-10-07T00:00:00.000Z" });
+      request.transaction!.objectStore("schemaMetadata").put({ key: "database", schemaVersion: 4, contractVersion: 1, createdAt: "2026-01-01T00:00:00.000Z", updatedAt: "2026-10-07T00:00:00.000Z" });
     };
     await new Promise<void>((resolve, reject) => { request.onsuccess = () => { request.result.close(); resolve(); }; request.onerror = () => reject(request.error); });
   });

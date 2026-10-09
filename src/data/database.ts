@@ -1,6 +1,7 @@
 import Dexie, { type EntityTable } from "dexie";
 import { repairDuplicateReadingProgress } from "./repairs";
 import type { DraftContents, DraftJournalState, DraftMetadata } from "../recovery/types";
+import type { SavedVersionMetadata, SavedVersionContents, RemovalGroupMetadata, RemovalGroupContents } from "../recovery/saved-types";
 import { newJournalState, readJournalEpoch } from "../recovery/journal";
 import { announceDatabaseConnection } from "./lifecycle";
 import type {
@@ -57,6 +58,10 @@ export class MddDatabase extends Dexie {
   editorDrafts!: EntityTable<DraftMetadata, "id">;
   editorDraftContents!: EntityTable<DraftContents, "id">;
   draftJournalState!: EntityTable<DraftJournalState, "key">;
+  savedVersions!: EntityTable<SavedVersionMetadata, "id">;
+  savedVersionContents!: EntityTable<SavedVersionContents, "id">;
+  removalGroups!: EntityTable<RemovalGroupMetadata, "id">;
+  removalGroupContents!: EntityTable<RemovalGroupContents, "id">;
 
   constructor(name = DATABASE_NAME) {
     super(name);

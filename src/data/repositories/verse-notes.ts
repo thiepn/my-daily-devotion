@@ -1,6 +1,7 @@
 import { newMutableFields, nextMutableFields, nowInstant } from "../../domain/identity";
 import type { ScriptureReference, VerseNote } from "../../domain/types";
 import type { MddDatabase } from "../database";
+import { captureSavedVersion, savedVersionTables } from "../../recovery/saved-versions";
 
 function sameReference(a: ScriptureReference, b: ScriptureReference): boolean {
   return a.translationId === b.translationId && a.startVerseKey === b.startVerseKey && a.endVerseKey === b.endVerseKey;
@@ -44,7 +45,7 @@ export class VerseNoteRepository {
   }
 
   async save(reference: ScriptureReference, bodyMd: string, expectedRevision?: number | null): Promise<VerseNote> {
-    return this.database.transaction("rw", this.database.verseNotes, async () => {
+    return this.database.transaction("rw", [this.database.verseNotes, ...savedVersionTables(this.database)], async () => {
       const current = await this.getExact(reference);
       if (expectedRevision !== undefined && (current?.revision ?? null) !== expectedRevision) throw new Error("This verse note changed in another tab. Your draft has been kept; reopen the note to compare before saving.");
       return this.saveInternal(reference, bodyMd);
@@ -58,6 +59,7 @@ export class VerseNoteRepository {
     const existing = matches.sort((a, b) => Number(Boolean(a.deletedAt)) - Number(Boolean(b.deletedAt)) || b.updatedAt.localeCompare(a.updatedAt) || a.id.localeCompare(b.id))[0];
     if (existing) {
       const next: VerseNote = { ...existing, ...reference, bodyMd: normalized, deletedAt: null, ...nextMutableFields(existing) };
+      await captureSavedVersion(this.database, "verse-note", existing, next);
       await this.database.verseNotes.put(next);
       return next;
     }

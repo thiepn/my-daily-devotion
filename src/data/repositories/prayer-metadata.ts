@@ -3,6 +3,7 @@ import type { Category, Person, UUID } from "../../domain/types";
 import type { MddDatabase } from "../database";
 import { MutableRepository } from "./mutable-repository";
 import { assertExpectedRevision } from "../conflicts";
+import { captureSavedVersion, savedVersionTables } from "../../recovery/saved-versions";
 
 export const DEFAULT_CATEGORIES = ["Personal", "Family", "Friends", "Church", "Mission", "Study/Work", "World"] as const;
 
@@ -29,12 +30,14 @@ export class PersonRepository extends MutableRepository<Person> {
   async updatePerson(id: UUID, input: { name: string; relationship?: string | null; notes?: string | null }, expectedRevision?: number): Promise<Person> {
     const name = input.name.trim();
     if (!name) throw new Error("Person name is required.");
-    return this.database.transaction("rw", this.database.people, async () => {
+    return this.database.transaction("rw", [this.database.people, ...savedVersionTables(this.database)], async () => {
       const current = await this.require(id);
       assertExpectedRevision(current, expectedRevision);
       const patch = { name, relationship: input.relationship?.trim() || null, notes: input.notes?.trim() || null };
       if (current.name === patch.name && current.relationship === patch.relationship && current.notes === patch.notes) return current;
-      return this.patch(id, patch, expectedRevision);
+      const saved = await this.patch(id, patch, expectedRevision);
+      await captureSavedVersion(this.database, "person", current, saved);
+      return saved;
     });
   }
 

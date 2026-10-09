@@ -3,6 +3,7 @@ import type { PortableTableName } from "../data/portable-tables";
 import { readJournalEpoch } from "./journal";
 import { DraftError, type DraftCommitMarker, type DraftPayload, type DraftSnapshot, type RecordBaseline } from "./types";
 import { hasValidDraftTarget, isDraftContents, isDraftMetadata } from "./validation";
+import { savedVersionTables } from "./saved-versions";
 
 export interface DraftSaveContext {
   snapshot: DraftSnapshot; operationId: string;
@@ -25,7 +26,7 @@ export async function saveWithDraft(database: MddDatabase, context: DraftSaveCon
   const { snapshot, operationId, expectedKeptGeneration } = structuredClone(context);
   if (!isDraftMetadata(snapshot.metadata) || !isDraftContents(snapshot.contents) || snapshot.metadata.id !== snapshot.contents.id || snapshot.metadata.generation !== snapshot.contents.generation || !hasValidDraftTarget(snapshot.metadata, snapshot.contents.payload) || snapshot.metadata.state !== "active" || !/^[\da-f]{8}(?:-[\da-f]{4}){3}-[\da-f]{12}$/i.test(operationId)) throw new DraftError("invalid", "Invalid draft save context.");
   const committedAt = new Date().toISOString();
-  const tables = [...operation.tables.map(name => database.table(name)), database.editorDrafts, database.editorDraftContents, database.draftJournalState];
+  const tables = [...operation.tables.map(name => database.table(name)), database.editorDrafts, database.editorDraftContents, ...savedVersionTables(database)];
   return database.transaction("rw", tables, async () => {
     if (snapshot.metadata.journalEpoch !== await readJournalEpoch(database)) throw new DraftError("epoch", "Review this previous-journal draft before saving.");
     const current = await database.editorDrafts.get(snapshot.metadata.id);

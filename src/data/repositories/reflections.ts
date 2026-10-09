@@ -3,6 +3,7 @@ import { newMutableFields, nextMutableFields, nowInstant } from "../../domain/id
 import type { LocalDate, Reflection, ScriptureLink, ScriptureReference, UUID } from "../../domain/types";
 import type { MddDatabase } from "../database";
 import { DevotionDayRepository } from "./devotion-days";
+import { captureSavedVersion, savedVersionTables } from "../../recovery/saved-versions";
 
 function sameReference(a: ScriptureReference, b: ScriptureReference): boolean {
   return a.translationId === b.translationId && a.startVerseKey === b.startVerseKey && a.endVerseKey === b.endVerseKey;
@@ -36,7 +37,7 @@ export class ReflectionRepository {
   }
 
   async saveDaily(localDate: LocalDate, bodyMd: string, expectedRevision?: number | null, reference?: ScriptureReference): Promise<{ reflection: Reflection; created: boolean; links: ScriptureLink[] }> {
-    return this.database.transaction("rw", [this.database.devotionDays, this.database.reflections, this.database.activityEvents, this.database.scriptureLinks], async () => {
+    return this.database.transaction("rw", [this.database.devotionDays, this.database.reflections, this.database.activityEvents, this.database.scriptureLinks, ...savedVersionTables(this.database)], async () => {
       const current = await this.getDaily(localDate);
       if (expectedRevision !== undefined && (current?.revision ?? null) !== expectedRevision) throw new ReflectionConflictError(current);
       const result = await this.saveDailyInternal(localDate, bodyMd);
@@ -51,9 +52,7 @@ export class ReflectionRepository {
 
     return this.database.transaction(
       "rw",
-      this.database.devotionDays,
-      this.database.reflections,
-      this.database.activityEvents,
+      [this.database.devotionDays, this.database.reflections, this.database.activityEvents, ...savedVersionTables(this.database)],
       async () => {
         const day = await this.days.ensure(localDate);
         const all = await this.database.reflections.where("localDate").equals(localDate).toArray();
@@ -67,6 +66,7 @@ export class ReflectionRepository {
             deletedAt: null,
             ...nextMutableFields(existing),
           };
+          await captureSavedVersion(this.database, "reflection", existing, next);
           await this.database.reflections.put(next);
           for (const duplicate of all.slice(1).filter((item) => item.deletedAt === null)) {
             await this.database.reflections.put({ ...duplicate, deletedAt: nowInstant(), ...nextMutableFields(duplicate) });

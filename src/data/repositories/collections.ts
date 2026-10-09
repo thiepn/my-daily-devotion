@@ -2,6 +2,7 @@ import { assertExpectedRevision } from "../conflicts";
 import { newMutableFields, nextMutableFields, nowInstant } from "../../domain/identity";
 import type { Collection, CollectionItem, ScriptureReference, UUID } from "../../domain/types";
 import type { MddDatabase } from "../database";
+import { captureSavedVersion, savedVersionTables } from "../../recovery/saved-versions";
 
 function sameReference(item: CollectionItem, reference: ScriptureReference): boolean {
   return item.translationId === reference.translationId && item.startVerseKey === reference.startVerseKey && item.endVerseKey === reference.endVerseKey;
@@ -29,7 +30,7 @@ export class CollectionRepository {
   }
 
   async rename(id: UUID, name: string, description: string | null = null, expectedRevision?: number): Promise<Collection> {
-    return this.database.transaction("rw", this.database.collections, () => this.renameInternal(id, name, description, expectedRevision));
+    return this.database.transaction("rw", [this.database.collections, ...savedVersionTables(this.database)], () => this.renameInternal(id, name, description, expectedRevision));
   }
   private async renameInternal(id: UUID, name: string, description: string | null, expectedRevision?: number): Promise<Collection> {
     const current = await this.database.collections.get(id);
@@ -40,6 +41,7 @@ export class CollectionRepository {
     if ((await this.list()).some((item) => item.id !== id && item.name.toLocaleLowerCase() === normalized.toLocaleLowerCase())) throw new Error("A collection with this name already exists.");
     if (normalized === current.name && (description?.trim() || null) === current.description) return current;
     const next: Collection = { ...current, name: normalized, description: description?.trim() || null, ...nextMutableFields(current) };
+    await captureSavedVersion(this.database, "collection", current, next);
     await this.database.collections.put(next);
     return next;
   }
@@ -49,7 +51,7 @@ export class CollectionRepository {
   }
 
   async addReference(collectionId: UUID, reference: ScriptureReference, note: string | null = null): Promise<CollectionItem> {
-    return this.database.transaction("rw", this.database.collections, this.database.collectionItems, () => this.addReferenceInternal(collectionId, reference, note));
+    return this.database.transaction("rw", [this.database.collections, this.database.collectionItems, ...savedVersionTables(this.database)], () => this.addReferenceInternal(collectionId, reference, note));
   }
   private async addReferenceInternal(collectionId: UUID, reference: ScriptureReference, note: string | null): Promise<CollectionItem> {
     const collection = await this.database.collections.get(collectionId);
@@ -59,6 +61,7 @@ export class CollectionRepository {
     if (existing) {
       if (!existing.deletedAt && (note === null || note.trim() === existing.note)) return existing;
       const restored: CollectionItem = { ...existing, ...reference, note: note?.trim() || existing.note, deletedAt: null, ...nextMutableFields(existing) };
+      await captureSavedVersion(this.database, "collection-item", existing, restored);
       await this.database.collectionItems.put(restored);
       return restored;
     }
@@ -69,7 +72,7 @@ export class CollectionRepository {
   }
 
   async saveItemNote(id: UUID, note: string, expectedRevision?: number): Promise<CollectionItem> {
-    return this.database.transaction("rw", this.database.collections, this.database.collectionItems, async () => {
+    return this.database.transaction("rw", [this.database.collections, this.database.collectionItems, ...savedVersionTables(this.database)], async () => {
       const item = await this.database.collectionItems.get(id);
       const parent = item ? await this.database.collections.get(item.collectionId) : null;
       if (!item || item.deletedAt || !parent || parent.deletedAt) throw new Error("This saved passage is no longer available. Your writing has not been discarded.");
@@ -77,6 +80,7 @@ export class CollectionRepository {
       const normalized = note.trim() || null;
       if (normalized === item.note) return item;
       const saved = { ...item, note: normalized, ...nextMutableFields(item) };
+      await captureSavedVersion(this.database, "collection-item", item, saved);
       await this.database.collectionItems.put(saved);
       return saved;
     });

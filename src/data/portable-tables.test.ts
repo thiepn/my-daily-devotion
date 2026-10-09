@@ -11,14 +11,14 @@ const databases: MddDatabase[] = [];
 const privateNames = ['editorDrafts','editorDraftContents','draftJournalState','syncOutbox'] as const;
 async function setup(extended = false) {
   const db = new MddDatabase(`mdd-portable-boundary-${crypto.randomUUID()}`);
-  // A test-only future database: production registers additive recovery schema v2.
-  if (extended) db.version(3).stores({editorDrafts:'&id',editorDraftContents:'&id',draftJournalState:'&key',syncOutbox:'&id'});
+  // A test-only future database: production registers additive recovery schema v3.
+  if (extended) db.version(4).stores({syncOutbox:'&id'});
   databases.push(db); await prepareDatabase(db);
   if (extended) {
     for (const name of privateNames) await db.table(name).put(name==='draftJournalState'
       ? {key:'journal',formatVersion:1,epoch:crypto.randomUUID()} : {id:'private',body:'UNSAVED PRIVATE WRITING',secret:'NOT PORTABLE'});
     const metadata = (await db.schemaMetadata.get('database'))!;
-    await db.schemaMetadata.put({...metadata,schemaVersion:2});
+    await db.schemaMetadata.put({...metadata,schemaVersion:3});
   }
   return db;
 }
@@ -38,7 +38,7 @@ describe('explicit portable data boundary',()=>{
     expect(snapshot.manifest).toMatchObject({schemaVersion:PORTABLE_SCHEMA_VERSION,contractVersion:PORTABLE_CONTRACT_VERSION,formatVersion:1});
     expect(JSON.stringify(snapshot)).not.toMatch(/UNSAVED PRIVATE|NOT PORTABLE|private-epoch|editorDrafts|syncOutbox/);
     expect(await privateRows(db)).toEqual(before);
-    expect((await db.schemaMetadata.get('database'))!.schemaVersion).toBe(2);
+    expect((await db.schemaMetadata.get('database'))!.schemaVersion).toBe(3);
   });
 
   it('plain, encrypted and Markdown exports omit private content and restore into an ordinary v2 installation with portable v1',async()=>{
