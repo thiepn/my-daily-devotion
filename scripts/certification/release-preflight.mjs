@@ -4,6 +4,7 @@ import assert from "node:assert/strict";
 export function normalizeReleaseUrl(raw, label) {
   assert.equal(typeof raw, "string", label + " must be a URL string");
   assert.ok(raw.length > 0 && raw.length < 2048, label + " is missing or too long");
+  assert.ok(!raw.includes("%"), label + " cannot contain encoded URL components");
   const url = new URL(raw);
   assert.equal(url.protocol, "https:", label + " must use HTTPS");
   assert.ok(url.hostname && !url.username && !url.password, label + " cannot include credentials");
