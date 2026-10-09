@@ -8,9 +8,9 @@ test('a backup check validates counts and returns to the originating Data contex
   await page.getByText('Check a backup', { exact: true }).click(); await page.getByRole('link', { name: 'Open backup check' }).click();
   await expect(page.locator('.backup-check-screen')).toBeVisible();
   const input = page.locator('.backup-check-screen').getByLabel('Backup file', { exact: true }); await input.setInputFiles({ name: 'my-journal.mddbackup', mimeType: 'application/zip', buffer: bytes });
-  await expect(page.getByRole('status')).toContainText('not yet been validated');
+  await expect(page.locator('.backup-check-screen .data-status')).toContainText('not yet been validated');
   await page.getByRole('button', { name: 'Validate this backup' }).click();
-  await expect(page.getByRole('status')).toContainText('Backup validated');
+  await expect(page.locator('.backup-check-screen .data-status')).toContainText('Backup validated');
   await page.getByText('All records & deletion markers', { exact: true }).click();
   await expect(page.locator('.backup-full-counts').getByText('Prayers', { exact: true }).locator('..')).toContainText('2 saved · 1 removed');
   await expect(page.getByRole('button', { name: /Restore|Merge|Replace/ })).toHaveCount(0);
@@ -25,7 +25,7 @@ test('encrypted checks recover from wrong passwords and clear password/file stat
   await page.getByLabel('Backup password', { exact: true }).fill('wrong'); await page.getByRole('button', { name: 'Validate this backup' }).click();
   await expect(page.getByRole('alert')).toContainText(/password/i); await page.getByLabel('Backup password', { exact: true }).fill('a-long-password');
   await page.getByRole('button', { name: 'Show password' }).click(); await expect(page.getByLabel('Backup password', { exact: true })).toHaveAttribute('type', 'text');
-  await page.getByRole('button', { name: 'Validate this backup' }).click(); await expect(page.getByRole('status')).toContainText('Backup validated');
+  await page.getByRole('button', { name: 'Validate this backup' }).click(); await expect(page.locator('.backup-check-screen .data-status')).toContainText('Backup validated');
   await expect(page.getByLabel('Backup password', { exact: true })).toHaveCount(0); await expect(page.getByLabel('Backup file', { exact: true })).toHaveValue('');
   await page.getByRole('button', { name: 'Check another backup' }).click(); await expect(page.locator('.backup-full-counts')).toHaveCount(0);
   expect(await dataSnapshot(page)).toEqual(before);
@@ -58,14 +58,14 @@ test('cancelled file reads cannot replace a later check or write journal records
   });
   const file = page.locator('.backup-check-screen').getByLabel('Backup file', { exact: true });
   await file.setInputFiles({ name: 'slow.mddbackup', mimeType: 'application/zip', buffer: bytes });
-  await expect(page.getByRole('status')).toContainText('Reading the file');
+  await expect(page.locator('.backup-check-screen .data-status')).toContainText('Reading the file');
   await page.getByRole('button', { name: 'Cancel check' }).click();
   await file.setInputFiles({ name: 'current.mddbackup', mimeType: 'application/zip', buffer: bytes });
-  await expect(page.getByRole('status')).toContainText('not yet been validated');
+  await expect(page.locator('.backup-check-screen .data-status')).toContainText('not yet been validated');
   await page.evaluate(() => (window as unknown as { releaseBackupRead: () => void }).releaseBackupRead());
   await expect(page.getByText('current.mddbackup', { exact: true })).toBeVisible();
   await expect(page.getByText('slow.mddbackup', { exact: true })).toHaveCount(0);
   await page.getByRole('button', { name: 'Validate this backup' }).click();
-  await expect(page.getByRole('status')).toContainText('Backup validated');
+  await expect(page.locator('.backup-check-screen .data-status')).toContainText('Backup validated');
   expect(await dataSnapshot(page)).toEqual(before);
 });
