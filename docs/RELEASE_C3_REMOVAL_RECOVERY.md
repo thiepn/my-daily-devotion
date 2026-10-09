@@ -1,3 +1,7 @@
+> **Integration update, 2026-10-09:** PR #44 is merged into `main`, and [main certification run 37896665631](https://github.com/thiepn/my-daily-devotion/actions/runs/37896665631) passed **344 unit, 1,118 browser and 526 image comparisons**. The earlier standalone PR visual discrepancy was not reproduced in this fully certified integration. The original C3 report below is a historical pre-merge record; no live deployment, human acceptance or C4 recovery-backup completion is claimed. See the [P0 baseline](RELEASE_BASELINE_2026-10-09.md).
+
+---
+
 # Batch C3 — Recently removed
 
 This change is stacked on PR #43, `codex/offline-version-review`, whose source head `6ca2a754a51777b847695036ad5d909a88ae882a` passed hosted run 37800764575: 334 unit tests, 1,098 browser cases and 514 image comparisons across eight browser shards. The downloaded package and all 175 deployment-file hashes were independently checked. That is evidence for the base, not certification of this change.

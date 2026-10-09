@@ -1,3 +1,7 @@
+> **Historical snapshot, superseded on 2026-10-09.** This document describes a branch-specific October 8 candidate. Since then, PRs #41–#44 have been merged into `main` and the resulting source commit `87f4d25f43892dc9c5fbfbcda8c1ed739286e8e8` passed [exact-commit CI](https://github.com/thiepn/my-daily-devotion/actions/runs/37896665631): 344 unit, 1,118 browser and 526 image comparisons. Physical schema **3**, saved versions and Recently removed now exist. Optional recovery-inclusive backups, human/device qualification and deployment remain outstanding. For current authority see [P0 baseline](RELEASE_BASELINE_2026-10-09.md) and [release checklist](RELEASE_CHECKLIST.md). Statements below are preserved solely as dated development evidence.
+
+---
+
 # Offline integration candidate — 2026-10-08
 
 This branch collects the implemented Morning Grace, durable-editor and Remember stack for review against main. It is not merged, deployed or certified as the complete product. Historical release documents remain historical; use the actual candidate's contracts and editor coverage.

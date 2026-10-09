@@ -1,3 +1,7 @@
+> **Historical workstream plan (updated context 2026-10-09).** The snapshot below predates the completed integration: durable editor drafts, Recovery directory, C1–C3 saved versions/Recently removed and Batch D review features are now integrated through PRs #41–#44. The resulting [main certification](https://github.com/thiepn/my-daily-devotion/actions/runs/37896665631) passed. C4 optional recovery-inclusive backups, device/human review and deployment remain incomplete. Use the [P0 source-of-truth baseline](RELEASE_BASELINE_2026-10-09.md) instead of the original per-batch pending labels below.
+
+---
+
 # Approved offline completion push
 
 Owner instruction: implement the offline completion and local connected-services plan. No automatic merge, deployment, DNS change, hosted provisioning, real journal upload, paid service, or native submission.
