@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import { MorningGraceArtwork } from "../app/visual/MorningGraceArtwork";
@@ -20,13 +20,14 @@ export function WritingPreview({ text }: { text: string }) {
 
 export function JournalDialog({ title, children, close, busy = false }: { title: string; children: ReactNode; close: () => void; busy?: boolean }) {
   const ref = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
     ref.current?.showModal();
     ref.current?.querySelector<HTMLElement>("[data-initial-focus]")?.focus();
     return () => { if (previous?.isConnected) previous.focus(); };
   }, []);
-  return <dialog ref={ref} className="journal-dialog" aria-labelledby="journal-dialog-title" onCancel={event => { event.preventDefault(); if (!busy) close(); }}>
-    <h2 id="journal-dialog-title">{title}</h2>{children}
+  return <dialog ref={ref} className="journal-dialog" aria-labelledby={titleId} onCancel={event => { event.preventDefault(); if (!busy) close(); }}>
+    <h2 id={titleId}>{title}</h2>{children}
   </dialog>;
 }
