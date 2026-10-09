@@ -7,7 +7,7 @@ export function PlatformStatus() {
   const [online, setOnline] = useState(() => typeof navigator === "undefined" ? true : navigator.onLine);
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
   const [updating, setUpdating] = useState(false);
-  const [connectionClosed, setConnectionClosed] = useState(false);
+  const [databaseConnection, setDatabaseConnection] = useState<"ready" | "blocked" | "closed-for-upgrade">("ready");
   const protectedWriting = useSyncExternalStore(subscribeUpdateProtection, isUpdateProtected, () => false);
 
   useEffect(() => {
@@ -20,7 +20,10 @@ export function PlatformStatus() {
     window.addEventListener("online", goOnline);
     window.addEventListener("offline", goOffline);
     window.addEventListener(PLATFORM_UPDATE_EVENT, updateReady);
-    const databaseChanged = (event: Event) => { if ((event as CustomEvent<string>).detail === "closed-for-upgrade") setConnectionClosed(true); };
+    const databaseChanged = (event: Event) => {
+      const detail = (event as CustomEvent<string>).detail;
+      if (detail === "ready" || detail === "blocked" || detail === "closed-for-upgrade") setDatabaseConnection(detail);
+    };
     window.addEventListener(DATABASE_CONNECTION_EVENT, databaseChanged);
     return () => {
       window.removeEventListener("online", goOnline);
@@ -30,12 +33,13 @@ export function PlatformStatus() {
     };
   }, []);
 
-  if (online && !registration && !connectionClosed) return null;
+  if (online && !registration && databaseConnection === "ready") return null;
 
   return (
     <div className={`platform-status${!online ? " is-offline" : ""}${registration ? " has-update" : ""}`} role="status" aria-live="polite" aria-atomic="true">
       {!online ? <span><strong>Offline.</strong> Cached Scripture and local devotional data remain available.</span> : null}
-      {connectionClosed ? <span><strong>Another tab updated local storage.</strong> Keep this page open and copy any unsaved writing before reloading. Saved records have not been cleared.<button type="button" disabled={protectedWriting} onClick={() => window.location.reload()}>Reload when ready</button></span> : null}
+      {databaseConnection === "blocked" ? <span><strong>Another tab is blocking a storage update.</strong> Finish any writing in the other MDD tab, then close it. Keep this page open; do not clear site data. The update can resume when the other connection closes.</span> : null}
+      {databaseConnection === "closed-for-upgrade" ? <span><strong>Another tab updated local storage.</strong> Keep this page open and copy any unsaved writing before reloading. Saved records have not been cleared.<button type="button" disabled={protectedWriting} onClick={() => window.location.reload()}>Reload when ready</button></span> : null}
       {registration ? (
         <span>
           <strong>Update ready.</strong> Your local data is preserved.

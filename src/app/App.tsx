@@ -7,6 +7,7 @@ import { DevotionalIcon, type DevotionalIconName } from "./visual/DevotionalIcon
 import { Icon } from "./visual/Icon";
 import { ThemeSwitcher } from "./visual/ThemeSwitcher";
 import { useDataReturnPosition } from "../data/useDataReturnPosition";
+import { useMobileKeyboard } from "./useMobileKeyboard";
 import { safeDataReturn } from "../data/data-context";
 
 const TodayScreen = lazy(() => import("../mcheyne/TodayScreen").then((module) => ({ default: module.TodayScreen })));
@@ -57,9 +58,12 @@ function routeDomain(pathname: string): "today" | "bible" | "reflection" | "pray
   return "utility";
 }
 
-function safeReturnTarget(search: string): string | null {
+function safeReturnTarget(search: string, pathname: string): string | null {
   const target = new URLSearchParams(search).get("return");
-  return target?.startsWith("/") && !target.startsWith("//") ? target : null;
+  if (!target || !target.startsWith("/") || target.startsWith("//") || /[\\\x00-\x1f]/.test(target)) return null;
+  const destination = target.split(/[?#]/, 1)[0] ?? "";
+  if (destination === pathname || !/^\/(?:today|bible|prayer|history|search|data|recovery|welcome)(?:\/|$)/.test(destination)) return null;
+  return target;
 }
 
 function utilityReturnTarget(pathname: string, search: string): string {
@@ -71,7 +75,7 @@ function withReturn(pathname: string, returnTo: string): string {
 }
 
 function mobileBackTarget(pathname: string, search: string): string | null {
-  const returnTo = safeReturnTarget(search);
+  const returnTo = safeReturnTarget(search, pathname);
   if (pathname === "/today/plan" || pathname === "/welcome") return returnTo ?? "/today";
   if (pathname.startsWith("/today/reflection/")) return returnTo ?? "/today";
   if (pathname === "/bible/collections" || pathname === "/bible/saved") return returnTo ?? "/bible";
@@ -142,6 +146,7 @@ function RouteLoading() { return <div className="route-loading mg-route-loading"
 export function App() {
   const location = useLocation();
   const navigate = useNavigate();
+  const mobileKeyboardVisible = useMobileKeyboard();
   useDataReturnPosition(location.pathname + location.search);
   const currentLabel = routeLabel(location.pathname);
   const mobileBack = mobileBackTarget(location.pathname, location.search);
@@ -151,6 +156,7 @@ export function App() {
   const shellClass = [
     "app-shell",
     "morning-grace-shell",
+    mobileKeyboardVisible ? "mobile-keyboard-visible" : "",
     location.pathname === "/today" || location.pathname === "/" ? "today-route" : "",
     mobileBack ? "mobile-detail-route" : "",
     location.pathname === "/bible" || /^\/bible\/[^/]+\/\d+$/.test(location.pathname) ? "bible-reader-route" : "",
