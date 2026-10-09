@@ -62,6 +62,33 @@ test.describe("P4 Morning Grace interaction and responsive audit", () => {
     await expect(page.getByLabel("Request", { exact: true })).toHaveValue("My changed prayer wording should remain unsaved.");
   });
 
+  test("records real-rendered Morning Grace layout evidence without altering reference baselines", async ({ page }, testInfo) => {
+    test.setTimeout(150_000);
+    const routes = [
+      ["today", "/today"],
+      ["bible", "/bible/JHN/3"],
+      ["prayer", "/prayer"],
+      ["history", "/history"],
+    ] as const;
+    for (const [width, height] of [[320, 568], [430, 932], [1440, 900]] as const) {
+      await page.setViewportSize({ width, height });
+      for (const [label, path] of routes) {
+        await openRoute(page, path);
+        await page.evaluate(async () => { await document.fonts.ready; });
+        await expectNoHorizontalOverflow(page);
+        await page.screenshot({ path: testInfo.outputPath(`morning-grace-${label}-${width}-light.png`), animations: "disabled" });
+      }
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ colorScheme: "dark", reducedMotion: "reduce" });
+    for (const [label, path] of routes) {
+      await openRoute(page, path);
+      await page.evaluate(async () => { await document.fonts.ready; });
+      await expectNoHorizontalOverflow(page);
+      await page.screenshot({ path: testInfo.outputPath(`morning-grace-${label}-390-dark.png`), animations: "disabled" });
+    }
+  });
+
   test("primary Morning Grace destinations preserve unique navigation focus and no overflow", async ({ page }) => {
     for (const width of [360, 390, 768, 1440]) {
       await page.setViewportSize({ width, height: 900 });
