@@ -17,3 +17,11 @@
 .draft-comparison-details dt { font-weight:600; }
 .draft-comparison-details dd { margin:4px 0 0; white-space:pre-wrap; overflow-wrap:anywhere; }
 .draft-comparison-details summary:focus-visible { outline:2px solid var(--color-focus-ring); outline-offset:3px; }
+.recovery-views { display:flex; gap:.5rem; flex-wrap:wrap; margin-block:1rem; }
+.recovery-views a, .saved-versions-link { display:inline-flex; align-items:center; min-height:44px; padding:.5rem .75rem; color:var(--color-accent-strong); }
+.recovery-views a[aria-current="page"] { background:var(--color-accent-soft); color:var(--color-ink); border-radius:8px; text-decoration:none; }
+.version-comparison { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+.version-comparison h2 { font:1.25rem/1.4 var(--font-display); }
+.version-confirmation { max-height:40vh; overflow:auto; padding:.75rem; border:1px solid var(--color-line); }
+.version-confirmation p { white-space:pre-wrap; overflow-wrap:anywhere; }
+@media(max-width:650px) { .version-comparison { grid-template-columns:minmax(0,1fr); } .version-comparison .recovery-writing { margin-block:.5rem; } }

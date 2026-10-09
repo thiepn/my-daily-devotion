@@ -9,13 +9,15 @@ import { DraftRepository } from "./repository";
 import { DRAFT_LABELS, draftFields, draftTargetLabel, parseRecoveryContext, recoveryUrl, reflectionRecoveryDestination } from "./presentation";
 import type { DraftPage, DraftReadResult } from "./types";
 
+import { RecoveryNavigation } from "./SavedVersionsLink";
+import { SavedVersionsScreen } from "./SavedVersionsScreen";
 const repository = new DraftRepository(db);
 const message = (reason: unknown) => reason instanceof Error ? reason.message : "Could not open recovery. Please try again.";
 function keptTime(value: string) { return new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)); }
 
 export function RecoveryScreen() {
   const location = useLocation();
-  return <RecoveryView key={location.pathname + location.search} />;
+  return new URLSearchParams(location.search).get("view") === "versions" ? <SavedVersionsScreen /> : <RecoveryView key={location.pathname + location.search} />;
 }
 
 function RecoveryView() {
@@ -73,6 +75,7 @@ function RecoveryView() {
 
   return <main className="journal-workspace recovery-journal">
     <JournalHeading title={draftId ? "Kept writing" : "Recovery"} subtitle="Still here on this device" back={draftId ? directory : context.returnTo} />
+    {!draftId ? <RecoveryNavigation returnTo={context.returnTo} /> : null}
     <p className="journal-help">Drafts protect unfinished writing on this device. They are separate from saved journal entries and are not included in ordinary backups.</p>
     {error ? <section className="journal-notice" role="alert"><p>{error}</p><button onClick={() => setAttempt(value => value + 1)}>Retry recovery</button></section> : null}
     {!draftId ? page ? <>
