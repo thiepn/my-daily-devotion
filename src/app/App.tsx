@@ -61,7 +61,7 @@ function routeDomain(pathname: string): "today" | "bible" | "reflection" | "pray
 function safeReturnTarget(search: string, pathname: string): string | null {
   const target = new URLSearchParams(search).get("return");
   if (!target || !target.startsWith("/") || target.startsWith("//") || /[\\\x00-\x1f]/.test(target)) return null;
-  const destination = target.split(/[?#]/, 1)[0];
+  const destination = target.split(/[?#]/, 1)[0] ?? "";
   if (destination === pathname || !/^\/(?:today|bible|prayer|history|search|data|recovery|welcome)(?:\/|$)/.test(destination)) return null;
   return target;
 }
