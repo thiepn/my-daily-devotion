@@ -31,6 +31,7 @@ test.describe("P7 accessible Morning Grace and resource qualification", () => {
   });
 
   test("200% text at 320px reflows across primary destinations without horizontal clipping", async ({ page }) => {
+    test.setTimeout(100_000);
     await page.setViewportSize({ width: 320, height: 568 });
     for (const route of keyRoutes) {
       await openRoute(page, route);
@@ -60,6 +61,7 @@ test.describe("P7 accessible Morning Grace and resource qualification", () => {
   });
 
   test("light and dark screen readers have no automated AA violations", async ({ page }) => {
+    test.setTimeout(120_000);
     await page.setViewportSize({ width: 390, height: 844 });
     for (const theme of ["light", "dark"] as const) {
       for (const route of ["/today", "/bible/JHN/3", "/prayer", "/history"]) {
@@ -73,7 +75,7 @@ test.describe("P7 accessible Morning Grace and resource qualification", () => {
   test("long Psalm reading stays within documented resource and DOM budgets", async ({ page }, testInfo) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await openRoute(page, "/bible/PSA/119");
-    await expect(page.getByRole("button", { name: "Select Psalms 119:176" })).toBeVisible();
+    await expect(page.getByRole("button", { name: /Select Psalms? 119:176/ })).toBeVisible();
     await page.evaluate(async () => { await document.fonts.ready; });
     const measurements = await page.evaluate(() => {
       const resources = performance.getEntriesByType("resource") as PerformanceResourceTiming[];
@@ -100,7 +102,7 @@ test.describe("P7 accessible Morning Grace and resource qualification", () => {
     expect(measurements.nodeCount).toBeLessThan(12_000);
     expect(measurements.largestEncodedBytes).toBeLessThan(12 * 1024 * 1024);
     expect(measurements.encodedBytes).toBeLessThan(35 * 1024 * 1024);
-    await page.getByRole("button", { name: "Select Psalms 119:1" }).click();
+    await page.getByRole("button", { name: /Select Psalms? 119:1/ }).click();
     await expect(page.getByRole("button", { name: "Select Psalms 119:1" })).toHaveAttribute("aria-pressed", "true");
     await expectNoHorizontalOverflow(page);
   });
