@@ -52,6 +52,18 @@ test.describe("P3 mobile device resilience and input visibility", () => {
     await expect(page.getByText("Another tab is blocking a storage update.", { exact: false })).toBeHidden();
   });
 
+  test("malformed and self-referential return links cannot trap mobile Back", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    for (const route of ["/search?return=%2Fsearch", "/data?return=%2Fdata", "/search?return=%2F%5Cexample.com", "/data?return=%2F%2Fexample.com", "/search?return=%2Funknown"]) {
+      await openRoute(page, route);
+      await page.getByRole("button", { name: "Back", exact: true }).click();
+      await expect(page).toHaveURL(/#\/today$/);
+    }
+    await openRoute(page, "/search?return=%2Fprayer%3Fstatus%3DWAITING");
+    await page.getByRole("button", { name: "Back", exact: true }).click();
+    await expect(page).toHaveURL(/#\/prayer\?status=WAITING$/);
+  });
+
   test("an already upgraded connection offers reload, not a destructive data reset", async ({ page }) => {
     await page.setViewportSize({ width: 320, height: 568 });
     await openRoute(page, "/today");

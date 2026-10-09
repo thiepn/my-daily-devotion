@@ -58,9 +58,12 @@ function routeDomain(pathname: string): "today" | "bible" | "reflection" | "pray
   return "utility";
 }
 
-function safeReturnTarget(search: string): string | null {
+function safeReturnTarget(search: string, pathname: string): string | null {
   const target = new URLSearchParams(search).get("return");
-  return target?.startsWith("/") && !target.startsWith("//") ? target : null;
+  if (!target || !target.startsWith("/") || target.startsWith("//") || /[\\\x00-\x1f]/.test(target)) return null;
+  const destination = target.split(/[?#]/, 1)[0];
+  if (destination === pathname || !/^\/(?:today|bible|prayer|history|search|data|recovery|welcome)(?:\/|$)/.test(destination)) return null;
+  return target;
 }
 
 function utilityReturnTarget(pathname: string, search: string): string {
@@ -72,7 +75,7 @@ function withReturn(pathname: string, returnTo: string): string {
 }
 
 function mobileBackTarget(pathname: string, search: string): string | null {
-  const returnTo = safeReturnTarget(search);
+  const returnTo = safeReturnTarget(search, pathname);
   if (pathname === "/today/plan" || pathname === "/welcome") return returnTo ?? "/today";
   if (pathname.startsWith("/today/reflection/")) return returnTo ?? "/today";
   if (pathname === "/bible/collections" || pathname === "/bible/saved") return returnTo ?? "/bible";
