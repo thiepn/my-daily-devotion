@@ -70,6 +70,8 @@ test.describe("P8 device lifecycle and storage failure resilience", () => {
     await page.getByLabel("Daily reflection").fill("Unsaved writing must keep this page from switching builds.");
     await page.evaluate(() => window.dispatchEvent(new CustomEvent("mdd:update-ready", { detail: { waiting: { postMessage() { throw new Error("Must not activate"); } } } })));
     await expect(page.getByRole("button", { name: "Reload to update" })).toBeDisabled();
+    await page.evaluate(() => window.dispatchEvent(new Event("mdd:update-activated")));
+    await expect(page.getByRole("button", { name: "Reload after saving" })).toBeDisabled();
     await expect(page.getByLabel("Daily reflection")).toHaveValue("Unsaved writing must keep this page from switching builds.");
   });
 });
