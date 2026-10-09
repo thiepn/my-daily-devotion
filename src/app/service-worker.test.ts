@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import source from "../../public/sw.js?raw";
 
-function worker(failPath = "", clients: string[] = []) {
+function worker(failPath = "", clients: string[] = [], wrongTypePath = "", escapeScope = false) {
   const stores = new Map<string, Map<string, Response>>();
   const listeners: Record<string, (event: any) => void> = {};
   const root = "https://mdd.test/app/";
@@ -18,8 +18,9 @@ function worker(failPath = "", clients: string[] = []) {
     const url = typeof request === "string" ? request : request.url; fetches.push(url);
     if (failPath && url.endsWith(failPath)) return new Response("failed", { status: 503 });
     if (url === root) return new Response('<script src="./assets/new.js"></script>new shell', { headers: { "Content-Type": "text/html" } });
-    if (url.endsWith(".vite/manifest.json")) return Response.json({ main: { file: "assets/new.js" }, lazy: { file: "assets/lazy.js" } });
+    if (url.endsWith(".vite/manifest.json")) return Response.json({ main: { file: "assets/new.js" }, lazy: { file: escapeScope ? "../outside.js" : "assets/lazy.js" } });
     if (url.endsWith("bible/manifest.json")) return Response.json({ searchIndexPath: "/bible/search-index.json", books: [{ path: "/bible/books/GEN.json" }] });
+    if (wrongTypePath && url.endsWith(wrongTypePath)) return new Response("<html>Fallback page</html>", { headers: { "Content-Type": "text/html" } });
     return new Response("asset", { headers: { "Content-Type": url.endsWith(".js") ? "text/javascript" : url.endsWith(".css") ? "text/css" : url.endsWith(".webmanifest") ? "application/manifest+json" : url.endsWith(".json") ? "application/json" : "application/octet-stream" } });
   };
   const registration = { scope: root, installing: null as object | null, waiting: null as object | null };
@@ -40,6 +41,19 @@ describe("atomic offline updates", () => {
     await expect(w.lifecycle("install")).rejects.toThrow("Required offline asset failed");
     expect(w.stores.has(w.key)).toBe(false);
     expect(await w.stores.get("mdd-app-v1.0.0-previous")!.get(w.root)!.text()).toBe("old shell");
+  });
+  it("rejects a 200 HTML fallback pretending to be a JavaScript chunk without deleting the previous offline app", async () => {
+    const w = worker("", [], "assets/lazy.js");
+    await expect(w.lifecycle("install")).rejects.toThrow("unexpected content type");
+    expect(w.stores.has(w.key)).toBe(false);
+    expect(w.stores.has("mdd-app-v1.0.0-previous")).toBe(true);
+  });
+  it("rejects manifest paths outside the registered subpath before any cross-scope fetch", async () => {
+    const w = worker("", [], "", true);
+    await expect(w.lifecycle("install")).rejects.toThrow("escapes the app scope");
+    expect(w.stores.has(w.key)).toBe(false);
+    expect(w.stores.has("mdd-app-v1.0.0-previous")).toBe(true);
+    expect(w.fetches.some(url => url.includes("/outside.js"))).toBe(false);
   });
   it("caches every lazy route before activation and serves a consistent shell offline", async () => {
     const w = worker(); await w.lifecycle("install"); await w.lifecycle("activate");
