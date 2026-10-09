@@ -39,7 +39,11 @@ const version = /^(\d+)\.(\d+)\.(\d+)(?:[-+].*)?$/.exec(pkg.version);
 assert.ok(version, `Expected semantic package version, got ${pkg.version}`);
 assert.ok(Number(version[1]) > 0 || Number(version[2]) >= 9, `Phase 9 requires app version >=0.9.0, got ${pkg.version}`);
 assert.equal(pkg.scripts["verify:phase9"], "npm run verify:phase8 && node scripts/verify-phase9.mjs");
-assert.match(dataScreen, /generateMddBackup\(db, APP_VERSION, password\)/);
+// The fourth argument is the explicitly opted-in recovery flag; ordinary
+// encrypted exports keep that flag false by default.
+assert.match(dataScreen, /generateMddBackup\(db, APP_VERSION, password, withRecovery\)/);
+assert.match(dataScreen, /withRecovery = false/);
+assert.match(dataScreen, /setIncludeRecovery\(event.target.checked\)/);
 assert.match(dataScreen, /commitMddRestore/);
 assert.match(await read("src/styles/data.css"), /\.data-panel/);
 

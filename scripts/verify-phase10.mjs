@@ -18,7 +18,7 @@ assert.ok(version, `Expected semantic package version, got ${pkg.version}`);
 assert.ok(Number(version[1]) > 0 || Number(version[2]) >= 10, `Phase 10 requires app version >=0.10.0, got ${pkg.version}`);
 assert.equal(pkg.scripts["verify:phase10"], "npm run verify:phase9 && node scripts/verify-phase10.mjs");
 const appVersionMatch = /APP_VERSION\s*=\s*"([^"]+)"/.exec(versionSource); assert.ok(appVersionMatch); assert.equal(appVersionMatch[1], pkg.version);
-assert.match(dataScreen, /generateMddBackup\(db, APP_VERSION, password\)/); assert.match(dataScreen, /prepareMddRestore/);
+assert.match(dataScreen, /generateMddBackup\(db, APP_VERSION, password, withRecovery\)/); assert.match(dataScreen, /includeRecovery/); assert.match(dataScreen, /prepareMddRestore/);
 assert.equal(manifest.name, "My Daily Devotion"); assert.equal(manifest.start_url, "./#/today"); assert.equal(manifest.scope, "./"); assert.equal(manifest.display, "standalone"); assert.equal(manifest.background_color, "#f6f2e9"); assert.equal(manifest.theme_color, "#f6f2e9");
 const iconByPurpose = new Map(manifest.icons.map((icon) => [`${icon.sizes}:${icon.purpose}`, icon])); assert.ok(iconByPurpose.has("192x192:any")); assert.ok(iconByPurpose.has("512x512:any")); assert.ok(iconByPurpose.has("512x512:maskable"));
 function pngSize(buffer) { assert.deepEqual([...buffer.subarray(0,8)], [137,80,78,71,13,10,26,10], "Expected PNG signature"); return { width: buffer.readUInt32BE(16), height: buffer.readUInt32BE(20) }; }

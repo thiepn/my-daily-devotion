@@ -7,9 +7,11 @@ import type { Reflection, Prayer, PrayerUpdate, PrayerResolution, Highlight, Ver
 import { MddDatabase, prepareDatabase } from "./database";
 import { auditDatabase } from "./integrity";
 import { PORTABLE_SCHEMA_VERSION, PORTABLE_CONTRACT_VERSION, portableTables } from "./portable-tables";
+import { captureRecoveryPayload, commitRecoveryImport, planRecoveryImport, privateRecoveryTables, readRecoveryState, recoveryCounts, recoveryFingerprint, validateRecoveryPayload, type RecoveryArchivePayload, type RecoveryCounts, type RecoveryInsert } from "./recovery-archive";
 
 const FORMAT = "mdd-backup" as const;
 const FORMAT_VERSION = 1 as const;
+const RECOVERY_FORMAT_VERSION = 2 as const;
 const PBKDF2_ITERATIONS = 310_000;
 const MIN_PBKDF2_ITERATIONS = 100_000;
 const MAX_PBKDF2_ITERATIONS = 2_000_000;
@@ -24,14 +26,15 @@ export interface ArchiveEncryption {
 }
 export interface BackupArchiveManifest {
   format: typeof FORMAT;
-  formatVersion: typeof FORMAT_VERSION;
+  formatVersion: typeof FORMAT_VERSION | typeof RECOVERY_FORMAT_VERSION;
+  recovery?: { payloadVersion: 1; counts: RecoveryCounts };
   appVersion: string;
   schemaVersion: number;
   exportedAt: string;
   files: ArchiveFileEntry[];
   encryption: ArchiveEncryption | null;
 }
-export interface BackupPreview { manifest: BackupArchiveManifest; counts: Record<string, number>; encrypted: boolean; }
+export interface BackupPreview { manifest: BackupArchiveManifest; counts: Record<string, number>; encrypted: boolean; recovery?: RecoveryCounts; }
 export type ImportMode = "merge" | "replace";
 
 export interface BackupExportResult { bytes: Uint8Array; generatedAt: string; kind: "encrypted" | "plain"; }
@@ -39,6 +42,7 @@ export interface BackupContentCount { live: number; deletionMarkers: number; }
 export interface ValidatedBackupContents {
   readonly manifest: BackupArchiveManifest;
   readonly encrypted: boolean;
+  readonly recovery?: Readonly<RecoveryCounts>;
   readonly contents: Readonly<Record<string, BackupContentCount>>;
 }
 export interface RestoreEffects {
@@ -48,6 +52,7 @@ export interface RestoreEffects {
 export interface RestoreReview {
   readonly manifest: BackupArchiveManifest;
   readonly encrypted: boolean;
+  readonly recovery?: Readonly<RecoveryCounts>;
   readonly mode: ImportMode;
   readonly contents: Readonly<Record<string, BackupContentCount>>;
   readonly effects: Readonly<RestoreEffects>;
@@ -58,7 +63,7 @@ export interface RestoreReview {
 export interface CommittedRestoreResult { kind: "committed"; mode: ImportMode; effects: Readonly<RestoreEffects>; }
 interface PreparedRestore {
   database: MddDatabase; localJson: string; epoch: string; candidate: BackupSnapshot;
-  mode: ImportMode; effects: RestoreEffects; result?: CommittedRestoreResult;
+  mode: ImportMode; effects: RestoreEffects; localRecoveryFingerprint?: string; importRecovery?: RecoveryInsert; result?: CommittedRestoreResult;
   committing?: Promise<CommittedRestoreResult>;
 }
 // Candidates and decrypted records are never part of the public review, storage,
@@ -129,7 +134,16 @@ async function decryptBytes(payload: Uint8Array, password: string, encryption: A
 
 function validateArchiveManifest(value: unknown): asserts value is BackupArchiveManifest {
   if (!record(value)) throw new Error("Backup manifest is missing.");
-  if (value.format !== FORMAT || value.formatVersion !== FORMAT_VERSION) throw new Error("Unsupported MDD backup format.");
+  if (value.format !== FORMAT || (value.formatVersion !== FORMAT_VERSION && value.formatVersion !== RECOVERY_FORMAT_VERSION)) throw new Error("Unsupported MDD backup format.");
+  if (value.formatVersion === 2) {
+    const recovery = value.recovery;
+    if (!value.encryption || !record(recovery) || recovery.payloadVersion !== 1 || !record(recovery.counts))
+      throw new Error("Recovery-inclusive archives require encryption and valid recovery counts.");
+    const counts = recovery.counts;
+    if (Object.keys(counts).length !== 5 || !["activeDrafts", "copyOnlyDrafts", "priorVersions", "eligibleRemovals", "expiredRemovals"].every(key =>
+      Number.isSafeInteger(counts[key]) && Number(counts[key]) >= 0 && Number(counts[key]) <= 10000))
+      throw new Error("Recovery-inclusive archives require encryption and valid recovery counts.");
+  } else if (value.recovery !== undefined) throw new Error("Ordinary v1 backups cannot include a recovery manifest.");
   if (typeof value.appVersion !== "string" || !value.appVersion.trim()) throw new Error("Backup manifest has an invalid app version.");
   if (typeof value.schemaVersion !== "number" || !Number.isInteger(value.schemaVersion) || value.schemaVersion < 1) throw new Error("Backup manifest has an invalid database schema version.");
   if (value.schemaVersion > PORTABLE_SCHEMA_VERSION) throw new Error("Backup uses a newer database schema.");
@@ -173,16 +187,25 @@ async function verifyArchiveFiles(files: Record<string, Uint8Array>, manifest: B
   }
 }
 
-export async function generateMddBackup(database: MddDatabase, appVersion: string = APP_VERSION, password?: string): Promise<BackupExportResult> {
-  const snapshot = await createBackupSnapshot(database, appVersion);
-  const plain = strToU8(stableDataJson(snapshot.data));
+export async function generateMddBackup(database: MddDatabase, appVersion: string = APP_VERSION, password?: string, includeRecovery = false): Promise<BackupExportResult> {
+  if (includeRecovery && (!password || password.length < 8)) throw new Error("Recovery-inclusive backups require a password of at least 8 characters.");
+  const bound = includeRecovery ? await createBoundBackupSnapshot(database, appVersion, true) : null;
+  const snapshot = bound?.snapshot ?? await createBackupSnapshot(database, appVersion);
+  const recovery = bound?.recovery;
+  if (includeRecovery && !recovery) throw new Error("Could not safely capture private recovery data.");
+  const plain = strToU8(includeRecovery ? JSON.stringify({ domain: snapshot.data, recovery }) : stableDataJson(snapshot.data));
   const encrypted = password ? await encryptBytes(plain, password) : null;
   const dataBytes = encrypted?.payload ?? plain;
+  const counts = recovery ? recoveryCounts(recovery, Date.parse(snapshot.manifest.exportedAt)) : undefined;
   const manifest: BackupArchiveManifest = {
-    format: FORMAT, formatVersion: FORMAT_VERSION, appVersion, schemaVersion: snapshot.manifest.schemaVersion, exportedAt: snapshot.manifest.exportedAt,
+    format: FORMAT, formatVersion: includeRecovery ? RECOVERY_FORMAT_VERSION : FORMAT_VERSION,
+    ...(counts ? { recovery: { payloadVersion: 1 as const, counts } } : {}),
+    appVersion, schemaVersion: snapshot.manifest.schemaVersion, exportedAt: snapshot.manifest.exportedAt,
     files: [{ path: "data.json", sha256: await sha256Bytes(dataBytes), bytes: dataBytes.byteLength }], encryption: encrypted?.encryption ?? null,
   };
-  return { bytes: zipSync({ "manifest.json": strToU8(JSON.stringify(manifest, null, 2)), "data.json": dataBytes }, { level: 6 }), generatedAt: manifest.exportedAt, kind: encrypted ? "encrypted" : "plain" };
+  const archive = zipSync({ "manifest.json": strToU8(JSON.stringify(manifest, null, 2)), "data.json": dataBytes }, { level: 6 });
+  if (archive.byteLength > 64 * 1024 * 1024) throw new Error("Backup exceeds the supported 64 MB archive limit.");
+  return { bytes: archive, generatedAt: manifest.exportedAt, kind: encrypted ? "encrypted" : "plain" };
 }
 
 export async function createMddBackup(database: MddDatabase, appVersion: string = APP_VERSION, password?: string): Promise<Uint8Array> {
@@ -213,19 +236,28 @@ export function inspectMddBackup(bytes: Uint8Array): { encrypted: boolean } {
   return { encrypted: Boolean(inspectArchive(bytes).manifest.encryption) };
 }
 
-async function readArchive(bytes: Uint8Array, password: string, database: MddDatabase): Promise<{ manifest: BackupArchiveManifest; snapshot: BackupSnapshot }> {
+async function readArchive(bytes: Uint8Array, password: string, database: MddDatabase): Promise<{ manifest: BackupArchiveManifest; snapshot: BackupSnapshot; recovery?: RecoveryArchivePayload }> {
   const { files, manifest } = inspectArchive(bytes);
   const dataBytes = files["data.json"]!;
   await verifyArchiveFiles(files, manifest);
   const plain = manifest.encryption ? await decryptBytes(dataBytes, password, manifest.encryption) : dataBytes;
+  let parsed: unknown;
+  try { parsed = JSON.parse(strFromU8(plain)) as unknown; } catch { throw new Error("Backup data.json is invalid."); }
+  let recovery: RecoveryArchivePayload | undefined;
   let data: Record<string, unknown[]>;
-  try { data = JSON.parse(strFromU8(plain)) as Record<string, unknown[]>; } catch { throw new Error("Backup data.json is invalid."); }
+  if (manifest.formatVersion === 2) {
+    if (!record(parsed) || Object.keys(parsed).length !== 2 || !("domain" in parsed) || !("recovery" in parsed)) throw new Error("Recovery backup data.json has an invalid structure.");
+    validateRecoveryPayload(parsed.recovery);
+    recovery = parsed.recovery;
+    if (!manifest.recovery || JSON.stringify(recoveryCounts(recovery, Date.parse(manifest.exportedAt))) !== JSON.stringify(manifest.recovery.counts)) throw new Error("Recovery manifest counts do not match its contents.");
+    data = parsed.domain as Record<string, unknown[]>;
+  } else data = parsed as Record<string, unknown[]>;
   if (!record(data) || Object.values(data).some((rows) => !Array.isArray(rows))) throw new Error("Backup data.json must contain tables of records.");
   const snapshot: BackupSnapshot = {
     manifest: { formatId: FORMAT, formatVersion: FORMAT_VERSION, schemaVersion: manifest.schemaVersion, contractVersion: PORTABLE_CONTRACT_VERSION, appVersion: manifest.appVersion, exportedAt: manifest.exportedAt, checksums: { dataSha256: await sha256Hex(stableDataJson(data)) } }, data,
   };
   await validateBackupSnapshot(snapshot, database);
-  return { manifest, snapshot };
+  return { manifest, snapshot, ...(recovery ? { recovery } : {}) };
 }
 
 async function validateInTemporaryDatabase(snapshot: BackupSnapshot): Promise<void> {
@@ -265,18 +297,18 @@ async function mergedSnapshot(incoming: BackupSnapshot, local: BackupSnapshot): 
 }
 
 export async function previewMddBackup(bytes: Uint8Array, password: string, database: MddDatabase): Promise<BackupPreview> {
-  const { manifest, snapshot } = await readArchive(bytes, password, database);
+  const { manifest, snapshot, recovery } = await readArchive(bytes, password, database);
   await validateInTemporaryDatabase(snapshot);
-  return { manifest, counts: Object.fromEntries(Object.entries(snapshot.data).map(([name, rows]) => [name, rows.length])), encrypted: Boolean(manifest.encryption) };
+  return { manifest, counts: Object.fromEntries(Object.entries(snapshot.data).map(([name, rows]) => [name, rows.length])), encrypted: Boolean(manifest.encryption), ...(recovery ? { recovery: recoveryCounts(recovery, Date.parse(manifest.exportedAt)) } : {}) };
 }
 
 // Unlike a restore review, this result has no candidate/commit capability and
 // never reads a local snapshot. Validation uses the same bounded archive and
 // temporary-database relationship checks as historical imports.
 export async function checkMddBackup(bytes: Uint8Array, password: string, database: MddDatabase): Promise<ValidatedBackupContents> {
-  const { manifest, snapshot } = await readArchive(bytes, password, database);
+  const { manifest, snapshot, recovery } = await readArchive(bytes, password, database);
   await validateInTemporaryDatabase(snapshot);
-  return { manifest, encrypted: Boolean(manifest.encryption), contents: Object.fromEntries(Object.entries(snapshot.data).map(([name, rows]) => [name, { live: rows.filter(row => !deleted(row)).length, deletionMarkers: rows.filter(deleted).length }])) };
+  return { manifest, encrypted: Boolean(manifest.encryption), ...(recovery ? { recovery: recoveryCounts(recovery, Date.parse(manifest.exportedAt)) } : {}), contents: Object.fromEntries(Object.entries(snapshot.data).map(([name, rows]) => [name, { live: rows.filter(row => !deleted(row)).length, deletionMarkers: rows.filter(deleted).length }])) };
 }
 
 function emptyEffects(): RestoreEffects { return { additions: 0, replacements: 0, retained: 0, removals: 0, newlyRemoved: 0, restored: 0 }; }
@@ -289,8 +321,10 @@ function canonical(value: unknown): string {
 
 export async function prepareMddRestore(bytes: Uint8Array, password: string, mode: ImportMode, database: MddDatabase): Promise<RestoreReview> {
   if (mode !== "merge" && mode !== "replace") throw new Error("Choose a valid restore mode.");
-  const { manifest, snapshot } = await readArchive(bytes, password, database);
+  const { manifest, snapshot, recovery } = await readArchive(bytes, password, database);
   const { snapshot: local, epoch } = await createBoundBackupSnapshot(database);
+  const localRecovery = recovery ? await readRecoveryState(database) : undefined;
+  const imports = recovery && localRecovery ? planRecoveryImport(recovery, localRecovery) : undefined;
   await validateInTemporaryDatabase(snapshot);
   const candidate = mode === "merge" ? await mergedSnapshot(snapshot, local) : snapshot;
   if (mode === "merge") await validateInTemporaryDatabase(candidate);
@@ -318,8 +352,8 @@ export async function prepareMddRestore(bytes: Uint8Array, password: string, mod
     for (const key of Object.keys(effects) as Array<keyof RestoreEffects>) effects[key] += table[key];
   }
   const contents = Object.fromEntries(Object.entries(snapshot.data).map(([name, rows]) => [name, Object.freeze({ live: rows.filter(row => !deleted(row)).length, deletionMarkers: rows.filter(deleted).length })]));
-  const review: RestoreReview = Object.freeze({ manifest, encrypted: Boolean(manifest.encryption), mode, contents: Object.freeze(contents), effects: Object.freeze({ ...effects }), tables: Object.freeze(tables), equalRevisionDifferences: Object.freeze(equalRevisionDifferences), hasLocalDevotionalRecords: Object.entries(local.data).some(([name, rows]) => name !== "preferences" && rows.length > 0) });
-  preparedRestores.set(review, { database, localJson: stableDataJson(local.data), epoch, candidate, mode, effects });
+  const review: RestoreReview = Object.freeze({ manifest, encrypted: Boolean(manifest.encryption), ...(recovery ? { recovery: Object.freeze(recoveryCounts(recovery, Date.parse(manifest.exportedAt))) } : {}), mode, contents: Object.freeze(contents), effects: Object.freeze({ ...effects }), tables: Object.freeze(tables), equalRevisionDifferences: Object.freeze(equalRevisionDifferences), hasLocalDevotionalRecords: Object.entries(local.data).some(([name, rows]) => name !== "preferences" && rows.length > 0) });
+  preparedRestores.set(review, { database, localJson: stableDataJson(local.data), epoch, candidate, mode, effects, ...(localRecovery && imports ? { localRecoveryFingerprint: recoveryFingerprint(localRecovery), importRecovery: imports } : {}) });
   return review;
 }
 
@@ -340,21 +374,24 @@ async function commitPreparedRestore(prepared: PreparedRestore, database: MddDat
   const { candidate, localJson } = prepared;
   const tables = portableTables(database);
   const nextJournal = newJournalState();
-  await database.transaction("rw", [...tables, database.draftJournalState], async () => {
+  await database.transaction("rw", [...tables, database.draftJournalState, ...(prepared.importRecovery ? privateRecoveryTables(database) : [])], async () => {
     const current: Record<string, unknown[]> = {};
     for (const table of tables) current[table.name] = await table.toArray();
     if (stableDataJson(current) !== localJson || await readJournalEpoch(database) !== prepared.epoch) throw new StaleRestoreReviewError();
+    if (prepared.importRecovery && recoveryFingerprint(await captureRecoveryPayload(database)) !== prepared.localRecoveryFingerprint) throw new StaleRestoreReviewError();
     await Dexie.waitFor(validateBackupSnapshot(candidate, database));
     for (const table of tables) {
       await table.clear();
       if (candidate.data[table.name]?.length) await table.bulkAdd(candidate.data[table.name]!);
     }
     if (prepared.mode === "replace") await database.draftJournalState.put(nextJournal);
+    if (prepared.importRecovery) await commitRecoveryImport(database, prepared.importRecovery);
   });
   const result: CommittedRestoreResult = { kind: "committed", mode: prepared.mode, effects: Object.freeze({ ...prepared.effects }) };
   prepared.result = result;
   // Release the decrypted bodies immediately, retaining only the idempotent result.
   prepared.candidate = { ...candidate, data: {} }; prepared.localJson = "";
+  delete prepared.importRecovery; delete prepared.localRecoveryFingerprint;
   return result;
 }
 

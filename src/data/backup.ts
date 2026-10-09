@@ -3,6 +3,7 @@ import { PORTABLE_SCHEMA_VERSION, PORTABLE_CONTRACT_VERSION, PORTABLE_TABLE_NAME
 import { APP_VERSION } from "../app/version";
 import { validateBackupRecords } from "./validation";
 import { newJournalState, readJournalEpoch } from "../recovery/journal";
+import { captureRecoveryPayload, privateRecoveryTables, type RecoveryArchivePayload } from "./recovery-archive";
 
 export const BACKUP_FORMAT_ID = "mdd-backup";
 export const BACKUP_FORMAT_VERSION = 1;
@@ -49,15 +50,18 @@ export async function createBackupSnapshot(database: MddDatabase, appVersion: st
 }
 
 /** Read the review binding in one transaction; hashing stays outside it. */
-export async function createBoundBackupSnapshot(database: MddDatabase, appVersion: string = APP_VERSION): Promise<{ snapshot: BackupSnapshot; epoch: string }> {
+export async function createBoundBackupSnapshot(database: MddDatabase, appVersion: string = APP_VERSION, includeRecovery = false): Promise<{ snapshot: BackupSnapshot; epoch: string; recovery?: RecoveryArchivePayload }> {
   const data: Record<string, unknown[]> = {};
   const tables = portableTables(database);
-  const epoch = await database.transaction("r", [...tables, database.draftJournalState], async () => {
+  let recovery: RecoveryArchivePayload | undefined;
+  const readTables = includeRecovery ? [...tables, database.draftJournalState, ...privateRecoveryTables(database)] : [...tables, database.draftJournalState];
+  const epoch = await database.transaction("r", readTables, async () => {
     for (const table of tables) data[table.name] = await table.toArray();
+    if (includeRecovery) recovery = await captureRecoveryPayload(database);
     return readJournalEpoch(database);
   });
   const dataSha256 = await sha256Hex(stableDataJson(data));
-  return { epoch, snapshot: {
+  return { epoch, ...(recovery ? { recovery } : {}), snapshot: {
     manifest: {
       formatId: BACKUP_FORMAT_ID,
       formatVersion: BACKUP_FORMAT_VERSION,
