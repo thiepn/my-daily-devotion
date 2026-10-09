@@ -136,9 +136,12 @@ function validateArchiveManifest(value: unknown): asserts value is BackupArchive
   if (!record(value)) throw new Error("Backup manifest is missing.");
   if (value.format !== FORMAT || (value.formatVersion !== FORMAT_VERSION && value.formatVersion !== RECOVERY_FORMAT_VERSION)) throw new Error("Unsupported MDD backup format.");
   if (value.formatVersion === 2) {
-    if (!value.encryption || !record(value.recovery) || value.recovery.payloadVersion !== 1 || !record(value.recovery.counts) ||
-      Object.keys(value.recovery.counts).length !== 5 ||
-      !["activeDrafts", "copyOnlyDrafts", "priorVersions", "eligibleRemovals", "expiredRemovals"].every(key => Number.isSafeInteger(value.recovery!.counts[key]) && Number(value.recovery!.counts[key]) >= 0 && Number(value.recovery!.counts[key]) <= 10000))
+    const recovery = value.recovery;
+    if (!value.encryption || !record(recovery) || recovery.payloadVersion !== 1 || !record(recovery.counts))
+      throw new Error("Recovery-inclusive archives require encryption and valid recovery counts.");
+    const counts = recovery.counts;
+    if (Object.keys(counts).length !== 5 || !["activeDrafts", "copyOnlyDrafts", "priorVersions", "eligibleRemovals", "expiredRemovals"].every(key =>
+      Number.isSafeInteger(counts[key]) && Number(counts[key]) >= 0 && Number(counts[key]) <= 10000))
       throw new Error("Recovery-inclusive archives require encryption and valid recovery counts.");
   } else if (value.recovery !== undefined) throw new Error("Ordinary v1 backups cannot include a recovery manifest.");
   if (typeof value.appVersion !== "string" || !value.appVersion.trim()) throw new Error("Backup manifest has an invalid app version.");
@@ -388,6 +391,7 @@ async function commitPreparedRestore(prepared: PreparedRestore, database: MddDat
   prepared.result = result;
   // Release the decrypted bodies immediately, retaining only the idempotent result.
   prepared.candidate = { ...candidate, data: {} }; prepared.localJson = "";
+  delete prepared.importRecovery; delete prepared.localRecoveryFingerprint;
   return result;
 }
 
