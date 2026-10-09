@@ -57,7 +57,7 @@ export function BackupCheckScreen() {
         <div className="journal-actions"><button type="submit" className="grace-primary" disabled={busy || Boolean(encrypted && !password)}>{busy ? 'Checking…' : 'Validate this backup'}</button></div>
       </form>}
       {status && <p className="data-status" role="status">{status}</p>}{error && <p className="data-error" role="alert">{error}</p>}
-      {result && <><h2>What this file contains</h2><p>{formatBackupDate(result.manifest.exportedAt)} · {result.encrypted ? 'Encrypted' : 'Plain'} backup</p><BackupRecordCounts contents={result.contents} /><p className="data-help">These counts describe this file; they do not show whether you still have other backups elsewhere.</p></>}
+      {result && <><h2>What this file contains</h2><p>{formatBackupDate(result.manifest.exportedAt)} · {result.encrypted ? 'Encrypted' : 'Plain'} backup</p><BackupRecordCounts contents={result.contents} />{result.recovery ? <div className="recovery-backup-counts"><h3>Private recovery data</h3><p>{result.recovery.activeDrafts} active drafts · {result.recovery.copyOnlyDrafts} previous writing copies · {result.recovery.priorVersions} saved versions · {result.recovery.eligibleRemovals} eligible and {result.recovery.expiredRemovals} expired or previous-journal removal groups at export.</p><p className="data-help">This report excludes the private writing itself. Format-2 recovery data never replays an unfinished action on import.</p></div> : null}<p className="data-help">These counts describe this file; they do not show whether you still have other backups elsewhere.</p></>}
       {filename && <button className="data-secondary-action" onClick={clear}>{result ? 'Check another backup' : 'Cancel check'}</button>}
     </section>
   </main>;
