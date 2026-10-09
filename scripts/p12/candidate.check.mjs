@@ -29,7 +29,7 @@ function candidate() {
     visual:{expected:526,unexpected:0,flaky:0,skipped:0},
     artifactDigest:digest,packageSha256:sha256,deploymentFileCount:2,
   };
-  const buildEvidence={sourceCommit:sha,files:deploymentHashes,artifactDigest:digest};
+  const buildEvidence={sourceCommit:sha,files:{...deploymentHashes},artifactDigest:digest};
   return {expectedSha:sha,releaseManifest,deploymentHashes,verificationSummary,
     buildEvidence,releaseArchive};
 }
