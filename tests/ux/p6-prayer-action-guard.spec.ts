@@ -73,3 +73,27 @@ test("returning from a prayer detail never loops to its own route or an invalid 
   await openRoute(page, "/prayer/" + id + "?return=" + encodeURIComponent("/history/day/2026-04-24?shown=20"));
   await expect(page.locator(".journal-heading .quiet-back-link")).toHaveAttribute("href", /#\/history\/day\/2026-04-24\?shown=20$/);
 });
+
+test("an unfinished answer cannot be recorded indirectly by Prayed now", async ({ page }) => {
+  await seedPrayerDetail(page);
+  await page.locator(".prayer-record-actions").getByRole("button", { name: "Mark answered", exact: true }).click();
+  const note = page.getByLabel("What happened?", { exact: false });
+  await note.fill("This answer has not happened.");
+  await page.getByRole("button", { name: "Prayed now", exact: true }).click();
+  const dialog = page.getByRole("dialog", { name: "Keep your unsaved changes?" });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "Save and continue" })).toHaveCount(0);
+  await dialog.getByRole("button", { name: "Keep editing" }).click();
+  await expect(note).toHaveValue("This answer has not happened.");
+  expect(await recorded(page, "PRAYER_PRAYED")).toBe(0);
+  expect(await recorded(page, "PRAYER_ANSWERED")).toBe(0);
+});
+
+test("rapid unguarded Prayed now clicks are serialized into one devotional event", async ({ page }) => {
+  await seedPrayerDetail(page);
+  await page.getByRole("button", { name: "Prayed now", exact: true }).evaluate((button: HTMLButtonElement) => {
+    button.click(); button.click();
+  });
+  await expect(page.getByText("Prayed now recorded.")).toBeVisible();
+  expect(await recorded(page, "PRAYER_PRAYED")).toBe(1);
+});
