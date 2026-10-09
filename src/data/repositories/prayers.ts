@@ -1,3 +1,4 @@
+import { withRemovalCapture } from "../../recovery/removals";
 import { ActivityLog } from "../activity";
 import { assertExpectedRevision } from "../conflicts";
 import { newMutableFields, nextMutableFields, nowInstant } from "../../domain/identity";
@@ -324,6 +325,9 @@ export class PrayerRepository extends MutableRepository<Prayer> {
   }
 
   async removePrayer(id: UUID, expectedRevision?: number): Promise<void> {
+    return withRemovalCapture(this.database, async () => ({ table: "prayers", id }), () => this.removePrayerInternalRecovery(id, expectedRevision));
+  }
+  private async removePrayerInternalRecovery(id: UUID, expectedRevision?: number): Promise<void> {
     await this.database.transaction("rw", this.database.prayers, this.database.prayerUpdates, this.database.prayerResolutions, this.database.scriptureLinks, this.database.prayerSchedules, async () => {
       const prayer = await this.require(id);
       assertExpectedRevision(prayer, expectedRevision);

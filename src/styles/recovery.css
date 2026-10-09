@@ -24,4 +24,11 @@
 .version-comparison h2 { font:1.25rem/1.4 var(--font-display); }
 .version-confirmation { max-height:40vh; overflow:auto; padding:.75rem; border:1px solid var(--color-line); }
 .version-confirmation p { white-space:pre-wrap; overflow-wrap:anywhere; }
+.removed-record + .removed-record { border-top:1px solid var(--color-line); padding-top:1rem; margin-top:1rem; }
+.removed-record input { display:block; width:100%; min-height:44px; margin-block:.75rem; }
+.removed-record .version-field { margin-block:1rem; }
+.removed-journal button { max-width:100%; white-space:normal; overflow-wrap:anywhere; }
+.removed-journal h1 { overflow-wrap:anywhere; }
+.removed-journal .journal-heading-line { flex-wrap:wrap; }
+.removed-journal .journal-heading-line > div { flex:1 1 240px; }
 @media(max-width:650px) { .version-comparison { grid-template-columns:minmax(0,1fr); } .version-comparison .recovery-writing { margin-block:.5rem; } }

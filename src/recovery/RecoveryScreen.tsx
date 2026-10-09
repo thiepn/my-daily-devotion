@@ -10,6 +10,7 @@ import { DRAFT_LABELS, draftFields, draftTargetLabel, parseRecoveryContext, reco
 import type { DraftPage, DraftReadResult } from "./types";
 
 import { RecoveryNavigation } from "./SavedVersionsLink";
+import { RemovedScreen } from "./RemovedScreen";
 import { SavedVersionsScreen } from "./SavedVersionsScreen";
 const repository = new DraftRepository(db);
 const message = (reason: unknown) => reason instanceof Error ? reason.message : "Could not open recovery. Please try again.";
@@ -17,7 +18,7 @@ function keptTime(value: string) { return new Intl.DateTimeFormat(undefined, { d
 
 export function RecoveryScreen() {
   const location = useLocation();
-  return new URLSearchParams(location.search).get("view") === "versions" ? <SavedVersionsScreen /> : <RecoveryView key={location.pathname + location.search} />;
+  return new URLSearchParams(location.search).get("view") === "removed" ? <RemovedScreen /> : new URLSearchParams(location.search).get("view") === "versions" ? <SavedVersionsScreen /> : <RecoveryView key={location.pathname + location.search} />;
 }
 
 function RecoveryView() {
