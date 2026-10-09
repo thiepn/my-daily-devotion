@@ -40,11 +40,11 @@ export function BibleReaderControls(props: Props) {
     <header className="bible-reader-header mg-bible-shell-header">
       <h1 className="sr-only">Bible</h1>
       <Link className="reader-icon-button" to={props.backTo} aria-label="Return to devotional context"><DevotionalIcon name="back" /></Link>
-      <button className="reader-passage-button" type="button" onClick={openPassage} aria-label="Choose book and chapter" aria-haspopup="dialog">
+      <button className="reader-passage-button" type="button" onClick={openPassage} aria-label="Choose book and chapter" aria-haspopup="dialog" aria-expanded={panel === "passage"}>
         <span>{props.book.name} {props.chapter}</span><DevotionalIcon name="down" />
       </button>
       <Link className="reader-icon-button" to={`/bible/saved?${returnQuery}`} aria-label="Saved Scripture"><DevotionalIcon name="bookmark" /></Link>
-      <button className="reader-icon-button reader-type-button" type="button" aria-label="Reading appearance" aria-haspopup="dialog" onClick={event => { trigger.current = event.currentTarget; setPanel('appearance'); }}>Aa</button>
+      <button className="reader-icon-button reader-type-button" type="button" aria-label="Reading appearance" aria-haspopup="dialog" aria-expanded={panel === "appearance"} onClick={event => { trigger.current = event.currentTarget; setPanel('appearance'); }}>Aa</button>
     </header>
     <dialog ref={dialog} className="grace-reader-dialog" aria-labelledby="reader-dialog-title" onCancel={() => setPanel(null)} onClose={event => { if (!event.currentTarget.open) { setPanel(null); trigger.current?.focus(); } }}>
       <div className="reader-dialog-heading"><h2 id="reader-dialog-title">{panel === 'appearance' ? 'Reading' : 'Open Scripture'}</h2><button className="reader-icon-button" type="button" aria-label="Close reader panel" onClick={() => setPanel(null)}><DevotionalIcon name="close" /></button></div>
