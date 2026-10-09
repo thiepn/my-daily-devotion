@@ -75,3 +75,30 @@ test('rejects nonexact source SHA', () => {
   assert.throws(() => createPendingLedger('123', old, old), /40-hex/);
   assert.throws(() => assessAcceptance(fixture(), '123'), /40-hex/);
 });
+
+
+test('CLI never returns zero for pending or self-reported complete gates', async () => {
+  const { spawnSync } = await import('node:child_process');
+  const { mkdtempSync, writeFileSync, rmSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const folder = mkdtempSync(join(tmpdir(), 'mdd-p10-ledger-'));
+  const filename = join(folder, 'evidence.json');
+  try {
+    const run = () => spawnSync(process.execPath, [new URL('./acceptance-cli.mjs', import.meta.url).pathname, 'assess', filename, sha], { encoding: 'utf8' });
+    writeFileSync(filename, JSON.stringify(fixture()));
+    const pending = run();
+    assert.equal(pending.status, 2, pending.stderr);
+    assert.equal(JSON.parse(pending.stdout).releaseAuthorized, false);
+    const claimed = fixture(); claimed.gates = claimed.gates.map(approve);
+    writeFileSync(filename, JSON.stringify(claimed));
+    const complete = run();
+    assert.equal(complete.status, 3, complete.stderr);
+    const report = JSON.parse(complete.stdout);
+    assert.equal(report.evidenceComplete, true);
+    assert.equal(report.independentlyVerified, false);
+    assert.equal(report.releaseAuthorized, false);
+  } finally {
+    rmSync(folder, { recursive: true, force: true });
+  }
+});
