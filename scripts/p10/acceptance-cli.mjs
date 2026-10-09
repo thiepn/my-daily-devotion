@@ -11,7 +11,7 @@ if (operation === 'template' && args.length === 4) {
   const [path, sha] = args;
   const result = assessAcceptance(JSON.parse(await readFile(path, 'utf8')), sha);
   console.log(JSON.stringify(result, null, 2));
-  if (!result.evidenceComplete) process.exitCode = 2;
+  process.exitCode = result.evidenceComplete ? 3 : 2; // Claimed completeness is never a deployment-compatible success.
   // Even a complete ledger is not independently verified and must never authorize release.
 } else {
   console.error('Usage: node scripts/p10/acceptance-cli.mjs template SHA EXISTING_HTTPS_URL CANDIDATE_HTTPS_URL FILE | assess FILE SHA');
