@@ -1,5 +1,7 @@
 # Release checklist — integrated offline main candidate
 
+**Ship only from a commit** that passed exact-commit CI certification, backup compatibility qualification, asset checks and a separately authorized live release. A previous green SHA does not qualify a later merge.
+
 Authoritative status as of **2026-10-09**. This checklist applies to the **exact new commit** proposed for deployment, not simply to a successful historical PR. See [P0 release baseline](RELEASE_BASELINE_2026-10-09.md) and [Codex workflow](CODEX_WORKFLOW.md).
 
 ## Confirmed prior to this P0 documentation change
