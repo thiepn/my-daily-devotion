@@ -5,7 +5,26 @@ const CACHE_KEY = `${CACHE_NAME}-${BUILD_ID}`;
 
 function scopeRoot() { return new URL("./", self.registration.scope); }
 function localUrl(path) { return new URL(path.replace(/^\//, ""), scopeRoot()).href; }
-async function fetchRequired(url) { const response = await fetch(url, { cache: "reload", credentials: "same-origin" }); if (!response.ok) throw new Error(`Required offline asset failed: ${response.status} ${url}`); return response; }
+function validateRequiredAsset(url, response) {
+  const root = scopeRoot();
+  const parsed = new URL(url, root);
+  if (parsed.origin !== root.origin || !parsed.pathname.startsWith(root.pathname)) throw new Error("Required offline asset escapes the app scope.");
+  if (!response.ok) throw new Error(`Required offline asset failed: ${response.status} ${url}`);
+  const type = (response.headers.get("content-type") || "").split(";")[0].trim().toLowerCase();
+  if ((parsed.href === root.href || parsed.pathname.endsWith("/index.html")) && type !== "text/html") throw new Error("Offline app shell is not HTML.");
+  if (parsed.pathname.endsWith(".js") && !/(?:javascript|ecmascript)/.test(type)) throw new Error("Offline JavaScript asset has an unexpected content type.");
+  if (parsed.pathname.endsWith(".css") && type !== "text/css") throw new Error("Offline stylesheet has an unexpected content type.");
+  if (parsed.pathname.endsWith(".json") && !/\bjson\b/.test(type)) throw new Error("Offline JSON asset has an unexpected content type.");
+  if (parsed.pathname.endsWith(".webmanifest") && !/(?:json|manifest)/.test(type)) throw new Error("Offline manifest has an unexpected content type.");
+}
+async function fetchRequired(url) {
+  const root = scopeRoot();
+  const target = new URL(url, root);
+  if (target.origin !== root.origin || !target.pathname.startsWith(root.pathname)) throw new Error("Required offline asset escapes the app scope.");
+  const response = await fetch(target.href, { cache: "reload", credentials: "same-origin" });
+  validateRequiredAsset(target.href, response);
+  return response;
+}
 async function cacheRequired(cache, url) { const response = await fetchRequired(url); await cache.put(url, response.clone()); return response; }
 async function cacheInBatches(cache, urls, size = 8) { for (let index = 0; index < urls.length; index += size) { const batch = urls.slice(index, index + size); await Promise.all(batch.map((url) => cacheRequired(cache, url))); } }
 async function matchCached(request) { const cache = await caches.open(CACHE_KEY); return cache.match(request, { ignoreVary: true }); }
@@ -20,7 +39,7 @@ async function precache() {
     .map((match) => match[1])
     .filter((value) => value && !value.startsWith("data:") && !value.startsWith("http:"))
     .map((value) => new URL(value, root).href)
-    .filter((value) => value.startsWith(root.origin));
+    .filter((value) => { const parsed = new URL(value); return parsed.origin === root.origin && parsed.pathname.startsWith(root.pathname); });
   const coreAssets = [localUrl("manifest.webmanifest"), localUrl("brand-mark.svg"), localUrl("icons/icon-192.png"), localUrl("icons/icon-512.png"), localUrl("icons/maskable-512.png"), localUrl("apple-touch-icon.png"), localUrl("plans/mcheyne-classic.v1.json")];
   await cacheInBatches(cache, [...new Set([...shellAssets, ...coreAssets])]);
 

@@ -17,10 +17,10 @@ function worker(failPath = "", clients: string[] = []) {
   const fetch = async (request: string | Request) => {
     const url = typeof request === "string" ? request : request.url; fetches.push(url);
     if (failPath && url.endsWith(failPath)) return new Response("failed", { status: 503 });
-    if (url === root) return new Response('<script src="./assets/new.js"></script>new shell');
+    if (url === root) return new Response('<script src="./assets/new.js"></script>new shell', { headers: { "Content-Type": "text/html" } });
     if (url.endsWith(".vite/manifest.json")) return Response.json({ main: { file: "assets/new.js" }, lazy: { file: "assets/lazy.js" } });
     if (url.endsWith("bible/manifest.json")) return Response.json({ searchIndexPath: "/bible/search-index.json", books: [{ path: "/bible/books/GEN.json" }] });
-    return new Response("asset");
+    return new Response("asset", { headers: { "Content-Type": url.endsWith(".js") ? "text/javascript" : url.endsWith(".css") ? "text/css" : url.endsWith(".webmanifest") ? "application/manifest+json" : url.endsWith(".json") ? "application/json" : "application/octet-stream" } });
   };
   const registration = { scope: root, installing: null as object | null, waiting: null as object | null };
   const self = { registration, location: { origin: "https://mdd.test" }, clients: { async matchAll() { return clients.map((id) => ({ id })); }, async claim() {} }, addEventListener(name: string, handler: (event: any) => void) { listeners[name] = handler; } };

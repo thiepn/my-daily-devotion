@@ -15,8 +15,18 @@ export function useDurableDraft(database: MddDatabase, context: DraftContext, pa
   useEffect(() => {
     controller.attach();
     const hidden = () => { if (document.visibilityState === "hidden") void controller.flush().catch(() => undefined); };
+    // pagehide/freeze can precede or replace visibilitychange on mobile PWAs.
+    // These are best-effort flush opportunities, not a synchronous unload save.
+    const pageHiding = () => { void controller.flush().catch(() => undefined); };
     document.addEventListener("visibilitychange", hidden);
-    return () => { document.removeEventListener("visibilitychange", hidden); controller.detach(); };
+    document.addEventListener("freeze", pageHiding);
+    window.addEventListener("pagehide", pageHiding);
+    return () => {
+      document.removeEventListener("visibilitychange", hidden);
+      document.removeEventListener("freeze", pageHiding);
+      window.removeEventListener("pagehide", pageHiding);
+      controller.detach();
+    };
   }, [controller]);
   useEffect(() => {
     controller.setContext(JSON.parse(serializedContext) as DraftContext);

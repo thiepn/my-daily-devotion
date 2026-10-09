@@ -3,6 +3,7 @@ import type { MddDatabase } from "../data/database";
 import type { PortableTableName } from "../data/portable-tables";
 import { readJournalEpoch } from "./journal";
 import { DraftRepository } from "./repository";
+import { reportStorageWriteFailure } from "../app/storage-pressure";
 import { DraftWriter } from "./writer";
 import { acknowledgeDraftCommit, type CommittedDraftSaveResult, type DraftSaveContext } from "./commit";
 import { DraftError, type DraftContext, type DraftPayload, type DraftSnapshot } from "./types";
@@ -36,6 +37,7 @@ export class DurableDraftController {
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener); }; };
   private report(status: DraftStatus, reason?: unknown) {
     const error = reason instanceof Error ? reason.message : reason ? "Could not keep this draft. Keep this page open." : "";
+    if (status === "failed") reportStorageWriteFailure(reason);
     if (this.state.status === status && this.state.error === error) return;
     this.state = { status, error };
     if (!this.detached) for (const listener of this.listeners) listener();
