@@ -103,6 +103,12 @@ test.describe("offline PWA UX", () => {
     test.setTimeout(120_000);
     let generation = "old";
     const root = resolve("dist");
+    // Keep the HTTP test fixture tied to the actual service-worker fetch API.
+    // A stale string replacement previously generated fetch(url) where only
+    // target.href was defined, preventing the initial worker from installing.
+    const workerSource = await readFile(resolve(root, "sw.js"), "utf8");
+    const requiredFetchCall = 'fetch(target.href, { cache:';
+    expect(workerSource, "The PWA interception fixture must match the built worker").toContain(requiredFetchCall);
     const server = createServer(async (request, response) => {
       const requestGeneration = generation;
       const path = new URL(request.url!, "http://localhost").pathname.replace(/^\/devotion\//, "");
@@ -116,7 +122,7 @@ test.describe("offline PWA UX", () => {
         let bytes = await readFile(file);
         if (path === "sw.js") bytes = Buffer.from(bytes.toString()
           .replace(/const BUILD_ID = "[^"]+"/, `const BUILD_ID = "fixture-${requestGeneration}"`)
-          .replace('fetch(target.href, { cache:', `fetch(url, { headers: { "X-Mdd-Test-Build": "${requestGeneration}" }, cache:`));
+          .replace(requiredFetchCall, `fetch(target.href, { headers: { "X-Mdd-Test-Build": "${requestGeneration}" }, cache:`));
         if (path === ".vite/manifest.json" && requestGeneration === "old") { const manifest = JSON.parse(bytes.toString()); manifest.oldTab = { file: "assets/old-only.js" }; bytes = Buffer.from(JSON.stringify(manifest)); }
         const types: Record<string,string> = { ".html":"text/html", ".js":"text/javascript", ".css":"text/css", ".json":"application/json", ".webmanifest":"application/manifest+json", ".svg":"image/svg+xml", ".png":"image/png" };
         response.writeHead(200, { "Content-Type": types[extname(file)] || "application/octet-stream", "Cache-Control": "no-store" }); response.end(bytes);
