@@ -1,7 +1,7 @@
 import {afterEach,describe,expect,it} from "vitest";
 import {MddDatabase,prepareDatabase} from "../data/database";
 import {PrayerRepository} from "../data/repositories/prayers";
-import {parsePrayerDetailQuery,prayerTimeline,readPrayerDetail,readPrayerMetadata,safePrayerReturn} from "./detail-model";
+import {parsePrayerDetailQuery,prayerTimeline,readPrayerDetail,readPrayerMetadata,safePrayerReturn,safePrayerDetailBack} from "./detail-model";
 const databases:MddDatabase[]=[];
 function setup(){const db=new MddDatabase("detail-"+crypto.randomUUID());databases.push(db);return db;}
 afterEach(async()=>{for(const db of databases.splice(0)){db.close();await db.delete();}});
@@ -37,6 +37,17 @@ describe("Prayer detail read models and guarded lifecycle",()=>{
   expect(await Promise.all(db.tables.map(t=>t.toArray()))).toEqual(before);
   const current=await repo.get(prayer.id);await repo.transition(prayer.id,"ARCHIVED",current!.revision);
   await expect(repo.restoreArchived(prayer.id,current!.revision)).rejects.toThrow(/another tab/);
+ });
+ it("rejects malformed return locations, unknown routes and self-referential prayer links",()=>{
+  const id="00000000-0000-4000-8000-000000008001";
+  const self="/prayer/"+id+"?shown=20";
+  expect(safePrayerDetailBack(self,id)).toBe("/prayer");
+  expect(safePrayerDetailBack("/prayer?status=ACTIVE",id)).toBe("/prayer?status=ACTIVE");
+  expect(safePrayerDetailBack("/history/day/2026-04-24?entry=note",id)).toBe("/history/day/2026-04-24?entry=note");
+  for (const value of ["//evil.example", "/%2fevil.example", "/unknown", "/\\evil.example", "/prayer#fragment", "/../outside"]) {
+    expect(safePrayerReturn(value)).toBe("/prayer");
+  }
+  expect(parsePrayerDetailQuery("?return="+encodeURIComponent("/unknown")).returnTo).toBe("/prayer");
  });
  it("normalizes optional query state while retaining complete internal return URLs",()=>{
   const back="/history/day/2026-04-24?entry=event&return=%2Fhistory%3Fshown%3D25";
