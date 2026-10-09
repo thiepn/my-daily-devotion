@@ -117,3 +117,32 @@ test('rejects a P11 handoff from another source or origin',()=>{
   h.acceptance.sourceCommit=other;a.p11Handoff=h;
   throws(a,/Ledger belongs to another source commit/);
 });
+
+
+test('offline CLI confirms bytes but always exits nonzero, and rejects changed SHA256SUMS',async()=>{
+  const {mkdtempSync,writeFileSync,rmSync}=await import('node:fs');
+  const {join}=await import('node:path');
+  const {tmpdir}=await import('node:os');
+  const {spawnSync}=await import('node:child_process');
+  const {fileURLToPath}=await import('node:url');
+  const directory=mkdtempSync(join(tmpdir(),'p12-candidate-'));
+  try{
+    const data=candidate(), name=data.releaseManifest.artifact;
+    writeFileSync(join(directory,'release-manifest.json'),JSON.stringify(data.releaseManifest));
+    writeFileSync(join(directory,'deployment-hashes.json'),JSON.stringify(data.deploymentHashes));
+    writeFileSync(join(directory,'verification-summary.json'),JSON.stringify(data.verificationSummary));
+    writeFileSync(join(directory,'build-evidence.json'),JSON.stringify(data.buildEvidence));
+    writeFileSync(join(directory,name),data.releaseArchive);
+    writeFileSync(join(directory,'SHA256SUMS'),data.releaseManifest.sha256+'  '+name+'\n');
+    const run=()=>spawnSync(process.execPath,[fileURLToPath(new URL('./candidate-cli.mjs',import.meta.url)),directory,sha],{encoding:'utf8'});
+    const good=run();
+    assert.equal(good.status,3,good.stderr);
+    const report=JSON.parse(good.stdout);
+    assert.equal(report.localArtifactHashesVerified,true);
+    assert.equal(report.releaseAuthorized,false);
+    writeFileSync(join(directory,'SHA256SUMS'),'tampered');
+    const bad=run();
+    assert.equal(bad.status,4);
+    assert.ok(!bad.stderr.includes(directory));
+  }finally{rmSync(directory,{recursive:true,force:true})}
+});
