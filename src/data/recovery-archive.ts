@@ -25,7 +25,19 @@ const keys = (v: Record<string, unknown>, names: readonly string[]) => Object.ke
 export function privateRecoveryTables(db: MddDatabase) { return RECOVERY_TABLE_NAMES.map(name => db[name]); }
 export async function captureRecoveryPayload(db: MddDatabase): Promise<RecoveryArchivePayload> {
   const stores = {} as RecoveryStores;
-  for (const name of RECOVERY_TABLE_NAMES) (stores[name] as unknown[]) = await db[name].toArray();
+  for (const name of RECOVERY_TABLE_NAMES) (stores as unknown as Record<string,unknown[]>)[name] = await db[name].toArray();
+  // A committed/discarded draft can legitimately retain metadata without a
+  // body. These are not recoverable writing and must not block export.
+  const draftBodies = new Map(stores.editorDraftContents.map(row => [row.id, row]));
+  stores.editorDrafts = stores.editorDrafts.filter(row => row.state === "active" || (row.state === "committed" && draftBodies.has(row.id)));
+  const usedDraftIds = new Set(stores.editorDrafts.map(row => row.id));
+  stores.editorDraftContents = stores.editorDraftContents.filter(row => usedDraftIds.has(row.id));
+  // Historical restored/expired groups can have their private bodies pruned.
+  // Such metadata is not a usable recovery copy and is excluded as a pair.
+  const removalBodies = new Map(stores.removalGroupContents.map(row => [row.id, row]));
+  stores.removalGroups = stores.removalGroups.filter(row => row.state === "available" || removalBodies.has(row.id));
+  const groupIds = new Set(stores.removalGroups.map(row => row.id));
+  stores.removalGroupContents = stores.removalGroupContents.filter(row => groupIds.has(row.id));
   const payload: RecoveryArchivePayload = { version: 1, sourceEpoch: await readJournalEpoch(db), stores };
   validateRecoveryPayload(payload);
   return payload;
@@ -113,7 +125,7 @@ export function planRecoveryImport(incoming: RecoveryArchivePayload, local: Reco
     }
     result[metaTable] = metas; result[bodyTable] = bodies;
   }
-  return result as RecoveryInsert;
+  return result as unknown as RecoveryInsert;
 }
 export async function commitRecoveryImport(db: MddDatabase, planned: RecoveryInsert) {
   for (const name of RECOVERY_TABLE_NAMES) {
