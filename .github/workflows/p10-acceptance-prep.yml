@@ -22,4 +22,4 @@ jobs:
         with:
           node-version: "24"
       - name: Reject fabricated signoff, stale SHA, privacy and origin leaks
-        run: node --test scripts/p10/acceptance.test.mjs
+        run: node --test scripts/p10/acceptance.check.mjs
