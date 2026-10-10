@@ -1,0 +1,28 @@
+name: P21 Independent Human Custody Review Preparation
+
+on:
+  pull_request:
+    paths:
+      - "scripts/p21/**"
+      - "scripts/p20/**"
+      - "docs/P21_INDEPENDENT_HUMAN_CUSTODY_REVIEW.md"
+      - ".github/workflows/p21-human-custody-review.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  physical-evidence-and-owner-nogo:
+    name: Original host, recovery custody and separate owner NO-GO tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Verify source rights, original PWA scope, physical evidence and forward-recovery NO-GO
+        run: node --test scripts/p21/closure.check.mjs
