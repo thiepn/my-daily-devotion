@@ -314,3 +314,58 @@ test('source-bound escalation digest changes per nonce but never leaks reviewer 
  assert.ok(!JSON.stringify(x).includes('independent-fixture'));
  assert.equal(y.releaseAuthorized,false);
 });
+
+
+test('offline CLI accepts external evidence only as HOLD and refuses replayed or private metadata',async()=>{
+ const {mkdtempSync,writeFileSync,rmSync}=await import('node:fs');
+ const {readFile}=await import('node:fs/promises');
+ const {join}=await import('node:path'),{tmpdir}=await import('node:os');
+ const {spawnSync}=await import('node:child_process'),{fileURLToPath}=await import('node:url');
+ const dir=mkdtempSync(join(tmpdir(),'p20-fixture-'));
+ try{
+   const p=phase(),packet=join(dir,'receipt.json'),zip=join(dir,'candidate.zip');
+   const {releaseArchive,...candidateInput}=p.p19Input.p18Input.candidateInput;
+   const {externalWitnessPins,previouslyAcceptedNonceIds,minimumAcceptedSequence,
+     minimumAcceptedRevision,currentTime,...closureInput}=p.p19Input.p18Input.closureInput;
+   const meta={p19Input:{
+       p18Input:{handoff:p.p19Input.p18Input.handoff,closureInput,candidateInput,githubEvidence:null},
+       operatorRecord:p.p19Input.operatorRecord},
+     rotation:p.rotationInput.rotation,ticket:p.ticket,evidencePackets:[]};
+   writeFileSync(packet,JSON.stringify(meta));
+   writeFileSync(zip,releaseArchive);
+   const env={
+     MDD_CUSTODY_ROOT_SHA256:sha256(der(root.publicKey)),
+     MDD_TRUSTED_LEDGER_DIGEST:zero,MDD_TRUSTED_LEDGER_SEQUENCE:'0',
+     MDD_MIN_TRUSTED_CUSTODY_REVISION:'2',
+     MDD_OPERATOR_LEDGER_DIGEST:'e'.repeat(64),MDD_OPERATOR_LEDGER_SEQUENCE:'7',
+     MDD_EXTERNAL_WITNESS_PINS_JSON:JSON.stringify(externalWitnessPins),
+     MDD_EXTERNAL_OPERATOR_PINS_JSON:JSON.stringify(operatorPins()),
+     MDD_PREVIOUS_WITNESS_NONCES_JSON:JSON.stringify(previouslyAcceptedNonceIds),
+     MDD_PREVIOUS_HANDOFF_NONCES_JSON:'[]',MDD_PREVIOUS_OPERATOR_NONCES_JSON:'[]',
+     MDD_P20_ROTATION_LEDGER_DIGEST:'f'.repeat(64),MDD_P20_ROTATION_LEDGER_SEQUENCE:'3',
+     MDD_P20_PREVIOUS_ACTIVE_KEY_ID:'prior-test-signer',
+     MDD_P20_EXTERNAL_ROTATION_PINS_JSON:JSON.stringify(rotatingPins()),
+     MDD_P20_PREVIOUS_REVOKED_KEYS_JSON:'[]',
+     MDD_P20_PREVIOUS_ROTATION_NONCES_JSON:'[]',
+     MDD_P20_PREVIOUS_ESCALATION_NONCES_JSON:'[]',
+   };
+   const cli=fileURLToPath(new URL('./escalation-cli.mjs',import.meta.url));
+   const run=(changes={})=>spawnSync(process.execPath,
+     [cli,'hold',packet,zip,sourceCommit,now],
+     {encoding:'utf8',env:{...process.env,...env,...changes}});
+   const valid=run();
+   assert.equal(valid.status,3,valid.stderr);
+   const parsed=JSON.parse(valid.stdout);
+   assert.equal(parsed.releaseAuthorized,false);
+   assert.equal(parsed.actionsPerformed,false);
+   assert.ok(!valid.stdout.includes('independent-fixture'));
+   assert.equal(run({MDD_P20_PREVIOUS_ESCALATION_NONCES_JSON:JSON.stringify([p.ticket.nonce])}).status,4);
+   assert.equal(run({MDD_P20_ROTATION_LEDGER_SEQUENCE:'4'}).status,4);
+   writeFileSync(packet,JSON.stringify({...JSON.parse(await readFile(packet,'utf8')),
+     privatePrayer:'SECRET_P20_PERSONAL_TEXT'}));
+   const invalid=run();
+   assert.equal(invalid.status,4);
+   assert.ok(!invalid.stderr.includes('SECRET_P20_PERSONAL_TEXT'));
+   assert.ok(!invalid.stderr.includes(dir));
+ }finally{rmSync(dir,{recursive:true,force:true})}
+});
