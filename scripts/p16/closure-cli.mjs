@@ -22,8 +22,10 @@ async function main() {
   const expectedRootSha256=process.env.MDD_CUSTODY_ROOT_SHA256;
   const anchorDigest=process.env.MDD_TRUSTED_LEDGER_DIGEST;
   const anchorSequenceRaw=process.env.MDD_TRUSTED_LEDGER_SEQUENCE;
+  const custodyRevisionRaw=process.env.MDD_MIN_TRUSTED_CUSTODY_REVISION;
   if(!HASH.test(expectedRootSha256??'') || !HASH.test(anchorDigest??'') ||
-    !/^(0|[1-9]\d{0,14})$/.test(anchorSequenceRaw??''))throw new Error('Missing external trust anchor');
+    !/^(0|[1-9]\d{0,14})$/.test(anchorSequenceRaw??'') ||
+    !/^[1-9]\d{0,14}$/.test(custodyRevisionRaw??''))throw new Error('Missing external trust anchor');
   const input=await readEvidence(path);
   shape(input,['sourceCommit','rootPublicSpkiDerBase64','manifest','records','checkpoint',
     'previouslyUsedNonces','codeAuthorHandles','originalSiteUrl',
@@ -31,7 +33,7 @@ async function main() {
   if(input.sourceCommit!==sha)throw new Error('Source SHA differs');
   const verifiedHistory=verifyReceiptHistory({
     sourceCommit:sha,rootPublicSpkiDerBase64:input.rootPublicSpkiDerBase64,
-    expectedRootSha256,manifest:input.manifest,
+    expectedRootSha256,minimumTrustedRevision:Number(custodyRevisionRaw),manifest:input.manifest,
     trustedPreviousAnchor:{sequence:Number(anchorSequenceRaw),digest:anchorDigest},
     records:input.records,checkpoint:input.checkpoint,
     previouslyUsedNonces:input.previouslyUsedNonces??[],
