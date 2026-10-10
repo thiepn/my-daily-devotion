@@ -1,0 +1,26 @@
+name: P17 Human Evidence Closure Preparation
+
+on:
+  pull_request:
+    paths:
+      - "scripts/p17/**"
+      - "scripts/p16/**"
+      - "docs/P17_HUMAN_EVIDENCE_CLOSURE_PREPARATION.md"
+      - ".github/workflows/p17-evidence-closure.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic-evidence-contracts:
+    name: Dual witness, replay, human evidence and release-denial tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Independently pinned witness, receipt, device, migration and recovery regressions
+        run: node --test scripts/p17/closure.check.mjs
