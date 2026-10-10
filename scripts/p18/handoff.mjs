@@ -10,7 +10,7 @@ const SHA=/^[0-9a-f]{40}$/, HASH=/^[0-9a-f]{64}$/;
 const DECISION_FIELDS=['mode','mergeAuthorized','deployAuthorized','publicationAuthorized',
   'allowLiveMigration','allowCachePurge','allowRollback'];
 const HANDOFF_FIELDS=['sourceCommit','originalSiteUrl','decision','reviewHandoffNonce',
-  'previouslyUsedHandoffNonces','minimumCustodyRevision','minimumLedgerSequence'];
+  'minimumCustodyRevision','minimumLedgerSequence'];
 const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 function validateDecision(decision) {
   strictObject(decision,DECISION_FIELDS);
@@ -38,13 +38,16 @@ function reviewNonce({reviewHandoffNonce,previouslyUsedHandoffNonces}) {
  */
 export function inspectIndependentHandoff({
   expectedSha,handoff,closureInput,candidateInput,githubEvidence=null,
+  previouslyUsedHandoffNonces,
 }) {
   assert.match(expectedSha,SHA,'Exact release source SHA required');
   strictObject(handoff,HANDOFF_FIELDS);
   assert.equal(handoff.sourceCommit,expectedSha,'Handoff source mismatch');
   verifyExistingOrigin(handoff.originalSiteUrl,handoff.originalSiteUrl);
   validateDecision(handoff.decision);
-  reviewNonce(handoff);
+  assert.ok(Array.isArray(previouslyUsedHandoffNonces),
+    'Independent handoff nonce history required');
+  reviewNonce({reviewHandoffNonce:handoff.reviewHandoffNonce,previouslyUsedHandoffNonces});
   assert.ok(Number.isSafeInteger(handoff.minimumCustodyRevision) &&
     handoff.minimumCustodyRevision>0);
   assert.ok(Number.isSafeInteger(handoff.minimumLedgerSequence) &&
