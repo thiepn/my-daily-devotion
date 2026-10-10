@@ -453,7 +453,7 @@ test('operator pins distinct, signer roles, signed payload, time expiry and priv
  assert.throws(()=>inspectMultiOperatorHold(b),/signature invalid/);
  const c=requestInput();c.request.privateJournal='MY_DEVOTION';
  assert.throws(()=>inspectMultiOperatorHold(c),/private metadata/);
- const d=requestInput();d.currentTime='2026-10-10T14:10:00Z';
+ const d=requestInput();d.request.expiresAt='2026-10-10T13:20:00Z';
  assert.throws(()=>inspectMultiOperatorHold(d),/expired\/future/);
 });
 test('tampering even one ZIP byte fails before any external reviewer or operator hold',()=>{
