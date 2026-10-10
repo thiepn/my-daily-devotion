@@ -56,7 +56,7 @@ export function verifyReceiptHistory({
     assert.ok(signer,'Receipt signed by unknown or revoked key');
     const reviewed=inspectSignedAcceptance({
       sourceCommit,trustRoot:signer,attestations:[record.receipt],
-      previouslyUsedNonces:[...knownNonces],codeAuthorHandles,currentTime,
+      previouslyUsedNonces:[...knownNonces],codeAuthorHandles,now:currentTime,
     });
     assert.equal(reviewed.verifiedCryptographicSignatures,1);
     const name=record.receipt.subjectType+'/'+record.receipt.subjectId;
