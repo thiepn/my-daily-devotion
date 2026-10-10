@@ -1,0 +1,28 @@
+name: P19 Independent Custody and Operator Hold Preparation
+
+on:
+  pull_request:
+    paths:
+      - "scripts/p19/**"
+      - "scripts/p18/**"
+      - "docs/P19_INDEPENDENT_CUSTODY_OPERATOR_HOLD.md"
+      - ".github/workflows/p19-custody-hold.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  audited-nondeploy-operator-hold:
+    name: Immutable release, replay history, dual-signed operator HOLD tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Verify adversarial evidence and default-denied release boundary
+        run: node --test scripts/p19/decision.check.mjs
