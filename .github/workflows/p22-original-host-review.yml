@@ -1,0 +1,28 @@
+name: P22 Original-Host Acceptance and Nondeploying Review
+
+on:
+  pull_request:
+    paths:
+      - "scripts/p22/**"
+      - "scripts/p21/**"
+      - "docs/P22_ORIGINAL_HOST_ACCEPTANCE_PREPARATION.md"
+      - ".github/workflows/p22-original-host-review.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  escrow-and-owner-nogo:
+    name: Source/rights/CDN/PWA escrow, immutable ZIP and default-denied owner review
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Verify source escrow anti-replay and fail-closed original-host acceptance
+        run: node --test scripts/p22/review.check.mjs
