@@ -195,3 +195,48 @@ test('handoff digest changes with source-bound nonce and never contains private 
  assert.ok(!JSON.stringify(x).includes('independent-fixture'));
  assert.equal(y.releaseAuthorized,false);
 });
+
+
+test('offline CLI authenticates source-bound bytes with separate pins but never grants release',async()=>{
+ const {mkdtempSync,rmSync,writeFileSync}=await import('node:fs');
+ const {join}=await import('node:path');
+ const {tmpdir}=await import('node:os');
+ const {spawnSync}=await import('node:child_process');
+ const {fileURLToPath}=await import('node:url');
+ const dir=mkdtempSync(join(tmpdir(),'mdd-p18-'));
+ try{
+   const a=input(),packet=join(dir,'evidence.json'),zip=join(dir,'immutable.zip');
+   const {releaseArchive,...candidateMetadata}=a.candidateInput;
+   const {externalWitnessPins,previouslyAcceptedNonceIds,...closureMetadata}=a.closureInput;
+   writeFileSync(packet,JSON.stringify({handoff:a.handoff,closureInput:closureMetadata,
+     candidateInput:candidateMetadata,githubEvidence:null}));
+   writeFileSync(zip,releaseArchive);
+   const env={
+     MDD_EXTERNAL_WITNESS_PINS_JSON:JSON.stringify(externalWitnessPins),
+     MDD_PREVIOUS_WITNESS_NONCES_JSON:JSON.stringify(previouslyAcceptedNonceIds),
+     MDD_PREVIOUS_HANDOFF_NONCES_JSON:'[]',
+     MDD_TRUSTED_LEDGER_SEQUENCE:'0',
+     MDD_MIN_TRUSTED_CUSTODY_REVISION:'2',
+     MDD_TRUSTED_LEDGER_DIGEST:zero,
+     MDD_CUSTODY_ROOT_SHA256:sha256(der(root.publicKey)),
+   };
+   const cli=fileURLToPath(new URL('./handoff-cli.mjs',import.meta.url));
+   const run=extraEnv=>spawnSync(process.execPath,
+     [cli,'inspect',packet,zip,sourceCommit,now],
+     {encoding:'utf8',env:{...process.env,...env,...extraEnv}});
+   const ok=run({});
+   assert.equal(ok.status,3,ok.stderr);
+   assert.equal(JSON.parse(ok.stdout).releaseAuthorized,false);
+   assert.ok(!ok.stdout.includes('independent-fixture'));
+   const replay=run({MDD_PREVIOUS_HANDOFF_NONCES_JSON:JSON.stringify([a.handoff.reviewHandoffNonce])});
+   assert.equal(replay.status,4);
+   const wrong=run({MDD_TRUSTED_LEDGER_DIGEST:'f'.repeat(64)});
+   assert.equal(wrong.status,4);
+   writeFileSync(packet,JSON.stringify({...JSON.parse(await (await import('node:fs/promises')).readFile(packet,'utf8')),
+     prayerText:'MY_PRIVATE_PRAYER'}));
+   const rejected=run({});
+   assert.equal(rejected.status,4);
+   assert.ok(!rejected.stderr.includes('MY_PRIVATE_PRAYER'));
+   assert.ok(!rejected.stderr.includes(dir));
+ }finally{rmSync(dir,{recursive:true,force:true});}
+});
