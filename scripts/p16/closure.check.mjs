@@ -218,3 +218,14 @@ test('externally pinned newer revocation revision prevents older signed but unre
  assert.throws(()=>verifyCustody(old),/revocation-state rollback/);
  assert.throws(()=>checked(old),/revocation-state rollback/);
 });
+
+
+test('operator cannot substitute a different receipt batch after checkpoint verification',()=>{
+ const a=closure();
+ a.historyRecords=records([receipt({decision:'reject'})]);
+ assert.throws(()=>inspectOperatorClosure(a),/Operator receipt chain differs from verified checkpoint/);
+ const b=closure();b.historyRecords[0].digest='f'.repeat(64);
+ assert.throws(()=>inspectOperatorClosure(b),/Operator receipt source digest mismatch/);
+ const c=closure();c.historyRecords=[];
+ assert.throws(()=>inspectOperatorClosure(c),/receipt batch differs|false == true/);
+});
