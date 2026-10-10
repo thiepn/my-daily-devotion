@@ -1,3 +1,8 @@
+import * as fs from 'node:fs';
+import * as pathNode from 'node:path';
+import * as os from 'node:os';
+import * as child from 'node:child_process';
+import * as urlNode from 'node:url';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { generateKeyPairSync, sign } from 'node:crypto';
@@ -166,4 +171,42 @@ test('operator rehearsal forbids origin moves, schema downgrades and stale archi
  assert.throws(()=>inspectOperatorClosure(b),/No database downgrade/);
  const c=closure();c.archiveEvidence.sourceCommit=other;
  assert.throws(()=>inspectOperatorClosure(c),/Archive evidence stale/);
+});
+
+
+test('CLI is never a release-success exit and rejects missing external trust roots without leaking paths',()=>{
+ const { mkdtempSync,writeFileSync,rmSync }=fs;
+
+ const {join}=pathNode,{tmpdir}=os,{spawnSync}=child;
+
+ const {fileURLToPath}=urlNode;
+
+ const dir=mkdtempSync(join(tmpdir(),'mdd-p16-'));
+ try {
+   const path=join(dir,'evidence.json'),sample=evidence();
+   writeFileSync(path,JSON.stringify({...sample,privateJournal:'NEVER_LOG_PRIVATE_PRAYER'}));
+   const cli=fileURLToPath(new URL('./closure-cli.mjs',import.meta.url));
+   const command=(env)=>spawnSync(process.execPath,[cli,'history',path,sha,now],
+     {encoding:'utf8',env:{...process.env,...env}});
+   const missing=command({});
+   assert.equal(missing.status,4);
+   const malformed=command({MDD_CUSTODY_ROOT_SHA256:rootPin,
+     MDD_TRUSTED_LEDGER_DIGEST:zero,MDD_TRUSTED_LEDGER_SEQUENCE:'0'});
+   assert.equal(malformed.status,4);
+   assert.ok(!malformed.stderr.includes('NEVER_LOG_PRIVATE_PRAYER'));
+   assert.ok(!malformed.stderr.includes(dir));
+   writeFileSync(path,JSON.stringify({
+     sourceCommit:sha,rootPublicSpkiDerBase64:sample.rootPublicSpkiDerBase64,
+     manifest:sample.manifest,records:sample.records,checkpoint:sample.checkpoint,
+     previouslyUsedNonces:[],codeAuthorHandles:['source-author'],
+   }));
+   const valid=command({MDD_CUSTODY_ROOT_SHA256:rootPin,
+     MDD_TRUSTED_LEDGER_DIGEST:zero,MDD_TRUSTED_LEDGER_SEQUENCE:'0'});
+   assert.equal(valid.status,3,valid.stderr);
+   assert.equal(JSON.parse(valid.stdout).releaseAuthorized,false);
+   assert.ok(!valid.stdout.includes('independent-fixture'));
+   const replay=command({MDD_CUSTODY_ROOT_SHA256:rootPin,
+     MDD_TRUSTED_LEDGER_DIGEST:'f'.repeat(64),MDD_TRUSTED_LEDGER_SEQUENCE:'0'});
+   assert.equal(replay.status,4,'Wrong trusted previous checkpoint must not pass');
+ } finally {rmSync(dir,{recursive:true,force:true})}
 });
