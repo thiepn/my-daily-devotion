@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { REQUIRED_VISUAL_DECISIONS } from '../p15/attestations.mjs';
 import { pendingRehearsalGates, rehearseCandidate } from '../p15/rehearsal.mjs';
 import { strictObject } from './custody.mjs';
+import { recordDigest } from './receipt-history.mjs';
 
 const SHA=/^[0-9a-f]{40}$/, HASH=/^[0-9a-f]{64}$/;
 const SCENARIOS={
@@ -62,6 +63,19 @@ export function inspectOperatorClosure({
   assert.equal(verifiedHistory.releaseAuthorized,false,'History must not authorize release');
   assert.ok(verifiedHistory.custodySignatureVerified &&
     verifiedHistory.checkpointSignatureVerified,'Missing authenticated custody/checkpoint signatures');
+  assert.ok(Array.isArray(historyRecords) && historyRecords.length>0 && historyRecords.length<=100);
+  assert.equal(historyRecords.length,verifiedHistory.verifiedReceiptSignatures,
+    'Operator receipt batch differs from signed history');
+  for(let i=0;i<historyRecords.length;i++){
+    const record=historyRecords[i];
+    assert.equal(record.digest,recordDigest(record),'Operator receipt source digest mismatch');
+    assert.equal(record.sequence,verifiedHistory.sequence-historyRecords.length+i+1,
+      'Operator source sequence differs from signed checkpoint');
+    if(i>0)assert.equal(record.previousDigest,historyRecords[i-1].digest,
+      'Operator receipt source chain disconnected');
+  }
+  assert.equal(historyRecords[historyRecords.length-1].digest,verifiedHistory.digest,
+    'Operator receipt chain differs from verified checkpoint');
   const devices=inspectDeviceClaims({sourceCommit,historyRecords,deviceClaims});
   const remaining=REQUIRED_VISUAL_DECISIONS.filter(name=>
     !verifiedHistory.acceptedVisualClaims.includes(name));
