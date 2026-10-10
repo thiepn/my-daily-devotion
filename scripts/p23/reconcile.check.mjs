@@ -461,3 +461,92 @@ test('tampering even one ZIP byte fails before any external reviewer or operator
  z.releaseArchive=z.releaseArchive.slice();z.releaseArchive[9]^=0xff;
  assert.throws(()=>inspectMultiOperatorHold(a),/Downloaded archive is not the tested release/);
 });
+
+test('offline P23 CLI rejects compromised reviewers, concurrent operator claims and private metadata',async()=>{
+ const {mkdtempSync,writeFileSync,rmSync}=await import('node:fs');
+ const {readFile}=await import('node:fs/promises');
+ const {join}=await import('node:path');
+ const {tmpdir}=await import('node:os');
+ const {spawnSync}=await import('node:child_process');
+ const {fileURLToPath}=await import('node:url');
+ const dir=mkdtempSync(join(tmpdir(),'mdd-p23-review-'));
+ try{
+  const held=requestInput(),request=held.reviewInput.p22Input,own=request.p21OwnerInput,p=own.p21Input.p20Input,
+    e=p.p19Input.p18Input,c=e.closureInput,
+    evidencePath=join(dir,'review.json'),archivePath=join(dir,'candidate.zip');
+  const {releaseArchive,...candidateInput}=e.candidateInput;
+  const {externalWitnessPins,previouslyAcceptedNonceIds,minimumAcceptedSequence,
+    minimumAcceptedRevision,currentTime,...closureInput}=c;
+  const data={p19Input:{operatorRecord:p.p19Input.operatorRecord,
+    p18Input:{handoff:e.handoff,candidateInput,closureInput,githubEvidence:null}},
+   rotation:p.rotationInput.rotation,ticket:p.ticket,evidencePackets:[],
+   hostPacket:own.p21Input.hostPacket,physicalPackets:[],recoveryPacket:null,
+   ownerRecords:own.ownerRecords,escrow:request.escrow,reviewPackets:[],previousStable:null,
+   externalReceipts:[],holdRequest:held.request};
+  writeFileSync(evidencePath,JSON.stringify(data));
+  writeFileSync(archivePath,releaseArchive);
+  const env={
+   MDD_CUSTODY_ROOT_SHA256:sha256(der(root.publicKey)),
+   MDD_TRUSTED_LEDGER_DIGEST:zero,MDD_TRUSTED_LEDGER_SEQUENCE:'0',
+   MDD_MIN_TRUSTED_CUSTODY_REVISION:'2',
+   MDD_OPERATOR_LEDGER_DIGEST:'e'.repeat(64),MDD_OPERATOR_LEDGER_SEQUENCE:'7',
+   MDD_EXTERNAL_WITNESS_PINS_JSON:JSON.stringify(externalWitnessPins),
+   MDD_EXTERNAL_OPERATOR_PINS_JSON:JSON.stringify(operatorPins()),
+   MDD_PREVIOUS_WITNESS_NONCES_JSON:JSON.stringify(previouslyAcceptedNonceIds),
+   MDD_PREVIOUS_HANDOFF_NONCES_JSON:'[]',MDD_PREVIOUS_OPERATOR_NONCES_JSON:'[]',
+   MDD_P20_ROTATION_LEDGER_DIGEST:'f'.repeat(64),
+   MDD_P20_ROTATION_LEDGER_SEQUENCE:'3',
+   MDD_P20_PREVIOUS_ACTIVE_KEY_ID:'prior-test-signer',
+   MDD_P20_EXTERNAL_ROTATION_PINS_JSON:JSON.stringify(rotatingPins()),
+   MDD_P20_PREVIOUS_REVOKED_KEYS_JSON:'[]',
+   MDD_P20_PREVIOUS_ROTATION_NONCES_JSON:'[]',
+   MDD_P20_PREVIOUS_ESCALATION_NONCES_JSON:'[]',
+   MDD_P21_EXTERNAL_OWNER_PINS_JSON:JSON.stringify(ownerPins()),
+   MDD_P21_OWNER_LEDGER_DIGEST:'9'.repeat(64),
+   MDD_P21_OWNER_LEDGER_SEQUENCE:'5',
+   MDD_P21_PREVIOUS_OWNER_NONCES_JSON:'[]',
+   MDD_P22_EXTERNAL_ESCROW_PINS_JSON:JSON.stringify(escrowPins()),
+   MDD_P22_ESCROW_LEDGER_DIGEST:'e'.repeat(64),
+   MDD_P22_ESCROW_LEDGER_SEQUENCE:'11',
+   MDD_P22_PREVIOUS_ESCROW_NONCES_JSON:'[]',
+   MDD_P23_EXTERNAL_REVIEWER_PINS_JSON:JSON.stringify(reviewerPins()),
+   MDD_P23_EXTERNAL_REVOKED_REVIEWERS_JSON:'[]',
+   MDD_P23_MIN_TRUSTED_REVIEWER_REVISION:'4',
+   MDD_P23_PREVIOUS_REVIEW_SEQUENCE:'3',
+   MDD_P23_PREVIOUS_REVIEW_DIGEST:'b'.repeat(64),
+   MDD_P23_PREVIOUS_REVIEW_NONCES_JSON:'[]',
+   MDD_P23_EXTERNAL_OPERATOR_PINS_JSON:JSON.stringify(externalOperatorPins()),
+   MDD_P23_PREVIOUS_OPERATOR_SEQUENCE:'6',
+   MDD_P23_PREVIOUS_OPERATOR_DIGEST:'d'.repeat(64),
+   MDD_P23_PREVIOUS_OPERATOR_NONCES_JSON:'[]',
+   MDD_P23_EXTERNAL_CONTENTION_OBSERVATIONS_JSON:'[]',
+  };
+  const cmd=fileURLToPath(new URL('./reconcile-cli.mjs',import.meta.url));
+  const run=(changes={})=>spawnSync(process.execPath,
+   [cmd,'review',evidencePath,archivePath,sourceCommit,now],
+   {encoding:'utf8',env:{...process.env,...env,...changes}});
+  const accepted=run();
+  assert.equal(accepted.status,3,accepted.stderr);
+  const result=JSON.parse(accepted.stdout);
+  assert.equal(result.releaseAuthorized,false);
+  assert.equal(result.independentExternalCASCommitted,false);
+  assert.ok(!accepted.stdout.includes('independent-fixture'));
+  assert.equal(run({MDD_P21_PREVIOUS_OWNER_NONCES_JSON:
+   JSON.stringify([own.ownerRecords[0].nonce])}).status,4);
+  assert.equal(run({MDD_P21_OWNER_LEDGER_SEQUENCE:'6'}).status,4);
+  assert.equal(run({MDD_P22_PREVIOUS_ESCROW_NONCES_JSON:JSON.stringify([request.escrow.nonce])}).status,4);
+  assert.equal(run({MDD_P22_ESCROW_LEDGER_DIGEST:'f'.repeat(64)}).status,4);
+  assert.equal(run({MDD_P23_EXTERNAL_REVOKED_REVIEWERS_JSON:JSON.stringify(['rights-external-fixture'])}).status,4);
+  assert.equal(run({MDD_P23_PREVIOUS_OPERATOR_NONCES_JSON:JSON.stringify([held.request.nonce])}).status,4);
+  assert.equal(run({MDD_P23_EXTERNAL_CONTENTION_OBSERVATIONS_JSON:JSON.stringify([{
+   sourceCommit,previousSequence:6,previousDigest:'d'.repeat(64),
+   nonce:uuid(304),proposalDigestSha256:'e'.repeat(64)
+  }])}).status,4);
+  writeFileSync(evidencePath,JSON.stringify({...JSON.parse(await readFile(evidencePath,'utf8')),
+   privatePrayer:'SECRET_USER_JOURNAL'}));
+  const blocked=run();
+  assert.equal(blocked.status,4);
+  assert.ok(!blocked.stderr.includes('SECRET_USER_JOURNAL'));
+  assert.ok(!blocked.stderr.includes(dir));
+ }finally{rmSync(dir,{recursive:true,force:true})}
+});
