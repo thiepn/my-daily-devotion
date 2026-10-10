@@ -198,3 +198,48 @@ test('unknown physical device packet and credential-bearing URLs are rejected',(
  const b=base();b.originalSiteUrl+='?token=do-not-leak';
  assert.throws(()=>inspectP17Closure(b),/query strings or bearer tokens/);
 });
+
+
+test('distinct witness IDs cannot reuse the same public signing key',()=>{
+ const a=base();
+ a.externalWitnessPins[1].spkiDerBase64=a.externalWitnessPins[0].spkiDerBase64;
+ a.externalWitnessPins[1].sha256Pin=a.externalWitnessPins[0].sha256Pin;
+ assert.throws(()=>inspectP17Closure(a),/Two independent cryptographic witness keys required/);
+});
+test('CLI requires out-of-band witness pins and refuses output-as-release success',async()=>{
+ const {mkdtempSync,rmSync,writeFileSync}=await import('node:fs');
+ const {tmpdir}=await import('node:os');
+ const {join}=await import('node:path');
+ const {spawnSync}=await import('node:child_process');
+ const {fileURLToPath}=await import('node:url');
+ const folder=mkdtempSync(join(tmpdir(),'mdd-p17-'));
+ try{
+   const b=base(),file=join(folder,'private-metadata.json');
+   const {externalWitnessPins,previouslyAcceptedNonceIds,
+     minimumAcceptedSequence,minimumAcceptedRevision,currentTime,...packet}=b;
+   writeFileSync(file,JSON.stringify(packet));
+   const cli=fileURLToPath(new URL('./closure-cli.mjs',import.meta.url));
+   const run=env=>spawnSync(process.execPath,[cli,'inspect',file,sourceCommit,now],
+     {encoding:'utf8',env:{...process.env,...env}});
+   const trusted={
+     MDD_EXTERNAL_WITNESS_PINS_JSON:JSON.stringify(externalWitnessPins),
+     MDD_PREVIOUS_WITNESS_NONCES_JSON:JSON.stringify(previouslyAcceptedNonceIds),
+     MDD_MIN_WITNESSED_LEDGER_SEQUENCE:String(minimumAcceptedSequence),
+     MDD_MIN_WITNESSED_CUSTODY_REVISION:String(minimumAcceptedRevision),
+   };
+   const positive=run(trusted);
+   assert.equal(positive.status,3,positive.stderr);
+   const result=JSON.parse(positive.stdout);
+   assert.equal(result.proofChainStructurallyVerified,true);
+   assert.equal(result.releaseAuthorized,false);
+   assert.equal(result.humanHardwareReviewVerified,false);
+   const bad=run({...trusted,MDD_MIN_WITNESSED_CUSTODY_REVISION:'3'});
+   assert.equal(bad.status,4);
+   writeFileSync(file,JSON.stringify({...packet,privatePrayer:'MY_PRIVATE_PRAYER'}));
+   const privateData=run(trusted);
+   assert.equal(privateData.status,4);
+   assert.ok(!privateData.stderr.includes('MY_PRIVATE_PRAYER'));
+   assert.ok(!privateData.stdout.includes('MY_PRIVATE_PRAYER'));
+   assert.ok(!privateData.stderr.includes(folder));
+ }finally{rmSync(folder,{recursive:true,force:true});}
+});
