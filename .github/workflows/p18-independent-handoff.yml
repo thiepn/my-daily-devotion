@@ -1,0 +1,28 @@
+name: P18 Independent Handoff Preparation
+
+on:
+  pull_request:
+    paths:
+      - "scripts/p18/**"
+      - "scripts/p17/**"
+      - "docs/P18_HUMAN_EVIDENCE_HANDOFF.md"
+      - ".github/workflows/p18-independent-handoff.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  immutable-release-and-evidence-handoff:
+    name: Byte-level archive, witness provenance and default-denied handoff tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Verify immutable ZIP bytes, trust anchors and nondeploying operator handoff
+        run: node --test scripts/p18/handoff.check.mjs
