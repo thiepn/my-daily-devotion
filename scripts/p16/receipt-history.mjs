@@ -18,13 +18,13 @@ export function recordDigest(record) {
  * between invocations. The source file alone cannot establish this trust.
  */
 export function verifyReceiptHistory({
-  sourceCommit, rootPublicSpkiDerBase64, expectedRootSha256, manifest,
+  sourceCommit, rootPublicSpkiDerBase64, expectedRootSha256, minimumTrustedRevision, manifest,
   trustedPreviousAnchor, records, checkpoint, previouslyUsedNonces = [],
   codeAuthorHandles = [], currentTime,
 }) {
   assert.match(sourceCommit,SHA);
   const custody=verifyCustody({
-    sourceCommit,rootPublicSpkiDerBase64,expectedRootSha256,manifest,currentTime,
+    sourceCommit,rootPublicSpkiDerBase64,expectedRootSha256,minimumTrustedRevision,manifest,currentTime,
   });
   strictObject(trustedPreviousAnchor,['sequence','digest']);
   assert.ok(Number.isSafeInteger(trustedPreviousAnchor.sequence) &&
