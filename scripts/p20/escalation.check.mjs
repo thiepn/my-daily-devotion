@@ -245,7 +245,7 @@ test('rotation denies reused nonce, stale SHA and expired attestation',()=>{
 });
 test('rotation key pins, distinct keys and signature roles cannot be spoofed',()=>{
  const a=rotationInput();a.externalPins[0].sha256Pin='d'.repeat(64);
- assert.throws(()=>inspectRotation({...a,sourceCommit}),/pin mismatch/);
+ assert.throws(()=>inspectRotation({...a,sourceCommit}),/rotation key mismatch/);
  const b=rotationInput();b.externalPins[2].spkiDerBase64=b.externalPins[0].spkiDerBase64;
  b.externalPins[2].sha256Pin=b.externalPins[0].sha256Pin;
  assert.throws(()=>inspectRotation({...b,sourceCommit}),/Distinct cryptographic keys/);
@@ -280,7 +280,7 @@ test('false operator authority and cache purge intent always fail',()=>{
 test('ticket nonce replay, expired timestamp, and private fields are blocked',()=>{
  const a=phase();a.previouslyUsedEscalationNonces=[a.ticket.nonce];
  assert.throws(()=>inspectP20Escalation(a),/ticket replayed/);
- const b=phase();b.currentTime='2026-10-10T16:00:00Z';
+ const b=phase();b.ticket.createdAt='2026-10-10T12:00:00Z';
  assert.throws(()=>inspectP20Escalation(b),/Stale\/future escalation/);
  const c=phase();c.ticket.privatePrayer='SECRET_DEVOTION';
  assert.throws(()=>inspectP20Escalation(c),/private metadata/);
