@@ -41,7 +41,7 @@ export function signedBody(envelope, fields) {
  */
 export function verifyCustody({
   sourceCommit, rootPublicSpkiDerBase64, expectedRootSha256,
-  manifest, currentTime,
+  minimumTrustedRevision, manifest, currentTime,
 }) {
   assert.match(sourceCommit,SHA);
   assert.match(expectedRootSha256,HASH,'External custody fingerprint required');
@@ -54,6 +54,9 @@ export function verifyCustody({
   assert.equal(manifest.sourceCommit,sourceCommit,'Custody manifest belongs to another SHA');
   assert.ok(typeof manifest.rootKeyId==='string' && /^[A-Za-z0-9_.-]{2,64}$/.test(manifest.rootKeyId));
   assert.ok(Number.isSafeInteger(manifest.revision) && manifest.revision>0,'Custody revision missing');
+  assert.ok(Number.isSafeInteger(minimumTrustedRevision) && minimumTrustedRevision>0,
+    'Independently retained custody revision required');
+  assert.ok(manifest.revision>=minimumTrustedRevision,'Signed custody revocation-state rollback');
   const now=date(currentTime),start=date(manifest.issuedAt),end=date(manifest.expiresAt);
   assert.ok(start<=now && now<=end && end-start<=24*60*60*1000,'Stale or future custody status');
   assert.ok(verify(null,signedBody(manifest,ROOT_FIELDS),rootKey,bytes(manifest.signatureBase64)),
