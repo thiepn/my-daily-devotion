@@ -235,3 +235,73 @@ test('same underlying evidence with different handoff nonce requires distinct si
  assert.throws(()=>inspectP19Decision(b),/another evidence handoff/);
  assert.equal(r.releaseAuthorized,false);
 });
+
+
+test('CLI reads external witnessed checkpoint and operator pins but never returns release success',async()=>{
+ const {mkdtempSync,writeFileSync,rmSync}=await import('node:fs');
+ const {readFile}=await import('node:fs/promises');
+ const {join}=await import('node:path');
+ const {tmpdir}=await import('node:os');
+ const {spawnSync}=await import('node:child_process');
+ const {fileURLToPath}=await import('node:url');
+ const dir=mkdtempSync(join(tmpdir(),'mdd-p19-'));
+ try{
+   const b=bundle(),packetPath=join(dir,'evidence.json'),zipPath=join(dir,'immutable.zip');
+   const {releaseArchive,...candidateInput}=b.p18Input.candidateInput;
+   const {externalWitnessPins,previouslyAcceptedNonceIds,minimumAcceptedSequence,
+     minimumAcceptedRevision,currentTime,...closureInput}=b.p18Input.closureInput;
+   const pack={operatorRecord:b.operatorRecord,p18Input:{
+     handoff:b.p18Input.handoff,closureInput,candidateInput,githubEvidence:null}};
+   writeFileSync(packetPath,JSON.stringify(pack));
+   writeFileSync(zipPath,releaseArchive);
+   const env={
+     MDD_EXTERNAL_WITNESS_PINS_JSON:JSON.stringify(externalWitnessPins),
+     MDD_PREVIOUS_WITNESS_NONCES_JSON:JSON.stringify(previouslyAcceptedNonceIds),
+     MDD_PREVIOUS_HANDOFF_NONCES_JSON:'[]',
+     MDD_TRUSTED_LEDGER_SEQUENCE:String(minimumAcceptedSequence),
+     MDD_TRUSTED_LEDGER_DIGEST:zero,
+     MDD_MIN_TRUSTED_CUSTODY_REVISION:String(minimumAcceptedRevision),
+     MDD_CUSTODY_ROOT_SHA256:sha256(der(root.publicKey)),
+     MDD_EXTERNAL_OPERATOR_PINS_JSON:JSON.stringify(operatorPins()),
+     MDD_PREVIOUS_OPERATOR_NONCES_JSON:'[]',
+     MDD_OPERATOR_LEDGER_SEQUENCE:'7',
+     MDD_OPERATOR_LEDGER_DIGEST:'e'.repeat(64),
+   };
+   const path=fileURLToPath(new URL('./decision-cli.mjs',import.meta.url));
+   const run=(change={})=>spawnSync(process.execPath,
+     [path,'hold',packetPath,zipPath,sourceCommit,now],
+     {encoding:'utf8',env:{...process.env,...env,...change}});
+   const ok=run();
+   assert.equal(ok.status,3,ok.stderr);
+   assert.equal(JSON.parse(ok.stdout).releaseAuthorized,false);
+   assert.ok(!ok.stdout.includes('independent-fixture'));
+   assert.equal(run({MDD_PREVIOUS_OPERATOR_NONCES_JSON:JSON.stringify([b.operatorRecord.nonce])}).status,4);
+   assert.equal(run({MDD_OPERATOR_LEDGER_SEQUENCE:'8'}).status,4);
+   writeFileSync(packetPath,JSON.stringify({...JSON.parse(await readFile(packetPath,'utf8')),
+     privateJournal:'MY_PRIVATE_DEVOTION'}));
+   const denied=run();
+   assert.equal(denied.status,4);
+   assert.ok(!denied.stderr.includes('MY_PRIVATE_DEVOTION'));
+   assert.ok(!denied.stderr.includes(dir));
+ }finally{rmSync(dir,{recursive:true,force:true})}
+});
+test('untrusted JSON cannot embed an alternate witness pin or release archive',async()=>{
+ const {mkdtempSync,writeFileSync,rmSync}=await import('node:fs');
+ const {join}=await import('node:path');const {tmpdir}=await import('node:os');
+ const {spawnSync}=await import('node:child_process');const {fileURLToPath}=await import('node:url');
+ const dir=mkdtempSync(join(tmpdir(),'mdd-p19-deny-'));
+ try{
+   const b=bundle(),data=join(dir,'meta.json'),zip=join(dir,'test.zip');
+   const {releaseArchive,...candidateInput}=b.p18Input.candidateInput;
+   writeFileSync(zip,releaseArchive);
+   const forged={p18Input:{handoff:b.p18Input.handoff,candidateInput:{
+     ...candidateInput,releaseArchive:[]},closureInput:b.p18Input.closureInput},
+     operatorRecord:b.operatorRecord};
+   writeFileSync(data,JSON.stringify(forged));
+   const cli=fileURLToPath(new URL('./decision-cli.mjs',import.meta.url));
+   const result=spawnSync(process.execPath,[cli,'hold',data,zip,sourceCommit,now],
+     {encoding:'utf8',env:{...process.env,MDD_EXTERNAL_WITNESS_PINS_JSON:'[]'}});
+   assert.equal(result.status,4);
+   assert.ok(!result.stderr.includes(dir));
+ }finally{rmSync(dir,{recursive:true,force:true})}
+});
