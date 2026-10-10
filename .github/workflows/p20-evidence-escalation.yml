@@ -1,0 +1,28 @@
+name: P20 Evidence Attestation and Operations Hold
+
+on:
+  pull_request:
+    paths:
+      - "scripts/p20/**"
+      - "scripts/p19/**"
+      - "docs/P20_RELEASE_EVIDENCE_ESCALATION.md"
+      - ".github/workflows/p20-evidence-escalation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  nondeploying-custody-and-escalation:
+    name: Three-party rotation, artifact and default-denied escalation tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Verify immutable ZIP, role and replay custody, human claims and no release
+        run: node --test scripts/p20/escalation.check.mjs
