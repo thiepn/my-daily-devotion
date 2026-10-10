@@ -45,7 +45,7 @@ function evidence(recs=records()) {
   finalDigest:recs[recs.length-1].digest,
   issuedAt:'2026-10-10T07:45:00Z',expiresAt:'2026-10-10T08:15:00Z'},custody.privateKey);
  return {sourceCommit:sha,rootPublicSpkiDerBase64:rootDer.toString('base64'),
-   expectedRootSha256:rootPin,manifest:manifest(),
+   expectedRootSha256:rootPin,minimumTrustedRevision:2,manifest:manifest(),
    trustedPreviousAnchor:{sequence:0,digest:zero},records:recs,checkpoint:c,
    previouslyUsedNonces:[],codeAuthorHandles:['source-author'],currentTime:now};
 }
@@ -191,7 +191,7 @@ test('CLI is never a release-success exit and rejects missing external trust roo
    const missing=command({});
    assert.equal(missing.status,4);
    const malformed=command({MDD_CUSTODY_ROOT_SHA256:rootPin,
-     MDD_TRUSTED_LEDGER_DIGEST:zero,MDD_TRUSTED_LEDGER_SEQUENCE:'0'});
+     MDD_TRUSTED_LEDGER_DIGEST:zero,MDD_TRUSTED_LEDGER_SEQUENCE:'0',MDD_MIN_TRUSTED_CUSTODY_REVISION:'2'});
    assert.equal(malformed.status,4);
    assert.ok(!malformed.stderr.includes('NEVER_LOG_PRIVATE_PRAYER'));
    assert.ok(!malformed.stderr.includes(dir));
@@ -201,12 +201,20 @@ test('CLI is never a release-success exit and rejects missing external trust roo
      previouslyUsedNonces:[],codeAuthorHandles:['source-author'],
    }));
    const valid=command({MDD_CUSTODY_ROOT_SHA256:rootPin,
-     MDD_TRUSTED_LEDGER_DIGEST:zero,MDD_TRUSTED_LEDGER_SEQUENCE:'0'});
+     MDD_TRUSTED_LEDGER_DIGEST:zero,MDD_TRUSTED_LEDGER_SEQUENCE:'0',MDD_MIN_TRUSTED_CUSTODY_REVISION:'2'});
    assert.equal(valid.status,3,valid.stderr);
    assert.equal(JSON.parse(valid.stdout).releaseAuthorized,false);
    assert.ok(!valid.stdout.includes('independent-fixture'));
    const replay=command({MDD_CUSTODY_ROOT_SHA256:rootPin,
-     MDD_TRUSTED_LEDGER_DIGEST:'f'.repeat(64),MDD_TRUSTED_LEDGER_SEQUENCE:'0'});
+     MDD_TRUSTED_LEDGER_DIGEST:'f'.repeat(64),MDD_TRUSTED_LEDGER_SEQUENCE:'0',MDD_MIN_TRUSTED_CUSTODY_REVISION:'2'});
    assert.equal(replay.status,4,'Wrong trusted previous checkpoint must not pass');
  } finally {rmSync(dir,{recursive:true,force:true})}
+});
+
+
+test('externally pinned newer revocation revision prevents older signed but unrevoked roster replay',()=>{
+ const old=evidence();
+ old.minimumTrustedRevision=3;
+ assert.throws(()=>verifyCustody(old),/revocation-state rollback/);
+ assert.throws(()=>checked(old),/revocation-state rollback/);
 });
