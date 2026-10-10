@@ -1,0 +1,28 @@
+name: P23 External Reviewer Custody Reconciliation
+
+on:
+  pull_request:
+    paths:
+      - "scripts/p23/**"
+      - "scripts/p22/**"
+      - "docs/P23_EXTERNAL_REVIEW_CUSTODY.md"
+      - ".github/workflows/p23-external-review.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  external-review-and-hold:
+    name: Detached reviewer revocation, multi-operator replay and NO-GO tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Verify external identity pins, source escrow and independent contention
+        run: node --test scripts/p23/reconcile.check.mjs
