@@ -53,10 +53,12 @@ export function inspectWitnessedAnchor({sourceCommit,anchor,externalWitnessPins,
     assert.equal(sha256(der),item.sha256Pin,'External witness public-key pin mismatch');
     const key=createPublicKey({key:der,format:'der',type:'spki'});
     assert.equal(key.asymmetricKeyType,'ed25519');
-    pins.set(item.role,{id:item.witnessId,key});
+    pins.set(item.role,{id:item.witnessId,key,sha256Pin:item.sha256Pin});
   }
   assert.deepEqual([...pins.keys()].sort(),[...REQUIRED].sort());
   assert.notEqual(pins.get(REQUIRED[0]).id,pins.get(REQUIRED[1]).id,'Witness identities must differ');
+  assert.notEqual(pins.get(REQUIRED[0]).sha256Pin,pins.get(REQUIRED[1]).sha256Pin,
+    'Two independent cryptographic witness keys required');
   const signed={...anchor};
   delete signed.signatures;
   const payload=Buffer.from('MDD-P17-WITNESSED-ANCHOR-V1\n'+JSON.stringify(Object.keys(signed).sort().map(k=>[k,signed[k]])));
