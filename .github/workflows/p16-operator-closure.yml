@@ -1,0 +1,26 @@
+name: P16 Independent Custody and Closure Preparation
+
+on:
+  pull_request:
+    paths:
+      - "scripts/p16/**"
+      - "scripts/p15/**"
+      - "docs/P16_OPERATOR_DECISION_CLOSURE_PREPARATION.md"
+      - ".github/workflows/p16-operator-closure.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pinned-trust-replay-and-operator-tests:
+    name: Signed custody, replay checkpoint, device claims and no-deploy tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Verify ephemeral-key custody signatures, revocation and fail-closed no-op rehearsal
+        run: node --test scripts/p16/closure.check.mjs
