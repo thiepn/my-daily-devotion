@@ -139,3 +139,24 @@ test('rejects missing, duplicate and unrelated gate claims or stale archive',()=
  const c=rehearsal();c.archiveEvidence.sourceCommit=other;
  assert.throws(()=>rehearseCandidate(c),/Archive evidence stale/);
 });
+
+
+test('P15 CLI never reports authorization, returns nonzero and does not leak private input',async()=>{
+ const {mkdtempSync,writeFileSync,rmSync}=await import('node:fs');
+ const {join}=await import('node:path');const {tmpdir}=await import('node:os');
+ const {spawnSync}=await import('node:child_process');
+ const {fileURLToPath}=await import('node:url');
+ const directory=mkdtempSync(join(tmpdir(),'mdd-p15-accept-'));
+ try{
+   const cli=fileURLToPath(new URL('./acceptance-cli.mjs',import.meta.url));
+   const file=join(directory,'rehearsal.json');
+   writeFileSync(file,JSON.stringify(rehearsal()));
+   const check=()=>spawnSync(process.execPath,[cli,'rehearse',file],{encoding:'utf8'});
+   const ok=check();assert.equal(ok.status,3,ok.stderr);
+   assert.equal(JSON.parse(ok.stdout).releaseAuthorized,false);
+   writeFileSync(file,JSON.stringify({...rehearsal(),privateJournal:'DO_NOT_LOG'}));
+   const bad=check();assert.equal(bad.status,4);
+   assert.ok(!bad.stderr.includes('DO_NOT_LOG'));
+   assert.ok(!bad.stderr.includes(directory));
+ }finally{rmSync(directory,{recursive:true,force:true})}
+});
