@@ -49,7 +49,11 @@ async function main(){
   exact(pack,['p18Input','operatorRecord']);
   exact(pack.p18Input,['handoff','closureInput','candidateInput','githubEvidence']);
   const evidence=pack.p18Input,closure=evidence.closureInput;
-  exact(closure,Object.keys(closure)); // Nested schema is checked by the inherited P17 validator.
+  exact(closure,['sourceCommit','originalSiteUrl','anchor','rootPublicSpkiDerBase64',
+    'manifest','records','checkpoint','previouslyUsedNonces','codeAuthorHandles',
+    'deviceClaims','devicePackets','migrationPacket','recoveryPlan','archiveEvidence','gateClaims']);
+  exact(evidence.candidateInput,['expectedSha','releaseManifest','deploymentHashes',
+    'verificationSummary','buildEvidence']);
   if(closure.anchor?.custodyRootSha256!==trust.root ||
      closure.anchor?.ledgerDigest!==trust.previousDigest ||
      closure.anchor?.ledgerSequence!==trust.sequence)
