@@ -227,5 +227,5 @@ test('operator cannot substitute a different receipt batch after checkpoint veri
  const b=closure();b.historyRecords[0].digest='f'.repeat(64);
  assert.throws(()=>inspectOperatorClosure(b),/Operator receipt source digest mismatch/);
  const c=closure();c.historyRecords=[];
- assert.throws(()=>inspectOperatorClosure(c),/receipt batch differs|false == true/);
+ assert.throws(()=>inspectOperatorClosure(c),/Operator receipt batch missing/);
 });
