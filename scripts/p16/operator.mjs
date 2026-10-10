@@ -63,7 +63,8 @@ export function inspectOperatorClosure({
   assert.equal(verifiedHistory.releaseAuthorized,false,'History must not authorize release');
   assert.ok(verifiedHistory.custodySignatureVerified &&
     verifiedHistory.checkpointSignatureVerified,'Missing authenticated custody/checkpoint signatures');
-  assert.ok(Array.isArray(historyRecords) && historyRecords.length>0 && historyRecords.length<=100);
+  assert.ok(Array.isArray(historyRecords) && historyRecords.length>0 && historyRecords.length<=100,
+    'Operator receipt batch missing or oversized');
   assert.equal(historyRecords.length,verifiedHistory.verifiedReceiptSignatures,
     'Operator receipt batch differs from signed history');
   for(let i=0;i<historyRecords.length;i++){
